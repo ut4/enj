@@ -1,0 +1,37 @@
+{
+    "version": "2.3.2",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "src/*": ["src/*"],
+            "tests/*": ["tests/*"]
+        },
+        "target": "es6",
+        "module": "es6",
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "lib": [
+            "es6",
+            "es7",
+            "dom"
+        ],
+        "types": [
+            "inferno"
+        ],
+        "jsx": "preserve",
+        "noUnusedLocals": true,
+        "strictNullChecks": false,
+        "removeComments": false
+    },
+    "include": [
+        "src/**/*",
+        "tests/**/*",
+        "typings/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compileOnSave": false
+}

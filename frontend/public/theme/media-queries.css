@@ -1,0 +1,54 @@
+/* == main-menun olon kÃ¤ydessÃ¤ ahtaaksi ===================================== */
+@media (max-width:300px) {
+    #main-menu.open > ul > li {
+        width: 100%;
+    }
+    #main-menu.open .sub-ul {
+        margin-bottom: 10px;
+    }
+    #main-menu.open > ul > li:last-of-type .sub-ul {
+        margin-bottom: 30px;
+    }
+    #user-menu {
+        margin: -20px auto 15px;
+    }
+}
+/* == sama taulukoiden osalta =============================================== */
+@media (max-width:480px) {
+    table.respond th {
+        display: none;
+    }
+    table.respond td {
+        display: block;
+        padding: 0;
+        margin-left: 35%;
+        position: relative;
+        text-align: left;
+    }
+    table.respond tbody tr:first-child td:first-child {
+        padding-top: 0;
+    }
+    table.respond td:first-child {
+        padding: 10px 0 0 0;
+    }
+    table.respond td:last-child {
+        margin-bottom: 15px;
+    }
+    table.respond td:before {
+        content: attr(data-th);
+        display: inline-block;
+        font-weight: bold;
+        position: absolute;
+        left: -50%;
+    }
+}
+/* == ja viewin ============================================================= */
+@media (max-width:660px) {
+    #view {
+        padding: 20px 5px;
+    }
+    #view h2 {
+        margin-right: 8px;
+        margin-left: 8px;
+    }
+}

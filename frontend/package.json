@@ -1,0 +1,28 @@
+{
+  "name": "enj",
+  "version": "0.0.0",
+  "description": "...",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack -p",
+    "lint": "tslint src/*.ts{,x} src/**/*.ts{,x}",
+    "start-hard": "webpack --watch",
+    "start": "webpack-dev-server --inline"
+  },
+  "dependencies": {
+    "inferno": "^3.1.0",
+    "inferno-component": "^3.1.0",
+    "inferno-router": "^3.1.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-inferno": "^3.2.0",
+    "babel-preset-modern-browsers": "^9.0.2",
+    "ts-loader": "^2.0.3",
+    "typescript": "^2.3.2",
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.4.5"
+  }
+}

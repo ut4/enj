@@ -1,0 +1,7 @@
+.idea
+.jshintrc
+.vscode
+nbproject
+
+frontend/node_modules
+backend/target

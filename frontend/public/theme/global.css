@@ -1,0 +1,235 @@
+@font-face {
+    font-family: "Fira sans light";
+    src: url("firasans-light-webfont.eot");
+    src: url("firasans-light-webfont.eot?#iefix") format("embedded-opentype"),
+         url("firasans-light-webfont.woff2") format("woff2"),
+         url("firasans-light-webfont.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "Fira sans heavy";
+    src: url("firasans-heavy-webfont.eot");
+    src: url("firasans-heavy-webfont.eot?#iefix") format("embedded-opentype"),
+         url("firasans-heavy-webfont.woff2") format("woff2"),
+         url("firasans-heavy-webfont.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+.hidden {
+    display: none !important;
+}
+html {
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+}
+body {
+    background-color: #FFFFFF;
+    color: #676269;
+    font-family: "Fira sans light";
+    margin: 0;
+    min-width: 271px;
+}
+/*body*/.loading {
+    pointer-events: none;
+}
+body:after {
+    content: "";
+    visibility: hidden;
+    background: url("spinner.gif") no-repeat scroll center center #FFFFFF;
+    /* vain yli .1s latauksen jÃ¤lkeen */
+    -webkit-transition: visibility 0s linear .1s;
+            transition: visibility 0s linear .1s;
+    border: 1px solid #DDDDDD;
+    border-radius: 24px;
+    left: 50%;
+    margin-left: -24px;
+    position: fixed;
+    height: 46px;
+    width: 46px;
+    top: 5px;
+}
+/*body*/.loading:after {
+    visibility: visible;
+}
+a {
+    color: #8AAB33;
+}
+h2 {
+    font-family: "Fira sans heavy";
+    font-weight: normal;
+    overflow: hidden;
+}
+h2:before,
+h2:after {
+    content: "";
+    position: relative;
+    display: inline-block;
+    width: 20%;
+    max-width: 20%;
+    height: 1px;
+    vertical-align: middle;
+    background-color: #A8A1AB;
+}
+h2:before {
+    right: 10px;
+    margin: 0 0 0 -50%;
+}
+h2:after {
+    left: 10px;
+    margin: 0 -50% 0 0;
+}
+h4 {
+    margin: 8px auto;
+}
+p {
+    margin: 10px 0;
+}
+button {
+    border: medium none;
+    background-color: transparent;
+    cursor: pointer;
+}
+ul {
+    list-style: outside none none;
+    padding: 0;
+    text-align: left;
+}
+.appendix-text {
+    font-size: 13px;
+    margin-left: 4px;
+    font-weight: normal;
+}
+.appendix-text:before {
+    content: "(";
+    margin-right: 1px;
+}
+.appendix-text:after {
+    content: ")";
+    margin-left: 1px;
+}
+.info-box {
+    font-size: 13px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    background-color: #EEEEEE;
+    border-radius: 2px;
+}
+.nice-button {
+    background-color: #F5F5F5;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 2px;
+    color: #222222;
+    font: 11px/11px "Fira sans light";
+    padding: 8px 12px;
+    text-shadow: 0 1px rgba(0,0,0,0.1);
+}
+.nice-button.nice-button-small {
+    color: #555555;
+    font-size: 10px;
+    padding: 6px;
+}
+.nice-button.nice-button-large {
+    color: #555555;
+    font-size: 14px;
+    padding: 15px 25px;
+}
+.nice-button:disabled {
+    background-color: #E5E5E5;
+    color: #AAAAAA;
+    cursor: not-allowed;
+    text-shadow: none;
+}
+.nice-button:active:enabled {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08) inset;
+}
+.nice-button:hover:enabled {
+    background-color: #F2F2F2;
+    border-color: rgba(0,0,0,0.15);
+}
+.nice-button.nice-button-primary:enabled {
+    background-color: #479AB0;
+    border-color: #1A7C96;
+    color: #FFFFFF;
+}
+.nice-button.nice-button-primary:active:enabled {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
+}
+.nice-button.nice-button-primary:hover:enabled {
+    background-color: #3C90A7;
+    border-color: #228AA5;
+}
+.text-button {
+    font: 0.8em "Fira sans light";
+    color: #676269;
+    padding: 5px 20px 5px 10px;
+}
+.text-button.current {
+    border-bottom: 1px solid;
+}
+.text-button:hover {
+    color: #1A7C96;
+}
+.list-button {
+    background-color: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
+    color: #FFFFFF;
+}
+.nice-button.list-button:active:enabled {
+    background-color: rgba(255,255,255,0.1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
+}
+.nice-button.list-button:hover:enabled {
+    background-color: rgba(255,255,255,0.20);
+    border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
+}
+.list-button span {
+    font: 28px/0 "Fira sans heavy";
+    display: inline-block;
+    margin: 2px 8px 0 -6px;
+}
+.arrow-button {
+    height: 40px;
+    width: 40px;
+    padding: 0 0 3px 0;
+    font: 24px/0px "Fira sans heavy";
+    color: #676269;
+    transition: transform .15s ease-out;
+}
+.arrow-button.down {
+    transform: rotate(90deg);
+}
+.arrow-button.up {
+    transform: rotate(-90deg);
+}
+.arrow-button.left {
+    transform: rotate(180deg);
+}
+
+
+
+.dark-list {
+    background-color: #3B3938;
+    color: #EEEEEE;
+    border-radius: 2px;
+}
+.dark-list > li {
+    border-top: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    padding: 15px 0;
+    margin: auto 22px;
+    position: relative;
+}
+.dark-list > li:first-of-type {
+    border-top-color: transparent;
+}
+.dark-list > li:last-of-type {
+    border-bottom-color: transparent;
+}
+.dark-list.tight > li {
+    padding: 8px 14px;
+}
+.dark-list.tighter > li {
+    padding: 6px 2px;
+    margin: auto 10px;
+}
