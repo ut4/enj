@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
-import MainMenu from 'src/MainMenu.tsx';
+import MainMenu from 'src/ui/MainMenu';
 
-class App extends Component<any, any> {
+class Layout extends Component<any, any> {
     render() {
         return (<div>
             <header>
@@ -21,4 +21,4 @@ class App extends Component<any, any> {
     }
 }
 
-export default App;
+export default Layout;

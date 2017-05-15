@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import { Link, IndexLink } from 'inferno-router';
-import UserMenu from 'src/UserMenu.tsx';
+import UserMenu from 'src/ui/UserMenu';
 
 class MainMenu extends Component<any, any> {
     constructor(props) {

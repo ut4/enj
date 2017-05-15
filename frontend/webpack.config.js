@@ -12,6 +12,7 @@ module.exports = {
     },
     externals: {
         qunitjs: 'QUnit',
+        dexie: 'Dexie',
         sinon: 'sinon'
     },
     resolve: {
@@ -26,7 +27,7 @@ module.exports = {
             {
                 test: /\.tsx?$/,                          // All ts and tsx files will be process by
                 loaders: [ 'babel-loader', 'ts-loader' ], // first babel-loader, then ts-loader
-                exclude: /node_modules/                   // ignore node_modules
+                exclude: /node_modules|public|typings/    // ignore these
             }
         ]
     },
@@ -35,7 +36,7 @@ module.exports = {
         historyApiFallback: true
     },
     watchOptions: {
-        ignored: /node_modules|public/
+        ignored: /node_modules|public|typings/
     },
     plugins: [
         // By default, webpack does `n=>n` compilation with entry files. This concatenates

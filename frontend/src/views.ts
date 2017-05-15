@@ -1,33 +1,31 @@
-import App                       from 'src/App.tsx';
-import HomeView                  from 'src/stat/HomeView.tsx';
-import StatsView                 from 'src/stat/StatsView.tsx';
-import StatsProgressView         from 'src/stat/StatsProgressView.tsx';
-import StatsStrengthView         from 'src/stat/StatsStrengthView.tsx';
-import StatsOverviewView         from 'src/stat/StatsOverviewView.tsx';
-import WorkoutsView              from 'src/stat/WorkoutsView.tsx';
-import WorkoutView               from 'src/workout/WorkoutView.tsx';
-import WorkoutExerciseAddView    from 'src/workout/WorkoutExerciseAddView.tsx';
-import WorkoutExerciseEditView   from 'src/workout/WorkoutExerciseEditView.tsx';
-import WorkoutExerciseDeleteView from 'src/workout/WorkoutExerciseDeleteView.tsx';
-import WorkoutSetCreateView      from 'src/workout/WorkoutSetCreateView.tsx';
-import ProgramView               from 'src/program/ProgramView.tsx';
-import ProgramCreateView         from 'src/program/ProgramCreateView.tsx';
-import ProgramEditView           from 'src/program/ProgramEditView.tsx';
-import ExerciseView              from 'src/exercise/ExerciseView.tsx';
-import ExerciseCreateView        from 'src/exercise/ExerciseCreateView.tsx';
-import ExerciseEditView          from 'src/exercise/ExerciseEditView.tsx';
-import ExerciseDeleteView        from 'src/exercise/ExerciseDeleteView.tsx';
-import NutritionView             from 'src/nutrition/NutritionView.tsx';
-import NutritionMealAddView      from 'src/nutrition/NutritionMealAddView.tsx';
-import NutritionMealEditView     from 'src/nutrition/NutritionMealEditView.tsx';
-import NutritionMealDeleteView   from 'src/nutrition/NutritionMealDeleteView.tsx';
-import ProduceView               from 'src/produce/ProduceView.tsx';
-import ProduceCreateView         from 'src/produce/ProduceCreateView.tsx';
-import ProduceEditView           from 'src/produce/ProduceEditView.tsx';
-import ProduceDeleteView         from 'src/produce/ProduceDeleteView.tsx';
+import HomeView                  from 'src/stat/HomeView';
+import StatsView                 from 'src/stat/StatsView';
+import StatsProgressView         from 'src/stat/StatsProgressView';
+import StatsStrengthView         from 'src/stat/StatsStrengthView';
+import StatsOverviewView         from 'src/stat/StatsOverviewView';
+import WorkoutsView              from 'src/stat/WorkoutsView';
+import WorkoutView               from 'src/workout/WorkoutView';
+import WorkoutExerciseAddView    from 'src/workout/WorkoutExerciseAddView';
+import WorkoutExerciseEditView   from 'src/workout/WorkoutExerciseEditView';
+import WorkoutExerciseDeleteView from 'src/workout/WorkoutExerciseDeleteView';
+import WorkoutSetCreateView      from 'src/workout/WorkoutSetCreateView';
+import ProgramView               from 'src/program/ProgramView';
+import ProgramCreateView         from 'src/program/ProgramCreateView';
+import ProgramEditView           from 'src/program/ProgramEditView';
+import ExerciseView              from 'src/exercise/ExerciseView';
+import ExerciseCreateView        from 'src/exercise/ExerciseCreateView';
+import ExerciseEditView          from 'src/exercise/ExerciseEditView';
+import ExerciseDeleteView        from 'src/exercise/ExerciseDeleteView';
+import NutritionView             from 'src/nutrition/NutritionView';
+import NutritionMealAddView      from 'src/nutrition/NutritionMealAddView';
+import NutritionMealEditView     from 'src/nutrition/NutritionMealEditView';
+import NutritionMealDeleteView   from 'src/nutrition/NutritionMealDeleteView';
+import ProduceView               from 'src/produce/ProduceView';
+import ProduceCreateView         from 'src/produce/ProduceCreateView';
+import ProduceEditView           from 'src/produce/ProduceEditView';
+import ProduceDeleteView         from 'src/produce/ProduceDeleteView';
 
 export {
-    App,
     HomeView,
     StatsView,
     StatsProgressView,
