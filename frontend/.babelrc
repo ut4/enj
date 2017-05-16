@@ -1,7 +1,7 @@
 {
     "compact": false,
     "presets": [
-        ["modern-browsers"]
+        ["es2016"]
     ],
     "plugins": [
         ["babel-plugin-inferno", {"imports": true}]

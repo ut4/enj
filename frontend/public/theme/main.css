@@ -1,3 +1,5 @@
+/* ==== Global ====
+==============================================================================*/
 @font-face {
     font-family: "Fira sans light";
     src: url("firasans-light-webfont.eot");
@@ -206,8 +208,6 @@ ul {
     transform: rotate(180deg);
 }
 
-
-
 .dark-list {
     background-color: #3B3938;
     color: #EEEEEE;
@@ -232,4 +232,230 @@ ul {
 .dark-list.tighter > li {
     padding: 6px 2px;
     margin: auto 10px;
+}
+
+/* ==== App ====
+==============================================================================*/
+header {
+    background: url("polygons.png") #30636E;
+    padding-bottom: 19px;
+}
+
+/* -- main-menu ---------- */
+header {
+    font: 14px "Fira sans heavy";
+}
+header nav,
+header nav ul {
+    text-align: center;
+}
+header nav a {
+    color: #FFFFFF;
+}
+#main-menu {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+}
+#main-menu.open {
+    padding: 0 10px;
+}
+#main-menu ul {
+    display: inline-block;
+    margin: 0;
+    max-width: 252px;
+    width: 100%;
+}
+#main-menu.open ul {
+    max-width: 460px;
+}
+#main-menu > ul {
+    margin-left: -10px;
+}
+#main-menu li {
+    float: left;
+}
+#main-menu > ul > li {
+    width: 36%;
+}
+#main-menu > ul > li:first-of-type,
+#main-menu > ul > li:last-of-type {
+    width: 32%;
+}
+#main-menu > ul > li > .current {
+    padding: 9px 26px 11px;
+}
+#main-menu a {
+    background-repeat: no-repeat;
+    background-position: center center;
+    display: inline-block;
+    height: 18px;
+    min-width: 30px;
+    padding: 12px 26px;
+    position: relative;
+    text-decoration: none;
+    vertical-align: bottom;
+}
+#main-menu > ul > li:first-of-type > a {
+    background-image: url("diagram-icon.svg");
+    background-size: 24px auto;
+    color: transparent;
+}
+#main-menu > ul > li:nth-of-type(2) > a {
+    background-image: url("dumb-bell-icon.svg");
+    background-size: 27px auto;
+    color: transparent;
+}
+#main-menu > ul > li:last-of-type > a {
+    background-image: url("meal-icon.svg");
+    background-size: 13px auto;
+    color: transparent;
+}
+#main-menu .sub-ul {
+    display: none;
+}
+#main-menu.open .sub-ul {
+    display: block;
+    width: 100%;
+}
+#main-menu > ul > li:nth-of-type(2) .sub-ul {
+    border-left: 1px solid rgba(255,255,255,0.2);
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+#main-menu .sub-ul li {
+    float: none;
+}
+#main-menu .sub-ul a {
+    margin: auto 10px;
+    padding: 12px 8%;
+}
+#main-menu .current {
+    border-bottom: 4px solid #FFFFFF;
+    padding: 10px 2px;
+    margin: auto 0px;
+}
+
+#menu-toggle {
+    background: transparent url("arrows.png") no-repeat scroll -18px center;
+    color: #FFFFFF;
+    content: "";
+    margin-right: 10px;
+    position: absolute;
+    height: 42px;
+    width: 17px;
+    right: 0;
+    top: 0;
+}
+.open #menu-toggle {
+    background-position: left center;
+}
+
+#user-menu {
+    margin: 10px auto;
+    padding: 4px;
+    max-width: 420px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    display: none;
+}
+.open #user-menu {
+    display: block;
+}
+#user-menu ul {
+    width: auto;
+}
+#user-menu li {
+    margin-right: 15px;
+}
+#user-menu a {
+    padding: 0px;
+}
+
+/* -- footer ---------- */
+footer {
+    font-size: 12px;
+    text-align: center;
+    margin: 0 auto 25px;
+    width: 100%;
+    max-width: 220px;
+    padding-top: 20px;
+}
+footer a {
+    font-size: 12px;
+}
+
+/* -- view:iin liityvä ---------- */
+.view-margin {
+    height: 100%;
+    margin: 0 10px;
+}
+#view {
+    background-color: #FFFFFF;
+    margin: -25px auto 0;
+    max-width: 600px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 2px 2px 0 0;
+}
+#view h2:first-of-type {
+    margin-top: 0;
+}
+#view img {
+    width: 100%;
+}
+
+/* ==== Media queries ====
+==============================================================================*/
+/* -- main-menun olon käydessä ahtaaksi ---------- */
+@media (max-width:300px) {
+    #main-menu.open > ul > li {
+        width: 100%;
+    }
+    #main-menu.open .sub-ul {
+        margin-bottom: 10px;
+    }
+    #main-menu.open > ul > li:last-of-type .sub-ul {
+        margin-bottom: 30px;
+    }
+    #user-menu {
+        margin: -20px auto 15px;
+    }
+}
+/* -- sama taulukoiden osalta ---------- */
+@media (max-width:480px) {
+    table.respond th {
+        display: none;
+    }
+    table.respond td {
+        display: block;
+        padding: 0;
+        margin-left: 35%;
+        position: relative;
+        text-align: left;
+    }
+    table.respond tbody tr:first-child td:first-child {
+        padding-top: 0;
+    }
+    table.respond td:first-child {
+        padding: 10px 0 0 0;
+    }
+    table.respond td:last-child {
+        margin-bottom: 15px;
+    }
+    table.respond td:before {
+        content: attr(data-th);
+        display: inline-block;
+        font-weight: bold;
+        position: absolute;
+        left: -50%;
+    }
+}
+/* -- ja viewin ---------- */
+@media (max-width:660px) {
+    #view {
+        padding: 20px 5px;
+    }
+    #view h2 {
+        margin-right: 8px;
+        margin-left: 8px;
+    }
 }
