@@ -7,3 +7,6 @@ declare module "sinon" {
 declare module "qunitjs" {
     export default QUnit;
 }
+declare module "sw" {
+    export default SWManager;
+}

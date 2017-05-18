@@ -13,7 +13,8 @@ module.exports = {
     externals: {
         qunitjs: 'QUnit',
         dexie: 'Dexie',
-        sinon: 'sinon'
+        sinon: 'sinon',
+        sw: 'SWManager'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],
