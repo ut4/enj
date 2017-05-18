@@ -3,8 +3,8 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        app: './src/index.tsx',
-        test: './tests/index.ts'
+        app: './src/main.tsx',
+        test: './tests/main.ts'
     },
     output: {
         path: __dirname + '/public',
@@ -16,7 +16,7 @@ module.exports = {
         sinon: 'sinon'
     },
     resolve: {
-        extensions: [ '.ts', '.tsx', '.js' ],
+        extensions: ['.ts', '.tsx', '.js'],
         alias: {
             'src': path.resolve(__dirname, 'src/'),
             'tests': path.resolve(__dirname, 'tests/')
@@ -26,7 +26,7 @@ module.exports = {
         loaders: [
             {
                 test: /\.tsx?$/,                          // All ts and tsx files will be process by
-                loaders: [ 'babel-loader', 'ts-loader' ], // first babel-loader, then ts-loader
+                loaders: ['babel-loader', 'ts-loader'], // first babel-loader, then ts-loader
                 exclude: /node_modules|public|typings/    // ignore these
             }
         ]
