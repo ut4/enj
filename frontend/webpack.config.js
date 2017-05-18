@@ -34,6 +34,10 @@ module.exports = {
     },
     devServer: {
         contentBase: 'public/',
+        proxy: {
+            // A request to /api/users will now proxy the request to http://localhost:4567/api/users.
+            "/api": "http://localhost:4567"
+        },
         historyApiFallback: true
     },
     watchOptions: {

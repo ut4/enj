@@ -19,8 +19,8 @@ Java 8, Node v6+, MariaDb??
 ## Backend
 
 * Test:
-    * `??`
-* Run:
-    * `??`
+    * `mvn test`
 * Build:
-    * `??`
+    * `mvn compile`
+* Run:
+    * `mvn exec:java < nul`
