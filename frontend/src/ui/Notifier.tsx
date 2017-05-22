@@ -72,6 +72,8 @@ class Notifier extends Component<any, any> {
     }
 }
 
+declare type notify = (content: string, level: keyof messageLevel) => void;
+
 /**
  * @param {string} content
  * @param {string} level 'success', 'info', 'notice', 'error'

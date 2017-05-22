@@ -1,13 +1,11 @@
 import { render } from 'inferno';
 import { Router, Route, IndexRoute } from 'inferno-router';
-import createBrowserHistory from 'history/createBrowserHistory';
+import iocFactories from 'src/ioc';
 import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
 
-const popStateHistory = createBrowserHistory();
-
 render(
-    <Router history={ popStateHistory }>
+    <Router history={ iocFactories.history() }>
         <Route component={ Layout }>
             <IndexRoute component={ views.HomeView }/>
             <Route path="statistiikka" component={ views.StatsView }>
