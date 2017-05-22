@@ -10,11 +10,20 @@ module.exports = {
         path: __dirname + '/public',
         filename: '[name].bundle.js'
     },
+    // Importit jotka tarjoillaan globaaleista muuttujista webpackin sijaan.
+    // key === import string, value === globaalin muttujan nimi
     externals: {
-        qunitjs: 'QUnit',
+        // -- Yhteiset --------------------------
+        inferno: 'Inferno',
+        history: 'History',
+        'inferno-component': 'Inferno.Component',
+        'inferno-router': 'Inferno.Router',
         dexie: 'Dexie',
+        sw: 'SWManager',
+        // -- Testiriippuvuudet -----------------
+        qunitjs: 'QUnit',
         sinon: 'sinon',
-        sw: 'SWManager'
+        'inferno-test-utils': 'Inferno.TestUtils'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],

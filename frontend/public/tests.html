@@ -4,15 +4,16 @@
         <title>Test runner</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="/vendor/qunit-1.22.0.css">
+        <link rel="stylesheet" href="/vendor/test-vendor.bundle.css">
     </head>
     <body>
         <div id="qunit"></div>
         <div id="qunit-fixture"></div>
-        <script src="/vendor/bundle.js"></script>
-        <script src="/vendor/qunit-1.22.0.js"></script>
-        <script src="/vendor/sinon-1.17.6.js"></script>
+        <!-- Applikaation/yhteiset sorsat -->
+        <script src="/vendor/app-vendor.bundle.js"></script>
         <script src="/sw-src/SWManager.js"></script>
+        <!-- Vain testeihin tarvittavat sorsat -->
+        <script src="/vendor/test-vendor.bundle.js"></script>
         <script src="/test.bundle.js"></script>
     </body>
 </html>
