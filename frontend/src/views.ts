@@ -24,6 +24,9 @@ import ProduceView               from 'src/produce/ProduceView';
 import ProduceCreateView         from 'src/produce/ProduceCreateView';
 import ProduceEditView           from 'src/produce/ProduceEditView';
 import ProduceDeleteView         from 'src/produce/ProduceDeleteView';
+import UserProfileView           from 'src/user/UserProfileView';
+import OfflineStartView          from 'src/offline/OfflineStartView';
+import OfflineEndView            from 'src/offline/OfflineEndView';
 
 export {
     HomeView,
@@ -51,5 +54,8 @@ export {
     ProduceView,
     ProduceCreateView,
     ProduceEditView,
-    ProduceDeleteView
+    ProduceDeleteView,
+    UserProfileView,
+    OfflineStartView,
+    OfflineEndView
 };

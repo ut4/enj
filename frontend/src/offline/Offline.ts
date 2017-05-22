@@ -69,7 +69,6 @@ class Offline {
                 })
         // == 2. Päivitä selaintietokannan modeksi "offline" ===================
         ).then((serviceWorker: ServiceWorker) => {
-            console.log(serviceWorker)
             serviceWorker.postMessage({
                 action: 'setIsOnline',
                 value: false
@@ -98,7 +97,7 @@ class Offline {
             .then(registration => 
                 registration.unregister()
             );
-    };
+    }
     /**
      * @param {any} message
      * @return {Promise} -> ({any} resolvedValue, {any} rejectedValue)
