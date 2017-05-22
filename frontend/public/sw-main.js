@@ -23,7 +23,8 @@ self.CACHE_FILES = [
     '',
     'index.html',
     // == Scriptit ========
-    'vendor/bundle.js',
+    'vendor/app-vendor.bundle.js',
+    'vendor/app-vendor.bundle.css',
     'app.bundle.js',
     // == API-pyynnöt ========
     // (pidettävä päivitettynä manuaalisesti)
