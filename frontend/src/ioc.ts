@@ -2,9 +2,10 @@ import IocContainer from 'src/common/IocContainer';
 import Db           from 'src/common/Db';
 import Http         from 'src/common/Http';
 import OfflineHttp  from 'src/common/OfflineHttp';
-import Offline      from 'src/offline/Offline';
 import { notify }   from 'src/ui/Notifier';
 import { History, createBrowserHistory } from 'history';
+import UserState    from 'src/user/UserState';
+import Offline      from 'src/offline/Offline';
 const popStateHistory = createBrowserHistory();
 
 class IocFactories extends IocContainer {
@@ -54,6 +55,9 @@ class IocFactories extends IocContainer {
     }
 
     // == User =================================================================
+    public userState(): UserState {
+        return this.memoize('userState', () => new UserState(window.sessionStorage));
+    }
     public userHttp(): any {
         return null;
     }

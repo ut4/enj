@@ -5,6 +5,8 @@ import 'tests/common/OfflineHttpTests';
 import 'tests/offline/OfflineTests';
 import 'tests/offline/OfflineStartViewTests';
 import 'tests/serviceworker/SWManagerTests';
+import 'tests/ui/UserMenuTests';
+import 'tests/user/UserStateTests';
 import { mockHistory } from 'tests/mocks';
 import iocFactories from 'src/ioc';
 

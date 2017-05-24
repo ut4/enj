@@ -18,9 +18,7 @@ QUnit.module('offline/OfflineStartView', hooks => {
         const goOffline = sinon.stub(this.offline, 'enable').returns(Promise.resolve(1));
         const close = sinon.spy(OfflineStartView.prototype, 'close');
         //
-        const rendered = infernoUtils.renderIntoDocument(
-            <OfflineStartView/>
-        );
+        const rendered = infernoUtils.renderIntoDocument(<OfflineStartView/>);
         const confirmButton = infernoUtils.findRenderedDOMElementWithClass(
             rendered, 'nice-button-primary'
         ) as HTMLButtonElement;

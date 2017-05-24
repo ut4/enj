@@ -9,6 +9,7 @@ QUnit.module('offline/Offline', hooks => {
         this.db = new Db();
         this.mockServiceWorkerContainer = {register: () => {}};
         this.offline = new Offline(this.db, this.mockServiceWorkerContainer);
+        this.offline.subscribe(() => {});
         this.mockServiceWorker = {state: 'activated', postMessage: () => {}};
     });
     QUnit.test('isEnabled palauttaa false, jos eksplisiittistä tietoa ei löydy selaintietokannasta', assert => {
@@ -42,6 +43,7 @@ QUnit.module('offline/Offline', hooks => {
             .withExactArgs('sw-main.js')
             .returns(Promise.resolve(mockRegistration));
         const isOnlineSwStateUpdate = sinon.spy(this.mockServiceWorker, 'postMessage');
+        const stateChangeNotify = sinon.spy(this.offline, 'subscribeFn');
         const fakeDbUpdate = sinon.stub(this.db.network, 'put').returns(Promise.resolve(1));
         const done = assert.async();
         this.offline.enable(testClientId).then(() => {
@@ -53,6 +55,8 @@ QUnit.module('offline/Offline', hooks => {
             }]);
             assert.ok(fakeDbUpdate.called);
             assert.deepEqual(fakeDbUpdate.firstCall.args, [{id: testClientId, status: 'offline'}]);
+            assert.ok(stateChangeNotify.called);
+            assert.deepEqual(stateChangeNotify.firstCall.args, [true]);
             done();
         });
     });
@@ -63,6 +67,7 @@ QUnit.module('offline/Offline', hooks => {
         this.mockServiceWorkerContainer.controller = this.mockServiceWorker;
         const isOnlineSwStateUpdate = sinon.spy(this.mockServiceWorker, 'postMessage');
         const fakeDbUpdate = sinon.stub(this.db.network, 'put').returns(Promise.resolve(1));
+        const stateChangeNotify = sinon.spy(this.offline, 'subscribeFn');
         const done = assert.async();
         this.offline.disable(testClientId).then(() => {
             assert.ok(isOnlineSwStateUpdate.called);
@@ -72,6 +77,8 @@ QUnit.module('offline/Offline', hooks => {
             }]);
             assert.ok(fakeDbUpdate.called);
             assert.deepEqual(fakeDbUpdate.firstCall.args, [{id: testClientId, status: 'online'}]);
+            assert.ok(stateChangeNotify.called);
+            assert.deepEqual(stateChangeNotify.firstCall.args, [false]);
             done();
         });
     });

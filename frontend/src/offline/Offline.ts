@@ -14,9 +14,17 @@ const serviceWorkerState = {
     ACTIVATED: 'activated' as serviceWorkerState
 };
 
+type offlineStateChangeSubscribeFn = (newIsEnabledValue: boolean) => void;
+
+/**
+ * Vastaa ServiceWorkerin asennuksesta ja päivityksestä, isOfflineEnabled tilan
+ * arvon tallennuksesta, ja siihen tapahtuneiden muutosten tiedottamisesta
+ * subscribeFn-vastaanottajalle.
+ */
 class Offline {
     private db: Db;
     private serviceWorkerContainer: ServiceWorkerContainer;
+    private subscribeFn?: offlineStateChangeSubscribeFn;
     /**
      * @param {Db} db
      * @param {ServiceWorkerContainer=} serviceWorkerContainer esim. window.navigator.serviceWorker
@@ -73,7 +81,7 @@ class Offline {
                 action: 'setIsOnline',
                 value: false
             });
-            return setDbStatus(appStatus.OFFLINE, this.db, clientId);
+            return setDbStatus.call(this, appStatus.OFFLINE, clientId);
         });
     }
     /**
@@ -86,17 +94,8 @@ class Offline {
             action: 'setIsOnline',
             value: true
         });
-        return setDbStatus(appStatus.ONLINE, this.db, clientId);
+        return setDbStatus.call(this, appStatus.ONLINE, clientId);
         // TODO synkkaa kaikki itemit jos yheys päällä, jos ei db.update.jokuflagi -> syncUsPlease
-    }
-    /**
-     * @return {Promise} -> ({boolean} wasSucceful, {Object} error)
-     */
-    unregister(): Promise<boolean> {
-        return this.serviceWorkerContainer.getRegistration()
-            .then(registration => 
-                registration.unregister()
-            );
     }
     /**
      * @param {any} message
@@ -129,22 +128,29 @@ class Offline {
     public getNewRandomId(): string {
         return 'r-' + Math.random().toFixed(16).substr(2);
     }
+    /**
+     * Asettaa tiedotuksen vastaanottajaksi fn:n
+     */
+    public subscribe(fn: offlineStateChangeSubscribeFn) {
+        this.subscribeFn = fn;
+    }
 }
 
 /**
  * @param {string} status
- * @param {Db} db
  * @param {integer=} clientId
  * @return {Promise} -> ({number} numRows, {Object} error)
  */
 function setDbStatus(
     status: appStatus,
-    db: Db,
     clientId?: number
 ): Promise<number> {
-    return db.network.put({
+    return this.db.network.put({
         id: clientId || CLIENT_ID,
         status: status
+    }).then(numRows => {
+        this.subscribeFn(status === appStatus.OFFLINE);
+        return numRows;
     });
 }
 

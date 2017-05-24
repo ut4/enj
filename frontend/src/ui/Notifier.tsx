@@ -13,19 +13,21 @@ interface Message {
     tiemoutId?: number
 }
 
+type subscribeFn = (newMessages: Array<Message>) => void;
+
 class MessageContainer {
     public messages: Array<Message>;
-    private subscriber: Notifier;
+    private subscribeFn: subscribeFn;
     public constructor() {
         this.messages = [];
     }
-    public setSubscriber(subscriber: Notifier) {
-        this.subscriber = subscriber;
+    public subscribe(subscribeFn: subscribeFn) {
+        this.subscribeFn = subscribeFn;
     }
     public addMessage(message: Message) {
         this.messages.unshift(message);
         message.tiemoutId = window.setTimeout(this.removeMessage.bind(this), 8000);
-        this.subscriber.onNotify(this.messages);
+        this.subscribeFn(this.messages);
     }
     public removeMessage(message?: Message) {
         if (!message) {
@@ -34,7 +36,7 @@ class MessageContainer {
             clearTimeout(message.tiemoutId);
             this.messages.splice(this.messages.indexOf(message), 1);
         }
-        this.subscriber.onNotify(this.messages);
+        this.subscribeFn(this.messages);
     }
 }
 
@@ -48,10 +50,9 @@ class Notifier extends Component<any, any> {
         this.messageContainer = messageContainerSingleton;
     }
     public componentDidMount() {
-        this.messageContainer.setSubscriber(this);
-    }
-    public onNotify(newMessages: Array<Message>) {
-        this.setState({messages: newMessages});
+        this.messageContainer.subscribe(newMessages => {
+            this.setState({messages: newMessages});
+        });
     }
     public dismiss(message: Message) {
         this.messageContainer.removeMessage(message);
