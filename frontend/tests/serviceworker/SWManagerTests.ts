@@ -90,7 +90,7 @@ QUnit.module('SWManager', hooks => {
         //
         const res = this.swManager.makeResponder('http://asd.com:4545/bar');
         assert.deepEqual(res, null);
-        assert.notOk(getter.called);
+        assert.equal(getter.called, false);
     });
     QUnit.test('updateCache asettaa uuden cache-arvon', assert => {
         const urlToUpdate = 'foo/bar';

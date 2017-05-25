@@ -56,9 +56,9 @@ QUnit.module('user/UserState', hooks => {
         const succesfulDbUpdate = 1;
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setMaybeIsLoggedIn(true).then(() => {
-            assert.ok(dbUpdate.called);
+            assert.ok(dbUpdate.calledOnce);
             assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, true);
-            assert.ok(this.subscribeFn.called);
+            assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done()
         });
@@ -68,9 +68,9 @@ QUnit.module('user/UserState', hooks => {
         const succesfulDbUpdate = 1;
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setMaybeIsLoggedIn(false).then(() => {
-            assert.ok(dbUpdate.called);
+            assert.ok(dbUpdate.calledOnce);
             assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, false);
-            assert.ok(this.subscribeFn.called);
+            assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done()
         });
@@ -110,9 +110,9 @@ QUnit.module('user/UserState', hooks => {
         const succesfulDbUpdate = 1;
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setIsOffline(true).then(() => {
-            assert.ok(dbUpdate.called);
+            assert.ok(dbUpdate.calledOnce);
             assert.equal(dbUpdate.firstCall.args[0].isOffline, true);
-            assert.ok(this.subscribeFn.called);
+            assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done()
         });
@@ -122,9 +122,9 @@ QUnit.module('user/UserState', hooks => {
         const succesfulDbUpdate = 1;
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setIsOffline(false).then(() => {
-            assert.ok(dbUpdate.called);
+            assert.ok(dbUpdate.calledOnce);
             assert.equal(dbUpdate.firstCall.args[0].isOffline, false);
-            assert.ok(this.subscribeFn.called);
+            assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done()
         });

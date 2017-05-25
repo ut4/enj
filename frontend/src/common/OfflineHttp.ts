@@ -1,15 +1,16 @@
 import Db from 'src/common/Db';
 
+/**
+ * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan
+ * yhteydettömän tilan aikana, sekä loggaa suoritettujen api-kutsujen tiedot
+ * selaintietokantaan, jolloin ne voidaan synkata kollektiivisesti back-
+ * endiin yhteyden palautuessa.
+ */
 class OfflineHttp {
     public static requestHandlers = {};
     public static urlsToIgnore = {};
     private db: Db;
     /**
-     * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan
-     * yhteydettömän tilan aikana, sekä loggaa suoritettujen api-kutsujen tiedot
-     * selaintietokantaan, jolloin ne voidaan synkata kollektiivisesti back-
-     * endiin yhteyden palautuessa.
-     *
      * @param {Db} db
      */
     public constructor(db: Db) {

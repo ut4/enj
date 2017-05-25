@@ -105,12 +105,10 @@ QUnit.module('common/Http', hooks => {
             .returns(Promise.resolve(mockHandlerResponse));
         const done = assert.async();
         this.http.post(requestUrl, requestData).then(function (result) {
-            assert.notOk(
-                httpCallWatcher.called,
+            assert.equal(httpCallWatcher.called, false,
                 'Ei pitäisi tehdä HTTP-pyyntöä'
             );
-            assert.ok(
-                requestQueuerWatcher.called,
+            assert.ok(requestQueuerWatcher.calledOnce,
                 'Pitäisi logata pyynnön syncQueueen'
             );
             assert.deepEqual(
@@ -130,7 +128,7 @@ QUnit.module('common/Http', hooks => {
         sinon.stub(this.offlineHttp, 'hasHandlerFor').returns(false);
         const done = assert.async();
         this.http.post().then(null, function (result: Response) {
-            assert.notOk(requestQueuerWatcher.called);
+            assert.equal(requestQueuerWatcher.called, false);
             assert.equal(result.status, 454);
             done();
         });

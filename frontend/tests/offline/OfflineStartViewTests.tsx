@@ -25,10 +25,10 @@ QUnit.module('offline/OfflineStartView', hooks => {
         //
         confirmButton.click();
         //
-        assert.ok(goOffline.called, 'Pitäisi enabloida offline-tilan');
+        assert.ok(goOffline.calledOnce, 'Pitäisi enabloida offline-tilan');
         const done = assert.async();
         goOffline.firstCall.returnValue.then(() => {
-            assert.ok(close.called, 'Pitäisi lopuksi sulkea viewin');
+            assert.ok(close.calledOnce, 'Pitäisi lopuksi sulkea viewin');
             close.restore();
             done();
         });

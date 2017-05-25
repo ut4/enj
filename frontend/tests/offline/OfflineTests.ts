@@ -21,12 +21,12 @@ QUnit.module('offline/Offline', hooks => {
         const done = assert.async();
         this.offline.enable().then(() => {
             swRegistration.verify();
-            assert.ok(isOnlineSwStateUpdate.called);
+            assert.ok(isOnlineSwStateUpdate.calledOnce);
             assert.deepEqual(isOnlineSwStateUpdate.firstCall.args, [{
                 action: 'setIsOnline',
                 value: false
             }]);
-            assert.ok(dbUpdate.called);
+            assert.ok(dbUpdate.calledOnce);
             assert.deepEqual(dbUpdate.firstCall.args, [true]);
             done();
         });
@@ -40,12 +40,12 @@ QUnit.module('offline/Offline', hooks => {
         const fakeDbUpdate = sinon.stub(this.userState, 'setIsOffline').returns(Promise.resolve(1));
         const done = assert.async();
         this.offline.disable().then(() => {
-            assert.ok(isOnlineSwStateUpdate.called);
+            assert.ok(isOnlineSwStateUpdate.calledOnce);
             assert.deepEqual(isOnlineSwStateUpdate.firstCall.args, [{
                 action: 'setIsOnline',
                 value: true
             }]);
-            assert.ok(fakeDbUpdate.called);
+            assert.ok(fakeDbUpdate.calledOnce);
             assert.deepEqual(fakeDbUpdate.firstCall.args, [false]);
             done();
         });

@@ -61,7 +61,7 @@ QUnit.module('common/OfflineHttp', hooks => {
             requestToQueue.url,
             requestToQueue.data
         );
-        assert.ok(logInsertWatcher.called, 'Pitäisi kirjoittaa selaintietokantaan');
+        assert.ok(logInsertWatcher.calledOnce, 'Pitäisi kirjoittaa selaintietokantaan');
         assert.deepEqual(
             logInsertWatcher.firstCall.args,
             [
@@ -111,11 +111,11 @@ QUnit.module('common/OfflineHttp', hooks => {
         // suorita
         var ret = this.offlineHttp.removeRequestsFromQueue(testIdsToRemove);
         // assertoi
-        assert.ok(whereFactoryStub.called, 'Pitäisi kutsua ensin this.db.syncQueue.where');
+        assert.ok(whereFactoryStub.calledOnce, 'Pitäisi kutsua ensin this.db.syncQueue.where');
         assert.deepEqual(whereFactoryStub.firstCall.args, ['id'], 'Pitäisi kutsua ensin this.db.syncQueue.where');
-        assert.ok(mockWhere.anyOf.called, 'Sen jälkeen pitäisi kutsua <where>.anyOf(<idsToRemove>)');
+        assert.ok(mockWhere.anyOf.calledOnce, 'Sen jälkeen pitäisi kutsua <where>.anyOf(<idsToRemove>)');
         assert.deepEqual(mockWhere.anyOf.firstCall.args, [testIdsToRemove], 'Sen jälkeen pitäisi kutsua <where>.anyOf(<idsToRemove>)');
-        assert.ok(mockCollection.delete.called, 'Lopuksi pitäisi kutsua <filteredQueueItems>.delete()');
+        assert.ok(mockCollection.delete.calledOnce, 'Lopuksi pitäisi kutsua <filteredQueueItems>.delete()');
         var done = assert.async();
         ret.then(function (result) {
             assert.equal(
