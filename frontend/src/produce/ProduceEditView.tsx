@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class ProduceEditView extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>/produce/ProduceEditView.jsx</div>);
     }
 }

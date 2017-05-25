@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class ProgramCreateView extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>/program/ProgramCreateView.jsx</div>);
     }
 }

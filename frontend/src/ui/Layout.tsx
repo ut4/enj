@@ -3,7 +3,7 @@ import MainMenu from 'src/ui/MainMenu';
 import { Notifier } from 'src/ui/Notifier';
 
 class Layout extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>
             <header>
                 <MainMenu/>

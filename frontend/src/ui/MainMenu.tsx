@@ -3,14 +3,14 @@ import { Link, IndexLink } from 'inferno-router';
 import UserMenu from 'src/ui/UserMenu';
 
 class MainMenu extends Component<any, any> {
-    constructor(props) {
+    public constructor(props) {
         super(props);
         this.state = {isMenuOpen: false};
     }
-    toggleIsMenuOpen() {
+    public toggleIsMenuOpen() {
         this.setState({isMenuOpen: !this.state.isMenuOpen});
     }
-    render() {
+    public render() {
         return (<nav id="main-menu" className={ this.state.isMenuOpen ? 'open' : '' }>
             <ul>
                 <li><IndexLink>Koti</IndexLink>

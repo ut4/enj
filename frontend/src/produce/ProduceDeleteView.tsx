@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class ProduceDeleteView extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>/produce/ProduceDeleteView.jsx</div>);
     }
 }

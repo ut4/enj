@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class StatsView extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>stats</div>);
     }
 }

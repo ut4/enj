@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class Workouts extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>workouts</div>);
     }
 }

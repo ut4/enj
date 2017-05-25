@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 class WorkoutExerciseAddView extends Component<any, any> {
-    render() {
+    public render() {
         return (<div>/workout/WorkoutExerciseAddView.jsx</div>);
     }
 }

@@ -29,7 +29,7 @@ class OfflineStartView extends Component<any, any> {
     public close() {
         iocFactories.history().goBack();
     }
-    render() {
+    public render() {
         return (<div>
             <h2>Aloita offline-tila</h2>
             <div>
