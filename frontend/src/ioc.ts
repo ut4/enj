@@ -14,7 +14,7 @@ class IocFactories extends IocContainer {
         return this.memoize('db', () => new Db());
     }
     public http(): Http {
-        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.offline(), '/'));
+        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.userState(), '/'));
     }
     public offlineHttp(): OfflineHttp {
         return this.memoize('offlineHttp', () => new OfflineHttp(this.db()));
@@ -56,7 +56,7 @@ class IocFactories extends IocContainer {
 
     // == User =================================================================
     public userState(): UserState {
-        return this.memoize('userState', () => new UserState(window.sessionStorage));
+        return this.memoize('userState', () => new UserState(this.db()));
     }
     public userHttp(): any {
         return null;
@@ -64,7 +64,7 @@ class IocFactories extends IocContainer {
 
     // == Offline ==============================================================
     public offline(): Offline {
-        return this.memoize('offline', () => new Offline(this.db()));
+        return this.memoize('offline', () => new Offline(this.userState()));
     }
     public syncer(): any {
         return null;

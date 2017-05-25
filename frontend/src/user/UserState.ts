@@ -1,44 +1,99 @@
-const storageKey: string = 'enjSession';
-const storageTrueValue: string = '1';
+import Db from 'src/common/Db';
 
-type loginStatusChangeSubscribeFn = (newMaybeIsLoggedInValue: boolean) => void;
+const CLIENT_ID = 1;
+
+type stateChangeSubscribeFn = (newState: Db.Schema.UserStateRecord) => void;
 
 /**
- * Vastaa käyttäjän tilan (kirjautunut/ei kirjautunut) tallennuksesta
- * (local|sessionStorage), ja siihen tapahtuneiden muutosten tiedottamisesta
- * subscribeFn-vastaanottajalle.
+ * Vastaa käyttäjän tilan (kirjautunut/ei kirjautunut|offline/online)
+ * tallennuksesta indexedDb:hen, ja siihen tapahtuneiden muutosten tiedottami-
+ * sesta subscribeFn-vastaanottajalle.
  */
 class UserState {
-    private storage: Storage;
-    private subscribeFn?: loginStatusChangeSubscribeFn;
+    private db: Db;
+    private subscribeFn?: stateChangeSubscribeFn;
     /**
-     * @param {Object} storage window.sessionStorage
+     * @param {Object} db
      */
-    public constructor(storage: Storage) {
-        this.storage = storage;
+    public constructor(db: Db) {
+        this.db = db;
     }
     /**
-     * @return {boolean} Onko käyttäjällä aktiivinen sessio sessionStoragessa
+     * Palauttaa tiedon käyttäjän tilasta. Palauttaa aina objektin, vaikkei
+     * indexedDb:ssä olisikaan rivejä.
      */
-    public maybeIsLoggedIn(): boolean {
-        return this.storage[storageKey] === storageTrueValue;
+    public getState(clientId?: number): Promise<Db.Schema.UserStateRecord> {
+        return this.db.userState.get(clientId || CLIENT_ID).then(state => {
+            return state || ({
+                maybeIsLoggedIn: false,
+                isOffline: false
+            } as Db.Schema.UserStateRecord);
+        });
     }
     /**
-     * @param {boolean} wellIsItNow true asettaa arvon sessionStorageen, false poistaa arvon sessionStoragesta
+     * Asettaa uuden tilan arvon indexedDb:hen.
+     *
+     * @returns {Promise} ({number} wasSuccesful, {any} error)
      */
-    public setMaybeIsLoggedIn(wellIsItNow: boolean) {
-        if (wellIsItNow) {
-            this.storage[storageKey] = storageTrueValue;
-        } else {
-            this.storage.removeItem(storageKey);
-        }
-        this.subscribeFn && this.subscribeFn(wellIsItNow);
+    public setMaybeIsLoggedIn(
+        wellIsItNow: boolean,
+        clientId?: number
+    ): Promise<number> {
+        return this.updateState('maybeIsLoggedIn', wellIsItNow, clientId);
+    }
+    /**
+     * Asettaa uuden tilan arvon indexedDb:hen.
+     *
+     * @returns {Promise} ({number} wasSuccesful, {any} error)
+     */
+    public setIsOffline(
+        wellIsItNow: boolean,
+        clientId?: number
+    ): Promise<number> {
+        return this.updateState('isOffline', wellIsItNow, clientId);
+    }
+    /**
+     * Palauttaa tiedon onko käyttäjällä aktiivinen sessio indexedDb:ssä. Pa-
+     * lauttaa offline-modessa aina false.
+     */
+    public maybeIsLoggedIn(): Promise<boolean> {
+        return this.getState().then(state =>
+            state.isOffline !== true && state.maybeIsLoggedIn === true
+        );
+    }
+    /**
+     * Palauttaa tiedon onko käyttäjä offline-modessa vai ei
+     */
+    public isOffline(): Promise<boolean> {
+        return this.getState().then(state => state.isOffline === true);
     }
     /**
      * Asettaa tiedotuksen vastaanottajaksi fn:n
      */
-    public subscribe(fn: loginStatusChangeSubscribeFn) {
+    public subscribe(fn: stateChangeSubscribeFn) {
         this.subscribeFn = fn;
+    }
+    /**
+     * Kirjoittaa uuden arvon indexedDb:hen ja tiedottaa uuden arvon
+     * subscribeFn:lle mikäli kirjoitus onnistui.
+     */
+    private updateState(
+        key: keyof Db.Schema.UserStateRecord,
+        value: boolean,
+        clientId?: number
+    ): Promise<number> {
+        let updatedState;
+        return this.getState().then(state => {
+            state[key] = value;
+            state.id = state.id || (clientId || CLIENT_ID);
+            updatedState = state;
+            return this.db.userState.put(state);
+        }).then(wasSuccesful => {
+            if (wasSuccesful) {
+                this.subscribeFn && this.subscribeFn(updatedState);
+            }
+            return wasSuccesful;
+        });
     }
 }
 

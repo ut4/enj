@@ -1,27 +1,27 @@
-import Offline from 'src/offline/Offline';
+import UserState from 'src/user/UserState';
 import OfflineHttp from 'src/common/OfflineHttp';
 
 class Http {
     public static pendingRequestCount = 0;
     private fetchContainer: GlobalFetch;
     private offlineHttp: OfflineHttp;
-    private offline: Offline;
+    private userState: UserState;
     private baseUrl: string;
     /**
      * @param {GlobalFetch} fetchContainer sisältää fetchin handlaa HTTP-pyynnöt
      * @param {OfflineHttp} offlineHttp handlaa datan mikäli yhteyttä ei ole
-     * @param {Offline} offline tietää onko käyttäjä online vai ei
+     * @param {UserState} userState tietää onko käyttäjä online vai ei
      * @param {string=} baseUrl urlien prefix
      */
     public constructor(
         fetchContainer: GlobalFetch,
         offlineHttp: OfflineHttp,
-        offline: Offline,
+        userState: UserState,
         baseUrl?: string
     ) {
         this.fetchContainer = fetchContainer;
         this.offlineHttp = offlineHttp;
-        this.offline = offline;
+        this.userState = userState;
         this.baseUrl = baseUrl || '';
     }
     /**
@@ -42,8 +42,8 @@ class Http {
      */
     public post(url: string, data: Object): Promise<Object> {
         Http.pendingRequestCount++;
-        return this.offline.isEnabled().then(isEnabled =>
-            !isEnabled
+        return this.userState.isOffline().then(isUserOffline =>
+            !isUserOffline
                 // Käyttäjä online, lähetä HTTP-pyyntö normaalisti
                 ? this.fetchContainer.fetch(this.baseUrl + url, {
                     method: 'POST',

@@ -1,58 +1,41 @@
-import Db from 'src/common/Db';
+import UserState from 'src/user/UserState';
 
 const SERVICE_WORKER_FILEPATH = 'sw-main.js';
-const CLIENT_ID = 1;
 
-type appStatus = 'offline' | 'online';
-const appStatus = {
-    OFFLINE: 'offline' as appStatus,
-    ONLINE: 'online' as appStatus
-};
 type serviceWorkerState = 'installed' | 'activated';
 const serviceWorkerState = {
     INSTALLED: 'installed' as serviceWorkerState,
     ACTIVATED: 'activated' as serviceWorkerState
 };
 
-type offlineStateChangeSubscribeFn = (newIsEnabledValue: boolean) => void;
-
 /**
- * Vastaa ServiceWorkerin asennuksesta ja päivityksestä, isOfflineEnabled tilan
- * arvon tallennuksesta, ja siihen tapahtuneiden muutosten tiedottamisesta
- * subscribeFn-vastaanottajalle.
+ * Vastaa ServiceWorkerin asennuksesta ja päivityksestä, ja isOffline tilan
+ * päivityksestä UserState:en.
  */
 class Offline {
-    private db: Db;
+    private userState: UserState;
     private serviceWorkerContainer: ServiceWorkerContainer;
-    private subscribeFn?: offlineStateChangeSubscribeFn;
     /**
-     * @param {Db} db
+     * @param {UserState} userState
      * @param {ServiceWorkerContainer=} serviceWorkerContainer esim. window.navigator.serviceWorker
      */
     public constructor(
-        db: Db,
+        userState: UserState,
         serviceWorkerContainer?: ServiceWorkerContainer
     ) {
-        this.db = db;
+        this.userState = userState;
         this.serviceWorkerContainer = (
             // TODO checkkaa onko serviceworker navigaattorissa??
             serviceWorkerContainer || window.navigator.serviceWorker
         );
     }
     /**
-     * @param {integer=} clientId
-     * @return {Promise} -> ({boolean} isEnabled, {object} error)
+     * Rekisteröi tai uudelleenaktivoi Service workerin, ja asettaa
+     * UserState/indexedDb:n isOffline-tilaksi true.
+     *
+     * @return {Promise} -> ({integer} wasSuccesful, {object} error)
      */
-    public isEnabled(clientId?: number): Promise<boolean> {
-        return this.db.network.get(clientId || CLIENT_ID).then(row =>
-            row !== undefined && row.status === appStatus.OFFLINE
-        );
-    }
-    /**
-     * @param {integer=} clientId
-     * @return {Promise} -> ({integer} numRows, {object} error)
-     */
-    public enable(clientId?: number): Promise<number> {
+    public enable(): Promise<number> {
         // TODO - checkkaa isonline ensin?
         return (
         // == 1. Handlaa serviceworker =========================================
@@ -81,21 +64,23 @@ class Offline {
                 action: 'setIsOnline',
                 value: false
             });
-            return setDbStatus.call(this, appStatus.OFFLINE, clientId);
+            return this.userState.setIsOffline(true);
         });
     }
     /**
-     * @param {integer=} clientId
-     * @return {Promise} -> ({integer} numRows, {Object} error)
+     * Lähettää Service workerille tiedon tilan muutoksesta sekä asettaa
+     * UserState/indexedDb:n isOffline-tilaksi false.
+     *
+     * @return {Promise} -> ({integer} wasSuccesful, {Object} error)
      */
-    public disable(clientId: number): Promise<number> {
+    public disable(): Promise<number> {
         // TODO - checkkaa isoffline ensin?
         this.serviceWorkerContainer.controller.postMessage({
             action: 'setIsOnline',
             value: true
         });
-        return setDbStatus.call(this, appStatus.ONLINE, clientId);
-        // TODO synkkaa kaikki itemit jos yheys päällä, jos ei db.update.jokuflagi -> syncUsPlease
+        return this.userState.setIsOffline(false);
+        // TODO synkkaa kaikki itemit jos yheys päällä, jos ei userState.update.jokuflagi -> syncUsPlease
     }
     /**
      * @param {any} message
@@ -128,30 +113,6 @@ class Offline {
     public getNewRandomId(): string {
         return 'r-' + Math.random().toFixed(16).substr(2);
     }
-    /**
-     * Asettaa tiedotuksen vastaanottajaksi fn:n
-     */
-    public subscribe(fn: offlineStateChangeSubscribeFn) {
-        this.subscribeFn = fn;
-    }
-}
-
-/**
- * @param {string} status
- * @param {integer=} clientId
- * @return {Promise} -> ({number} numRows, {Object} error)
- */
-function setDbStatus(
-    status: appStatus,
-    clientId?: number
-): Promise<number> {
-    return this.db.network.put({
-        id: clientId || CLIENT_ID,
-        status: status
-    }).then(numRows => {
-        this.subscribeFn(status === appStatus.OFFLINE);
-        return numRows;
-    });
 }
 
 /**

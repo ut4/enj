@@ -1,15 +1,12 @@
 import Component from 'inferno-component';
 import { Link } from 'inferno-router';
-import Offline from 'src/offline/Offline';
 import UserState from 'src/user/UserState';
 import iocFactories from 'src/ioc';
 
 class UserMenu extends Component<any, any> {
-    private offline: Offline;
     private userState: UserState;
     public constructor(props) {
         super(props);
-        this.offline = iocFactories.offline();
         this.userState = iocFactories.userState();
         this.state = {
             maybeIsLoggedIn: false,
@@ -17,23 +14,21 @@ class UserMenu extends Component<any, any> {
         };
     }
     public componentWillMount() {
-        const receiveIsOfflineValue = (isOffline: boolean) => {
+        const receiveState = state => {
             this.setState({
-                offlineIsEnabled: isOffline,
+                offlineIsEnabled: state.isOffline,
                 // Käyttäjä ei voi olla kirjaunut, jos Offline-tila on päällä
-                maybeIsLoggedIn: !isOffline && this.userState.maybeIsLoggedIn()
+                maybeIsLoggedIn: !state.isOffline && state.maybeIsLoggedIn
             });
-        }
-        this.offline.isEnabled().then(receiveIsOfflineValue);
-        // Nämä triggeröityy aina, kun Offline:n isEnabled:in, tai UserState:n
-        // maybeIsLoggedIn:n arvo muuttuu
-        this.offline.subscribe(receiveIsOfflineValue);
-        this.userState.subscribe(userIsNowMaybeLoggedIn => {
-            this.setState({maybeIsLoggedIn: userIsNowMaybeLoggedIn});
-        });
+        };
+        this.userState.getState().then(receiveState);
+        // userState triggeröityy receiveState:n aina, kun käyttäjän
+        // offlineIsEnabled, tai maybeIsLoggedIn arvo muuttuu
+        this.userState.subscribe(receiveState);
     }
-    public test() {
-        this.userState.setMaybeIsLoggedIn(false);
+    public test(e) {
+        this.userState.setMaybeIsLoggedIn(!this.state.maybeIsLoggedIn);
+        e && e.preventDefault();
     }
     public render() {
         return (<nav id="user-menu">

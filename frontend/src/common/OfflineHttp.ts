@@ -1,4 +1,3 @@
-import { SyncItem } from 'src/offline/schema';
 import Db from 'src/common/Db';
 
 class OfflineHttp {
@@ -61,7 +60,7 @@ class OfflineHttp {
     /**
      * @return {Promise} -> ({Array} queue, {Object} error)
      */
-    public getRequestSyncQueue(): Promise<Array<SyncItem>> {
+    public getRequestSyncQueue(): Promise<Array<Db.Schema.SyncQueueRecord>> {
         return this.db.syncQueue.toArray();
     };
     /**

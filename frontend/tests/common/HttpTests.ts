@@ -2,7 +2,7 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Http from 'src/common/Http';
 import OfflineHttp from 'src/common/OfflineHttp';
-import Offline from 'src/offline/Offline';
+import UserState from 'src/user/UserState';
 
 QUnit.module('common/Http', hooks => {
     const mockBaseUrl:string = 'http://smthng/';
@@ -10,12 +10,12 @@ QUnit.module('common/Http', hooks => {
         Http.pendingRequestCount = 0;
         this.mockResponse = {json: function () {}};
         this.offlineHttp = Object.create(OfflineHttp.prototype);
-        this.offline = Object.create(Offline.prototype);
+        this.userState = Object.create(UserState.prototype);
         this.fetchContainer = window;
-        this.http = new Http(this.fetchContainer, this.offlineHttp, this.offline, mockBaseUrl);
+        this.http = new Http(this.fetchContainer, this.offlineHttp, this.userState, mockBaseUrl);
     });
     QUnit.test('get päivittää pendingRequestsCounterin arvon', assert => {
-        sinon.stub(this.offline, 'isEnabled').returns(Promise.resolve(false));
+        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(false));
         const fetchStub = sinon.stub(this.fetchContainer, 'fetch').returns(Promise.resolve(this.mockResponse));
         const initialCounterValue = Http.pendingRequestCount;
         // == GET =====
@@ -63,7 +63,7 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('post kutsuu fetchiä baseUrlilla prefiksoituna', assert => {
-        sinon.stub(this.offline, 'isEnabled').returns(Promise.resolve(false));
+        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(false));
         const requestUrl = '/foo/bar';
         const requestData = {foo: 'bar'};
         const mockResponseData = 'qwe';
@@ -91,8 +91,8 @@ QUnit.module('common/Http', hooks => {
             done();
         });
     });
-    QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
-        sinon.stub(this.offline, 'isEnabled').returns(Promise.resolve(true));
+    QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on userState', assert => {
+        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(true));
         const httpCallWatcher = sinon.spy(this.fetchContainer, 'fetch');
         const requestQueuerWatcher = sinon.stub(this.offlineHttp, 'logRequestToSyncQueue');
         sinon.stub(this.offlineHttp, 'hasHandlerFor').returns(true);
@@ -124,8 +124,8 @@ QUnit.module('common/Http', hooks => {
             done();
         });
     });
-    QUnit.test('post palauttaa offline-modessa 454 Responsen jos handleria ei löydy', assert => {
-        sinon.stub(this.offline, 'isEnabled').returns(Promise.resolve(true));
+    QUnit.test('post palauttaa userState-modessa 454 Responsen jos handleria ei löydy', assert => {
+        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(true));
         const requestQueuerWatcher = sinon.spy(this.offlineHttp, 'logRequestToSyncQueue');
         sinon.stub(this.offlineHttp, 'hasHandlerFor').returns(false);
         const done = assert.async();

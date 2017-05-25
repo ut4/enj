@@ -6,7 +6,7 @@ QUnit.module('common/Db', hooks => {
         this.db = new Db();
     });
     QUnit.test('constructor määrittelee scheman', assert => {
-        assert.ok(this.db.hasOwnProperty('network'));
+        assert.ok(this.db.hasOwnProperty('userState'));
         assert.ok(this.db.hasOwnProperty('syncQueue'));
     });
 });
