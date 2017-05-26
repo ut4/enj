@@ -30,9 +30,6 @@ self.CACHE_FILES = [
     // (pidettävä päivitettynä manuaalisesti)
     'api/workout',
     // == Teema ===========
-    'theme/arrows.png',
-    'theme/diagram-icon.svg',
-    'theme/dumb-bell-icon.svg',
     'theme/favicon.ico',
     'theme/favicon.png',
     'theme/firasans-heavy-webfont.eot',
@@ -43,7 +40,6 @@ self.CACHE_FILES = [
     'theme/firasans-light-webfont.woff2',
     'theme/icon-sprite.svg',
     'theme/main.css',
-    'theme/meal-icon.svg',
     'theme/polygons.png',
     'theme/spinner.gif'
 ];

@@ -33,7 +33,7 @@ class MainMenu extends Component<any, any> {
                 </li>
             </ul>
             <UserMenu/>
-            <button id="menu-toggle" onClick={ this.toggleIsMenuOpen.bind(this) }></button>
+            <button class="icon-button arrow down" onClick={ this.toggleIsMenuOpen.bind(this) }></button>
         </nav>);
     }
 }

@@ -9,10 +9,10 @@ class Layout extends Component<any, any> {
                 <MainMenu/>
             </header>
             <section class="view-margin">
+                <Notifier/>
                 <div id="view">
                     { this.props.children }
                 </div>
-                <Notifier/>
             </section>
             <footer>
                 <div>Powered by <a href="https://infernojs.org/" title="InfernoJS">Inferno</a> &amp; <a href="http://sparkjava.com/" title="SparkJava">Spark</a></div>

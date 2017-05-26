@@ -125,6 +125,7 @@ ul {
     font: 11px/11px "Fira sans light";
     padding: 8px 12px;
     text-shadow: 0 1px rgba(0,0,0,0.1);
+    text-decoration: none;
 }
 .nice-button.nice-button-small {
     color: #555555;
@@ -172,40 +173,80 @@ ul {
 .text-button:hover {
     color: #1A7C96;
 }
-.list-button {
+.icon-button.with-text {
     background-color: rgba(255,255,255,0.15);
     border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
     color: #FFFFFF;
+    padding: 12px 12px 12px 33px;
+    background-position: 10px center;
+    background-size: 16px auto;
 }
-.nice-button.list-button:active:enabled {
+.nice-button.icon-button.with-text:active:enabled {
     background-color: rgba(255,255,255,0.1);
     box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
 }
-.nice-button.list-button:hover:enabled {
+.nice-button.icon-button.with-text:hover:enabled {
     background-color: rgba(255,255,255,0.20);
     border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
 }
-.list-button span {
-    font: 28px/0 "Fira sans heavy";
+.icon-button {
+    padding: 16px;
     display: inline-block;
-    margin: 2px 8px 0 -6px;
+    background-repeat: no-repeat;
+    background-position: 6px 7px;
+    background-size: 22px auto;
 }
-.arrow-button {
-    height: 40px;
-    width: 40px;
-    padding: 0 0 3px 0;
-    font: 24px/0px "Fira sans heavy";
-    color: #676269;
+.icon-button.add {
+    background-image: url("icon-sprite.svg#add");
+}
+.icon-button.edit {
+    background-image: url("icon-sprite.svg#edit");
+}
+.icon-button.delete {
+    background-image: url("icon-sprite.svg#delete");
+    background-position: 4px 4px;
+}
+.icon-button.arrow {
     transition: transform .15s ease-out;
+    background-image: url("icon-sprite.svg#arrow");
+    background-size: 20px auto;
 }
-.arrow-button.down {
-    transform: rotate(90deg);
+.icon-button.arrow.up {
+    transform: rotate(180deg);
 }
-.arrow-button.up {
+.icon-button.arrow.right {
     transform: rotate(-90deg);
 }
-.arrow-button.left {
-    transform: rotate(180deg);
+.icon-button.arrow.left {
+    transform: rotate(90deg);
+}
+
+.action-buttons {
+    position: absolute;
+    right: -17px;
+    top: 5px;
+    width: 60px;
+    height: 100%;
+}
+.action-buttons .icon-button {
+    float: right;
+    opacity: .3;
+}
+.action-buttons .icon-button:hover {
+    opacity: .5;
+}
+.action-buttons .icon-button.edit {
+    position: absolute;
+    background-position: 8px 7px;
+    left: -5px;
+}
+.action-buttons .icon-button.delete {
+    background-position: 5px 5px;
+}
+.action-buttons .icon-button.arrow.down {
+    position: absolute;
+    bottom: 10px;
+    right: 0;
 }
 
 .dark-list {
@@ -233,6 +274,14 @@ ul {
     padding: 6px 2px;
     margin: auto 10px;
 }
+.dark-list .heading {
+    font: 24px/24px "Fira sans heavy";
+    margin-bottom: 10px;
+}
+.dark-list .content {
+    margin: 10px auto;
+}
+
 .notifier {
     position: fixed;
     bottom: 20px;
@@ -265,7 +314,7 @@ ul {
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: 14px auto;
+    background-size: 16px auto;
     width: 40px;
     position: absolute;
     left: 12px;
@@ -302,12 +351,10 @@ header nav a {
     color: #FFFFFF;
 }
 #main-menu {
-    max-width: 640px;
+    max-width: 600px;
+    padding: 0 20px;
     margin: 0 auto;
     position: relative;
-}
-#main-menu.open {
-    padding: 0 10px;
 }
 #main-menu ul {
     display: inline-block;
@@ -346,18 +393,16 @@ header nav a {
     vertical-align: bottom;
 }
 #main-menu > ul > li:first-of-type > a {
-    background-image: url("diagram-icon.svg");
-    background-size: 24px auto;
+    background-image: url("icon-sprite.svg#diagram");
     color: transparent;
 }
 #main-menu > ul > li:nth-of-type(2) > a {
-    background-image: url("dumb-bell-icon.svg");
-    background-size: 27px auto;
+    background-image: url("icon-sprite.svg#dumb-bell");
     color: transparent;
 }
 #main-menu > ul > li:last-of-type > a {
-    background-image: url("meal-icon.svg");
-    background-size: 13px auto;
+    background-image: url("icon-sprite.svg#meal");
+    background-size: 21px auto;
     color: transparent;
 }
 #main-menu .sub-ul {
@@ -384,19 +429,13 @@ header nav a {
     margin: auto 0px;
 }
 
-#menu-toggle {
-    background: transparent url("arrows.png") no-repeat scroll -18px center;
-    color: #FFFFFF;
-    content: "";
-    margin-right: 10px;
+#main-menu > .icon-button.arrow {
     position: absolute;
-    height: 42px;
-    width: 17px;
     right: 0;
-    top: 0;
+    top: 5px;
 }
-.open #menu-toggle {
-    background-position: left center;
+#main-menu.open > .icon-button.arrow {
+    transform: rotate(180deg);
 }
 
 #user-menu {
@@ -502,6 +541,9 @@ footer a {
 @media (max-width:660px) {
     #view {
         padding: 20px 5px;
+    }
+    #main-menu {
+        padding: 0 5px;
     }
     #view h2 {
         margin-right: 8px;
