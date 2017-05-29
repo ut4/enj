@@ -61,7 +61,7 @@ class OfflineHttp {
     /**
      * @return {Promise} -> ({Array} queue, {Object} error)
      */
-    public getRequestSyncQueue(): Promise<Array<Db.Schema.SyncQueueRecord>> {
+    public getRequestSyncQueue(): Promise<Array<Enj.OfflineDbSchema.SyncQueueRecord>> {
         return this.db.syncQueue.toArray();
     };
     /**

@@ -3,31 +3,15 @@ import Dexie from 'dexie';
 const DB_NAME: string = 'enjOfflineDb';
 const DB_VERSION: number = 1;
 
-declare module Db {
-    module Schema {
-        interface UserStateRecord {
-            id?: number;
-            maybeIsLoggedIn: boolean;
-            isOffline: boolean;
-        }
-
-        interface SyncQueueRecord {
-            id?: number;
-            url: string;
-            data: any;
-        }
-    }
-}
-
 class Db extends Dexie {
     /**
      * Sisältää tiedon siitä, onko käyttäjä online/offline tai logged in/out.
      */
-    public userState: Dexie.Table<Db.Schema.UserStateRecord, number>;
+    public userState: Dexie.Table<Enj.OfflineDbSchema.UserStateRecord, number>;
     /**
      * Offline-tilassa tapahtuneiden HTTP-pyyntöjen tiedot.
      */
-    public syncQueue: Dexie.Table<Db.Schema.SyncQueueRecord, number>;
+    public syncQueue: Dexie.Table<Enj.OfflineDbSchema.SyncQueueRecord, number>;
     /**
      * Avaa indexedDB-yhteyden kutsumalla Dexie:n konstruktoria, ja määrittelee
      * Dexie-scheman & indeksit.

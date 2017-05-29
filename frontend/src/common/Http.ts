@@ -28,10 +28,10 @@ class Http {
      * @param {string} url
      * @return {Promise} -> ({any} responseData, {any} rejectedValue)
      */
-    public get(url: string): Promise<any> {
+    public get<T>(url: string): Promise<T> {
         Http.pendingRequestCount++;
         return this.fetchContainer.fetch(this.baseUrl + url).then(
-            processResponse,
+            response => processResponse<T>(response),
             processFailure
         );
     }
@@ -63,7 +63,7 @@ class Http {
     }
 }
 
-function processResponse(response: Response): Promise<Object> {
+function processResponse<T>(response: Response): Promise<T> {
     Http.pendingRequestCount--;
     try {
         return Promise.resolve(response.json());

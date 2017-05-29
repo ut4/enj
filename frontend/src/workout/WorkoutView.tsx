@@ -1,11 +1,43 @@
 import Component from 'inferno-component';
-import { Link } from 'inferno-router';
+import EditableWorkout from 'src/workout/EditableWorkout';
+import WorkoutBackend from 'src/workout/WorkoutBackend';
+import iocFactories from 'src/ioc';
 
-class WorkoutView extends Component<any, any> {
-    render() {
+/**
+ * Komponentti urlille "/treeni/:id".
+ */
+class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>}> {
+    private workoutBackend: WorkoutBackend;
+    public constructor(props) {
+        super(props);
+        this.state = {workouts: null};
+        this.workoutBackend = iocFactories.workoutBackend();
+    }
+    public componentDidMount() {
+        this.workoutBackend.getAll().then(
+            // Backend-fetch ok, aseta state.workouts -> <responseArray>
+            workouts => this.setState({ workouts }),
+            // Backend-fetch epäonnistui, aseta state.workouts -> []
+            err => {
+                let s = iocFactories.notify();
+                console.log(s)
+                s('Treenien haku epäonnistui', 'error');
+                this.setState({workouts: []});
+            }
+        );
+    }
+    public render() {
         return (<div>
-            <Link to="/treeni/tanaan/liike/lisaa">Lisää treeni</Link>
-            /workout/WorkoutView.jsx
+            <h2>Treeni tänään</h2>
+            <div>
+                { this.state.workouts && (
+                    this.state.workouts.length
+                        ? this.state.workouts.map(workout =>
+                            <EditableWorkout workout={ workout }/>
+                        )
+                        : <p>Ei treenejä</p>
+                ) }
+            </div>
             { this.props.children }
         </div>);
     }

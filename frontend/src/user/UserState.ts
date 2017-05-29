@@ -2,7 +2,7 @@ import Db from 'src/common/Db';
 
 const CLIENT_ID = 1;
 
-type stateChangeSubscribeFn = (newState: Db.Schema.UserStateRecord) => void;
+type stateChangeSubscribeFn = (newState: Enj.OfflineDbSchema.UserStateRecord) => void;
 
 /**
  * Vastaa käyttäjän tilan (kirjautunut/ei kirjautunut|offline/online)
@@ -22,12 +22,12 @@ class UserState {
      * Palauttaa tiedon käyttäjän tilasta. Palauttaa aina objektin, vaikkei
      * indexedDb:ssä olisikaan rivejä.
      */
-    public getState(clientId?: number): Promise<Db.Schema.UserStateRecord> {
+    public getState(clientId?: number): Promise<Enj.OfflineDbSchema.UserStateRecord> {
         return this.db.userState.get(clientId || CLIENT_ID).then(state => {
             return state || ({
                 maybeIsLoggedIn: false,
                 isOffline: false
-            } as Db.Schema.UserStateRecord);
+            } as Enj.OfflineDbSchema.UserStateRecord);
         });
     }
     /**
@@ -78,7 +78,7 @@ class UserState {
      * subscribeFn:lle mikäli kirjoitus onnistui.
      */
     private updateState(
-        key: keyof Db.Schema.UserStateRecord,
+        key: keyof Enj.OfflineDbSchema.UserStateRecord,
         value: boolean,
         clientId?: number
     ): Promise<number> {

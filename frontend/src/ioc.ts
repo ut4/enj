@@ -1,11 +1,12 @@
-import IocContainer from 'src/common/IocContainer';
-import Db           from 'src/common/Db';
-import Http         from 'src/common/Http';
-import OfflineHttp  from 'src/common/OfflineHttp';
-import { notify }   from 'src/ui/Notifier';
+import IocContainer    from 'src/common/IocContainer';
+import Db              from 'src/common/Db';
+import Http            from 'src/common/Http';
+import OfflineHttp     from 'src/common/OfflineHttp';
+import { notify }      from 'src/ui/Notifier';
 import { History, createBrowserHistory } from 'history';
-import UserState    from 'src/user/UserState';
-import Offline      from 'src/offline/Offline';
+import WorkoutBackend  from 'src/workout/WorkoutBackend';
+import UserState       from 'src/user/UserState';
+import Offline         from 'src/offline/Offline';
 const popStateHistory = createBrowserHistory();
 
 class IocFactories extends IocContainer {
@@ -32,8 +33,8 @@ class IocFactories extends IocContainer {
     }
 
     // == Workout ==============================================================
-    public workoutHttp(): any {
-        return null;
+    public workoutBackend(): any {
+        return this.memoize('workoutRepo', () => new WorkoutBackend(this.http(), 'workout'));
     }
     public workoutExerciseHttp(): any {
         return null;
