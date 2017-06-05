@@ -1,10 +1,11 @@
 # Enj: Treeni + ravintopäiväkirja
 
-UBERPWA, Inferno, Spark
+UBERPWA: Inferno + JSX, serviceWorker, Jersey
 
 ## Riippuvuudet
 
-Java 8, Node v6+, MariaDb??
+* Backend: Java 8, MariaDb
+* Dev-ympäristö: Node v6+
 
 ## Frontend
 
@@ -13,7 +14,7 @@ Java 8, Node v6+, MariaDb??
 * Test:
     * Ks. ylempi ja -> selaimella osoitteeseen http://localhost:8080/tests.html
 * Build:
-    * `npm run build < nul` — Kirjoittaa käännetyn applikaation vendor-riippuvuuksineen public/bundle.js-tiedostoon
+    * `npm run build < nul` — Kirjoittaa käännetyn applikaation vendor-riippuvuuksineen public/bundle.js-tiedostoon (muistiin)
     * `java -jar D:/code2/compiler/compiler.jar --js public/bundle.js --js_output_file public/bundle.min.js --language_in=ES6 --language_out=ES5` - minify
 
 ## Backend
@@ -23,4 +24,8 @@ Java 8, Node v6+, MariaDb??
 * Build:
     * `mvn compile`
 * Run:
-    * `mvn exec:java < nul`
+    * `mvn exec:java`
+
+## MariaDb
+
+* TODO
