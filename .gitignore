@@ -2,6 +2,7 @@
 .jshintrc
 .vscode
 nbproject
+*.iml
 
 frontend/node_modules
 backend/target

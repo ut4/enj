@@ -37,6 +37,12 @@
             <artifactId>hibernate-validator</artifactId>
             <version>5.4.1.Final</version>
         </dependency>
+        <!-- REST security -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.7.0</version>
+        </dependency>
         <!-- Tietokanta -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
