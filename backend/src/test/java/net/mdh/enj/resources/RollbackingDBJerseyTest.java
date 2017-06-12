@@ -1,15 +1,16 @@
 package net.mdh.enj.resources;
 
 import org.junit.After;
-import java.sql.SQLException;
 import javax.sql.DataSource;
+import java.sql.SQLException;
+import org.glassfish.jersey.test.JerseyTest;
 
-public class RollbackingDBUnitTest {
+public class RollbackingDBJerseyTest extends JerseyTest {
 
     protected final RollbackingDataSourceFactory rollbackingDSFactory;
     protected final DataSource rollbackingDataSource;
 
-    public RollbackingDBUnitTest() {
+    public RollbackingDBJerseyTest() {
         this.rollbackingDSFactory = new RollbackingDataSourceFactory();
         this.rollbackingDataSource = this.rollbackingDSFactory.getDataSource();
     }
