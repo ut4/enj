@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import java.util.Objects;
 import java.util.List;
 
 /**
@@ -42,11 +43,14 @@ public abstract class BasicRepository<T extends DbEntity> {
     }
 
     /**
-     * Palauttaa kaikki T:t tietokannasta.
+     * Ajaa tietokantakyselyn {query}, mappaa sen palauttamat rivit mapperilla
+     * {mapper}, ja palauttaa mapatut beanit (filtteröi null-arvot pois).
      *
-     * @return Lista bean-entiteettejä T.
+     * @return Lista beaneja {T}.
      */
     protected List<T> selectAll(String query, RowMapper<T> mapper) {
-        return this.qTemplate.query(query, mapper);
+        List<T> results = this.qTemplate.query(query, mapper);
+        results.removeIf(Objects::isNull);
+        return results;
     }
 }

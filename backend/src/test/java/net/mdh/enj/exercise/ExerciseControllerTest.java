@@ -1,5 +1,6 @@
 package net.mdh.enj.exercise;
 
+import net.mdh.enj.resources.DbTestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -17,23 +18,19 @@ import java.util.List;
 
 public class ExerciseControllerTest extends RollbackingDBJerseyTest {
 
-    private Exercise testExercise;
-    private SimpleJdbcInsert exerciseInserter;
-    private SimpleJdbcInsert variantInserter;
+    private static Exercise testExercise;
+    private final DbTestUtils utils;
 
     public ExerciseControllerTest() {
         super();
-        this.exerciseInserter = new SimpleJdbcInsert(rollbackingDataSource);
-        this.exerciseInserter.withTableName("exercise");
-        this.exerciseInserter.usingGeneratedKeyColumns("id");
-        this.variantInserter = new SimpleJdbcInsert(rollbackingDataSource);
-        this.variantInserter.withTableName("exercise_variant");
-        this.variantInserter.usingGeneratedKeyColumns("id");
+        this.utils = new DbTestUtils(this.rollbackingDataSource);
     }
 
     @Before
     public void beforeEach() throws SQLException {
-        this.testExercise = this.insertTestExercise("foo");
+        if (testExercise == null) {
+            testExercise = this.insertTestExercise("foo");
+        }
     }
 
     @Override
@@ -71,8 +68,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     private Exercise insertTestExercise(String name) {
         Exercise e = new Exercise();
         e.setName(name);
-        Number newId = this.exerciseInserter.executeAndReturnKey(new BeanPropertySqlParameterSource(e));
-        e.setId(newId.intValue());
+        this.utils.insertExercise(e);
         return e;
     }
 
@@ -80,8 +76,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Exercise.Variant v = new Exercise.Variant();
         v.setContent(content);
         v.setExerciseId(exerciseId);
-        Number newId = this.variantInserter.executeAndReturnKey(new BeanPropertySqlParameterSource(v));
-        v.setId(newId.intValue());
+        this.utils.insertExerciseVariant(v);
         return v;
     }
 }

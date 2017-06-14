@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import javax.validation.constraints.NotNull;
 
 /**
  * Vastaa /api/workout REST-pyynnöistä
@@ -32,7 +33,7 @@ public class WorkoutController {
      */
     @POST
     @Consumes("application/json")
-    public int insert(@Valid Workout workout) {
+    public int insert(@Valid @NotNull Workout workout) {
         return this.workoutRepository.insert(workout);
     }
 

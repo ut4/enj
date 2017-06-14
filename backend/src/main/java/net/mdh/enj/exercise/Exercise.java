@@ -1,5 +1,6 @@
 package net.mdh.enj.exercise;
 
+import net.mdh.enj.Utils;
 import net.mdh.enj.mapping.DbEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +30,8 @@ public class Exercise extends DbEntity {
         return "{" +
             "id=" + this.getId() +
             ", name=" + this.getName() +
-            ", variants=[" + this.stringifyVariants() +
+            ", variants=[" + Utils.stringifyAll(this.getVariants()) +
         "]}";
-    }
-
-    private String stringifyVariants() {
-        return !this.getVariants().isEmpty()
-            ? this.getVariants().stream().map(Variant::toString).collect(Collectors.joining(", "))
-            : null;
     }
 
     public static class Variant extends DbEntity {

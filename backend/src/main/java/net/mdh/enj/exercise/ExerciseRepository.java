@@ -7,7 +7,6 @@ import net.mdh.enj.mapping.SubCollector;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import javax.inject.Inject;
-import java.util.Objects;
 import java.util.List;
 
 public class ExerciseRepository extends BasicRepository<Exercise> {
@@ -25,12 +24,10 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
      * @return liikkeet
      */
     List<Exercise> selectAll() {
-        List<Exercise> exercises = super.selectAll(
-            String.format("SELECT * FROM %s_view ORDER BY id DESC", TABLE_NAME),
+        return super.selectAll(
+            String.format("SELECT * FROM %sView ORDER BY id DESC", TABLE_NAME),
             new ExerciseMapper()
         );
-        exercises.removeIf(Objects::isNull);
-        return exercises;
     }
 
     /**
