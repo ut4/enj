@@ -1,15 +1,16 @@
 package net.mdh.enj.workout;
 
-import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import javax.validation.constraints.NotNull;
 
 /**
  * Vastaa /api/workout REST-pyynnöistä
@@ -43,7 +44,7 @@ public class WorkoutController {
      * @return Workout[] treenit
      */
     @GET
-    public ArrayList<Workout> getAll() {
-        return (ArrayList<Workout>) this.workoutRepository.selectAll();
+    public ArrayList<Workout> getAll(@BeanParam SearchFilters filters) {
+        return (ArrayList<Workout>) this.workoutRepository.selectAll(filters);
     }
 }

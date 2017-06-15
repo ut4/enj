@@ -116,6 +116,27 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(testWorkout.toString(), workouts.get(0).toString());
     }
 
+    /**
+     * Testaa, että GET /api/workout?startFrom={timestamp}&startTo={timestamp} käyttää
+     * url-paremetrejä tietokantakyselyn filtteröintiin, ja palauttaa tulokset
+     * uusimmat / viimeksi insertoidut ensimmäisenä.
+     */
+    @Test
+    public void GETPalauttaaTreenitAikaväliltä() {
+        Workout anotherWorkout = new Workout();
+        anotherWorkout.setStart(1); // 1970-01-01T00:00:01
+        this.utils.insertWorkout(anotherWorkout);
+        Workout anotherWorkout2 = new Workout();
+        anotherWorkout2.setStart(3); // 1970-01-01T00:00:03
+        this.utils.insertWorkout(anotherWorkout2);
+        Response response = target("workout").queryParam("startFrom", "1").queryParam("startTo", "3").request().get();
+        Assert.assertEquals(200, response.getStatus());
+        List<Workout> workouts = response.readEntity(new GenericType<List<Workout>>() {});
+        Assert.assertEquals(2, workouts.size()); // Pitäisi palauttaa aina 2, ks. timestamp
+        Assert.assertEquals(anotherWorkout2.toString(), workouts.get(0).toString());
+        Assert.assertEquals(anotherWorkout.toString(), workouts.get(1).toString());
+    }
+
     private Response newWorkoutPostRequest(Workout data) {
         return target("workout")
             .request(MediaType.APPLICATION_JSON_TYPE)

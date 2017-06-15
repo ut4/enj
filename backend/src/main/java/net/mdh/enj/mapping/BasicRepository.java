@@ -1,11 +1,11 @@
 package net.mdh.enj.mapping;
 
 import net.mdh.enj.db.DataSourceFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.RowMapper;
 import java.util.Objects;
 import java.util.List;
 
@@ -15,11 +15,11 @@ import java.util.List;
 public abstract class BasicRepository<T extends DbEntity> {
 
     public final static String DEFAULT_ID = "id";
-    protected final JdbcTemplate qTemplate;
+    protected final NamedParameterJdbcTemplate qTemplate;
     protected final SimpleJdbcInsert inserter;
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName, String idColumn) {
-        this.qTemplate = new JdbcTemplate(dataSourceFac.getDataSource());
+        this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource())
             .withTableName(tableName)
             .usingGeneratedKeyColumns(idColumn);
@@ -43,14 +43,26 @@ public abstract class BasicRepository<T extends DbEntity> {
     }
 
     /**
+     * Ajaa tietokantakyselyn {query} käyttäen BeanPropertySqlParameterSource
+     * {params}ia kyselyyn määriteltyjen :placeholderien arvojen täyttämiseen,
+     * mappaa kyselyn palauttamat rivit mapperilla {mapper}, ja lopuksi
+     * palauttaa mapatut beanit (filtteröi null-arvot pois).
+     *
+     * @return Lista beaneja {T}.
+     */
+    protected List<T> selectAll(String query, SqlParameterSource params, RowMapper<T> mapper) {
+        List<T> results = this.qTemplate.query(query, params, mapper);
+        results.removeIf(Objects::isNull);
+        return results;
+    }
+
+    /**
      * Ajaa tietokantakyselyn {query}, mappaa sen palauttamat rivit mapperilla
      * {mapper}, ja palauttaa mapatut beanit (filtteröi null-arvot pois).
      *
      * @return Lista beaneja {T}.
      */
     protected List<T> selectAll(String query, RowMapper<T> mapper) {
-        List<T> results = this.qTemplate.query(query, mapper);
-        results.removeIf(Objects::isNull);
-        return results;
+        return this.selectAll(query, null, mapper);
     }
 }

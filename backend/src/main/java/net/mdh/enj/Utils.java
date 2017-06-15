@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Utils {
     public static String stringifyAll(List<?> list) {
-        return !list.isEmpty()
+        return list != null && !list.isEmpty()
             ? list.stream().map(Object::toString).collect(Collectors.joining(", "))
             : null;
     }

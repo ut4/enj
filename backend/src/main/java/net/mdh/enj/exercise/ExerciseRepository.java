@@ -19,7 +19,7 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     /**
-     * Palauttaa kaikki liikkeet tietokannasta "uusin ensin" -järjestuksessä.
+     * Palauttaa kaikki liikkeet tietokannasta "uusin ensin" -järjestyksessä.
      *
      * @return liikkeet
      */

@@ -38,25 +38,25 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
      */
     @Test
     public void selectAllSisältääLiikkeetJaSetit() {
-        Workout w1 = this.insertWorkoutWithExerciseAndSets();
+        Workout w1 = this.insertWorkoutWithExerciseAndSet();
         Workout w2 = this.insertWorkoutWithExerciseButNoSets();
         Workout w3 = this.insertWorkoutWithoutExercisesOrSets();
         //
-        List<Workout> results = this.workoutRepository.selectAll();
+        List<Workout> results = this.workoutRepository.selectAll(new SearchFilters());
         //
         Assert.assertEquals(w3.toString(), results.get(0).toString());
-        Assert.assertEquals(null, w3.getExercises());
+        Assert.assertEquals(0, results.get(0).getExercises().size());
         //
         Assert.assertEquals(w2.toString(), results.get(1).toString());
-        Assert.assertEquals(1, w2.getExercises().size());
-        Assert.assertEquals(null, w2.getExercises().get(0).getSets());
+        Assert.assertEquals(1, results.get(1).getExercises().size());
+        Assert.assertEquals(0, results.get(1).getExercises().get(0).getSets().size());
         //
         Assert.assertEquals(w1.toString(), results.get(2).toString());
-        Assert.assertEquals(1, w1.getExercises().size());
-        Assert.assertEquals(1, w1.getExercises().get(0).getSets().size());
+        Assert.assertEquals(1, results.get(2).getExercises().size());
+        Assert.assertEquals(1, results.get(2).getExercises().get(0).getSets().size());
     }
 
-    private Workout insertWorkoutWithExerciseAndSets() {
+    private Workout insertWorkoutWithExerciseAndSet() {
         // Treeni
         Workout workout = this.insertWorkout();
         // Treenille 1 liike
@@ -64,7 +64,6 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         this.addExercisesToWorkout(workout, we);
         // Liikkeeelle yksi setti
         Workout.Exercise.Set wes = this.insertWorkoutExercseSet(we.getId());
-        this.utils.insertWorkoutExerciseSet(wes);
         this.addSetsToWorkoutExercise(we, wes);
         return workout;
     }

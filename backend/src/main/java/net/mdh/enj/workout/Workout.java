@@ -51,6 +51,7 @@ public class Workout extends DbEntity {
             ", start=" + this.getStart() +
             ", end=" + this.getEnd() +
             ", notes=" + this.getNotes() +
+            ", exercises=" + Utils.stringifyAll(this.getExercises()) +
         "}";
     }
 
