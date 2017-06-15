@@ -1,7 +1,5 @@
 package net.mdh.enj.auth;
 
-import net.mdh.enj.auth.AuthenticationFilter;
-import net.mdh.enj.auth.TokenService;
 import org.junit.Test;
 import org.junit.Assert;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;

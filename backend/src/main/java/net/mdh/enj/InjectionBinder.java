@@ -5,6 +5,7 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.db.SimpleDataSourceFactory;
 import net.mdh.enj.exercise.ExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
+import net.mdh.enj.workout.WorkoutExerciseRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 class InjectionBinder extends AbstractBinder {
@@ -15,6 +16,7 @@ class InjectionBinder extends AbstractBinder {
         bind(TokenService.class).to(TokenService.class);
         // Workout
         bind(WorkoutRepository.class).to(WorkoutRepository.class);
+        bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
         // Program
         // ...
         // Exercise

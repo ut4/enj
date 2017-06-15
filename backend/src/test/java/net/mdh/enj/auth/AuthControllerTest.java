@@ -12,7 +12,6 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -61,7 +60,7 @@ public class AuthControllerTest extends JerseyTest {
         responseForEmptyInput = newLoginRequest(emptyData);
         Assert.assertEquals(400, responseForEmptyInput.getStatus());
         errorsForEmptyInput = responseForEmptyInput.readEntity(new GenericType<List<ValidationError>>() {});
-        Collections.sort(errorsForEmptyInput, Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
+        errorsForEmptyInput.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
         Assert.assertEquals("AuthController.login.arg0.password", errorsForEmptyInput.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errorsForEmptyInput.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.login.arg0.username", errorsForEmptyInput.get(1).getPath());
@@ -74,7 +73,7 @@ public class AuthControllerTest extends JerseyTest {
         responseForBadInput = newLoginRequest(badData);
         Assert.assertEquals(400, responseForBadInput.getStatus());
         errorsForBadInput = responseForBadInput.readEntity(new GenericType<List<ValidationError>>() {});
-        Collections.sort(errorsForBadInput, Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
+        errorsForBadInput.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
         Assert.assertEquals("AuthController.login.arg0.password", errorsForBadInput.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errorsForBadInput.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.login.arg0.username", errorsForBadInput.get(1).getPath());

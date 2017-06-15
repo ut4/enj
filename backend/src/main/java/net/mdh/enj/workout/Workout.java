@@ -61,7 +61,9 @@ public class Workout extends DbEntity {
     public static class Exercise extends DbEntity {
         protected int id;
         private int orderDef;
+        @Min(value = 1)
         private int workoutId;
+        @Min(value = 1)
         private int exerciseId;
         private String exerciseName;
         private List<Set> sets;

@@ -1,21 +1,23 @@
 package net.mdh.enj.resources;
 
 import org.junit.After;
+import org.junit.AfterClass;
+
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
 public class RollbackingDBUnitTest {
 
-    protected final RollbackingDataSourceFactory rollbackingDSFactory;
-    protected final DataSource rollbackingDataSource;
+    protected final static RollbackingDataSourceFactory rollbackingDSFactory;
+    protected final static DataSource rollbackingDataSource;
 
-    public RollbackingDBUnitTest() {
-        this.rollbackingDSFactory = new RollbackingDataSourceFactory();
-        this.rollbackingDataSource = this.rollbackingDSFactory.getDataSource();
+    static {
+        rollbackingDSFactory = new RollbackingDataSourceFactory();
+        rollbackingDataSource = rollbackingDSFactory.getDataSource();
     }
 
-    @After
-    public void afterEach() throws SQLException {
-        this.rollbackingDataSource.getConnection().rollback();
+    @AfterClass
+    public static void afterEach() throws SQLException {
+        rollbackingDataSource.getConnection().rollback();
     }
 }

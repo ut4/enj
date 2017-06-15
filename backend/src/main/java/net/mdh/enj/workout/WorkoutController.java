@@ -20,10 +20,15 @@ import java.util.ArrayList;
 public class WorkoutController {
 
     private final WorkoutRepository workoutRepository;
+    private final WorkoutExerciseRepository workoutExerciseRepository;
 
     @Inject
-    public WorkoutController(WorkoutRepository workoutRepository) {
+    public WorkoutController(
+        WorkoutRepository workoutRepository,
+        WorkoutExerciseRepository workoutExerciseRepository
+    ) {
         this.workoutRepository = workoutRepository;
+        this.workoutExerciseRepository = workoutExerciseRepository;
     }
 
     /**
@@ -46,5 +51,12 @@ public class WorkoutController {
     @GET
     public ArrayList<Workout> getAll(@BeanParam SearchFilters filters) {
         return (ArrayList<Workout>) this.workoutRepository.selectAll(filters);
+    }
+
+    @POST
+    @Path("/exercise")
+    @Consumes("application/json")
+    public int insertExercise(@Valid @NotNull Workout.Exercise exercise) {
+        return this.workoutExerciseRepository.insert(exercise);
     }
 }

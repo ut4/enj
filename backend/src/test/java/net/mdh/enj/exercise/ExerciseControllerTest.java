@@ -1,36 +1,29 @@
 package net.mdh.enj.exercise;
 
-import net.mdh.enj.resources.DbTestUtils;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
+import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ExerciseControllerTest extends RollbackingDBJerseyTest {
 
+    private static DbTestUtils utils;
     private static Exercise testExercise;
-    private final DbTestUtils utils;
 
-    public ExerciseControllerTest() {
-        super();
-        this.utils = new DbTestUtils(this.rollbackingDataSource);
-    }
-
-    @Before
-    public void beforeEach() throws SQLException {
-        if (testExercise == null) {
-            testExercise = this.insertTestExercise("foo");
-        }
+    @BeforeClass
+    public static void beforeClass() throws SQLException {
+        utils = new DbTestUtils(rollbackingDataSource);
+        testExercise = insertTestExercise("foo");
     }
 
     @Override
@@ -54,29 +47,30 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void GETPalauttaaLiikelistanSisältäenVariantit() {
         List<Exercise.Variant> variants = new ArrayList<>();
-        variants.add(this.insertTestVariant("var1", this.testExercise.getId()));
-        variants.add(this.insertTestVariant("var2", this.testExercise.getId()));
-        this.testExercise.setVariants(variants);
-        Exercise anotherWithoutVariants = this.insertTestExercise("bar");
+        variants.add(insertTestVariant("var1", testExercise.getId()));
+        variants.add(insertTestVariant("var2", testExercise.getId()));
+        Collections.reverse(variants);
+        testExercise.setVariants(variants);
+        Exercise anotherWithoutVariants = insertTestExercise("bar");
         Response response = target("exercise").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
-        Assert.assertEquals(this.testExercise.toString(), exercises.get(1).toString());
+        Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
     }
 
-    private Exercise insertTestExercise(String name) {
+    private static Exercise insertTestExercise(String name) {
         Exercise e = new Exercise();
         e.setName(name);
-        this.utils.insertExercise(e);
+        utils.insertExercise(e);
         return e;
     }
 
-    private Exercise.Variant insertTestVariant(String content, int exerciseId) {
+    private static Exercise.Variant insertTestVariant(String content, int exerciseId) {
         Exercise.Variant v = new Exercise.Variant();
         v.setContent(content);
         v.setExerciseId(exerciseId);
-        this.utils.insertExerciseVariant(v);
+        utils.insertExerciseVariant(v);
         return v;
     }
 }

@@ -1,8 +1,10 @@
 package net.mdh.enj.workout;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
+import net.mdh.enj.mapping.DbEntity;
+import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
@@ -14,25 +16,24 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import java.util.Comparator;
 import java.util.List;
 
 public class WorkoutControllerTest extends RollbackingDBJerseyTest {
 
     private static Workout testWorkout;
-    private DbTestUtils utils;
+    private static Exercise testExercise;
+    private static DbTestUtils utils;
 
-    public WorkoutControllerTest() {
-        super();
-        this.utils = new DbTestUtils(this.rollbackingDataSource);
-    }
-
-    @Before
-    public void beforeEach() {
-        if (testWorkout == null) {
-            testWorkout = new Workout();
-            testWorkout.setStart(System.currentTimeMillis() / 1000L);
-            this.utils.insertWorkout(testWorkout);
-        }
+    @BeforeClass
+    public static void beforeClass() {
+        utils = new DbTestUtils(rollbackingDataSource);
+        testWorkout = new Workout();
+        testWorkout.setStart(System.currentTimeMillis() / 1000L);
+        utils.insertWorkout(testWorkout);
+        testExercise = new Exercise();
+        testExercise.setName("exs");
+        utils.insertExercise(testExercise);
     }
 
     @Override
@@ -44,6 +45,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(WorkoutRepository.class).to(WorkoutRepository.class);
+                    bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
             });
@@ -54,9 +56,9 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
      * evaluoituu null.
      */
     @Test
-    public void POSTHylkääNullArvon() {
+    public void POSTHylkääPyynnönJosDataPuuttuuKokonaan() {
         // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newWorkoutPostRequest(null);
+        Response response = this.newPostRequest("workout", null);
         // Testaa että palauttaa 400
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
@@ -73,7 +75,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public void POSTValidoiTreeniInputin() {
         // Simuloi POST, jossa tyhjä workout
         Workout invalidData = new Workout();
-        Response response = this.newWorkoutPostRequest(invalidData);
+        Response response = this.newPostRequest("workout", invalidData);
         // Testaa että palauttaa 400
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
@@ -94,7 +96,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         data.setStart(System.currentTimeMillis() / 1000L);
         data.setNotes("foo");
         // Testaa että insertointi pyynnön tiedoilla
-        Response response = target("workout").request().post(Entity.entity(data, MediaType.APPLICATION_JSON_TYPE));
+        Response response = this.newPostRequest("workout", data);
         Assert.assertEquals(200, response.getStatus());
         Integer responseBody = response.readEntity(new GenericType<Integer>() {});
         data.setId(responseBody);
@@ -125,10 +127,10 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public void GETPalauttaaTreenitAikaväliltä() {
         Workout anotherWorkout = new Workout();
         anotherWorkout.setStart(1); // 1970-01-01T00:00:01
-        this.utils.insertWorkout(anotherWorkout);
+        utils.insertWorkout(anotherWorkout);
         Workout anotherWorkout2 = new Workout();
         anotherWorkout2.setStart(3); // 1970-01-01T00:00:03
-        this.utils.insertWorkout(anotherWorkout2);
+        utils.insertWorkout(anotherWorkout2);
         Response response = target("workout").queryParam("startFrom", "1").queryParam("startTo", "3").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Workout> workouts = response.readEntity(new GenericType<List<Workout>>() {});
@@ -137,8 +139,66 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(anotherWorkout.toString(), workouts.get(1).toString());
     }
 
-    private Response newWorkoutPostRequest(Workout data) {
-        return target("workout")
+    /**
+     * Testaa, että POST /api/workout/exercise
+     */
+    @Test
+    public void POSTExerciseHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/exercise", null);
+        // Testaa että palauttaa 400
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertExercise.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise
+     */
+    @Test
+    public void POSTExerciseHylkääPyynnönJosTietojaPuuttuu() {
+        // Simuloi POST, jonka datassa puuttuu tietoja
+        Workout.Exercise we = new Workout.Exercise();
+        Response response = this.newPostRequest("workout/exercise", we);
+        // Testaa että palauttaa 400
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        Assert.assertEquals(2, errors.size());
+        errors.sort(Comparator.comparing(ValidationError::getPath));
+        Assert.assertEquals("WorkoutController.insertExercise.arg0.exerciseId", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertExercise.arg0.workoutId", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(1).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise
+     */
+    @Test
+    public void POSTExerciseLisääLiikeenTreeniin() {
+        // Luo testidata
+        Workout.Exercise workoutExercise = new Workout.Exercise();
+        workoutExercise.setWorkoutId(testWorkout.getId());
+        workoutExercise.setExerciseId(testExercise.getId());
+        workoutExercise.setExerciseName(testExercise.getName());
+        // Testaa että insertointi pyynnön tiedoilla
+        Response response = this.newPostRequest("workout/exercise", workoutExercise);
+        Assert.assertEquals(200, response.getStatus());
+        Integer responseBody = response.readEntity(new GenericType<Integer>() {});
+        workoutExercise.setId(responseBody);
+        // Testaa että insertoitui, ja palautti id:n
+        Response getResponse = target("workout").request().get();
+        List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
+        Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId() == testWorkout.getId()).findFirst().get();
+        Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
+    }
+
+    private Response newPostRequest(String url, DbEntity data) {
+        return target(url)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.entity(data, MediaType.APPLICATION_JSON_TYPE));
     }

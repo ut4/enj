@@ -14,7 +14,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
 
     @Before
     public void beforeEach() {
-        this.testRepo = new StrippedWorkoutRepo(this.rollbackingDSFactory);
+        this.testRepo = new StrippedWorkoutRepo(rollbackingDSFactory);
     }
 
     /**
@@ -26,6 +26,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         //
         StrippedWorkoutEntity data = new StrippedWorkoutEntity();
         data.setStart(System.currentTimeMillis() / 1000L);
+        data.setEnd(0);
         //
         int insertId = this.testRepo.insert(data);
         //
@@ -56,7 +57,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
 
     /**
      * Riisuttu versio WorkoutRepositorystä; handlaa Workout-entiteettejä, jotka
-     * sisältää vain schemassa pakollisksi määritellyn kentän "start".
+     * sisältää vain schemassa pakollisksi määritellyn kentän "start" & "end".
      */
     private static class StrippedWorkoutRepo extends BasicRepository<StrippedWorkoutEntity> {
         public StrippedWorkoutRepo(DataSourceFactory dataSourceFac) {
@@ -65,11 +66,18 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     }
     private static class StrippedWorkoutEntity extends DbEntity {
         private long start;
+        private long end;
         public long getStart() {
             return this.start;
         }
         public void setStart(long start) {
             this.start = start;
+        }
+        public long getEnd() {
+            return this.end;
+        }
+        public void setEnd(long end) {
+            this.end = end;
         }
     }
 }
