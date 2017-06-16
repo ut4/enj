@@ -3,8 +3,8 @@ import { Link, IndexLink } from 'inferno-router';
 import UserMenu from 'src/ui/UserMenu';
 
 class MainMenu extends Component<any, any> {
-    public constructor(props) {
-        super(props);
+    public constructor(props, context) {
+        super(props, context);
         this.state = {isMenuOpen: false};
     }
     public toggleIsMenuOpen() {

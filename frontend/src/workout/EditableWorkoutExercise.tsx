@@ -5,19 +5,22 @@ import { Link } from 'inferno-router';
  * Implementoi "/treeni/:id"-näkymään sisällytettävien current-treenien
  * liikkeiden (currentWorkout.exercises) toiminnallisuuden.
  */
-class EditableWorkoutExercise extends Component<{exercise: Enj.API.ExerciseRecord}, any> {
-    public constructor(props) {
-        super(props);
+class EditableWorkoutExercise extends Component<{exercise: Enj.API.WorkoutExerciseRecord}, any> {
+    public constructor(props, context) {
+        super(props, context);
     }
     public render() {
         return (<li>
             <div class="heading">
-                { this.props.exercise.name }
+                { this.props.exercise.exerciseName }
             </div>
             <div class="content">
-                { this.props.exercise.sets.map(set =>
-                    <div><b>{ set.weight }kg</b> x { set.reps }</div>
-                ) }
+                { this.props.exercise.sets.length
+                    ? this.props.exercise.sets.map(set =>
+                        <div><b>{ set.weight }kg</b> x { set.reps }</div>
+                    )
+                    : <div> - </div>
+                }
             </div>
             <Link class="nice-button icon-button add with-text" to={ '/treeni/tanaan/sarja/lisaa/' + this.props.exercise.id }>
                 Uusi sarja

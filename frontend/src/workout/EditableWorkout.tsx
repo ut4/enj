@@ -7,8 +7,8 @@ import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
  * toiminnallisuuden.
  */
 class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord}, any> {
-    public constructor(props) {
-        super(props);
+    public constructor(props, context) {
+        super(props, context);
     }
     public render() {
         return (<div>

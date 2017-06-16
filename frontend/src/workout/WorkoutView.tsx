@@ -8,8 +8,8 @@ import iocFactories from 'src/ioc';
  */
 class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>}> {
     private workoutBackend: WorkoutBackend;
-    public constructor(props) {
-        super(props);
+    public constructor(props, context) {
+        super(props, context);
         this.state = {workouts: null};
         this.workoutBackend = iocFactories.workoutBackend();
     }

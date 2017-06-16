@@ -4,8 +4,8 @@ import iocFactories from 'src/ioc';
 
 class OfflineStartView extends Component<any, any> {
     private offline: Offline;
-    public constructor(props) {
-        super(props);
+    public constructor(props, context) {
+        super(props, context);
         this.offline = iocFactories.offline();
     }
     /**

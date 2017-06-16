@@ -44,8 +44,8 @@ const messageContainerSingleton = new MessageContainer();
 
 class Notifier extends Component<any, any> {
     messageContainer: MessageContainer;
-    public constructor(props) {
-        super(props);
+    public constructor(props, context) {
+        super(props, context);
         this.state = {messages: []};
         this.messageContainer = messageContainerSingleton;
     }
