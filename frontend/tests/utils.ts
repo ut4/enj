@@ -13,6 +13,11 @@ const utils = {
         (<any>scope).cleanTestCache = () =>
             scope.caches.delete(cacheName);
         return scope;
+    },
+    triggerOnChange: (el: HTMLSelectElement) => {
+        const event = document.createEvent('HTMLEvents');
+        event.initEvent('change', false, true);
+        el.dispatchEvent(event);
     }
 };
 

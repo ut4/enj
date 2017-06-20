@@ -4,19 +4,31 @@ declare module Enj {
      */
     module API {
         interface WorkoutRecord {
-            id?: number;
+            id: number;
             start: number;
-            exercises: Array<ExerciseRecord>
+            exercises: Array<WorkoutExerciseRecord>
         }
-        interface ExerciseRecord {
-            id?: number;
-            name: string;
-            sets: Array<SetRecord>
+        interface WorkoutExerciseRecord {
+            id: number;
+            orderDef: number;
+            workoutId: number;
+            exerciseId: number;
+            exerciseName?: string;
+            sets: Array<WorkoutExerciseSetRecord>
         }
-        interface SetRecord {
-            id?: number;
+        interface WorkoutExerciseSetRecord {
+            id: number;
             weight: number;
             reps: number;
+        }
+        interface ExerciseVariantRecord {
+            id: number;
+            content: string;
+        }
+        interface ExerciseRecord {
+            id: number;
+            name: string;
+            variants: Array<ExerciseVariantRecord>
         }
     }
     /**

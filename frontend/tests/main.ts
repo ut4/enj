@@ -3,6 +3,7 @@ import 'tests/common/HttpTests';
 import 'tests/common/RESTBackendTests';
 import 'tests/common/IocContainerTests';
 import 'tests/common/OfflineHttpTests';
+import 'tests/exercise/ExerciseSelectorTests';
 import 'tests/offline/OfflineTests';
 import 'tests/offline/OfflineStartViewTests';
 import 'tests/serviceworker/SWManagerTests';

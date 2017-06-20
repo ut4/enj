@@ -3,11 +3,12 @@ import Db              from 'src/common/Db';
 import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
-import { History, createBrowserHistory } from 'history';
+import { History, createHashHistory } from 'history';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
+import ExerciseBackend  from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import Offline         from 'src/offline/Offline';
-const popStateHistory = createBrowserHistory();
+const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
     // == Common ===============================================================
@@ -24,34 +25,34 @@ class IocFactories extends IocContainer {
         return notify;
     }
     public history(): History {
-        return popStateHistory;
+        return routerHistory;
     }
 
     // == Stat =================================================================
-    public statHttp(): any {
+    public statBackend(): any {
         return null;
     }
 
     // == Workout ==============================================================
-    public workoutBackend(): any {
-        return this.memoize('workoutRepo', () => new WorkoutBackend(this.http(), 'workout'));
+    public workoutBackend(): WorkoutBackend {
+        return this.memoize('workoutBackend', () => new WorkoutBackend(this.http(), 'workout'));
     }
     public workoutExerciseHttp(): any {
         return null;
     }
 
     // == Program ==============================================================
-    public programHttp(): any {
+    public programBackend(): any {
         return null;
     }
 
     // == Exercise =============================================================
-    public exerciseHttp(): any {
-        return null;
+    public exerciseBackend(): ExerciseBackend {
+        return this.memoize('exerciseBackend', () => new ExerciseBackend(this.http(), 'exercise'));
     }
 
     // == Nutrition ============================================================
-    public nutritionHttp(): any {
+    public nutritionBackend(): any {
         return null;
     }
 
@@ -59,7 +60,7 @@ class IocFactories extends IocContainer {
     public userState(): UserState {
         return this.memoize('userState', () => new UserState(this.db()));
     }
-    public userHttp(): any {
+    public userBackend(): any {
         return null;
     }
 

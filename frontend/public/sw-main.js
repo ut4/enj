@@ -29,6 +29,7 @@ self.CACHE_FILES = [
     // == API-pyynnöt ========
     // (pidettävä päivitettynä manuaalisesti)
     'api/workout',
+    'api/exercise',
     // == Teema ===========
     'theme/favicon.ico',
     'theme/favicon.png',
