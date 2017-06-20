@@ -112,6 +112,6 @@ public class AuthControllerTest extends JerseyTest {
     private Response newLoginRequest(LoginCredentials input) {
         return target("auth/login")
             .request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.entity(input, MediaType.APPLICATION_JSON_TYPE));
+            .post(Entity.json(input));
     }
 }

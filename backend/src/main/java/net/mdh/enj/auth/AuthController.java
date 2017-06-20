@@ -35,7 +35,7 @@ public class AuthController {
     @POST
     @PermitAll
     @Path("login")
-    @Consumes("application/json")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response login(@Valid @NotNull LoginCredentials loginCredentials) {
         if (!Arrays.equals(loginCredentials.getUsername(), new char[]{'f','o','o'}) ||
             !Arrays.equals(loginCredentials.getPassword(), new char[]{'b','a','r','s'})) {

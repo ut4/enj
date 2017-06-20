@@ -38,7 +38,7 @@ public class WorkoutController {
      * @return int Luodun treenin id
      */
     @POST
-    @Consumes("application/json")
+    @Consumes(MediaType.APPLICATION_JSON)
     public int insert(@Valid @NotNull Workout workout) {
         return this.workoutRepository.insert(workout);
     }
@@ -55,8 +55,8 @@ public class WorkoutController {
 
     @POST
     @Path("/exercise")
-    @Consumes("application/json")
-    public int insertExercise(@Valid @NotNull Workout.Exercise exercise) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Object insertExercise(@Valid @NotNull Workout.Exercise exercise) {
         return this.workoutExerciseRepository.insert(exercise);
     }
 }

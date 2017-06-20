@@ -33,7 +33,7 @@ INSERT INTO exercise (`name`) VALUES
     ('Kiertäjäkalvosin'),
     ('Askelkyykky');
 
-INSERT INTO exercise_variant (exercise_id,content) VALUES
+INSERT INTO exerciseVariant (exerciseId, content) VALUES
     (1,'käsipainoilla'),
     (12,'levytangolla'),
     (2,'myötäotteella'),

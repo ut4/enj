@@ -49,7 +49,6 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         List<Exercise.Variant> variants = new ArrayList<>();
         variants.add(insertTestVariant("var1", testExercise.getId()));
         variants.add(insertTestVariant("var2", testExercise.getId()));
-        Collections.reverse(variants);
         testExercise.setVariants(variants);
         Exercise anotherWithoutVariants = insertTestExercise("bar");
         Response response = target("exercise").request().get();

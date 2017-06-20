@@ -41,10 +41,10 @@ public class SearchFilters {
     String toSql() {
         ArrayList<String> out = new ArrayList<>();
         if (this.startFrom != null) {
-            out.add("`start` >= :startFrom");
+            out.add("workoutStart >= :startFrom");
         }
         if (this.startTo != null) {
-            out.add("`start` <= :startTo");
+            out.add("workoutStart <= :startTo");
         }
         return String.join(" AND ", out);
     }

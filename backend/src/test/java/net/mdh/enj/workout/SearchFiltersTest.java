@@ -26,11 +26,11 @@ public class SearchFiltersTest {
     public void toSqlLisääAsetetutKentätKyselyyn() {
         Assert.assertEquals("", this.searchFilters.toSql());
         this.searchFilters.setStartFrom((long) 1);
-        String startFromPart = "`start` >= :startFrom";
+        String startFromPart = "workoutStart >= :startFrom";
         Assert.assertEquals(startFromPart, this.searchFilters.toSql());
         this.searchFilters.setStartTo((long) 2);
-        Assert.assertEquals(startFromPart + " AND `start` <= :startTo", this.searchFilters.toSql());
+        Assert.assertEquals(startFromPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
         this.searchFilters.setStartFrom(null);
-        Assert.assertEquals("`start` <= :startTo", this.searchFilters.toSql());
+        Assert.assertEquals("workoutStart <= :startTo", this.searchFilters.toSql());
     }
 }

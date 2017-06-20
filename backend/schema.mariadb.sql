@@ -1,12 +1,12 @@
-DROP VIEW IF EXISTS workoutExerciseView;
-DROP VIEW IF EXISTS workoutView;
+DROP VIEW    IF EXISTS workoutExerciseView;
+DROP VIEW    IF EXISTS workoutView;
 DROP TRIGGER IF EXISTS workoutEndTrg;
-DROP TABLE IF EXISTS workoutExerciseSet;
-DROP TABLE IF EXISTS workoutExercise;
-DROP TABLE IF EXISTS workout;
-DROP VIEW IF EXISTS exerciseView;
-DROP TABLE IF EXISTS exerciseVariant;
-DROP TABLE IF EXISTS exercise;
+DROP TABLE   IF EXISTS workoutExerciseSet;
+DROP TABLE   IF EXISTS workoutExercise;
+DROP TABLE   IF EXISTS workout;
+DROP VIEW    IF EXISTS exerciseView;
+DROP TABLE   IF EXISTS exerciseVariant;
+DROP TABLE   IF EXISTS exercise;
 
 -- MariaDB int sizes --
 -- SMALLINT  -32768      to 32767 signed,      0 to 65535 unsigned
@@ -31,10 +31,10 @@ CREATE TABLE exerciseVariant (
 
 CREATE VIEW exerciseView AS
     SELECT
-        e.id,
-        e.`name`,
-        ev.id AS variantId,
-        ev.content AS variantContent
+        e.id       AS exerciseId,
+        e.`name`   AS exerciseName,
+        ev.id      AS exerciseVariantId,
+        ev.content AS exerciseVariantContent
     FROM exercise e
     LEFT JOIN exerciseVariant ev ON (ev.exerciseId = e.id);
 
@@ -90,23 +90,23 @@ DELIMITER ;
 
 CREATE VIEW workoutView AS
     SELECT
-        w.id,
-        w.`start`,
-        w.`end`,
-        w.notes
-    FROM workout as w;
+        w.id      AS workoutId,
+        w.`start` AS workoutStart,
+        w.`end`   AS workoutEnd,
+        w.notes   AS workoutNotes
+    FROM workout AS w;
 
 CREATE VIEW workoutExerciseView AS
     SELECT
         we.id         AS workoutExerciseId,
-        we.workoutId AS workoutExerciseWorkoutId,
+        we.workoutId  AS workoutExerciseWorkoutId,
         e.id          AS exerciseId,
         e.`name`      AS exerciseName,
         ev.id         AS exerciseVariantId,
         ev.`content`  AS exerciseVariantName,
-        s.id          AS setId,
-        s.weight      AS setWeight,
-        s.reps        AS setReps
+        s.id          AS workoutExerciseSetId,
+        s.weight      AS workoutExerciseSetWeight,
+        s.reps        AS workoutExerciseSetReps
     FROM workoutExercise we
     JOIN exercise e ON (e.id = we.exerciseId)
     LEFT JOIN exerciseVariant ev ON (ev.id = we.exerciseVariantId)

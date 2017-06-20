@@ -161,16 +161,15 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void POSTExerciseHylkääPyynnönJosTietojaPuuttuu() {
         // Simuloi POST, jonka datassa puuttuu tietoja
-        Workout.Exercise we = new Workout.Exercise();
-        Response response = this.newPostRequest("workout/exercise", we);
+        Response response = this.newPostRequest("workout/exercise", "{}");
         // Testaa että palauttaa 400
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
         Assert.assertEquals(2, errors.size());
         errors.sort(Comparator.comparing(ValidationError::getPath));
-        Assert.assertEquals("WorkoutController.insertExercise.arg0.exerciseId", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertExercise.arg0.exercise", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("WorkoutController.insertExercise.arg0.workoutId", errors.get(1).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(1).getMessageTemplate());
     }
@@ -183,8 +182,8 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         // Luo testidata
         Workout.Exercise workoutExercise = new Workout.Exercise();
         workoutExercise.setWorkoutId(testWorkout.getId());
-        workoutExercise.setExerciseId(testExercise.getId());
-        workoutExercise.setExerciseName(testExercise.getName());
+        workoutExercise.setOrderDef(0);
+        workoutExercise.setExercise(testExercise);
         // Testaa että insertointi pyynnön tiedoilla
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
@@ -197,9 +196,9 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
     }
 
-    private Response newPostRequest(String url, DbEntity data) {
+    private Response newPostRequest(String url, Object data) {
         return target(url)
             .request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.entity(data, MediaType.APPLICATION_JSON_TYPE));
+            .post(Entity.json(data));
     }
 }

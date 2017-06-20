@@ -2,7 +2,11 @@ package net.mdh.enj.workout;
 
 import net.mdh.enj.Utils;
 import net.mdh.enj.mapping.DbEntity;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.Produces;
 import java.util.List;
 
 /**
@@ -58,14 +62,15 @@ public class Workout extends DbEntity {
     /**
      * Treeniliike-entiteetti
      */
+    @Produces(MediaType.APPLICATION_JSON)
     public static class Exercise extends DbEntity {
         protected int id;
         private int orderDef;
         @Min(value = 1)
         private int workoutId;
-        @Min(value = 1)
-        private int exerciseId;
-        private String exerciseName;
+        @Valid
+        @NotNull
+        private net.mdh.enj.exercise.Exercise exercise;
         private List<Set> sets;
 
         public int getOrderDef() {
@@ -83,17 +88,17 @@ public class Workout extends DbEntity {
         }
 
         public int getExerciseId() {
-            return this.exerciseId;
+            return this.exercise != null ? this.exercise.getId() : 0;
         }
         public void setExerciseId(int exerciseId) {
-            this.exerciseId = exerciseId;
+            this.exercise.setId(exerciseId);
         }
 
-        public String getExerciseName() {
-            return this.exerciseName;
+        public net.mdh.enj.exercise.Exercise getExercise() {
+            return exercise;
         }
-        public void setExerciseName(String exerciseName) {
-            this.exerciseName = exerciseName;
+        public void setExercise(net.mdh.enj.exercise.Exercise exercise) {
+            this.exercise = exercise;
         }
 
         public List<Set> getSets() {
@@ -109,8 +114,7 @@ public class Workout extends DbEntity {
                 "id=" + this.getId() +
                 ", orderDef=" + this.getOrderDef() +
                 ", workoutId=" + this.getWorkoutId() +
-                ", exerciseId=" + this.getExerciseId() +
-                ", exerciseName=" + this.getExerciseName() +
+                ", exercise=" + this.getExercise().toString() +
                 ", sets=" + Utils.stringifyAll(this.getSets()) +
             "}";
         }

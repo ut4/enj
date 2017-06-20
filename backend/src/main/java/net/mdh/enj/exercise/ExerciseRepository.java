@@ -25,7 +25,7 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
      */
     List<Exercise> selectAll() {
         return super.selectAll(
-            String.format("SELECT * FROM %sView ORDER BY id DESC", TABLE_NAME),
+            String.format("SELECT * FROM %sView ORDER BY exerciseId DESC", TABLE_NAME),
             new ExerciseMapper()
         );
     }
@@ -33,21 +33,22 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     /**
      * Luo Exercise-beaneja resultSet-rivin tiedoilla.
      */
-    private final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
+    public static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
 
+        private static final String ID_COL = "exerciseId";
         private final SubCollector<Exercise.Variant> variantCollector;
 
-        ExerciseMapper() {
-            super("id");
-            this.variantCollector = new SubCollector<>(new ExerciseVariantMapper(), "id");
+        public ExerciseMapper() {
+            super(ID_COL);
+            this.variantCollector = new SubCollector<>(new ExerciseVariantMapper(), ID_COL);
         }
 
         @Override
         public Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
             Exercise exercise = new Exercise();
-            int id = rs.getInt("id");
+            int id = rs.getInt(ID_COL);
             exercise.setId(id);
-            exercise.setName(rs.getString("name"));
+            exercise.setName(rs.getString("exerciseName"));
             exercise.setVariants(this.variantCollector.collect(rs, rowNum, id));
             return exercise;
         }
@@ -55,18 +56,18 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
         /**
          * Luo Variant-beaneja resultSet-rivin tiedoilla.
          */
-        private final class ExerciseVariantMapper extends NoDupeRowMapper<Exercise.Variant> {
+        public static final class ExerciseVariantMapper extends NoDupeRowMapper<Exercise.Variant> {
 
             ExerciseVariantMapper() {
-                super("variantId");
+                super("exerciseVariantId");
             }
 
             @Override
             public Exercise.Variant doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Exercise.Variant variant = new Exercise.Variant();
-                variant.setId(rs.getInt("variantId"));
-                variant.setContent(rs.getString("variantContent"));
-                variant.setExerciseId(rs.getInt("id"));
+                variant.setId(rs.getInt("exerciseVariantId"));
+                variant.setContent(rs.getString("exerciseVariantContent"));
+                variant.setExerciseId(rs.getInt("exerciseId"));
                 return variant;
             }
         }

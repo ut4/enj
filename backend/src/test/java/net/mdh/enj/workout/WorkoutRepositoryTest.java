@@ -18,12 +18,12 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
 
     public WorkoutRepositoryTest() {
         super();
-        this.utils = new DbTestUtils(this.rollbackingDataSource);
+        this.utils = new DbTestUtils(rollbackingDataSource);
     }
 
     @Before
     public void beforeEach() {
-        this.workoutRepository = new WorkoutRepository(this.rollbackingDSFactory);
+        this.workoutRepository = new WorkoutRepository(rollbackingDSFactory);
         if (testExercise == null) {
             testExercise = new Exercise();
             testExercise.setName("foo");
@@ -91,8 +91,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
     private Workout.Exercise insertWorkoutExercise(int workoutId) {
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(workoutId);
-        we.setExerciseId(WorkoutRepositoryTest.testExercise.getId());
-        we.setExerciseName(WorkoutRepositoryTest.testExercise.getName());
+        we.setExercise(WorkoutRepositoryTest.testExercise);
         this.utils.insertWorkoutExercise(we);
         return we;
     }
