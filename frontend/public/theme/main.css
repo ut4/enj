@@ -209,7 +209,7 @@ a.icon-button.with-text:hover {
     background-position: 4px 4px;
 }
 .icon-button.arrow {
-    transition: transform .15s ease-out;
+    transition: transform .1s ease-out;
     background-image: url("icon-sprite.svg#arrow");
     background-size: 20px auto;
 }
@@ -223,34 +223,7 @@ a.icon-button.with-text:hover {
     transform: rotate(90deg);
 }
 
-.action-buttons {
-    position: absolute;
-    right: -15px;
-    top: 7px;
-    width: 60px;
-    height: 100%;
-}
-.action-buttons .icon-button {
-    float: right;
-    opacity: .3;
-}
-.action-buttons .icon-button:hover {
-    opacity: .5;
-}
-.action-buttons .icon-button.edit {
-    position: absolute;
-    background-position: 8px 7px;
-    left: -5px;
-}
-.action-buttons .icon-button.delete {
-    background-position: 5px 5px;
-}
-.action-buttons .icon-button.arrow.down {
-    position: absolute;
-    bottom: 10px;
-    right: 0;
-}
-
+/* -- Listat ---------- */
 .dark-list {
     background-color: #3B3938;
     color: #EEEEEE;
@@ -283,7 +256,35 @@ a.icon-button.with-text:hover {
 .dark-list .content {
     margin: 10px auto;
 }
+.action-buttons {
+    position: absolute;
+    right: -16px;
+    top: 5px;
+    width: 60px;
+    height: 100%;
+}
+.action-buttons .icon-button {
+    float: right;
+    opacity: .3;
+}
+.action-buttons .icon-button:hover {
+    opacity: .5;
+}
+.action-buttons .icon-button.edit {
+    position: absolute;
+    background-position: 8px 7px;
+    left: -5px;
+}
+.action-buttons .icon-button.delete {
+    background-position: 5px 5px;
+}
+.action-buttons .icon-button.arrow.down {
+    position: absolute;
+    bottom: 8px;
+    right: 0;
+}
 
+/* -- Notifier ---------- */
 .notifier {
     position: fixed;
     bottom: 20px;
@@ -332,6 +333,85 @@ a.icon-button.with-text:hover {
 }
 .notifier-message.error > .notifier-message-icon {
     background-image: url("icon-sprite.svg#error");
+}
+
+/* -- Lomakkeet ---------- */
+input, textarea, select:not(.no-style) {
+    border-color: #ABADB3 #DBDFE6 #E3E9EF #E2E3EA;
+    border-radius: 1px;
+    border-style: solid;
+    border-width: 1px;
+    color: #3E2F49;
+    font: 14px "Fira sans light";
+    margin-bottom: 5px;
+    padding: 5px 0;
+    text-indent: 8px;
+    -webkit-transition: border-color 0.1s ease-out 0s;
+            transition: border-color 0.1s ease-out 0s;
+}
+select:not(.no-style) {
+    text-indent: 2px;
+}
+input:hover {
+    border-color: #5794BF #B7D5EA #C7E2F1 #C5DAED;
+}
+input[type="date"] {
+    text-indent: 3px;
+}
+.input-set {
+    display: inline-block;
+    margin-bottom: 4px;
+    width: 100%;
+}
+.input-set > span:first-of-type {
+    box-sizing: border-box;
+    display: inline-block;
+}
+.input-set input, .input-set textarea, .input-set select {
+    box-sizing: border-box;
+    width: 100%;
+}
+.form-buttons .nice-button {
+    min-width: 60px;
+    width: 20%;
+}
+
+/* -- Overlay ---------- */
+#overlay {
+    display: block;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 10px;
+    z-index: 1;
+    text-align: left;
+    background-color: rgba(0,0,0,0.8);
+}
+#overlay-content {
+    max-width: 560px;
+    max-height: 100%;
+    margin: 0 auto;
+    padding: 10px 10px 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: #FFFFFF;
+    border-radius: 2px;
+}
+#overlay-content:after { /* puskee scroll tilassa paddingia */
+    content: "";
+    display: block;
+    margin-bottom: 10px;
+}
+#overlay-content h3 {
+    width: 100%;
+    margin: -10px 0 10px -10px;
+    padding: 8px 10px 12px;
+    font: 1.2em/1em "Fira sans heavy";
+    background-color: #EEEEEE;
+    color: #676269;
 }
 
 /* ==== App ====

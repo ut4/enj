@@ -3,13 +3,9 @@ import { Link } from 'inferno-router';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 
 /**
- * Implementoi "/treeni/:id"-näkymään sisällytettävien tanaan-treenien
- * toiminnallisuuden.
+ * #/treeni/:id -näkymään renderöitävän treenilistan yksi itemi.
  */
 class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord}, any> {
-    public constructor(props, context) {
-        super(props, context);
-    }
     public render() {
         return (<div>
             <div class="workout-timer">
@@ -17,10 +13,10 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord}, any> {
             </div>
             <ul class="dark-list">
                 { this.props.workout.exercises.map(exercise =>
-                    <EditableWorkoutExercise exercise={ exercise }/>
+                    <EditableWorkoutExercise exercise={ exercise } workoutId={ this.props.workout.id }/>
                 ) }
             </ul>
-            <Link class="nice-button" to="/treeni/tanaan/liike/lisaa">Lisää liike</Link>
+            <Link class="nice-button" to={ '/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</Link>
         </div>);
     }
 }

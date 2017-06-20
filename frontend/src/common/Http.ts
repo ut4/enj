@@ -38,9 +38,9 @@ class Http {
     /**
      * @param {string} url
      * @param {Object} data POST -data
-     * @return {Promise} -> ({Object} responseData, {any|Response} rejectedValue)
+     * @return {Promise} -> ({any} responseData, {any|Response} rejectedValue)
      */
-    public post(url: string, data: Object): Promise<Object> {
+    public post(url: string, data: Object): Promise<any> {
         Http.pendingRequestCount++;
         return this.userState.isOffline().then(isUserOffline =>
             !isUserOffline
