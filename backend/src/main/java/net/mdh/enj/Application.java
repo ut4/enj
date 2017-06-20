@@ -16,14 +16,12 @@ public class Application {
     /**
      * Starttaa applikaation osoitteessa {Application.BASE_URI} käyttäen Grizzly
      * HTTP-serveriä.
-     *
-     * @param args
-     * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         // Rekisteröi sorsat & configuroi jersey
         final ResourceConfig applicationConfig = new ResourceConfig();
         applicationConfig.packages("net.mdh.enj");
+        applicationConfig.register(CORSEnabler.class);
         applicationConfig.register(AuthenticationFilter.class);
         applicationConfig.register(new InjectionBinder());
         applicationConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
