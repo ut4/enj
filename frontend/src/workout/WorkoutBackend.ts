@@ -26,13 +26,18 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public id;
     public orderDef;
     public workoutId;
-    public exerciseId;
-    public exerciseName;
+    public exercise;
     public sets;
     constructor() {
         this.orderDef = 0;
         this.sets = [];
     }
+}
+
+class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
+    public id;
+    public weight;
+    public reps;
 }
 
 /**
@@ -41,4 +46,4 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
 class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {}
 
 export default WorkoutBackend;
-export { WorkoutExercise };
+export { WorkoutExercise, WorkoutExerciseSet };

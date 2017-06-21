@@ -31,13 +31,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
      */
     public onExerciseSelect(selectedExercise, selectedVariant) {
         const workoutExercise = this.state.workoutExercise;
-        if (selectedExercise) {
-            workoutExercise.exerciseId = selectedExercise.id;
-            workoutExercise.exerciseName = selectedExercise.name;
-        } else {
-            workoutExercise.exerciseId = null;
-            workoutExercise.exerciseName = null;
-        }
+        workoutExercise.exercise = selectedExercise || null;
         this.setState({workoutExercise});
     }
     /**
@@ -58,7 +52,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
             <h3>Lisää liike treeniin</h3>
             <ExerciseSelector onSelect={ this.onExerciseSelect.bind(this) }/>
             <div class="form-buttons">
-                <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) } disabled={ !this.state.workoutExercise.exerciseId }>Ok</button>
+                <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) } disabled={ !this.state.workoutExercise.exercise }>Ok</button>
                 <button class="text-button" type="button" onClick={ this.cancel.bind(this) }>Peruuta</button>
             </div>
         </Overlay>);

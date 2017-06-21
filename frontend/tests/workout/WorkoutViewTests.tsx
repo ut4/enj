@@ -19,7 +19,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
         const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getAll')
-            .returns(Promise.resolve([{exercises: []}]));
+            .returns(Promise.resolve([{id:1, start: 2, exercises: []}]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
         //

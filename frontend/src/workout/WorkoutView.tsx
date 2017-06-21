@@ -19,7 +19,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
     public componentDidMount() {
         this.workoutBackend.getAll().then(
             // Backend-fetch ok, aseta state.workouts -> <responseArray>
-            workouts => this.setState({ workouts }),
+            workouts => this.setState({workouts}),
             // Backend-fetch epäonnistui, aseta state.workouts -> []
             err => {
                 iocFactories.notify()('Treenien haku epäonnistui', 'error');

@@ -12,8 +12,8 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord}, any> {
                 Kesto { this.props.workout.start }:00:00
             </div>
             <ul class="dark-list">
-                { this.props.workout.exercises.map(exercise =>
-                    <EditableWorkoutExercise exercise={ exercise } workoutId={ this.props.workout.id }/>
+                { this.props.workout.exercises.map(workoutExercise =>
+                    <EditableWorkoutExercise workoutExercise={ workoutExercise }/>
                 ) }
             </ul>
             <Link class="nice-button" to={ '/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</Link>
