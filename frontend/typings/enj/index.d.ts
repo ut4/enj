@@ -41,8 +41,10 @@ declare module Enj {
         }
         interface SyncQueueRecord {
             id?: number;
+            method: string,
             url: string;
             data: any;
+            response: any;
         }
     }
 }

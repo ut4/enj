@@ -58,7 +58,7 @@ class Http {
                 )
                 // Käyttäjä offline, loggaa HTTP-pyyntö syncQueueen ja korvaa
                 // vastaus offline-handerin vastauksella (jos handleri löytyy)
-                : handleOfflineRequest.call(this, url, data, 'post')
+                : handleOfflineRequest.call(this, url, data, 'POST')
         );
     }
 }
@@ -81,23 +81,24 @@ function handleOfflineRequest(
     method: string
 ): Promise<any> {
     Http.pendingRequestCount--;
-    console.info('Faking HTTP ' + method.toUpperCase() + ' ' + url);
-    if (!this.offlineHttp.hasHandlerFor(url)) {
-        return Promise.reject(makeOffline404(url));
+    console.info('Faking HTTP ' + method + ' ' + url);
+    if (!this.offlineHttp.hasHandlerFor(method, url)) {
+        return Promise.reject(makeOffline404(method, url));
     }
-    console.log('has handler');
-    var r;
-    return this.offlineHttp.handle(url, data)
+    let ret;
+    return this.offlineHttp.handle(method, url, data)
         .then(response => {
-            r=response;
-            return this.offlineHttp.logRequestToSyncQueue(url, data);
-        }).then(() => r);
+            ret = response;
+            return this.offlineHttp.logRequestToSyncQueue({method, url, data, response});
+        }).then(
+            () => ret
+        );
 }
 // Palautetaan offline-tilassa tapahtuneisiin pyyntöihin, joihin ei löytynyt
 // offline-handeria.
-function makeOffline404(url): Response {
-    return new Response('Offlinehandleria ei löytynyt urlille ' + url +
-        '. Pyyntö logattiin kuitenkin syncQueueen normaalisti', {
+function makeOffline404(method, url): Response {
+    return new Response('Offlinehandleria ei löytynyt urlille ' + method + ' ' + url +
+        '.', {
             status: 454,
             statusText: 'Offline handler not found'
         });

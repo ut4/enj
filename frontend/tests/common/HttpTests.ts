@@ -6,25 +6,29 @@ import UserState from 'src/user/UserState';
 
 QUnit.module('common/Http', hooks => {
     const mockBaseUrl:string = 'http://smthng/';
+    let fetchContainer: GlobalFetch = window;
+    let mockResponse: {json: Function};
+    let offlineHttp: OfflineHttp;
+    let userState: UserState;
+    let http: Http;
     hooks.beforeEach(() => {
         Http.pendingRequestCount = 0;
-        this.mockResponse = {json: function () {}};
-        this.offlineHttp = Object.create(OfflineHttp.prototype);
-        this.userState = Object.create(UserState.prototype);
-        this.fetchContainer = window;
-        this.http = new Http(this.fetchContainer, this.offlineHttp, this.userState, mockBaseUrl);
+        mockResponse = {json: function () {}};
+        offlineHttp = Object.create(OfflineHttp.prototype);
+        userState = Object.create(UserState.prototype);
+        http = new Http(fetchContainer, offlineHttp, userState, mockBaseUrl);
     });
     QUnit.test('get päivittää pendingRequestsCounterin arvon', assert => {
-        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(false));
-        const fetchStub = sinon.stub(this.fetchContainer, 'fetch').returns(Promise.resolve(this.mockResponse));
+        sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
+        const fetchStub = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
         const initialCounterValue = Http.pendingRequestCount;
         // == GET =====
-        this.http.get('foo');
+        http.get('foo');
         assert.equal(Http.pendingRequestCount, initialCounterValue + 1,
             'Pitäisi suurentaa counteria yhdellä'
         );
         // == POST ====
-        const promise = this.http.post('foo', {});
+        const promise = http.post('foo', {});
         assert.equal(Http.pendingRequestCount, initialCounterValue + 2,
             'Pitäisi suurentaa counteria edelleen yhdellä'
         );
@@ -39,13 +43,13 @@ QUnit.module('common/Http', hooks => {
     });
     QUnit.test('get kutsuu fetchiä baseUrlilla prefiksoituna', assert => {
         const mockResponseValue = {foo: 'bar'};
-        sinon.stub(this.mockResponse, 'json').returns(mockResponseValue);
-        const httpCallWatcher = sinon.stub(this.fetchContainer, 'fetch').returns(
-            Promise.resolve(this.mockResponse)
+        sinon.stub(mockResponse, 'json').returns(mockResponseValue);
+        const httpCallWatcher = sinon.stub(fetchContainer, 'fetch').returns(
+            Promise.resolve(mockResponse)
         );
         const getCallUrl = 'foo/bar';
         const done = assert.async();
-        this.http.get(getCallUrl).then(function (processedResponseValue) {
+        http.get(getCallUrl).then(function (processedResponseValue) {
             const actualUrl = httpCallWatcher.firstCall.args[0];
             const expectedUrl = mockBaseUrl + getCallUrl;
             assert.equal(
@@ -63,12 +67,12 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('post kutsuu fetchiä baseUrlilla prefiksoituna', assert => {
-        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(false));
+        sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
         const requestUrl = '/foo/bar';
         const requestData = {foo: 'bar'};
         const mockResponseData = 'qwe';
-        sinon.stub(this.mockResponse, 'json').returns(mockResponseData);
-        const httpCallWatcher = sinon.mock(this.fetchContainer);
+        sinon.stub(mockResponse, 'json').returns(mockResponseData);
+        const httpCallWatcher = sinon.mock(fetchContainer);
         httpCallWatcher.expects('fetch').once()
             .withExactArgs(
                 // Pitäisi prefiksoida urlin
@@ -83,28 +87,28 @@ QUnit.module('common/Http', hooks => {
                     body: JSON.stringify(requestData)
                 }
             )
-            .returns(Promise.resolve(this.mockResponse));
+            .returns(Promise.resolve(mockResponse));
         const done = assert.async();
-        this.http.post(requestUrl, requestData).then(function (result) {
+        http.post(requestUrl, requestData).then(function (result) {
             httpCallWatcher.verify();
             assert.deepEqual(result, mockResponseData);
             done();
         });
     });
-    QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on userState', assert => {
-        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(true));
-        const httpCallWatcher = sinon.spy(this.fetchContainer, 'fetch');
-        const requestQueuerWatcher = sinon.stub(this.offlineHttp, 'logRequestToSyncQueue');
-        sinon.stub(this.offlineHttp, 'hasHandlerFor').returns(true);
+    QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
+        sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
+        const httpCallWatcher = sinon.spy(fetchContainer, 'fetch');
+        const requestQueuerWatcher = sinon.stub(offlineHttp, 'logRequestToSyncQueue');
+        sinon.stub(offlineHttp, 'hasHandlerFor').returns(true);
         const requestUrl = '/baz/haz';
         const requestData = {baz: 'haz'};
         const mockHandlerResponse = 'rtyt';
-        const mockOfflineHandlerWatcher = sinon.mock(this.offlineHttp);
+        const mockOfflineHandlerWatcher = sinon.mock(offlineHttp);
         mockOfflineHandlerWatcher.expects('handle').once()
-            .withExactArgs(requestUrl, requestData)
+            .withExactArgs('POST', requestUrl, requestData)
             .returns(Promise.resolve(mockHandlerResponse));
         const done = assert.async();
-        this.http.post(requestUrl, requestData).then(function (result) {
+        http.post(requestUrl, requestData).then(function (result) {
             assert.equal(httpCallWatcher.called, false,
                 'Ei pitäisi tehdä HTTP-pyyntöä'
             );
@@ -113,7 +117,7 @@ QUnit.module('common/Http', hooks => {
             );
             assert.deepEqual(
                 requestQueuerWatcher.firstCall.args,
-                [requestUrl, requestData],
+                [{method: 'POST', url: requestUrl, data: requestData, response: mockHandlerResponse}],
                 'Pitäisi logata pyynnön tiedot syncQueueen'
             );
             mockOfflineHandlerWatcher.verify();
@@ -123,11 +127,11 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('post palauttaa userState-modessa 454 Responsen jos handleria ei löydy', assert => {
-        sinon.stub(this.userState, 'isOffline').returns(Promise.resolve(true));
-        const requestQueuerWatcher = sinon.spy(this.offlineHttp, 'logRequestToSyncQueue');
-        sinon.stub(this.offlineHttp, 'hasHandlerFor').returns(false);
+        sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
+        const requestQueuerWatcher = sinon.spy(offlineHttp, 'logRequestToSyncQueue');
+        sinon.stub(offlineHttp, 'hasHandlerFor').returns(false);
         const done = assert.async();
-        this.http.post().then(null, function (result: Response) {
+        http.post('foo', null).then(null, function (result: Response) {
             assert.equal(requestQueuerWatcher.called, false);
             assert.equal(result.status, 454);
             done();

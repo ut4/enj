@@ -4,42 +4,42 @@ import Db from 'src/common/Db';
 import OfflineHttp from 'src/common/OfflineHttp';
 
 QUnit.module('common/OfflineHttp', hooks => {
+    let db: Db;
+    let offlineHttp: OfflineHttp;
     hooks.beforeEach(() => {
         OfflineHttp.requestHandlers = {};
-        this.db = new Db();
-        this.offlineHttp = new OfflineHttp(this.db);
+        db = new Db();
+        offlineHttp = new OfflineHttp(db);
     });
     QUnit.test('addHandler lisää handerin listaan', assert => {
         const urlToHandle = 'some/url';
         const handler = function () { return 'foo'; };
-        this.offlineHttp.addHandler(urlToHandle, handler);
+        offlineHttp.addHandler('POST', urlToHandle, handler);
         const expected = {};
-        expected[urlToHandle] = handler;
+        expected['POST:' + urlToHandle] = handler;
         assert.deepEqual(OfflineHttp.requestHandlers, expected);
     });
     QUnit.test('hasHandler palauttaa tiedon onko handleri rekisteröity', assert => {
         const handlerUrlToCheck = 'foor/var';
         assert.notOk(
-            this.offlineHttp.hasHandlerFor(handlerUrlToCheck),
+            offlineHttp.hasHandlerFor('POST', handlerUrlToCheck),
             'Pitäisi palauttaa false mikäli handleria ei löydy'
         );
-        this.offlineHttp.addHandler(handlerUrlToCheck, function () {});
+        offlineHttp.addHandler('POST', handlerUrlToCheck, function () {});
         assert.ok(
-            this.offlineHttp.hasHandlerFor(handlerUrlToCheck),
+            offlineHttp.hasHandlerFor('POST', handlerUrlToCheck),
             'Pitäisi palauttaa true mikäli handleri löytyy'
         );
     });
     QUnit.test('handle kutsuu rekisteröityä handleria', assert => {
-        var urlToHandle = 'some/url';
-        var valueFromHandler = 'fo';
-        this.offlineHttp.addHandler(urlToHandle, function () {
+        const urlToHandle = 'some/url';
+        const valueFromHandler = 'fo';
+        offlineHttp.addHandler('POST', urlToHandle, function () {
             return valueFromHandler;
         });
-        var callWatcher = sinon.spy(
-            OfflineHttp.requestHandlers, urlToHandle
-        );
-        var paramForHandler = 'bas';
-        var result = this.offlineHttp.handle(urlToHandle, paramForHandler);
+        const callWatcher = sinon.spy(OfflineHttp.requestHandlers, 'POST:' + urlToHandle);
+        const paramForHandler = 'bas';
+        const result = offlineHttp.handle('POST', urlToHandle, paramForHandler);
         assert.deepEqual(
             callWatcher.getCall(0).args,
             [paramForHandler],
@@ -52,24 +52,18 @@ QUnit.module('common/OfflineHttp', hooks => {
         );
     });
     QUnit.test('logRequestToSyncQueue kirjoittaa selaintietokantaan', assert => {
-        var requestToQueue = {
+        const requestToQueue = {
+            method: 'POST',
             url: 'some/url',
-            data: {foo: 'bar'}
+            data: {foo: 'bar'},
+            response: 'somthinh'
         };
-        var logInsertWatcher = sinon.stub(this.db.syncQueue, 'add').returns('foo');
-        var result = this.offlineHttp.logRequestToSyncQueue(
-            requestToQueue.url,
-            requestToQueue.data
-        );
+        const logInsertWatcher = sinon.stub(db.syncQueue, 'add').returns('foo');
+        const result = offlineHttp.logRequestToSyncQueue(requestToQueue);
         assert.ok(logInsertWatcher.calledOnce, 'Pitäisi kirjoittaa selaintietokantaan');
         assert.deepEqual(
             logInsertWatcher.firstCall.args,
-            [
-                {
-                    url: requestToQueue.url,
-                    data: requestToQueue.data
-                }
-            ],
+            [requestToQueue],
             'Pitäisi kirjoittaa selaintietokantaan nämä tiedot'
         );
         assert.equal(
@@ -79,17 +73,14 @@ QUnit.module('common/OfflineHttp', hooks => {
         );
     });
     QUnit.test('logRequestToSyncQueue ei kirjoita selaintietokantaan jos url löytyy ignore-listalta', assert => {
-        var logInsertWatcher = sinon.stub(this.db.syncQueue, 'add');
+        const logInsertWatcher = sinon.stub(db.syncQueue, 'add');
+        const requestThatShouldBeIgnored = 'url/bar';
+        const request = {method: 'POST', url: requestThatShouldBeIgnored, response: 'a', data: null};
         // Kutsu 1
-        this.offlineHttp.logRequestToSyncQueue(
-            requestThatShouldBeIgnored
-        );
-        var requestThatShouldBeIgnored = 'url/bar';
-        this.offlineHttp.ignore(requestThatShouldBeIgnored);
+        offlineHttp.logRequestToSyncQueue(request);
+        offlineHttp.ignore('POST', requestThatShouldBeIgnored);
         // Kutsu 2
-        var result2 = this.offlineHttp.logRequestToSyncQueue(
-            requestThatShouldBeIgnored
-        );
+        const result2 = offlineHttp.logRequestToSyncQueue(request);
         assert.equal(
             logInsertWatcher.callCount,
             1,
@@ -102,21 +93,21 @@ QUnit.module('common/OfflineHttp', hooks => {
         );
     });
     QUnit.test('removeRequestsFromQueue kutsuu dbServiceä oikein', assert => {
-        var testIdsToRemove = [1, 2];
-        var mockDeleteResult = 'sdc';
+        const testIdsToRemove = [1, 2];
+        const mockDeleteResult = 'sdc';
         // Stubbaa "takaperin" db.syncQueue.where('id').anyOf(ids).delete()
-        var mockCollection = {delete: sinon.stub().returns(Promise.resolve(mockDeleteResult))};
-        var mockWhere = {anyOf: sinon.stub().returns(mockCollection)};
-        var whereFactoryStub = sinon.stub(this.db.syncQueue, 'where').returns(mockWhere);
+        const mockCollection = {delete: sinon.stub().returns(Promise.resolve(mockDeleteResult))};
+        const mockWhere = {anyOf: sinon.stub().returns(mockCollection)};
+        const whereFactoryStub = sinon.stub(db.syncQueue, 'where').returns(mockWhere);
         // suorita
-        var ret = this.offlineHttp.removeRequestsFromQueue(testIdsToRemove);
+        const ret = offlineHttp.removeRequestsFromQueue(testIdsToRemove);
         // assertoi
-        assert.ok(whereFactoryStub.calledOnce, 'Pitäisi kutsua ensin this.db.syncQueue.where');
-        assert.deepEqual(whereFactoryStub.firstCall.args, ['id'], 'Pitäisi kutsua ensin this.db.syncQueue.where');
+        assert.ok(whereFactoryStub.calledOnce, 'Pitäisi kutsua ensin db.syncQueue.where');
+        assert.deepEqual(whereFactoryStub.firstCall.args, ['id'], 'Pitäisi kutsua ensin db.syncQueue.where');
         assert.ok(mockWhere.anyOf.calledOnce, 'Sen jälkeen pitäisi kutsua <where>.anyOf(<idsToRemove>)');
         assert.deepEqual(mockWhere.anyOf.firstCall.args, [testIdsToRemove], 'Sen jälkeen pitäisi kutsua <where>.anyOf(<idsToRemove>)');
         assert.ok(mockCollection.delete.calledOnce, 'Lopuksi pitäisi kutsua <filteredQueueItems>.delete()');
-        var done = assert.async();
+        const done = assert.async();
         ret.then(function (result) {
             assert.equal(
                 result,

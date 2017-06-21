@@ -1,5 +1,7 @@
 import Db from 'src/common/Db';
 
+type method = 'POST';
+
 /**
  * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan
  * yhteydettömän tilan aikana, sekä loggaa suoritettujen api-kutsujen tiedot
@@ -17,46 +19,46 @@ class OfflineHttp {
         this.db = db;
     }
     /**
+     * @param {string} method HTTP-pyynnön method, POST
      * @param {string} url HTTP-pyynnön url joka halutaan hadlata offline-moden aikana
      * @param {Function} fn funktio jolla handlataan
      */
-    public addHandler(url: string, fn: Function) {
-        OfflineHttp.requestHandlers[url] = fn;
+    public addHandler(method: method, url: string, fn: Function) {
+        OfflineHttp.requestHandlers[method + ':' + url] = fn;
     };
     /**
+     * @param {string} method
      * @param {string} url urlit joiden HTTP-pyyntöjä ei haluta logattavan
      */
-    public ignore(url: string) {
-        OfflineHttp.urlsToIgnore[url] = 'don\'t log this request';
+    public ignore(method: method, url: string) {
+        OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
     };
     /**
+     * @param {string} method
      * @param {string} url
      * @return {boolean}
      */
-    public hasHandlerFor(url: string): boolean {
-        return OfflineHttp.requestHandlers.hasOwnProperty(url);
+    public hasHandlerFor(method: method, url: string): boolean {
+        return OfflineHttp.requestHandlers.hasOwnProperty(method + ':' + url);
     };
     /**
+     * @param {string} method
      * @param {string} url minkä urlin HTTP-pyyntö joka korvataan
      * @param {any=} data HTTP-pyyntöön (POST etc.) liittyvä data, jos GET niin undefined
      * @return {Promise|any}
      */
-    public handle(url: string, data?: any): any {
-        return OfflineHttp.requestHandlers[url](data);
+    public handle(method: method, url: string, data?: any): any {
+        return OfflineHttp.requestHandlers[method + ':' + url](data);
     };
     /**
-     * @param {string} url logattavan pyynnön url
-     * @param {any} data logattavaan pyyntöön url liittyvä data
+     * @param {Object} request logattava pyyntö {method, url, response, data}
      * @return {Promise|void}
      */
-    public logRequestToSyncQueue(url: string, data) {
-        if (OfflineHttp.urlsToIgnore.hasOwnProperty(url)) {
+    public logRequestToSyncQueue(request: Enj.OfflineDbSchema.SyncQueueRecord) {
+        if (OfflineHttp.urlsToIgnore.hasOwnProperty(request.method + ':' + request.url)) {
             return;
         }
-        return this.db.syncQueue.add({
-            url: url,
-            data: data
-        });
+        return this.db.syncQueue.add(request);
     };
     /**
      * @return {Promise} -> ({Array} queue, {Object} error)
