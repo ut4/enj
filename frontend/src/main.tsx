@@ -3,6 +3,7 @@ import { Router, Route, IndexRoute } from 'inferno-router';
 import iocFactories from 'src/ioc';
 import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
+import 'src/offlineHandlerLoader';
 
 render(
     <Router history={ iocFactories.history() }>

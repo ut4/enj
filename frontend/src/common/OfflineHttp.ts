@@ -1,7 +1,5 @@
 import Db from 'src/common/Db';
 
-type method = 'POST';
-
 /**
  * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan
  * yhteydettömän tilan aikana, sekä loggaa suoritettujen api-kutsujen tiedot
@@ -23,14 +21,14 @@ class OfflineHttp {
      * @param {string} url HTTP-pyynnön url joka halutaan hadlata offline-moden aikana
      * @param {Function} fn funktio jolla handlataan
      */
-    public addHandler(method: method, url: string, fn: Function) {
+    public addHandler(method: keyof Enj.syncableHttpMethod, url: string, fn: Function) {
         OfflineHttp.requestHandlers[method + ':' + url] = fn;
     };
     /**
      * @param {string} method
      * @param {string} url urlit joiden HTTP-pyyntöjä ei haluta logattavan
      */
-    public ignore(method: method, url: string) {
+    public ignore(method: keyof Enj.syncableHttpMethod, url: string) {
         OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
     };
     /**
@@ -38,7 +36,7 @@ class OfflineHttp {
      * @param {string} url
      * @return {boolean}
      */
-    public hasHandlerFor(method: method, url: string): boolean {
+    public hasHandlerFor(method: keyof Enj.syncableHttpMethod, url: string): boolean {
         return OfflineHttp.requestHandlers.hasOwnProperty(method + ':' + url);
     };
     /**
@@ -47,7 +45,7 @@ class OfflineHttp {
      * @param {any=} data HTTP-pyyntöön (POST etc.) liittyvä data, jos GET niin undefined
      * @return {Promise|any}
      */
-    public handle(method: method, url: string, data?: any): any {
+    public handle(method: keyof Enj.syncableHttpMethod, url: string, data?: any): any {
         return OfflineHttp.requestHandlers[method + ':' + url](data);
     };
     /**

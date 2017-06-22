@@ -18,7 +18,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         workoutBackendIocOverride.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getAll')
+        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
             .returns(Promise.resolve([{id:1, start: 2, exercises: []}]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -31,7 +31,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount näyttää viestin mikäli current-treenejä ei löydy', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getAll')
+        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
             .returns(Promise.resolve([]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -46,7 +46,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount handlaa epäonnistuneen current-treenien haun', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getAll')
+        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
             .returns(Promise.reject({err: 'fo'}));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);

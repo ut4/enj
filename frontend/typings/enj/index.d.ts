@@ -47,4 +47,11 @@ declare module Enj {
             response: any;
         }
     }
+
+    type syncableHttpMethod = {POST: 1};
+    type offlineHandlerRegistrable = [keyof syncableHttpMethod, string, Function];
+
+    interface OfflineBackend {
+        getRegisterables(): Array<offlineHandlerRegistrable>
+    }
 }

@@ -17,7 +17,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
      * Hakee treenit backendistä ja asettaa ne stateen.
      */
     public componentDidMount() {
-        this.workoutBackend.getAll().then(
+        this.workoutBackend.getTodaysWorkouts().then(
             // Backend-fetch ok, aseta state.workouts -> <responseArray>
             workouts => this.setState({workouts}),
             // Backend-fetch epäonnistui, aseta state.workouts -> []

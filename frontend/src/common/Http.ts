@@ -78,7 +78,7 @@ function processFailure(err) {
 function handleOfflineRequest(
     url: string,
     data: Object,
-    method: string
+    method: keyof Enj.syncableHttpMethod
 ): Promise<any> {
     Http.pendingRequestCount--;
     console.info('Faking HTTP ' + method + ' ' + url);
