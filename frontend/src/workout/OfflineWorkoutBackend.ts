@@ -33,7 +33,7 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
             // 3. Tallenna päivitetty cache
                 return this.offline.sendAsyncMessage({
                     action: 'updateCache',
-                    url: '/api/workout',
+                    url: '/api/workout' + this.onlineBackend.makeTimestampRangeUrlParams(),
                     data: workouts
                 });
             })

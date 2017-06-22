@@ -38,10 +38,10 @@ class RESTBackend<T extends {id?: number}> {
         });
     }
     /**
-     * 'foo' -> 'api/<this.urlNamespace>/foo', '' -> 'api/<this.urlNamespace>'
+     * '?foo' -> 'api/<this.urlNamespace>?foo', '' -> 'api/<this.urlNamespace>'
      */
     public completeUrl(url?: string): string {
-        return 'api/' + this.urlNamespace + (url ? '/' + url : '');
+        return 'api/' + this.urlNamespace + (url || '');
     }
 }
 

@@ -26,11 +26,11 @@ QUnit.module('workout/OfflineWorkoutBackend', hooks => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cachen');
             assert.deepEqual(cacheUpdate.firstCall.args, [{
                 action: 'updateCache',
-                url: '/api/workout',
+                url: '/api/workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
                 data: [Object.assign(mockCachedWorkouts[0], {
                     exercises: [newWorkoutExercise]
                 })]
-            }], 'Pitäisi päivittää treenicache uudella liikeellä varustettuna');
+            }], 'Pitäisi päivittää tämän päivän treenien cache uudella liikeellä varustettuna');
             assert.equal(result, 32, 'Pitäisi palauttaa uusi id');
             assert.equal(newWorkoutExercise.id, 32, 'Pitäisi asettaa uusi id liikkeeseen');
             done();

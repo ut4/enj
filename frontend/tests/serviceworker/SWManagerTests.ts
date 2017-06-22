@@ -119,9 +119,16 @@ QUnit.module('SWManager', hooks => {
     QUnit.test('updateCache rejektoi jos urlia ei ole CACHE_FILES -rekisterissä', assert => {
         this.fakeSWScope.CACHE_FILES = ['registred'];
         //
-        const done = assert.async();
+        const done = assert.async(2);
+        // Pitäisi rejektoida
         this.swManager.updateCache('not/registered', {})
             .then(null, () => {
+                assert.ok(true);
+                done();
+            });
+        // Ei pitäisi rejektoida, koska url parametrien ei pitäisi vaikuttaa
+        this.swManager.updateCache('registred?foo=bar', {})
+            .then(() => {
                 assert.ok(true);
                 done();
             });

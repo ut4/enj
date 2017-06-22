@@ -12,6 +12,7 @@ import 'tests/user/UserStateTests';
 import 'tests/workout/EditableWorkoutExerciseTests';
 import 'tests/workout/OfflineHandlerRegisterationTests';
 import 'tests/workout/OfflineWorkoutBackendTests';
+import 'tests/workout/WorkoutBackendTests';
 import 'tests/workout/WorkoutExerciseAddViewTests';
 import 'tests/workout/WorkoutViewTests';
 import { mockHistory } from 'tests/mocks';

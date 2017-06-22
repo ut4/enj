@@ -117,7 +117,7 @@ function SWManager(mainSWScope) {
     }
     function validateCacheUpdateAction(url, newValue) {
         return new Promise(function (resolve, reject) {
-            var completedUrl = stripLeadingSlash(url);
+            var completedUrl = stripLeadingSlash(url).split('?')[0];
             if (mainSWScope.CACHE_FILES.indexOf(completedUrl) < 0) {
                 reject('Cache url ' + completedUrl + ' ei validi');
             } else if (!newValue) {
