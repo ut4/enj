@@ -2,6 +2,9 @@ import Component from 'inferno-component';
 import Offline from 'src/offline/Offline';
 import iocFactories from 'src/ioc';
 
+/**
+ * Näkymä #/aloita-offline.
+ */
 class OfflineStartView extends Component<any, any> {
     private offline: Offline;
     public constructor(props, context) {

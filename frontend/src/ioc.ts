@@ -5,9 +5,10 @@ import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
 import { History, createHashHistory } from 'history';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
-import ExerciseBackend  from 'src/exercise/ExerciseBackend';
+import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import Offline         from 'src/offline/Offline';
+import SyncBackend     from 'src/offline/SyncBackend';
 const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
@@ -68,8 +69,8 @@ class IocFactories extends IocContainer {
     public offline(): Offline {
         return this.memoize('offline', () => new Offline(this.userState()));
     }
-    public syncer(): any {
-        return null;
+    public syncBackend(): SyncBackend {
+        return this.memoize('syncBackend', () => new SyncBackend(this.http(), this.offlineHttp()));
     }
 }
 

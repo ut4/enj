@@ -233,7 +233,7 @@ a.icon-button.with-text:hover {
     border-top: 1px solid rgba(255,255,255,0.07);
     border-bottom: 1px solid rgba(0,0,0,0.2);
     padding: 15px 0;
-    margin: auto 22px;
+    margin: auto 15px;
     position: relative;
 }
 .dark-list > li:first-of-type {
@@ -258,7 +258,7 @@ a.icon-button.with-text:hover {
 }
 .action-buttons {
     position: absolute;
-    right: -16px;
+    right: -7px;
     top: 5px;
     width: 60px;
     height: 100%;
@@ -362,6 +362,7 @@ input[type="date"] {
     display: inline-block;
     margin-bottom: 4px;
     width: 100%;
+    text-align: left;
 }
 .input-set > span:first-of-type {
     box-sizing: border-box;
@@ -370,6 +371,9 @@ input[type="date"] {
 .input-set input, .input-set textarea, .input-set select {
     box-sizing: border-box;
     width: 100%;
+}
+.form-buttons {
+    text-align: left;
 }
 .form-buttons .nice-button {
     min-width: 60px;

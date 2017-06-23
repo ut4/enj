@@ -40,7 +40,7 @@ render(
 
             <Route path="profiili" component={ views.UserProfileView }/>
             <Route path="aloita-offline" component={ views.OfflineStartView }/>
-            <Route path="palaa-online" component={ views.OfflineEndView }/>
+            <Route path="palauta-online" component={ views.OfflineEndView }/>
         </Route>
     </Router>,
     document.getElementById('app')

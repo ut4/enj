@@ -79,13 +79,11 @@ class Offline {
      * @return {Promise} -> ({integer} wasSuccesful, {Object} error)
      */
     public disable(): Promise<number> {
-        // TODO - checkkaa isoffline ensin?
         this.serviceWorkerContainer.controller.postMessage({
             action: 'setIsOnline',
             value: true
         });
         return this.userState.setIsOffline(false);
-        // TODO synkkaa kaikki itemit jos yheys päällä, jos ei userState.update.jokuflagi -> syncUsPlease
     }
     /**
      * @param {any} message
@@ -111,12 +109,6 @@ class Offline {
                 [messageChannel.port2]
             );
         });
-    }
-    /**
-     * @return {string} esim. r-0396805113351404
-     */
-    public getNewRandomId(): string {
-        return 'r-' + Math.random().toFixed(16).substr(2);
     }
 }
 

@@ -34,7 +34,7 @@ class UserMenu extends Component<any, any> {
         return (<nav id="user-menu">
             <ul>
                 { this.state.offlineIsEnabled &&
-                    <li><Link to="/palaa-online">Go online</Link></li>
+                    <li><Link to="/palauta-online">Go online</Link></li>
                 }
                 { (!this.state.offlineIsEnabled && !this.state.maybeIsLoggedIn) &&
                     <li><a href="#kirjaudu" onClick={ this.test.bind(this) }>Kirjaudu sisään</a></li>
