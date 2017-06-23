@@ -1,14 +1,13 @@
-import Http from 'src/common/Http';
+import RESTBackend from 'src/common/RESTBackend';
 import OfflineHttp from 'src/common/OfflineHttp';
 
 /**
  * Vastaa /api/offline -REST-pyynnöistä. 
  */
-class SyncBackend {
-    private http: Http;
+class SyncBackend extends RESTBackend<any> {
     private offlineHttp: OfflineHttp;
-    constructor(http: Http, offlineHttp: OfflineHttp) {
-        this.http = http;
+    constructor(http, urlNamespace: string, offlineHttp: OfflineHttp) {
+        super(http, urlNamespace);
         this.offlineHttp = offlineHttp;
     }
     /**
@@ -27,7 +26,7 @@ class SyncBackend {
             // 2. Lähetä ne backendiin synkattavaksi jos niitä oli
             .then(items => {
                 syncQueue = items;
-                return syncQueue.length ? this.http.post('api/sync', syncQueue) : 0;
+                return syncQueue.length ? this.post(syncQueue) : 0;
             })
             // 3. Siivoa itemit selaintietokannasta jos synkkaus onnistui (kaikki tai ei mitään)
             .then(amountOfSuccefulSyncs => {

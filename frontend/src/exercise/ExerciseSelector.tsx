@@ -43,7 +43,6 @@ class ExerciseSelector extends Component<Props, State> {
         }
         const selectedExercise = this.state.exercises[e.target.value];
         this.setState({selectedExercise});
-        console.log(selectedExercise)
         this.props.onSelect(selectedExercise, this.state.selectedVariant);
     }
     /**

@@ -8,7 +8,7 @@ function SWManager(mainSWScope) {
      * $valueToMatch. Käytetään tilanteissa, jossa esim. GET /api/programs/all
      * on cachetettu, mutta GET /api/programs/2 ei. Tällöin se voidaan hakea
      * getall-tulosjoukosta (FindFromCachedArrayBy('id', 42,
-     * '/api/programs/getall'))
+     * 'api/programs/getall'))
      *
      * @param {string} key esim. 'id'
      * @param {any} valueToMatch esim. 42
@@ -40,7 +40,7 @@ function SWManager(mainSWScope) {
         });
     };
     /**
-     * @param {string} url esim. /api/foo/bar
+     * @param {string} url esim. api/foo/bar
      * @param {any} newValue
      * @return {Promise} -> ({void} nothing, {Object} error)
      */
@@ -51,7 +51,7 @@ function SWManager(mainSWScope) {
             });
     };
     /**
-     * @param {string} url esim. /foo/bar, täydentyy http://site/api/foo/bar
+     * @param {string} url esim. foo/bar, täydentyy http://site/api/foo/bar
      * @param {any} newValue
      * @return {Promise} -> ({void} nothing, {Object|string} error)
      */
@@ -117,7 +117,7 @@ function SWManager(mainSWScope) {
     }
     function validateCacheUpdateAction(url, newValue) {
         return new Promise(function (resolve, reject) {
-            var completedUrl = stripLeadingSlash(url).split('?')[0];
+            var completedUrl = url.split('?')[0];
             if (mainSWScope.CACHE_FILES.indexOf(completedUrl) < 0) {
                 reject('Cache url ' + completedUrl + ' ei validi');
             } else if (!newValue) {
@@ -128,9 +128,6 @@ function SWManager(mainSWScope) {
         });
     }
     function makeApiRequest(url) {
-        return new Request(mainSWScope.baseUrl.href + stripLeadingSlash(url));
-    }
-    function stripLeadingSlash(url) {
-        return url[0] !== '/' ? url : url.substr(1);
+        return new Request(mainSWScope.baseUrl.href + url);
     }
 }

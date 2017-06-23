@@ -9,6 +9,7 @@ import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
+import settings        from 'src/config/settings';
 const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
@@ -17,7 +18,7 @@ class IocFactories extends IocContainer {
         return this.memoize('db', () => new Db());
     }
     public http(): Http {
-        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.userState(), '/'));
+        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.userState(), settings.baseUrl));
     }
     public offlineHttp(): OfflineHttp {
         return this.memoize('offlineHttp', () => new OfflineHttp(this.db()));
@@ -70,7 +71,7 @@ class IocFactories extends IocContainer {
         return this.memoize('offline', () => new Offline(this.userState()));
     }
     public syncBackend(): SyncBackend {
-        return this.memoize('syncBackend', () => new SyncBackend(this.http(), this.offlineHttp()));
+        return this.memoize('syncBackend', () => new SyncBackend(this.http(), 'sync', this.offlineHttp()));
     }
 }
 

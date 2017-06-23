@@ -6,16 +6,16 @@ import WorkoutBackend from 'src/workout/WorkoutBackend';
  */
 class OfflineWorkoutBackend implements Enj.OfflineBackend {
     private offline: Offline;
-    private onlineBackend: WorkoutBackend;
-    constructor(offline: Offline, onlineBackend: WorkoutBackend) {
+    private workoutBackend: WorkoutBackend;
+    constructor(offline: Offline, workoutBackend: WorkoutBackend) {
         this.offline = offline;
-        this.onlineBackend = onlineBackend;
+        this.workoutBackend = workoutBackend;
     }
     /**
      * Palauttaa rekisteröitävien handlerien tiedot.
      */
     public getRegisterables(): Array<Enj.offlineHandlerRegistrable> {
-        return [['POST', 'api/workout/exercise', we => this.addExercise(we)]];
+        return [['POST', this.workoutBackend.completeUrl('/exercise'), we => this.addExercise(we)]];
     }
     /**
      * Generöi uuden id:n treeniliikkeelle <workoutExercise>, lisää sen
@@ -25,7 +25,7 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
         let newId: number;
         return (
             // 1. Hae cachetettu treeni
-            this.onlineBackend.getTodaysWorkouts().then(workouts => {
+            this.workoutBackend.getTodaysWorkouts().then(workouts => {
             // 2. Lisää uusi liike cachetettuun treeniin
                 newId = this.offline.utils.getNextId(workouts[0].exercises);
                 workoutExercise.id = newId;
@@ -33,7 +33,8 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
             // 3. Tallenna päivitetty cache
                 return this.offline.sendAsyncMessage({
                     action: 'updateCache',
-                    url: '/api/workout' + this.onlineBackend.makeTimestampRangeUrlParams(),
+                    url: this.workoutBackend.completeUrl('') +
+                         this.workoutBackend.makeTimestampRangeUrlParams(),
                     data: workouts
                 });
             })

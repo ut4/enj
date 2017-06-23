@@ -18,6 +18,7 @@ QUnit.module('workout/OfflineWorkoutBackend', hooks => {
         const mockCachedWorkouts = [{id: 1, start: 2, exercises: []}];
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
+        sinon.stub(workoutBackendStub, 'completeUrl').returns('foo');
         const cacheUpdate = sinon.stub(offlineStub, 'sendAsyncMessage').returns(Promise.resolve());
         const newWorkoutExercise = new WorkoutExercise();
         //
@@ -26,7 +27,7 @@ QUnit.module('workout/OfflineWorkoutBackend', hooks => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cachen');
             assert.deepEqual(cacheUpdate.firstCall.args, [{
                 action: 'updateCache',
-                url: '/api/workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
+                url: 'foo' + workoutBackendStub.makeTimestampRangeUrlParams(),
                 data: [Object.assign(mockCachedWorkouts[0], {
                     exercises: [newWorkoutExercise]
                 })]

@@ -54,4 +54,9 @@ declare module Enj {
     interface OfflineBackend {
         getRegisterables(): Array<offlineHandlerRegistrable>
     }
+
+    type appSettings = {
+        baseUrl: string,
+        baseApiNamespace: string
+    };
 }

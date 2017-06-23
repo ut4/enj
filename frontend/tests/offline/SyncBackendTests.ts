@@ -12,7 +12,7 @@ QUnit.module('offline/SyncBackend', hooks => {
     hooks.beforeEach(() => {
         httpStub = Object.create(Http.prototype);
         offlineHttpStub = Object.create(OfflineHttp.prototype);
-        syncBackend = new SyncBackend(httpStub, offlineHttpStub);
+        syncBackend = new SyncBackend(httpStub, 'sync', offlineHttpStub);
         someSyncableItems = [
             {id: 1, url: 'foo', data: {k: 'v'}, method: 'POST', response: 45},
             {id: 2, url: 'bar', data: {g: 'w'}, method: 'POST', response: 46}
@@ -26,8 +26,8 @@ QUnit.module('offline/SyncBackend', hooks => {
         syncBackend.syncAll().then(results => {
             assert.ok(httpCallStub.calledOnce);
             assert.deepEqual(
-                httpCallStub.firstCall.args,
-                ['api/sync', someSyncableItems],
+                httpCallStub.firstCall.args[1], // 0 = url, 1 = data
+                someSyncableItems,
                 'Pitäisi POSTata datan backendiin synkattavaksi'
             );
             assert.ok(cleanUpCallStub.calledAfter(httpCallStub));
