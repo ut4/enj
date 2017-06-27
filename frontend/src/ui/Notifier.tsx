@@ -10,7 +10,7 @@ type messageLevel = {
 interface Message {
     content: string;
     level: keyof messageLevel;
-    tiemoutId?: number
+    tiemoutId?: number;
 }
 
 type subscribeFn = (newMessages: Array<Message>) => void;

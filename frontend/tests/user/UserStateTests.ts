@@ -60,7 +60,7 @@ QUnit.module('user/UserState', hooks => {
             assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, true);
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
-            done()
+            done();
         });
     });
     QUnit.test('setMaybeIsLoggedIn(false) kirjoittaa merkinnän storageen ja tiedottaa muutoksesta subscribeFn:lle', assert => {
@@ -72,7 +72,7 @@ QUnit.module('user/UserState', hooks => {
             assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, false);
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
-            done()
+            done();
         });
     });
     QUnit.test('isOffline palauttaa false jos tietoa ei ole indexedDb:ssä', assert => {
@@ -114,7 +114,7 @@ QUnit.module('user/UserState', hooks => {
             assert.equal(dbUpdate.firstCall.args[0].isOffline, true);
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
-            done()
+            done();
         });
     });
     QUnit.test('setIsOffline(false) kirjoittaa merkinnän storageen ja tiedottaa muutoksesta subscribeFn:lle', assert => {
@@ -126,7 +126,7 @@ QUnit.module('user/UserState', hooks => {
             assert.equal(dbUpdate.firstCall.args[0].isOffline, false);
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
-            done()
+            done();
         });
     });
 });

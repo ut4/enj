@@ -1,6 +1,7 @@
 .idea
 .jshintrc
 .vscode
+*lint.json
 nbproject
 *.iml
 

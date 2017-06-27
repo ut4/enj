@@ -33,7 +33,7 @@ QUnit.module('offline/OfflineEndView', hooks => {
         //
         const confirmButton = getConfirmButton(rendered);
         assert.ok(confirmButton.disabled);
-    })
+    });
     QUnit.test('confirm palaa online-tilan', assert => {
         const resumeOnlineCallStub = sinon.stub(offlineStub, 'disable').returns(Promise.resolve(1));
         const loginUserCallStub = sinon.stub(userStateStub, 'setMaybeIsLoggedIn').returns(Promise.resolve());

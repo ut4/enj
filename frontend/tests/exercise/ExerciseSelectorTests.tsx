@@ -18,9 +18,9 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
         const exerciseSelectInput = getSelectInput(rendered);
         // Simuloi liikeen valinta, ja tyhjennys
         exerciseSelectInput.options[1].selected = true;
-        utils.triggerOnChange(exerciseSelectInput);
+        utils.triggerEvent('change', exerciseSelectInput);
         exerciseSelectInput.options[0].selected = true;
-        utils.triggerOnChange(exerciseSelectInput);
+        utils.triggerEvent('change', exerciseSelectInput);
         // Assertoi, että informoi valinnan, ja tyhjennyksen onSelect-callbackille
         assert.ok(onSelectSpy.calledTwice, 'Olisi pitänyt kutsua onSelect kaksi kertaa');
         assert.deepEqual(onSelectSpy.firstCall.args, [
@@ -43,14 +43,14 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
         // Valitse ensin liike, jolla on variantt(eja)i
         const exerciseSelectInput = getSelectInput(rendered);
         exerciseSelectInput.options[1].selected = true;
-        utils.triggerOnChange(exerciseSelectInput);
+        utils.triggerEvent('change', exerciseSelectInput);
         onSelectSpy.reset();
         // Simuloi variantin valinta ja tyhjennys
         const variantSelectInput = getSelectInput(rendered, 1);
         variantSelectInput.options[1].selected = true; // valinta
-        utils.triggerOnChange(variantSelectInput);
+        utils.triggerEvent('change', variantSelectInput);
         variantSelectInput.options[0].selected = true; // tyhjennys
-        utils.triggerOnChange(variantSelectInput);
+        utils.triggerEvent('change', variantSelectInput);
         // Assertoi, että informoi variantin valinnan, ja tyhjennyksen onSelect-callbackille
         assert.ok(onSelectSpy.calledTwice, 'Olisi pitänyt kutsua onSelect kaksi kertaa');
         assert.deepEqual(onSelectSpy.firstCall.args, [

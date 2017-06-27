@@ -28,7 +28,7 @@ class OfflineStartView extends Component<any, any> {
                 iocFactories.notify()('Offline-tilaan asettaminen epäonnistui', 'error');
                 console.error(err);
             });
-    };
+    }
     public close() {
         iocFactories.history().goBack();
     }

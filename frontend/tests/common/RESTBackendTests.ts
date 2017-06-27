@@ -41,6 +41,6 @@ QUnit.module('common/RESTBackend', hooks => {
         resultPromise.then(actualId => {
             assert.equal(actualId, 1, 'Pitäisi palauttaa generoitu id int-muodossa');
             done();
-        })
+        });
     });
 });

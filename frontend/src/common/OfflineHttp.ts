@@ -23,14 +23,14 @@ class OfflineHttp {
      */
     public addHandler(method: keyof Enj.syncableHttpMethod, url: string, fn: Function) {
         OfflineHttp.requestHandlers[method + ':' + url] = fn;
-    };
+    }
     /**
      * @param {string} method
      * @param {string} url urlit joiden HTTP-pyyntöjä ei haluta logattavan
      */
     public ignore(method: keyof Enj.syncableHttpMethod, url: string) {
         OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
-    };
+    }
     /**
      * @param {string} method
      * @param {string} url
@@ -38,7 +38,7 @@ class OfflineHttp {
      */
     public hasHandlerFor(method: keyof Enj.syncableHttpMethod, url: string): boolean {
         return OfflineHttp.requestHandlers.hasOwnProperty(method + ':' + url);
-    };
+    }
     /**
      * @param {string} method
      * @param {string} url minkä urlin HTTP-pyyntö joka korvataan
@@ -47,7 +47,7 @@ class OfflineHttp {
      */
     public handle(method: keyof Enj.syncableHttpMethod, url: string, data?: any): any {
         return OfflineHttp.requestHandlers[method + ':' + url](data);
-    };
+    }
     /**
      * @param {Object} request logattava pyyntö {method, url, response, data}
      * @return {Promise|void}
@@ -57,13 +57,13 @@ class OfflineHttp {
             return;
         }
         return this.db.syncQueue.add(request);
-    };
+    }
     /**
      * @return {Promise} -> ({Array} queue, {Object} error)
      */
     public getRequestSyncQueue(): Promise<Array<Enj.OfflineDbSchema.SyncQueueRecord>> {
         return this.db.syncQueue.toArray();
-    };
+    }
     /**
      * @param {Array} ids poistettavien rivien _id:t
      * @return {Promise} -> ({number} numRows, {Object} error)

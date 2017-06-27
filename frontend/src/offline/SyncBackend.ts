@@ -29,16 +29,19 @@ class SyncBackend extends RESTBackend<any> {
                 return syncQueue.length ? this.post(syncQueue) : 0;
             })
             // 3. Siivoa itemit selaintietokannasta jos synkkaus onnistui (kaikki tai ei mitään)
-            .then(amountOfSuccefulSyncs => {
+            .then(amountOfSuccesfulSyncs => {
                 // ... tai älä tee mitään jos itemeitä ei löytynyt
                 if (syncQueue.length === 0) {
                     return 0;
                 }
-                return amountOfSuccefulSyncs === syncQueue.length
-                    ? this.offlineHttp.removeRequestsFromQueue(
+                if (amountOfSuccesfulSyncs === syncQueue.length) {
+                    return this.offlineHttp.removeRequestsFromQueue(
                         syncQueue.map(syncItem => syncItem.id)
-                    )
-                    : Promise.reject(0)
+                    );
+                }
+                throw new Error('Toiminto epäonnistui koska %d1 %d2:sta synkkauksesta failasi'
+                    .replace('%d1', (syncQueue.length - amountOfSuccesfulSyncs as any))
+                    .replace('%d2', syncQueue.length));
             })
         );
     }

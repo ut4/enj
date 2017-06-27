@@ -12,7 +12,7 @@ QUnit.module('workout/OfflineWorkoutBackend', hooks => {
         offlineStub = Object.create(Offline.prototype);
         offlineStub.utils = {getNextId: () => 32};
         workoutBackendStub = Object.create(WorkoutBackend.prototype);
-        offlineWorkoutBackend = new OfflineWorkoutBackend(offlineStub, workoutBackendStub)
+        offlineWorkoutBackend = new OfflineWorkoutBackend(offlineStub, workoutBackendStub);
     });
     QUnit.test('addExercise lisää uuden liikkeen treenicacheen, ja palauttaa uuden id:n', assert => {
         const mockCachedWorkouts = [{id: 1, start: 2, exercises: []}];

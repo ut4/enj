@@ -8,7 +8,7 @@ interface Props {
     params: {
         id: number, // Treenin id, ks. url
         orderDef: number
-    }
+    };
 }
 
 /**

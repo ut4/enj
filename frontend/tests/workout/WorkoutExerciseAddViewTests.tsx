@@ -24,17 +24,19 @@ QUnit.module('workout/WorkoutExeriseAddView', hooks => {
     let exerciseBackendStub: WorkoutBackend;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let fakeHistory: {push: sinon.SinonSpy};
+    let historyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         workoutBackendStub = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackendStub);
         exerciseBackendStub = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(exerciseBackendStub);
         fakeHistory = {push: sinon.spy()};
-        sinon.stub(iocFactories, 'history').returns(fakeHistory);
+        historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
         exerciseBackendIocOverride.restore();
+        historyIocOverride.restore();
     });
     QUnit.test('submit postaa datan backendiin, ja ohjaa takaisin #/treeni/:id', assert => {
         const exerciseListFetch = sinon.stub(exerciseBackendStub, 'getAll')
@@ -54,7 +56,7 @@ QUnit.module('workout/WorkoutExeriseAddView', hooks => {
         // Valitse liike listasta
                 const exerciseSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
                 exerciseSelectEl.options[1].selected = true;
-                utils.triggerOnChange(exerciseSelectEl);
+                utils.triggerEvent('change', exerciseSelectEl);
         // Hyväksy lomake
                 const submitButton = itu.scryRenderedDOMElementsWithTag(rendered, 'button')[0] as HTMLButtonElement;
                 submitButton.click();

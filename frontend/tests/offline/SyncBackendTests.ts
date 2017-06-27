@@ -53,7 +53,7 @@ QUnit.module('offline/SyncBackend', hooks => {
         const done = assert.async();
         syncBackend.syncAll().then(null, results => {
             assert.ok(cleanUpCallSpy.notCalled, 'Ei pitäisi siivota selaintietokantaa epäonnistuessa');
-            assert.equal(results, 0, 'Olisi pitänyt synkata 0 (ei yhtään) itemiä');
+            assert.ok(results instanceof Error);
             done();
         });
     });
