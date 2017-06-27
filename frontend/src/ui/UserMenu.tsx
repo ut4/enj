@@ -37,7 +37,7 @@ class UserMenu extends Component<any, any> {
                     <li><Link to="/palauta-online">Go online</Link></li>
                 }
                 { (!this.state.offlineIsEnabled && !this.state.maybeIsLoggedIn) &&
-                    <li><a href="#kirjaudu" onClick={ this.test.bind(this) }>Kirjaudu sisään</a></li>
+                    <li><Link to="/kirjaudu">Kirjaudu sisään</Link></li>
                 }
                 { (!this.state.offlineIsEnabled && this.state.maybeIsLoggedIn) && [
                     <li><Link to="/profiili">Profiili</Link></li>,

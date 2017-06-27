@@ -54,6 +54,9 @@ body:after {
 /*body*/.loading:after {
     visibility: visible;
 }
+.text-error {
+    color: rgba(255, 62, 97, 0.85);
+}
 a {
     color: #8AAB33;
 }

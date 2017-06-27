@@ -1,8 +1,11 @@
+import 'tests/auth/LoginFormTests';
+import 'tests/auth/LoginViewTests';
 import 'tests/common/DbTests';
 import 'tests/common/HttpTests';
 import 'tests/common/RESTBackendTests';
 import 'tests/common/IocContainerTests';
 import 'tests/common/OfflineHttpTests';
+import 'tests/common/ValidatingFormTests';
 import 'tests/exercise/ExerciseSelectorTests';
 import 'tests/offline/OfflineEndViewTests';
 import 'tests/offline/OfflineStartViewTests';

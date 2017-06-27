@@ -38,6 +38,7 @@ render(
             <Route path="ruokatuotteet/muokkaa/:id" component={ views.ProduceEditView }/>
             <Route path="ruokatuotteet/poista/:id" component={ views.ProduceDeleteView }/>
 
+            <Route path="kirjaudu" component={ views.AuthLoginView }/>
             <Route path="profiili" component={ views.UserProfileView }/>
             <Route path="aloita-offline" component={ views.OfflineStartView }/>
             <Route path="palauta-online" component={ views.OfflineEndView }/>

@@ -24,6 +24,7 @@ import ProduceView               from 'src/produce/ProduceView';
 import ProduceCreateView         from 'src/produce/ProduceCreateView';
 import ProduceEditView           from 'src/produce/ProduceEditView';
 import ProduceDeleteView         from 'src/produce/ProduceDeleteView';
+import AuthLoginView             from 'src/auth/LoginView';
 import UserProfileView           from 'src/user/UserProfileView';
 import OfflineStartView          from 'src/offline/OfflineStartView';
 import OfflineEndView            from 'src/offline/OfflineEndView';
@@ -55,6 +56,7 @@ export {
     ProduceCreateView,
     ProduceEditView,
     ProduceDeleteView,
+    AuthLoginView,
     UserProfileView,
     OfflineStartView,
     OfflineEndView

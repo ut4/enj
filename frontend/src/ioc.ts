@@ -7,6 +7,7 @@ import { History, createHashHistory } from 'history';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
+import AuthBackend     from 'src/auth/AuthBackend';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
 import settings        from 'src/config/settings';
@@ -61,6 +62,9 @@ class IocFactories extends IocContainer {
     // == User =================================================================
     public userState(): UserState {
         return this.memoize('userState', () => new UserState(this.db()));
+    }
+    public authBackend(): AuthBackend {
+        return this.memoize('authBackend', () => new AuthBackend(this.http(), 'auth'));
     }
     public userBackend(): any {
         return null;
