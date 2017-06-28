@@ -19,9 +19,9 @@ class LoginView extends Component<any, any> {
             ioc.notify()('Olet nyt kirjautunut sisään', 'success');
             ioc.history().push('/');
         }, err => {
-            if (err.status === 401) {
+            if ((err.response || {}).status === 401) {
                 ioc.notify()('Käyttäjätunnus tai salasana ei täsmännyt', 'notice');
-            } else if (!err.hasOwnProperty('status') || err.status === 500) {
+            } else {
                 ioc.notify()('Kirjautuminen epäonnistui', 'error');
             }
         });

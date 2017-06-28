@@ -1,8 +1,22 @@
 import UserState from 'src/user/UserState';
 import OfflineHttp from 'src/common/OfflineHttp';
 
+interface interceptor {
+    request?: (request: Request) => void|false;
+    responseError?: (response: Response) => void|false;
+}
+
+class ResponseError extends Error {
+    public response: Response;
+    constructor(message: string, response: Response) {
+        super(message);
+        this.response = response;
+    }
+}
+
 class Http {
     public static pendingRequestCount = 0;
+    public interceptors: Array<interceptor>;
     private fetchContainer: GlobalFetch;
     private offlineHttp: OfflineHttp;
     private userState: UserState;
@@ -19,6 +33,7 @@ class Http {
         userState: UserState,
         baseUrl?: string
     ) {
+        this.interceptors = [];
         this.fetchContainer = fetchContainer;
         this.offlineHttp = offlineHttp;
         this.userState = userState;
@@ -30,78 +45,84 @@ class Http {
      */
     public get<T>(url: string): Promise<T> {
         Http.pendingRequestCount++;
-        return this.fetchContainer.fetch(this.baseUrl + url).then(
-            response => processResponse<T>(response),
-            processFailure
-        );
+        return this.fetchContainer.fetch(this.newRequest(this.baseUrl + url))
+            .then(response => this.processResponse(response))
+            .then(response => this.parseResponseData<T>(response));
     }
     /**
      * @param {string} url
      * @param {Object} data POST -data
-     * @return {Promise} -> ({any} responseData, {any|Response} rejectedValue)
+     * @return {Promise} -> ({any} responseData, {ResponseError|SyntaxError|any} rejectedValue)
      */
     public post(url: string, data: Object): Promise<any> {
         Http.pendingRequestCount++;
         return this.userState.isOffline().then(isUserOffline =>
-            !isUserOffline
-                // Käyttäjä online, lähetä HTTP-pyyntö normaalisti
-                ? this.fetchContainer.fetch(this.baseUrl + url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                }).then(
-                    processResponse,
-                    processFailure
-                )
-                // Käyttäjä offline, loggaa HTTP-pyyntö syncQueueen ja korvaa
-                // vastaus offline-handerin vastauksella (jos handleri löytyy)
-                : handleOfflineRequest.call(this, url, data, 'POST')
+            (
+                !isUserOffline
+                    // Käyttäjä online: lähetä HTTP-pyyntö normaalisti
+                    ? this.fetchContainer.fetch(this.newRequest(this.baseUrl + url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    }))
+                    // Käyttäjä offline: ohjaa pyyntö offlineHttp:lle
+                    : this.offlineHttp.handle(url, {method: 'POST', data})
+            )
+            .then(response => this.processResponse(response))
+            .then(response => this.parseResponseData(response))
         );
     }
-}
-
-function processResponse<T>(response: Response): Promise<T> {
-    Http.pendingRequestCount--;
-    try {
-        return Promise.resolve(response.json());
-    } catch (e) {
-        return Promise.reject(e);
+    /**
+     * Luo uuden Request-instanssin, ja tarjoaa sen request-interceptorien
+     * modifioitavaksi jos sellaisia löytyy.
+     */
+    private newRequest(url: string, settings?: RequestInit): Request {
+        const request = new Request(url, settings);
+        this.runInterceptors('request', request);
+        return request;
     }
-}
-function processFailure(err) {
-    Http.pendingRequestCount--;
-    return Promise.reject(err);
-}
-function handleOfflineRequest(
-    url: string,
-    data: Object,
-    method: keyof Enj.syncableHttpMethod
-): Promise<any> {
-    Http.pendingRequestCount--;
-    console.info('Faking HTTP ' + method + ' ' + url);
-    if (!this.offlineHttp.hasHandlerFor(method, url)) {
-        return Promise.reject(makeOffline404(method, url));
+    /**
+     * Heittää ReponseError:in mikäli backend failaa (status 400, 500 jne),
+     * muussa tapauksessa ei tee mitään vaan palauttaa responsen sellaisenaan.
+     *
+     * @throws ResponseError
+     */
+    private processResponse(response: Response): Response {
+        Http.pendingRequestCount--;
+        if (response.status >= 200 && response.status < 300) {
+            return response;
+        }
+        this.runInterceptors('responseError', response);
+        throw new ResponseError(response.statusText, response);
     }
-    let ret;
-    return this.offlineHttp.handle(method, url, data)
-        .then(response => {
-            ret = response;
-            return this.offlineHttp.logRequestToSyncQueue({method, url, data, response});
-        }).then(
-            () => ret
-        );
-}
-// Palautetaan offline-tilassa tapahtuneisiin pyyntöihin, joihin ei löytynyt
-// offline-handeria.
-function makeOffline404(method, url): Response {
-    return new Response('Offlinehandleria ei löytynyt urlille ' + method + ' ' + url +
-        '.', {
-            status: 454,
-            statusText: 'Offline handler not found'
-        });
+    /**
+     * Yrittää parsia reponse.bodyn tai heittää SyntaxError:in jos se ei ollut validi.
+     *
+     * @throws SyntaxError
+     */
+    private parseResponseData<T>(response: Response): Promise<T> {
+        return response.json();
+    }
+    /**
+     * Tarjoaa Request|Response {arg}:n {method}-tyyppisten interceptorien
+     * modifioitavaksi.
+     *
+     * @throws SyntaxError
+     */
+    private runInterceptors(method: keyof interceptor, arg: Request|Response) {
+        for (const interceptor of this.interceptors) {
+            if (!interceptor.hasOwnProperty(method)) {
+                continue;
+            }
+            if ((interceptor[method] as any)(arg) === false) {
+                break;
+            }
+        }
+    }
 }
 
 export default Http;
+export { ResponseError };

@@ -22,7 +22,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
             workouts => this.setState({workouts}),
             // Backend-fetch epäonnistui, aseta state.workouts -> []
             err => {
-                iocFactories.notify()('Treenien haku epäonnistui', 'error');
+                (err.response || {}).status === 500 && iocFactories.notify()('Treenien haku epäonnistui', 'error');
                 this.setState({workouts: []});
             }
         );

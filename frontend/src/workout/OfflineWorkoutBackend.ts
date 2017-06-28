@@ -2,7 +2,7 @@ import Offline from 'src/offline/Offline';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 
 /**
- * Vastaa /api/workout/* -REST-pyynnöistä yhteydettömän tilan aikana. 
+ * Vastaa /api/workout/* -REST-pyynnöistä yhteydettömän tilan aikana.
  */
 class OfflineWorkoutBackend implements Enj.OfflineBackend {
     private offline: Offline;
@@ -39,7 +39,7 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
                 });
             })
             // 4. palauta feikattu backendin vastaus
-            .then(() => newId)
+            .then(() => newId.toString())
         );
     }
 }

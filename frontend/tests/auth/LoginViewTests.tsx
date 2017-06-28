@@ -70,8 +70,9 @@ QUnit.module('auth/LoginView', hooks => {
     });
     QUnit.test('submit näyttää virheviestin backendin rejektoidessa', assert => {
         const loginCallWatch = sinon.stub(authBackendStub, 'login');
-        loginCallWatch.onFirstCall().returns(Promise.reject({status: 401}));
-        loginCallWatch.onSecondCall().returns(Promise.reject({status: 500}));
+        loginCallWatch.onFirstCall().returns(Promise.reject({response:{status: 401}}));
+        loginCallWatch.onSecondCall().returns(Promise.reject({response:{status: 500}}));
+        loginCallWatch.onThirdCall().returns(Promise.reject({}));
         //
         const instance = new LoginView() as any;
         instance.loginForm = {getValues: () => null};
@@ -79,15 +80,20 @@ QUnit.module('auth/LoginView', hooks => {
         const done = assert.async();
         Promise.all([
             instance.confirm(),
+            instance.confirm(),
             instance.confirm()
         ]).then(res => {
             assert.ok(
-                notifySpy.calledTwice,
+                notifySpy.calledThrice,
                 'Pitäisi notifioida käyttäjää backendin failauksista'
             );
             assert.equal(
                 notifySpy.firstCall.args[1],// 0 = message, 1 = level
                 'notice'
+            );
+            assert.equal(
+                notifySpy.secondCall.args[1],
+                'error'
             );
             assert.equal(
                 notifySpy.secondCall.args[1],
