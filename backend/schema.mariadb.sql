@@ -1,3 +1,5 @@
+DROP VIEW    IF EXISTS userView;
+DROP TABLE   IF EXISTS `user`;
 DROP VIEW    IF EXISTS workoutExerciseView;
 DROP VIEW    IF EXISTS workoutView;
 DROP TRIGGER IF EXISTS workoutEndTrg;
@@ -111,3 +113,19 @@ CREATE VIEW workoutExerciseView AS
     JOIN exercise e ON (e.id = we.exerciseId)
     LEFT JOIN exerciseVariant ev ON (ev.id = we.exerciseVariantId)
     LEFT JOIN workoutExerciseSet s ON (s.workoutExerciseId = we.id);
+
+-- == User ====
+-- =============================================================================
+CREATE TABLE `user` (
+    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    username VARCHAR(42) NOT NULL UNIQUE,
+    passwordHash VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+) DEFAULT CHARSET = utf8;
+
+CREATE VIEW userView AS
+    SELECT
+        u.id           AS userId,
+        u.username     AS userUsername,
+        u.passwordHash AS userPasswordHash
+    FROM `user` AS u;

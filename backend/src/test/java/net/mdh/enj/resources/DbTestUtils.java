@@ -2,6 +2,7 @@ package net.mdh.enj.resources;
 
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.mapping.DbEntity;
+import net.mdh.enj.user.User;
 import net.mdh.enj.workout.Workout;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -28,6 +29,9 @@ public class DbTestUtils {
     }
     public void insertExerciseVariant(Exercise.Variant ev) {
         this.insert(this.getInserter("exerciseVariant"), ev);
+    }
+    public void insertUser(User u) {
+        this.insert(this.getInserter("user"), u);
     }
     private SimpleJdbcInsert getInserter(String tableName) {
         if (!this.inserters.containsKey(tableName)) {

@@ -1,12 +1,13 @@
 package net.mdh.enj.workout;
 
+import net.mdh.enj.mapping.SelectQueryFilters;
 import javax.ws.rs.QueryParam;
 import java.util.ArrayList;
 
 /**
  * Bean /api/workout-reitin url-parametreille (/api/workout?startFrom={timestamp} jne.).
  */
-public class SearchFilters {
+public class SearchFilters implements SelectQueryFilters {
 
     @QueryParam("startFrom")
     private Long startFrom;
@@ -30,7 +31,7 @@ public class SearchFilters {
     /**
      * Palauttaa false, jos urlissa ei ollut yhtään arvoa, muutoin true.
      */
-    boolean hasRules() {
+    public boolean hasRules() {
         return this.startFrom != null || this.startTo != null;
     }
 
@@ -38,7 +39,7 @@ public class SearchFilters {
      * Palauttaa tietokantakyselyn osaksi kelpaavan merkkijonon, esim.
      * "`start` >= :startFrom AND `start` <= :startTo".
      */
-    String toSql() {
+    public String toSql() {
         ArrayList<String> out = new ArrayList<>();
         if (this.startFrom != null) {
             out.add("workoutStart >= :startFrom");

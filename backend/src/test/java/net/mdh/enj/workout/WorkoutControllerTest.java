@@ -3,7 +3,6 @@ package net.mdh.enj.workout;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;

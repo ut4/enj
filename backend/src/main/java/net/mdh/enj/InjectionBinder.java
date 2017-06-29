@@ -1,5 +1,6 @@
 package net.mdh.enj;
 
+import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.auth.TokenService;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.db.SimpleDataSourceFactory;
@@ -17,9 +18,11 @@ class InjectionBinder extends AbstractBinder {
         // Workout
         bind(WorkoutRepository.class).to(WorkoutRepository.class);
         bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
-        // Program
-        // ...
         // Exercise
         bind(ExerciseRepository.class).to(ExerciseRepository.class);
+        // Program
+        // ...
+        // User
+        bind(UserRepository.class).to(UserRepository.class);
     }
 }

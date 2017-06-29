@@ -48,9 +48,9 @@ public abstract class BasicRepository<T extends DbEntity> {
      * mappaa kyselyn palauttamat rivit mapperilla {mapper}, ja lopuksi
      * palauttaa mapatut beanit (filtteröi null-arvot pois).
      *
-     * @return Lista beaneja {T}.
+     * @return Lista beaneja {T} | tyhjä lista.
      */
-    protected List<T> selectAll(String query, SqlParameterSource params, RowMapper<T> mapper) {
+    public List<T> selectAll(String query, SqlParameterSource params, RowMapper<T> mapper) {
         List<T> results = this.qTemplate.query(query, params, mapper);
         results.removeIf(Objects::isNull);
         return results;
@@ -60,9 +60,30 @@ public abstract class BasicRepository<T extends DbEntity> {
      * Ajaa tietokantakyselyn {query}, mappaa sen palauttamat rivit mapperilla
      * {mapper}, ja palauttaa mapatut beanit (filtteröi null-arvot pois).
      *
-     * @return Lista beaneja {T}.
+     * @return Lista beaneja {T} | tyhjä lista.
      */
     protected List<T> selectAll(String query, RowMapper<T> mapper) {
         return this.selectAll(query, null, mapper);
+    }
+
+    /**
+     * Kutsuu this.selectAll, ja palauttaa sen paluuarvotaulukosta ensimmäisen
+     * arvon :D
+     *
+     * @return bean {T} | null.
+     */
+    public T selectOne(String query, SqlParameterSource params, RowMapper<T> mapper) {
+        List<T> items = this.selectAll(query, params, mapper);
+        return items.size() > 0 ? items.get(0) : null;
+    }
+
+    /**
+     * Kutsuu this.selectAll, ja palauttaa sen paluuarvotaulukosta ensimmäisen
+     * arvon :D
+     *
+     * @return bean {T} | null.
+     */
+    public T selectOne(String query, RowMapper<T> mapper) {
+        return this.selectOne(query, null, mapper);
     }
 }
