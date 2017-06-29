@@ -2,6 +2,8 @@ package net.mdh.enj;
 
 import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.auth.TokenService;
+import net.mdh.enj.auth.HashingProvider;
+import net.mdh.enj.auth.Argon2HashingProvider;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.db.SimpleDataSourceFactory;
 import net.mdh.enj.exercise.ExerciseRepository;
@@ -24,5 +26,6 @@ class InjectionBinder extends AbstractBinder {
         // ...
         // User
         bind(UserRepository.class).to(UserRepository.class);
+        bind(Argon2HashingProvider.class).to(HashingProvider.class);
     }
 }

@@ -4,8 +4,8 @@ package net.mdh.enj.mapping;
  * Käytetään SELECT kyselyissä, esim.
  *
  * String.format("SELECT foo FROM bar%s%s",
- *     someFilter.hasRules() ? " WHERE " + someFilter.getSql() : ""
- *     anotherFilter.hasRules() ? " OR " + anotherFilter.getSql() : ""
+ *     someFilter.hasRules() ? " WHERE " + someFilter.toSql() : ""
+ *     anotherFilter.hasRules() ? " OR " + anotherFilter.toSql() : ""
  * )
  */
 public interface SelectQueryFilters {

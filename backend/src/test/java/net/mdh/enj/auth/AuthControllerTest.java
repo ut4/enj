@@ -2,12 +2,18 @@ package net.mdh.enj.auth;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.junit.BeforeClass;
+import net.mdh.enj.user.User;
+import net.mdh.enj.user.UserRepository;
+import net.mdh.enj.db.DataSourceFactory;
+import net.mdh.enj.resources.DbTestUtils;
+import net.mdh.enj.resources.MockHashingProvider;
+import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -15,15 +21,23 @@ import javax.ws.rs.client.Entity;
 import java.util.Comparator;
 import java.util.List;
 
-public class AuthControllerTest extends JerseyTest {
+public class AuthControllerTest extends RollbackingDBJerseyTest {
 
+    private final static String correctUsername = "foo";
+    private final static char[] correctPassword = "bars".toCharArray();
     private static TokenService tokenService;
-    private final char[] correctUsername = "foo".toCharArray();
-    private final char[] correctPassword = "bars".toCharArray();
+    private static HashingProvider mockHasherSpy;
+    private static User testUser;
 
     @BeforeClass
     public static void beforeClass() {
         AuthControllerTest.tokenService = new TokenService();
+        AuthControllerTest.mockHasherSpy = Mockito.spy(new MockHashingProvider());
+        DbTestUtils utils = new DbTestUtils(rollbackingDataSource);
+        testUser = new User();
+        testUser.setUsername(correctUsername);
+        testUser.setPasswordHash(String.valueOf(correctPassword));
+        utils.insertUser(testUser);
     }
 
     @Override
@@ -34,7 +48,10 @@ public class AuthControllerTest extends JerseyTest {
             .register(new AbstractBinder() {
                 @Override
                 protected void configure() {
+                    bind(UserRepository.class).to(UserRepository.class);
+                    bind(mockHasherSpy).to(HashingProvider.class);
                     bind(AuthControllerTest.tokenService).to(TokenService.class);
+                    bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
             });
     }
@@ -68,7 +85,7 @@ public class AuthControllerTest extends JerseyTest {
 
         // Bean-validaatio, liian lyhyet username&password-arvot
         LoginCredentials badData = new LoginCredentials();
-        badData.setUsername(new char[]{'f'});
+        badData.setUsername("f");
         badData.setPassword(new char[]{'f', 'o', 'o'});
         responseForBadInput = newLoginRequest(badData);
         Assert.assertEquals(400, responseForBadInput.getStatus());
@@ -81,32 +98,41 @@ public class AuthControllerTest extends JerseyTest {
     }
 
     @Test
-    public void POSTloginHylkääVääränPyynnönJosUsernameTaiSalasanaEiTäsmää() {
+    public void POSTloginHylkääPyynnönJosKäyttäjääEiLöydy() {
         Response responseForWrongUsername;
-        // Väärä käyttäjänimi
+        // Rakenna input
         LoginCredentials dataWithWrongUsername = new LoginCredentials();
-        dataWithWrongUsername.setUsername("doo".toCharArray());
-        dataWithWrongUsername.setPassword(this.correctPassword);
+        dataWithWrongUsername.setUsername("doo");
+        dataWithWrongUsername.setPassword(correctPassword);
+        // Tee pyyntö, ja assertoi ettei edennyt edes salasanan tarkistusvaiheeseen
         responseForWrongUsername = newLoginRequest(dataWithWrongUsername);
         Assert.assertEquals(401, responseForWrongUsername.getStatus());
-
-        // Väärä salasana
-        LoginCredentials dataWithWrongPassword = new LoginCredentials();
-        dataWithWrongPassword.setUsername(this.correctUsername);
-        dataWithWrongPassword.setPassword("dars".toCharArray());
-        responseForWrongUsername = newLoginRequest(dataWithWrongPassword);
-        Assert.assertEquals(401, responseForWrongUsername.getStatus());
+        Mockito.verify(mockHasherSpy, Mockito.times(0)).verify(Mockito.any(), Mockito.any(String.class));
     }
 
     @Test
-    public void POSTloginPalauttaaOnnistuessaanUudenJsonWebTokenin() {
+    public void POSTloginHylkääPyynnönJosSalasanaOnVäärä() {
+        Response responseForWrongPassword;
+        char[] wrongPassword = "dars".toCharArray();
+        // Rakenna input
+        LoginCredentials dataWithWrongPassword = new LoginCredentials();
+        dataWithWrongPassword.setUsername(correctUsername);
+        dataWithWrongPassword.setPassword(wrongPassword);
+        // Tee pyyntö, ja assertoi että tsekkasi salasanan
+        responseForWrongPassword = newLoginRequest(dataWithWrongPassword);
+        Assert.assertEquals(401, responseForWrongPassword.getStatus());
+        Mockito.verify(mockHasherSpy, Mockito.times(1)).verify(wrongPassword, testUser.getPasswordHash());
+    }
+
+    @Test
+    public void POSTloginPalauttaaOnnistuessaanUudenJsonWebTokeninLoginResponsessa() {
         LoginCredentials correctData = new LoginCredentials();
-        correctData.setUsername(this.correctUsername);
-        correctData.setPassword(this.correctPassword);
+        correctData.setUsername(correctUsername);
+        correctData.setPassword(correctPassword);
         Response response = newLoginRequest(correctData);
         Assert.assertEquals(200, response.getStatus());
-        String token = response.readEntity(new GenericType<String>() {});
-        Assert.assertTrue(AuthControllerTest.tokenService.isValid(token));
+        LoginResponse loginResponse = response.readEntity(new GenericType<LoginResponse>() {});
+        Assert.assertTrue(AuthControllerTest.tokenService.isValid(loginResponse.getToken()));
     }
 
     private Response newLoginRequest(LoginCredentials input) {

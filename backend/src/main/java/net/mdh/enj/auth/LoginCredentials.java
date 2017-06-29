@@ -9,23 +9,22 @@ import javax.validation.constraints.Size;
 public class LoginCredentials {
     public static final int MIN_USERNAME_LENGTH = 2;
     public static final int MAX_USERNAME_LENGTH = 48;
-    public static final int MAX_PASSWORD_LENGTH = 4;
+    public static final int MIN_PASSWORD_LENGTH = 4;
     @NotNull
     @Size(min = MIN_USERNAME_LENGTH, max = MAX_USERNAME_LENGTH)
-    private char[] username;
+    private String username;
     @NotNull
-    @Size(min = MAX_PASSWORD_LENGTH)
+    @Size(min = MIN_PASSWORD_LENGTH)
     private char[] password;
 
-    public char[] getUsername() {
+    public String getUsername() {
         return this.username;
     }
-    public void setUsername(char[] username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
     public char[] getPassword() {
-        System.out.println(this.toString());
         return this.password;
     }
     public void setPassword(char[] password) {
@@ -33,7 +32,6 @@ public class LoginCredentials {
     }
 
     public void nuke() {
-        this.username = new char[this.username.length];
         this.password = new char[this.password.length];
     }
 

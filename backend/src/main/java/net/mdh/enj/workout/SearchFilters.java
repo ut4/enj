@@ -29,7 +29,7 @@ public class SearchFilters implements SelectQueryFilters {
     }
 
     /**
-     * Palauttaa false, jos urlissa ei ollut yhtään arvoa, muutoin true.
+     * Palauttaa true, jos urlissa oli ainakin yksi arvo, muutoin palauttaa false.
      */
     public boolean hasRules() {
         return this.startFrom != null || this.startTo != null;

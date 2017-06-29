@@ -5,12 +5,14 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.NotAuthorizedException;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
+import net.mdh.enj.user.UserRepository;
+import net.mdh.enj.user.SelectFilters;
+import net.mdh.enj.user.User;
 import javax.validation.Valid;
 import javax.inject.Inject;
-import java.util.Arrays;
 
 /**
  * Vastaa /api/auth REST-pyynnöistä
@@ -19,31 +21,48 @@ import java.util.Arrays;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthController {
 
+    private final UserRepository userRepository;
     private final TokenService tokenService;
+    private final HashingProvider hashingProvider;
 
     @Inject
-    public AuthController(TokenService tokenService) {
+    public AuthController(
+        UserRepository userRepository,
+        TokenService tokenService,
+        HashingProvider hashingProvider
+    ) {
+        this.userRepository = userRepository;
         this.tokenService = tokenService;
+        this.hashingProvider = hashingProvider;
     }
 
     /**
-     * Palauttaa uuden JsonWebTokenin.
+     * Palauttaa uuden JsonWebTokenin, tai heittää NotAuthorizedExceptionin jos
+     * käyttäjää ei löytynyt tai salasana meni väärin.
      *
      * @param loginCredentials {"username": "foo", "password": "bar"}
-     * @return Response 200 {"token": "token"} tai 401
+     * @return LoginResponse
+     * @throws NotAuthorizedException
      */
     @POST
     @PermitAll
-    @Path("login")
+    @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response login(@Valid @NotNull LoginCredentials loginCredentials) {
-        if (!Arrays.equals(loginCredentials.getUsername(), new char[]{'f','o','o'}) ||
-            !Arrays.equals(loginCredentials.getPassword(), new char[]{'b','a','r','s'})) {
+    public LoginResponse login(@Valid @NotNull LoginCredentials loginCredentials) {
+        SelectFilters selectFilters = new SelectFilters();
+        selectFilters.setUsername(loginCredentials.getUsername());
+        User user = this.userRepository.selectOne(selectFilters);
+        // Jos käyttäjää ei löydy, tai salasana menee väärin -> 401
+        if (user == null || !this.hashingProvider.verify(
+            loginCredentials.getPassword(),
+            user.getPasswordHash()
+        )) {
             loginCredentials.nuke();
-            return Response.status(401).build();
+            throw new NotAuthorizedException("Invalid credentials");
         }
-        String tokenHash = this.tokenService.generateNew(String.valueOf(loginCredentials.getUsername()));
+        // Kaikki ok -> luo token & palauta frontendiin
+        String tokenHash = this.tokenService.generateNew(loginCredentials.getUsername());
         loginCredentials.nuke();
-        return Response.status(200).entity(tokenHash).build();
+        return new LoginResponse(tokenHash);
     }
 }
