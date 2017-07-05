@@ -2,7 +2,7 @@ import RESTBackend  from 'src/common/RESTBackend';
 
 // TODO
 /*class Workout implements Enj.API.WorkoutRecord {
-    
+
 }*/
 
 /**

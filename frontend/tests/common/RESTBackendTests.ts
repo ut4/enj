@@ -32,7 +32,7 @@ QUnit.module('common/RESTBackend', hooks => {
         const data = {foo: 'bar'};
         httpPost.expects('post').once()
             .withExactArgs(settings.baseApiNamespace + testUrlNamespace, data)
-            .returns(Promise.resolve('1'));
+            .returns(Promise.resolve({insertId: 1} as Enj.API.InsertResponse));
         //
         const resultPromise = RESTBackend.insert(data);
         //

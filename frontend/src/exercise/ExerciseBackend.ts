@@ -7,7 +7,7 @@ class Exercise implements Enj.API.ExerciseRecord {
 }
 
 /**
- * Vastaa /api/exercise -REST-pyynnöistä. 
+ * Vastaa /api/exercise -REST-pyynnöistä.
  */
 class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {}
 

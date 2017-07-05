@@ -10,7 +10,7 @@ interface credentials {
  */
 class AuthBackend extends RESTBackend<any> {
     public login(credentials: credentials) {
-        return this.post(credentials, '/login');
+        return this.post<Enj.API.LoginResponse>(credentials, '/login');
     }
 }
 

@@ -2,9 +2,7 @@ import Http from 'src/common/Http';
 import settings from 'src/config/settings';
 
 /**
- * Suorittaa REST-API-pyyntöjä backendiin (esim GET api/workout, POST api/workout
- * (jossa workout = <urlNamespace>)), ja palauttaa backendin palauttaman datan
- * vahvasti tyypitettynä muodossa <T> (esim Enj.API.WorkoutRecord).
+ * Lähettää ja vastaanottaa REST-API:in <urlNamespace> urliin entiteettejä <T>.
  */
 class RESTBackend<T extends {id?: number}> {
     protected http: Http;
@@ -36,8 +34,8 @@ class RESTBackend<T extends {id?: number}> {
      * @returns Promise -> ({number} insertId, {any} error)
      */
     public insert(data: T, url?: string): Promise<number> {
-        return this.post(data, url).then(response => {
-            const newId = parseInt(response, 10);
+        return this.post<Enj.API.InsertResponse>(data, url).then(response => {
+            const newId = response.insertId;
             data.id = newId;
             return newId;
         });
@@ -47,8 +45,8 @@ class RESTBackend<T extends {id?: number}> {
      *
      * @returns Promise -> ({any} response, {any} error)
      */
-    protected post(data: T, url?: string): Promise<any> {
-        return this.http.post(this.completeUrl(url), data);
+    protected post<R>(data: T, url?: string): Promise<R> {
+        return this.http.post<R>(this.completeUrl(url), data);
     }
     /**
      * '?foo' -> '<this.this.baseNamespace>/<this.urlNamespace>?foo' (api/someresource?foo),

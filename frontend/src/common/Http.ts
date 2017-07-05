@@ -54,7 +54,7 @@ class Http {
      * @param {Object} data POST -data
      * @return {Promise} -> ({any} responseData, {ResponseError|SyntaxError|any} rejectedValue)
      */
-    public post(url: string, data: Object): Promise<any> {
+    public post<T>(url: string, data: Object): Promise<T> {
         Http.pendingRequestCount++;
         return this.userState.isOffline().then(isUserOffline =>
             (
@@ -99,7 +99,8 @@ class Http {
         throw new ResponseError(response.statusText, response);
     }
     /**
-     * Yrittää parsia reponse.bodyn tai heittää SyntaxError:in jos se ei ollut validi.
+     * Yrittää konvertoida response.body-JSONin objektiksi, ja tehtävässä onnistuesaan
+     * palauttaa konvertoidun arvon, muutoin heittää SyntaxError:in.
      *
      * @throws SyntaxError
      */

@@ -29,6 +29,18 @@ declare module Enj {
             name: string;
             variants: Array<ExerciseVariantRecord>
         }
+        interface InsertResponse {
+            insertId: number;
+        }
+        interface UpdateResponse {
+            updateCount: number;
+        }
+        interface DeleteResponse {
+            deleteCount: number;
+        }
+        interface LoginResponse {
+            token: string;
+        }
     }
     /**
      * Määrittelee rajapinnat Dexie/indexedDb-selaintietokannalle.
