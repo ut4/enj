@@ -38,12 +38,11 @@ class OfflineWorkoutHandlerRegister {
                 workoutExercise.id = newId;
                 parentWorkout.exercises.push(workoutExercise);
             // 3. Tallenna päivitetty cache
-                return this.offline.sendAsyncMessage({
-                    action: 'updateCache',
-                    url: this.workoutBackend.completeUrl('') +
+                return this.offline.updateCache(
+                    this.workoutBackend.completeUrl('') +
                          this.workoutBackend.makeTimestampRangeUrlParams(),
-                    data: workouts
-                });
+                    workouts
+                );
             })
             // 4. palauta feikattu backendin vastaus
             .then(() => JSON.stringify({insertId: newId}))

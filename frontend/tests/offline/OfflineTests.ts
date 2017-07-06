@@ -54,6 +54,77 @@ QUnit.module('offline/Offline', hooks => {
             done();
         });
     });
+    QUnit.test('sendAsyncMessage lähettää viestin serviceWorkerille, ja passaa sille ' +
+        'messageportin, jolla worker voi palauttaa tietoa takaisin', assert => {
+        mockServiceWorkerContainer.controller = mockServiceWorker;
+        const postMessageSpy = sinon.spy(mockServiceWorkerContainer.controller, 'postMessage');
+        const someMessage = {foo: 'bar'};
+        //
+        const promise = offline.sendAsyncMessage(someMessage);
+        //
+        assert.ok(postMessageSpy.calledOnce, 'Pitäisi lähettää viesti');
+        assert.deepEqual(
+            postMessageSpy.firstCall.args[0],// 0 = message, 1 = [MessagePort]
+            someMessage,
+            'Pitäisi lähettää viestin data'
+        );
+        const portPassedToSW = postMessageSpy.firstCall.args[1][0];
+        assert.ok(
+            portPassedToSW instanceof MessagePort,
+            'Pitäisi passata viestissä messagechannel-portin, jolla ser' +
+            'viceWorker voi palauttaa tietoa takaisin'
+        );
+        // Simuloi sw-main.js:ssä normaalisti tapahtuva kuittaus / tiedon palautus
+        const mockValueFromServiceWorker = {foo: 'bar'};
+        portPassedToSW.postMessage(mockValueFromServiceWorker);
+        //
+        const done = assert.async();
+        promise.then(value => {
+            assert.deepEqual(
+                value,
+                mockValueFromServiceWorker,
+                'Pitäisi resolvata serviceWorkerin porttiin lähettämä data'
+            );
+            done();
+        });
+    });
+    QUnit.test('sendAsyncMessage rejektoi, jos serviceWorkerin porttiin kuittaama arvo sisältää {error:...}', assert => {
+        mockServiceWorkerContainer.controller = mockServiceWorker;
+        const postMessageSpy = sinon.spy(mockServiceWorkerContainer.controller, 'postMessage');
+        //
+        const promise = offline.sendAsyncMessage({fo: 'bar'});
+        //
+        const portsPassedToSW = postMessageSpy.firstCall.args[1];
+        portsPassedToSW[0].postMessage({error: 'someerror'});
+        //
+        const done = assert.async();
+        promise.then(null, value => {
+            assert.equal(
+                value,
+                'someerror',
+                'Pitäisi rejektoida servieWorkerin kuittaama virhe'
+            );
+            done();
+        });
+    });
+    QUnit.test('updateCache lähettää serviceWorkerille updateCache-komennon', assert => {
+        mockServiceWorkerContainer.controller = mockServiceWorker;
+        const postMessageStub = sinon.stub(mockServiceWorkerContainer.controller, 'postMessage');
+        const someUrl = 'foo/bar';
+        const someData = {foo: 'bar'};
+        //
+        offline.updateCache(someUrl, someData);
+        //
+        assert.ok(postMessageStub.calledOnce, 'Pitäisi lähettää viesti');
+        assert.deepEqual(
+            postMessageStub.firstCall.args[0],// 0 = message, 1 = [MessagePort]
+            {
+                action: 'updateCache',
+                url: someUrl,
+                data: someData
+            }
+        );
+    });
     // TODO unregister offline kutsuu unregister jos getregistration palauttaa
     QUnit.test('utils.nextId palauttaa taulukon itemeistä suurimman id:n + 1', assert => {
         //

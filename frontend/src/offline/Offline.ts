@@ -86,6 +86,12 @@ class Offline {
         return this.userState.setIsOffline(false);
     }
     /**
+     * Komentaa serviceWorkeriä päivittämään cache, jolla url {url}.
+     */
+    public updateCache(url: string, data: any): Promise<any> {
+        return this.sendAsyncMessage({action: 'updateCache', url, data});
+    }
+    /**
      * @param {any} message
      * @return {Promise} -> ({any} resolvedValue, {any} rejectedValue)
      */
@@ -98,7 +104,7 @@ class Offline {
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = event => {
                 console.log('got', event.data);
-                !event.data.error ? resolve(event.data) : reject(event.data);
+                !event.data.error ? resolve(event.data) : reject(event.data.error);
             };
             // This sends the message data as well as transferring messageChannel.port2 to the service worker.
             // The service worker can then use the transferred port to reply via postMessage(), which

@@ -22,20 +22,19 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
         sinon.stub(workoutBackendStub, 'completeUrl').returns('foo');
-        const cacheUpdate = sinon.stub(offlineStub, 'sendAsyncMessage').returns(Promise.resolve());
+        const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
         const newWorkoutExercise = new WorkoutExercise();
         newWorkoutExercise.workoutId = 2;
         //
         const done = assert.async();
         handlerRegister.addExercise(newWorkoutExercise).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
-            assert.deepEqual(cacheUpdate.firstCall.args, [{
-                action: 'updateCache',
-                url: 'foo' + workoutBackendStub.makeTimestampRangeUrlParams(),
-                data: [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'foo' + workoutBackendStub.makeTimestampRangeUrlParams(),      // url
+                [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], { // data
                     exercises: [newWorkoutExercise]
                 })]
-            }], 'Pitäisi päivittää uudella liikeellä varustettu treeni tämän päivän treenien cacheen');
+            ], 'Pitäisi lisätä uusi liike current-day-treenincachen oikeaan treeniin');
             assert.equal(result, JSON.stringify({insertId: 32}), 'Pitäisi palauttaa uusi id');
             assert.equal(newWorkoutExercise.id, 32, 'Pitäisi asettaa uusi id liikkeeseen');
             done();
