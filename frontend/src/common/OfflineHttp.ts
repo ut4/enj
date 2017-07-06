@@ -7,7 +7,7 @@ import Db from 'src/common/Db';
  * yhteyden palautuessa.
  */
 class OfflineHttp {
-    public static requestHandlers = {};
+    public static requestHandlers: {[_:string]: Enj.offlineHandler} = {};
     public static urlsToIgnore = {};
     private db: Db;
     /**
@@ -23,24 +23,24 @@ class OfflineHttp {
      * palauttaa Responsen statuskoodilla 454, ei 404.
      */
     public handle(url: string, options: {method: keyof Enj.syncableHttpMethod, data?: any}): Promise<Response> {
-        if (!this.hasHandlerFor(options.method, url)) {
+        const handler = this.getHandler(options.method, url);
+        if (!handler) {
             return Promise.resolve(makeOffline404(options.method, url));
         }
         let response: Response;
-        return this.callHandler(options.method, url, options.data)
+        return handler(options.data)
             .then(responseData => {
                 response = new Response(responseData);
                 return this.logRequestToSyncQueue({
                     method: options.method,
                     url,
-                    data: options.data,
-                    response: responseData
+                    data: options.data
                 });
             })
             .then(() => response);
     }
     /**
-     * @param {string} method HTTP-pyynnön method, POST
+     * @param {string} method HTTP-pyynön method, POST
      * @param {string} url HTTP-pyynnön url joka halutaan hadlata offline-moden aikana
      * @param {Function} fn funktio jolla handlataan
      */
@@ -49,7 +49,7 @@ class OfflineHttp {
     }
     /**
      * @param {string} method
-     * @param {string} url urlit joiden HTTP-pyyntöjä ei haluta logattavan
+     * @param {string} url url jonka HTTP-pyyntöjä ei haluta logattavan
      */
     public ignore(method: keyof Enj.syncableHttpMethod, url: string) {
         OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
@@ -59,20 +59,11 @@ class OfflineHttp {
      * @param {string} url
      * @return {boolean}
      */
-    public hasHandlerFor(method: keyof Enj.syncableHttpMethod, url: string): boolean {
-        return OfflineHttp.requestHandlers.hasOwnProperty(method + ':' + url);
+    public getHandler(method: keyof Enj.syncableHttpMethod, url: string): Enj.offlineHandler {
+        return OfflineHttp.requestHandlers[method + ':' + url];
     }
     /**
-     * @param {string} method
-     * @param {string} url minkä urlin HTTP-pyyntö joka korvataan
-     * @param {any=} data HTTP-pyyntöön (POST etc.) liittyvä data, jos GET niin undefined
-     * @return {Promise|any}
-     */
-    public callHandler(method: keyof Enj.syncableHttpMethod, url: string, data?: any) {
-        return OfflineHttp.requestHandlers[method + ':' + url](data);
-    }
-    /**
-     * @param {Object} request logattava pyyntö {method, url, response, data}
+     * @param {Object} request logattava pyyntö {method, url, data}
      * @return {Promise|void}
      */
     public logRequestToSyncQueue(request: Enj.OfflineDbSchema.SyncQueueRecord) {

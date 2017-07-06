@@ -1,10 +1,12 @@
 import Offline from 'src/offline/Offline';
+import OfflineHttp from 'src/common/OfflineHttp';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 
 /**
- * Vastaa /api/workout/* -REST-pyynnöistä yhteydettömän tilan aikana.
+ * Sisältää handerit, jotka vastaa /api/workout/* -REST-pyynnöistä yhteydettömän
+ * tilan aikana.
  */
-class OfflineWorkoutBackend implements Enj.OfflineBackend {
+class OfflineWorkoutHandlerRegister {
     private offline: Offline;
     private workoutBackend: WorkoutBackend;
     constructor(offline: Offline, workoutBackend: WorkoutBackend) {
@@ -12,10 +14,14 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
         this.workoutBackend = workoutBackend;
     }
     /**
-     * Palauttaa rekisteröitävien handlerien tiedot.
+     * Rekisteröi kaikki /api/workout/* offline-handlerit.
      */
-    public getRegisterables(): Array<Enj.offlineHandlerRegistrable> {
-        return [['POST', this.workoutBackend.completeUrl('/exercise'), we => this.addExercise(we)]];
+    public registerHandlers(offlineHttp: OfflineHttp) {
+        offlineHttp.addHandler(
+            'POST' as 'POST',
+            this.workoutBackend.completeUrl('/exercise'),
+            workoutExercise => this.addExercise(workoutExercise)
+        );
     }
     /**
      * Generöi uuden id:n treeniliikkeelle <workoutExercise>, lisää sen
@@ -27,9 +33,10 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
             // 1. Hae cachetettu treeni
             this.workoutBackend.getTodaysWorkouts().then(workouts => {
             // 2. Lisää uusi liike cachetettuun treeniin
-                newId = this.offline.utils.getNextId(workouts[0].exercises);
+                const parentWorkout = workouts.find(w => w.id === workoutExercise.workoutId);
+                newId = this.offline.utils.getNextId(parentWorkout.exercises);
                 workoutExercise.id = newId;
-                workouts[0].exercises.push(workoutExercise);
+                parentWorkout.exercises.push(workoutExercise);
             // 3. Tallenna päivitetty cache
                 return this.offline.sendAsyncMessage({
                     action: 'updateCache',
@@ -39,9 +46,9 @@ class OfflineWorkoutBackend implements Enj.OfflineBackend {
                 });
             })
             // 4. palauta feikattu backendin vastaus
-            .then(() => newId.toString())
+            .then(() => JSON.stringify({insertId: newId}))
         );
     }
 }
 
-export default OfflineWorkoutBackend;
+export default OfflineWorkoutHandlerRegister;

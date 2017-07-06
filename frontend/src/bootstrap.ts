@@ -1,5 +1,5 @@
 import iocFactories from 'src/ioc';
-import OfflineWorkoutBackend from 'src/workout/OfflineWorkoutBackend';
+import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 const http = iocFactories.http();
 const offlineHttp = iocFactories.offlineHttp();
 
@@ -14,18 +14,10 @@ http.interceptors.push({
     }
 });
 
-// Instantioi kaikki offlineBackendit
-const backends: Array<Enj.OfflineBackend> = [
-    (new OfflineWorkoutBackend(
-        iocFactories.offline(),
-        iocFactories.workoutBackend()
-    ))
-    // Tänne lisää
-    // ...
-];
-// Rekisteröi jokaisen backendin rekisteröitävät handlerit
-backends.map(backend => {
-    backend.getRegisterables().map(registrable => {
-        (offlineHttp as any).addHandler(...registrable);
-    });
-});
+// Rekisteröi kaikki offline-handlerit
+new OfflineWorkoutHandlerRegister(
+    iocFactories.offline(),
+    iocFactories.workoutBackend()
+).registerHandlers(offlineHttp);
+// Tänne lisää
+// ...

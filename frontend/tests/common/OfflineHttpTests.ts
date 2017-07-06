@@ -8,59 +8,25 @@ QUnit.module('common/OfflineHttp', hooks => {
     let offlineHttp: OfflineHttp;
     hooks.beforeEach(() => {
         OfflineHttp.requestHandlers = {};
-        db = new Db();
+        db = new Db();// oikea instanssi prototyypin sijasta, että voi viitata db.syncQueue etc.
         offlineHttp = new OfflineHttp(db);
     });
-    QUnit.test('addHandler lisää handerin listaan', assert => {
+    QUnit.test('addHandler lisää handerin listaan & getHandler palauttaa sen', assert => {
+        const method = 'POST';
         const urlToHandle = 'some/url';
         const handler = () => Promise.resolve('foo');
-        offlineHttp.addHandler('POST', urlToHandle, handler);
+        offlineHttp.addHandler(method, urlToHandle, handler);
         const expected = {};
-        expected['POST:' + urlToHandle] = handler;
+        expected[method + ':' + urlToHandle] = handler;
         assert.deepEqual(OfflineHttp.requestHandlers, expected);
-    });
-    QUnit.test('hasHandler palauttaa tiedon onko handleri rekisteröity', assert => {
-        const handlerUrlToCheck = 'foor/var';
-        assert.notOk(
-            offlineHttp.hasHandlerFor('POST', handlerUrlToCheck),
-            'Pitäisi palauttaa false mikäli handleria ei löydy'
-        );
-        offlineHttp.addHandler('POST', handlerUrlToCheck, () => Promise.resolve(''));
-        assert.ok(
-            offlineHttp.hasHandlerFor('POST', handlerUrlToCheck),
-            'Pitäisi palauttaa true mikäli handleri löytyy'
-        );
-    });
-    QUnit.test('callHandler kutsuu rekisteröityä handleria', assert => {
-        const urlToHandle = 'some/url';
-        const valueFromHandler = 'fo';
-        offlineHttp.addHandler('POST', urlToHandle, () =>
-            Promise.resolve(valueFromHandler)
-        );
-        const callWatcher = sinon.spy(OfflineHttp.requestHandlers, 'POST:' + urlToHandle);
-        const paramForHandler = 'bas';
-        //
-        const done = assert.async();
-        offlineHttp.callHandler('POST', urlToHandle, paramForHandler).then(result => {
-            assert.deepEqual(
-                callWatcher.getCall(0).args,
-                [paramForHandler],
-                'Pitäisi kutsua handleria ja passata sille annetun argumentin'
-            );
-            assert.equal(
-                result,
-                valueFromHandler,
-                'Pitäisi palauttaa handlerin palauttaman arvon'
-            );
-            done();
-        });
+        const getd = offlineHttp.getHandler(method, urlToHandle);
+        assert.deepEqual(getd, handler);
     });
     QUnit.test('logRequestToSyncQueue kirjoittaa selaintietokantaan', assert => {
         const requestToQueue = {
-            method: 'POST',
+            method: 'POST' as 'POST',
             url: 'some/url',
-            data: {foo: 'bar'},
-            response: 'somthinh'
+            data: {foo: 'bar'}
         };
         const logInsertWatcher = sinon.stub(db.syncQueue, 'add').returns('foo');
         const result = offlineHttp.logRequestToSyncQueue(requestToQueue);
@@ -79,7 +45,7 @@ QUnit.module('common/OfflineHttp', hooks => {
     QUnit.test('logRequestToSyncQueue ei kirjoita selaintietokantaan jos url löytyy ignore-listalta', assert => {
         const logInsertWatcher = sinon.stub(db.syncQueue, 'add');
         const requestThatShouldBeIgnored = 'url/bar';
-        const request = {method: 'POST', url: requestThatShouldBeIgnored, response: 'a', data: null};
+        const request = {method: 'POST' as 'POST', url: requestThatShouldBeIgnored, data: null};
         // Kutsu 1
         offlineHttp.logRequestToSyncQueue(request);
         offlineHttp.ignore('POST', requestThatShouldBeIgnored);
@@ -122,61 +88,58 @@ QUnit.module('common/OfflineHttp', hooks => {
         });
     });
     QUnit.test('handle kutsuu handleria ja loggaa pyynnön queueen', assert => {
-        sinon.stub(offlineHttp, 'hasHandlerFor').returns(true);
         const mockHandlerResponse = 'd';
-        const handlerCallWatcher = sinon.stub(offlineHttp, 'callHandler')
-            .returns(Promise.resolve(mockHandlerResponse));
+        const testUrl = 'baz/haz';
+        const testHandlerFnSpy = sinon.spy(() => Promise.resolve(mockHandlerResponse));
+        offlineHttp.addHandler('POST', testUrl, testHandlerFnSpy);
         const requestQueuerWatcher = sinon.stub(offlineHttp, 'logRequestToSyncQueue');
         const request = {
-            method: 'POST' as any,
-            url: 'baz/haz',
+            method: 'POST' as 'POST',
+            url: testUrl,
             data: {baz: 'haz'}
         };
         const done = assert.async();
         offlineHttp.handle(request.url, {method: request.method, data: request.data})
             .then(result => {
                 assert.ok(
-                    handlerCallWatcher.called,
+                    testHandlerFnSpy.called,
                     'Pitäisi kutsua handleria'
                 );
                 assert.deepEqual(
-                    handlerCallWatcher.firstCall.args,
-                    [request.method, request.url, request.data],
-                    'Pitäisi passata handlerille nämä argumentit '
+                    testHandlerFnSpy.firstCall.args,
+                    [request.data],
+                    'Pitäisi passata pyynnön data handlerille'
                 );
                 assert.ok(
                     requestQueuerWatcher.called,
-                    'Pitäisi logata pyynnön queueen'
+                    'Pitäisi logata pyyntö queueen'
                 );
                 assert.deepEqual(
                     requestQueuerWatcher.firstCall.args,
-                    [Object.assign(request, {
-                        response: mockHandlerResponse
-                    })],
-                    'Pitäisi logata synqQueueen nämä'
+                    [request],
+                    'Pitäisi logata synqQueueen nämä tiedot'
                 );
                 assert.deepEqual(
                     result,
                     new Response(mockHandlerResponse),
-                    'Pitäisi palauttaa reponse, jonka bodyna jossa handlerin palauttama data'
+                    'Pitäisi palauttaa response, jonka bodyna jossa handlerin palauttama data'
                 );
                 done();
             });
     });
     QUnit.test('handle palauttaa 454 Responsen jos handleria ei löydy', assert => {
-        sinon.stub(offlineHttp, 'hasHandlerFor').returns(false);
         const requestQueuerWatcher = sinon.spy(offlineHttp, 'logRequestToSyncQueue');
         const done = assert.async();
-        offlineHttp.handle('foo', {method:'POST'}).then((result: Response) => {
+        offlineHttp.handle('foo', {method:'POST'}).then(result => {
             assert.equal(
                 requestQueuerWatcher.called,
                 false,
-                'Ei pitäisi logata queueen mitään failatessa'
+                'Ei pitäisi logata queueen mitään'
             );
             assert.equal(
                 result.status,
                 454,
-                'Pitäisi palauttaa responsen jonka statuksena tämä'
+                'Pitäisi palauttaa response jonka statuksena tämä'
             );
             done();
         });

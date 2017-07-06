@@ -2,7 +2,7 @@ import RESTBackend from 'src/common/RESTBackend';
 import OfflineHttp from 'src/common/OfflineHttp';
 
 /**
- * Vastaa /api/offline -REST-pyynnöistä. 
+ * Vastaa /api/offline -REST-pyynnöistä.
  */
 class SyncBackend extends RESTBackend<any> {
     private offlineHttp: OfflineHttp;
@@ -11,10 +11,10 @@ class SyncBackend extends RESTBackend<any> {
         this.offlineHttp = offlineHttp;
     }
     /**
-     * Lähettää selaintietokannan syncQueuen itemit backendiin synkattavaksi (jos
-     * niitä oli), ja siivoaa ne selaintietokannasta mikäli kaikkien synkattavien
-     * itemeiden synkkaus onnistui. Lopuksi palauttaa onnistuneesti synkattujen
-     * itemeiden lukumäärän, tai rejektoi jos jokin meni pieleen.
+     * Lähettää selaintietokannan syncQueuen itemit backendiin synkattavaksi, ja
+     * siivoaa lopuksi selaintietokannasta ne itemit, joiden synkkays meni OK.
+     * Lopuksi palauttaa onnistuneesti synkattujen, ja siivottujen itemeiden
+     * lukumäärän.
      *
      * @returns {Promise} -> ({number} succefulSyncCount, {any} error)
      */
@@ -23,25 +23,20 @@ class SyncBackend extends RESTBackend<any> {
         return (
             // 1. Hae synkattavat itemit selaintietokannasta
             this.offlineHttp.getRequestSyncQueue()
-            // 2. Lähetä ne backendiin synkattavaksi jos niitä oli
+            // 2. Lähetä ne backendiin jos niitä oli
             .then(items => {
                 syncQueue = items;
-                return syncQueue.length ? this.post(syncQueue) : 0;
+                return syncQueue.length && this.post<Array<number>>(syncQueue);
             })
-            // 3. Siivoa itemit selaintietokannasta jos synkkaus onnistui (kaikki tai ei mitään)
-            .then(amountOfSuccesfulSyncs => {
+            // 3. Siivoa onnistuneesti synkatut itemit selaintietokannasta
+            .then(idsOfSuccesfullySyncedItems => {
                 // ... tai älä tee mitään jos itemeitä ei löytynyt
                 if (syncQueue.length === 0) {
                     return 0;
                 }
-                if (amountOfSuccesfulSyncs === syncQueue.length) {
-                    return this.offlineHttp.removeRequestsFromQueue(
-                        syncQueue.map(syncItem => syncItem.id)
-                    );
-                }
-                throw new Error('Toiminto epäonnistui koska %d1 %d2:sta synkkauksesta failasi'
-                    .replace('%d1', (syncQueue.length - amountOfSuccesfulSyncs as any))
-                    .replace('%d2', syncQueue.length));
+                return this.offlineHttp.removeRequestsFromQueue(
+                    idsOfSuccesfullySyncedItems
+                );
             })
         );
     }

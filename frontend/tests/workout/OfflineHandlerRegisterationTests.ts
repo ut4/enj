@@ -5,7 +5,7 @@ import Http from 'src/common/Http';
 import OfflineHttp from 'src/common/OfflineHttp';
 import Offline from 'src/offline/Offline';
 import WorkoutBackend, { WorkoutExercise } from 'src/workout/WorkoutBackend';
-import OfflineWorkoutBackend from 'src/workout/OfflineWorkoutBackend';
+import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 import iocFactories from 'src/ioc';
 
 QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
@@ -13,7 +13,7 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     let fetchContainer: GlobalFetch = window;
     let offlineHttp: OfflineHttp;
     let workoutBackend: WorkoutBackend;
-    let offlineWorkoutBackend: OfflineWorkoutBackend;
+    let handlerRegister: OfflineWorkoutHandlerRegister;
     hooks.beforeEach(() => {
         userStateStub = Object.create(UserState.prototype);
         sinon.stub(userStateStub, 'isOffline').returns(Promise.resolve(true));
@@ -21,21 +21,21 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
         workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, userStateStub, '/'), 'workout');
         const offlineStub = Object.create(Offline.prototype);
         offlineStub.utils = {getNextId: () => 32};
-        offlineWorkoutBackend = new OfflineWorkoutBackend(offlineStub, workoutBackend);
-        offlineWorkoutBackend.getRegisterables().map(r => (offlineHttp as any).addHandler(...r));
+        handlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackend);
+        handlerRegister.registerHandlers(offlineHttp);
     });
     QUnit.test('workoutBackend.addExercise kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
         const testWorkoutExercise = new WorkoutExercise();
         const fetchCallSpy = sinon.spy(fetchContainer.fetch);
-        const handlerCallSpy = sinon.stub(offlineWorkoutBackend, 'addExercise').returns(Promise.resolve('56'));
+        const handlerCallStub = sinon.stub(handlerRegister, 'addExercise').returns(Promise.resolve('{"insertId": 56}'));
         sinon.stub(offlineHttp, 'logRequestToSyncQueue').returns(Promise.resolve());
         //
         const done = assert.async();
         workoutBackend.addExercise(testWorkoutExercise).then(res => {
             //
             assert.ok(fetchCallSpy.notCalled);
-            assert.ok(handlerCallSpy.calledOnce);
-            assert.deepEqual(handlerCallSpy.firstCall.args, [testWorkoutExercise]);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExercise]);
             assert.equal(res, 56, 'Pitäisi palauttaa offline-handlerin palauttama ' +
                 'arvo (RESTBackending modifioimana)');
             done();

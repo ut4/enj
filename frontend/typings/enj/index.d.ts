@@ -53,19 +53,19 @@ declare module Enj {
         }
         interface SyncQueueRecord {
             id?: number;
-            method: string,
+            method: keyof syncableHttpMethod,
             url: string;
             data: any;
-            response: any;
         }
     }
 
     type syncableHttpMethod = {POST: 1};
-    type offlineHandler = (any) => Promise<string>;
-    type offlineHandlerRegistrable = [keyof syncableHttpMethod, string, offlineHandler];
-
-    interface OfflineBackend {
-        getRegisterables(): Array<offlineHandlerRegistrable>
+    interface SyncRoute {
+        method: keyof syncableHttpMethod;
+        url: string;
+    }
+    interface offlineHandler {
+        (data: any, ...any): Promise<string>;
     }
 
     type appSettings = {

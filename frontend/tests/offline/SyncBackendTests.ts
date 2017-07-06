@@ -14,46 +14,35 @@ QUnit.module('offline/SyncBackend', hooks => {
         offlineHttpStub = Object.create(OfflineHttp.prototype);
         syncBackend = new SyncBackend(httpStub, 'sync', offlineHttpStub);
         someSyncableItems = [
-            {id: 1, url: 'foo', data: {k: 'v'}, method: 'POST', response: 45},
-            {id: 2, url: 'bar', data: {g: 'w'}, method: 'POST', response: 46}
+            {id: 1, method: 'POST', url: 'foo', data: {k: 'v'}},
+            {id: 2, method: 'POST', url: 'bar', data: {g: 'w'}},
+            {id: 3, method: 'POST', url: 'baz', data: {c: 'y'}},
         ];
     });
-    QUnit.test('syncAll postaa synkattavat itemit backendiin ja siivoaa ne lopuksi selaintietokannasta', assert => {
+    QUnit.test('syncAll postaa synkattavat itemit backendiin, ja siivoaa onnistuneesti synkatut itemit selaintietokannasta', assert => {
         sinon.stub(offlineHttpStub, 'getRequestSyncQueue').returns(Promise.resolve(someSyncableItems));
-        const httpCallStub = sinon.stub(httpStub, 'post').returns(Promise.resolve(someSyncableItems.length));
-        const cleanUpCallStub = sinon.stub(offlineHttpStub, 'removeRequestsFromQueue').returns(Promise.resolve(3));
+        const mockSuccesfullySyncIds = [6, 7];
+        const httpCallStub = sinon.stub(httpStub, 'post').returns(Promise.resolve(mockSuccesfullySyncIds));
+        const cleanUpCallStub = sinon.stub(offlineHttpStub, 'removeRequestsFromQueue').returns(Promise.resolve(678));
         const done = assert.async();
         syncBackend.syncAll().then(results => {
-            assert.ok(httpCallStub.calledOnce);
+            assert.ok(httpCallStub.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
             assert.deepEqual(
-                httpCallStub.firstCall.args[1], // 0 = url, 1 = data
-                someSyncableItems,
-                'Pitäisi POSTata datan backendiin synkattavaksi'
+                httpCallStub.firstCall.args, // 0 = url, 1 = data
+                ['api/sync', someSyncableItems],
+                'Pitäisi POSTata syncQueue backendiin'
             );
             assert.ok(cleanUpCallStub.calledAfter(httpCallStub));
             assert.deepEqual(
                 cleanUpCallStub.firstCall.args,
-                [someSyncableItems.map(ssi => ssi.id)],
-                'Pitäisi siivota kaikki synkattavat itemit selaintietokannasta'
+                [mockSuccesfullySyncIds],
+                'Pitäisi siivota onnistuneesti synkatut itemit selaintietokannasta'
             );
-            assert.deepEqual(
+            assert.equal(
                 results,
-                3,
-                'Pitäisi palauttaa siivottujen itemien lukumäärän ' +
-                '(removeRequestsFromQueue paluuarvo)'
+                678,
+                'Pitäisi palauttaa onnistuneesti synkattujen&siivottujen itemeiden lukumäärä'
             );
-            done();
-        });
-    });
-    QUnit.test('syncAll rejektoi jos backend epäonnistuu _yhdenkään_ itemin synkkauksessa', assert => {
-        sinon.stub(offlineHttpStub, 'getRequestSyncQueue').returns(Promise.resolve(someSyncableItems));
-        // Simuloi backendin vastaus, jossa kaikkien itemeiden synkkaus ei ole onnistunut
-        sinon.stub(httpStub, 'post').returns(Promise.resolve(someSyncableItems.length - 1));
-        const cleanUpCallSpy = sinon.spy(offlineHttpStub, 'removeRequestsFromQueue');
-        const done = assert.async();
-        syncBackend.syncAll().then(null, results => {
-            assert.ok(cleanUpCallSpy.notCalled, 'Ei pitäisi siivota selaintietokantaa epäonnistuessa');
-            assert.ok(results instanceof Error);
             done();
         });
     });
