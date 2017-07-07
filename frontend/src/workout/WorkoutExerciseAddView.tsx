@@ -18,7 +18,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
     private returnUrl: string;
     public constructor(props, context) {
         super(props, context);
-        this.returnUrl = context.router.url.split('/').slice(0, 3).join('/');
+        this.returnUrl = '/treeni/tanaan';
         //
         const workoutExercise = new WorkoutExercise();
         workoutExercise.workoutId = parseInt(props.params.id, 10);

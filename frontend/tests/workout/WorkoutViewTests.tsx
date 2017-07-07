@@ -1,25 +1,28 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
-import WorkoutBackend from 'src/workout/WorkoutBackend';
+import utils from 'tests/utils';
+import WorkoutBackend, { Workout } from 'src/workout/WorkoutBackend';
 import WorkoutView from 'src/workout/WorkoutView';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import iocFactories from 'src/ioc';
 const emptyMessageRegExp: RegExp = /Ei treenejä/;
 
 QUnit.module('workout/WorkoutView', hooks => {
+    let someTestWorkout: Enj.API.WorkoutRecord;
     let workoutBackendIocOverride: sinon.SinonStub;
     let workoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
         workoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackend);
+        someTestWorkout = {id:1, start: 2, exercises: []};
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
         const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
-            .returns(Promise.resolve([{id:1, start: 2, exercises: []}]));
+            .returns(Promise.resolve([someTestWorkout]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
         //
@@ -62,7 +65,39 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
+    QUnit.test('"Aloita treeni"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
+        const workoutFetchStub = sinon.stub(workoutBackend, 'getTodaysWorkouts').returns(Promise.resolve([someTestWorkout]));
+        const workoutsInsertStub = sinon.stub(workoutBackend, 'insert').returns(Promise.resolve());
+        //
+        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        // odota, että näkymä latautuu
+        const done = assert.async();
+        workoutFetchStub.firstCall.returnValue.then(() => {
+            const workoutsBefore = getRenderedWorkoutItems(rendered);
+            const workoutCountBefore = workoutsBefore.length;
+            //
+            const addWorkoutButton = utils.findButtonByContent(rendered, 'Aloita uusi');
+            const expectedWorkout = getExpectedNewWorkout();
+            addWorkoutButton.click();
+            //
+            assert.ok(workoutsInsertStub, 'Pitäisi luoda treeni');
+            workoutsInsertStub.firstCall.returnValue.then(() => {
+                const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
+                assert.equal(renderedWorkoutsAfter.length, workoutCountBefore + 1, 'Pitäisi renderöidä uusi treeni');
+                assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listan alkuun');
+                assert.deepEqual(renderedWorkoutsAfter[1].props.workout, someTestWorkout, 'Initial treeni pitäisi olla nyt listan 2.');
+                done();
+            });
+        });
+    });
     function getRenderedWorkoutItems(rendered) {
         return itu.scryRenderedVNodesWithType(rendered, EditableWorkout);
+    }
+    function getExpectedNewWorkout() {
+        const workout = new Workout();
+        workout.start = Math.floor(new Date().getTime() / 1000);
+        workout.end = 0;
+        workout.exercises = [];
+        return workout;
     }
 });

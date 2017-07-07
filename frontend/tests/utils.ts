@@ -1,3 +1,5 @@
+import * as itu from 'inferno-test-utils';
+
 const utils = {
     fakeSWScope: (cacheName: string) => {
         const scope = window;
@@ -18,6 +20,10 @@ const utils = {
         const event = document.createEvent('HTMLEvents');
         event.initEvent(type, false, true);
         el.dispatchEvent(event);
+    },
+    findButtonByContent: (rendered, content: string): HTMLButtonElement => {
+        const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, 'button');
+        return Array.from(allButtons).find(el => el.textContent === content) as HTMLButtonElement;
     }
 };
 

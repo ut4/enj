@@ -1,9 +1,15 @@
 import RESTBackend  from 'src/common/RESTBackend';
 
-// TODO
-/*class Workout implements Enj.API.WorkoutRecord {
-
-}*/
+class Workout implements Enj.API.WorkoutRecord {
+    public id;
+    public start;
+    public end;
+    public exercises;
+    constructor() {
+        this.end = 0;
+        this.exercises = [];
+    }
+}
 
 /**
  * Vastaa /api/workout -REST-pyynnöistä.
@@ -66,4 +72,4 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
 class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {}
 
 export default WorkoutBackend;
-export { WorkoutExercise, WorkoutExerciseSet };
+export { Workout, WorkoutExercise, WorkoutExerciseSet };

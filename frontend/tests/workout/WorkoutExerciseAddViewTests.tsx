@@ -7,17 +7,6 @@ import WorkoutExerciseAddView from 'src/workout/WorkoutExerciseAddView';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
-/**
- * Feikkaa context-parametrin Inferno.Componentin konstruktorille,
- * jonka inferno-router normaalisti handlaisi.
- */
-class ContextFakingWorkoutExerciseAddView extends WorkoutExerciseAddView {
-    constructor(props) {
-        const fakeContext = {router: {url: '/treeni/2/liike/lisaa/1'}};
-        super(props, fakeContext);
-    }
-}
-
 QUnit.module('workout/WorkoutExeriseAddView', hooks => {
     let workoutBackendStub: WorkoutBackend;
     let workoutBackendIocOverride: sinon.SinonStub;
@@ -38,16 +27,15 @@ QUnit.module('workout/WorkoutExeriseAddView', hooks => {
         exerciseBackendIocOverride.restore();
         historyIocOverride.restore();
     });
-    QUnit.test('submit postaa datan backendiin, ja ohjaa takaisin #/treeni/:id', assert => {
+    QUnit.test('submit postaa datan backendiin, ja ohjaa takaisin #/treeni/tanaan', assert => {
         const exerciseListFetch = sinon.stub(exerciseBackendStub, 'getAll')
             .returns(Promise.resolve([{id: 1, name: 'foo', variants: []}]));
-        const testNewId = '44';
-        const workoutInsert = sinon.stub(workoutBackendStub, 'addExercise')
-            .returns(Promise.resolve(testNewId));
+        const workoutExerciseInsert = sinon.stub(workoutBackendStub, 'addExercise')
+            .returns(Promise.resolve());
         const urlParams = {id: 2, orderDef: 1};
         //
         const rendered = itu.renderIntoDocument(
-            <ContextFakingWorkoutExerciseAddView params={ urlParams }/>
+            <WorkoutExerciseAddView params={ urlParams }/>
         );
         const done = assert.async();
         // Odota, että liikelista latautuu
@@ -61,13 +49,17 @@ QUnit.module('workout/WorkoutExeriseAddView', hooks => {
                 const submitButton = itu.scryRenderedDOMElementsWithTag(rendered, 'button')[0] as HTMLButtonElement;
                 submitButton.click();
         // Assertoi että lähetti datan backendiin
-                assert.ok(workoutInsert.called);
-                return workoutInsert.firstCall.returnValue;
+                assert.ok(workoutExerciseInsert.called);
+                const insertedWorkoutExercise = workoutExerciseInsert.firstCall.args[0];
+                assert.equal(insertedWorkoutExercise.workoutId, urlParams.id, 'Pitäis poimia urlista' +
+                    ' treeniliikkeen workoutId-arvo');
+                assert.equal(insertedWorkoutExercise.orderDef, urlParams.orderDef, 'Pitäis poimia urlista' +
+                    ' treeniliikkeen orderDef-arvo');
+                return workoutExerciseInsert.firstCall.returnValue;
             })
-            .then(insertResult => {
-                assert.equal(insertResult, parseInt(testNewId, 10));
+            .then(() => {
                 assert.ok(fakeHistory.push.calledOnce);
-                assert.equal(fakeHistory.push.firstCall.args[0], '/treeni/2?refresh=1');
+                assert.equal(fakeHistory.push.firstCall.args[0], '/treeni/tanaan?refresh=1');
                 done();
             });
     });

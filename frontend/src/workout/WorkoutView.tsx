@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import EditableWorkout from 'src/workout/EditableWorkout';
-import WorkoutBackend from 'src/workout/WorkoutBackend';
+import WorkoutBackend, { Workout } from 'src/workout/WorkoutBackend';
 import iocFactories from 'src/ioc';
 
 /**
@@ -18,11 +18,11 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
      */
     public componentDidMount() {
         this.workoutBackend.getTodaysWorkouts().then(
-            // Backend-fetch ok, aseta state.workouts -> <responseArray>
+            // Backend-fetch ok, aseta backendin vastaus state.workouts:n arvoksi
             workouts => this.setState({workouts}),
-            // Backend-fetch epäonnistui, aseta state.workouts -> []
+            // Backend-fetch epäonnistui, aseta thjä taulukko state.workouts:n arvoksi
             err => {
-                (err.response || {}).status === 500 && iocFactories.notify()('Treenien haku epäonnistui', 'error');
+                (err.response || {}).status !== 401 && iocFactories.notify()('Treenien haku epäonnistui', 'error');
                 this.setState({workouts: []});
             }
         );
@@ -39,6 +39,20 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
             iocFactories.history().replace(router.location.pathname);
         }
     }
+    /**
+     * Luo uuden tyhjän treenin kuluvalle päivälle.
+     */
+    private startNewWorkout() {
+        const newWorkout = new Workout();
+        newWorkout.start = Math.floor(new Date().getTime() / 1000);
+        this.workoutBackend.insert(newWorkout).then(
+            () => {
+                this.state.workouts.unshift(newWorkout);
+                this.setState({workouts: this.state.workouts});
+            },
+            err => (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error')
+        );
+    }
     public render() {
         return (<div>
             <h2>Treeni tänään</h2>
@@ -49,6 +63,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
                     )
                     : <p>Ei treenejä</p>
             ) } </div>
+            <button class="nice-button" onClick={ e => this.startNewWorkout() }>Aloita uusi</button>
             { this.props.children }
         </div>);
     }
