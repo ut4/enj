@@ -45,8 +45,10 @@ class RESTBackend<T extends {id?: number}> {
      *
      * @returns Promise -> ({any} response, {any} error)
      */
-    protected post<R>(data: T, url?: string): Promise<R> {
-        return this.http.post<R>(this.completeUrl(url), data);
+    protected post<R>(data: T, url?: string, forceOnline?: boolean): Promise<R> {
+        return !forceOnline
+            ? this.http.post<R>(this.completeUrl(url), data)
+            : this.http.post<R>(this.completeUrl(url), data, forceOnline);
     }
     /**
      * '?foo' -> '<this.this.baseNamespace>/<this.urlNamespace>?foo' (api/someresource?foo),

@@ -6,6 +6,7 @@ import iocFactories from 'src/ioc';
  * Näkymä #/palauta-online.
  */
 class OfflineEndView extends Component<any, any> {
+    private loginForm: LoginForm;
     public componentWillMount() {
         this.state = {goodToGo: false};
     }
@@ -17,26 +18,32 @@ class OfflineEndView extends Component<any, any> {
      * aikana suoritetut toiminnot backendiin, ja siivoaa ne selaintietokannasta.
      */
     private confirm() {
-        // 1. Päivitä serviceWorker & selaintietokanta
-        return iocFactories.offline().disable()
-        // 2. Loggaa käyttäjä sisään, TODO korvaa AuthBackend.login tai implementoi token-pohjainen ratkaisu
-            .then(dbRowCount => dbRowCount
-                ? iocFactories.userState().setMaybeIsLoggedIn(true)
-                : Promise.reject('Offline-tietokannan päivitys epäonnistui')
-            )
+        return (
+        // 1. Loggaa käyttäjä sisään
+            iocFactories.authService().login(this.loginForm.getValues())
+        // 2. Päätä offline-tila
+                .then(() =>
+                    iocFactories.offline().disable()
+                , loginError => { // kirjautuminen epäonnistui, ohjaa kohdan 4. rejectiin
+                    throw new Error(loginError.response.status === 401 ?
+                        'Käyttäjätunnus tai salasana ei täsmännyt' :
+                        'Kirjautuminen epäonnistui');
+                })
         // 3. Synkkaa syncQueue
-            .then(() =>
-                iocFactories.syncBackend().syncAll()
-            )
+                .then(() =>
+                    iocFactories.syncBackend().syncAll()
+                    // offline.disable epäonnistui, siirtyy kohdan 4. rejectiin
+                )
         // 4. Ok, ohjaa käyttäjä eteenpäin tai näytä virheviesti
-            .then(syncResult => {
-                iocFactories.notify()('Online-tila palautettu', 'success');
-                this.nah();
-            }, () => {
-                iocFactories.notify()('Toiminto epäonnistui', 'error');
-            });
+                .then(() => {
+                    iocFactories.notify()('Online-tila palautettu', 'success');
+                    this.done();
+                }, error => {
+                    iocFactories.notify()(error.message || 'Toiminto epäonnistui', 'error');
+                })
+        );
     }
-    private nah() {
+    private done() {
         iocFactories.history().goBack();
     }
     public render() {
@@ -44,10 +51,10 @@ class OfflineEndView extends Component<any, any> {
             <h2>Palauta online-tila</h2>
             Palaa online-tilaan, ja synkronisoi yhteydettömän tilan aikana tehdyt muutokset? Toiminto voi kestää useita sekunteja.
             <div class="info-box">Muodostathan internet-yhteyden ennen lomakkeen lähettämistä.</div>
-            <LoginForm onValidityChange={ newValidity => this.setLoginFormValidity(newValidity) }/>
+            <LoginForm onValidityChange={ newValidity => this.setLoginFormValidity(newValidity) } ref={ lf => { this.loginForm = lf; } }/>
             <div class="form-buttons">
                 <button class="nice-button nice-button-primary" type="button" onClick={ () => this.confirm() } disabled={ !this.state.goodToGo }>Palaa online-tilaan</button>
-                <button class="text-button" type="button" onClick={ () => this.nah() }>Peruuta</button>
+                <button class="text-button" type="button" onClick={ () => this.done() }>Peruuta</button>
             </div>
         </div>);
     }

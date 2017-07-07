@@ -52,12 +52,13 @@ class Http {
     /**
      * @param {string} url
      * @param {Object} data POST -data
+     * @param {boolean=} skipOfflineCheck true, jos halutaan suorittaa HTTP-pyyntö käyttäjän offline-statuksesta huolimatta
      * @return {Promise} -> ({any} responseData, {ResponseError|SyntaxError|any} rejectedValue)
      */
-    public post<T>(url: string, data: Object): Promise<T> {
+    public post<T>(url: string, data: Object, skipOfflineCheck?: boolean): Promise<T> {
         Http.pendingRequestCount++;
-        return this.userState.isOffline().then(isUserOffline =>
-            (
+        return (!skipOfflineCheck ? this.userState.isOffline() : Promise.resolve(false))
+            .then(isUserOffline =>
                 !isUserOffline
                     // Käyttäjä online: lähetä HTTP-pyyntö normaalisti
                     ? this.fetchContainer.fetch(this.newRequest(this.baseUrl + url, {
@@ -72,8 +73,7 @@ class Http {
                     : this.offlineHttp.handle(url, {method: 'POST', data})
             )
             .then(response => this.processResponse(response))
-            .then(response => this.parseResponseData(response))
-        );
+            .then(response => this.parseResponseData(response));
     }
     /**
      * Luo uuden Request-instanssin, ja tarjoaa sen request-interceptorien

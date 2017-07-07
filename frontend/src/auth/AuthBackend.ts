@@ -5,7 +5,7 @@ import RESTBackend  from 'src/common/RESTBackend';
  */
 class AuthBackend extends RESTBackend<any> {
     public login(credentials: Enj.API.LoginCredentials) {
-        return this.post<Enj.API.LoginResponse>(credentials, '/login');
+        return this.post<Enj.API.LoginResponse>(credentials, '/login', true);
     }
 }
 

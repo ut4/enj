@@ -165,7 +165,6 @@ QUnit.module('common/Http', hooks => {
     QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
         sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
         const fetchCallWatch = sinon.spy(fetchContainer, 'fetch');
-        //const offlineHttpCallWatch = sinon.stub(offlineHttp, 'handle');
         const requestUrl = '/baz/haz';
         const requestData = {baz: 'haz'};
         const mockHandlerResponseData = '{"j":"son"}';
@@ -175,12 +174,21 @@ QUnit.module('common/Http', hooks => {
             .returns(Promise.resolve(new Response(mockHandlerResponseData)));
         const done = assert.async();
         http.post(requestUrl, requestData).then(result => {
-            assert.equal(fetchCallWatch.called, false,
-                'Ei pitäisi tehdä HTTP-pyyntöä'
-            );
+            assert.ok(fetchCallWatch.notCalled, 'Ei pitäisi tehdä HTTP-pyyntöä');
             mockOfflineHandlerWatcher.verify();
             assert.deepEqual(result, JSON.parse(mockHandlerResponseData));
             fetchCallWatch.restore();
+            done();
+        });
+    });
+    QUnit.test('post suorittaa HTTP-pyynnön käyttäjän offline-tilasta huolimatta, jos skipOfflineCheck = true', assert => {
+        sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
+        const offlineHandlerCallSpy = sinon.spy(offlineHttp, 'handle');
+        const fetchCallStub = sinon.stub(fetchContainer, 'fetch').returns(new Response('{"o":0}'));
+        const done = assert.async();
+        http.post('foo', {foo: 'bar'}, true).then(() => {
+            assert.ok(fetchCallStub.calledOnce, 'Pitäisi tehdä HTTP-pyynnön');
+            assert.ok(offlineHandlerCallSpy.notCalled, 'Ei pitäisi ohjata offline-handerille');
             done();
         });
     });
