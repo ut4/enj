@@ -15,7 +15,8 @@ class LoginView extends Component<any, any> {
         this.setState({goodToGo: newValidity});
     }
     private confirm() {
-        return ioc.authBackend().login(this.loginForm.getValues()).then(() => {
+        return ioc.authService().login(this.loginForm.getValues()).then(wasOk => {
+            if (!wasOk) { throw new Error('indexedDb:hen kirjoitus epäonnistui'); }
             ioc.notify()('Olet nyt kirjautunut sisään', 'success');
             ioc.history().push('/');
         }, err => {

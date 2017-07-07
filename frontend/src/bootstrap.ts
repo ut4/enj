@@ -1,11 +1,11 @@
 import iocFactories from 'src/ioc';
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
-const http = iocFactories.http();
 const offlineHttp = iocFactories.offlineHttp();
+const storage = iocFactories.localStorage();
 
-http.interceptors.push({
+iocFactories.http().interceptors.push({
     request: request => {
-        request.headers.set('Authorization', 'Bearer <TODO>');
+        request.headers.set('Authorization', 'Bearer ' + storage.getItem('enj_token'));
     },
     responseError: response => {
         if (response.status === 401 && response.url.indexOf('auth/login') < 0) {

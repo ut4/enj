@@ -3,6 +3,10 @@ declare module Enj {
      * Määrittelee API-resurssien rajapinnat.
      */
     module API {
+        interface LoginCredentials {
+            username: string;
+            password: string;
+        }
         interface WorkoutRecord {
             id: number;
             start: number;

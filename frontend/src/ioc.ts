@@ -8,6 +8,7 @@ import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import AuthBackend     from 'src/auth/AuthBackend';
+import AuthService     from 'src/auth/AuthService';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
 import settings        from 'src/config/settings';
@@ -15,6 +16,9 @@ const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
     // == Common ===============================================================
+    public localStorage(): Storage {
+        return window.localStorage;
+    }
     public db(): Db {
         return this.memoize('db', () => new Db());
     }
@@ -65,6 +69,9 @@ class IocFactories extends IocContainer {
     }
     public authBackend(): AuthBackend {
         return this.memoize('authBackend', () => new AuthBackend(this.http(), 'auth'));
+    }
+    public authService(): AuthService {
+        return this.memoize('authService', () => new AuthService(this.authBackend(), this.localStorage(), this.userState()));
     }
     public userBackend(): any {
         return null;

@@ -15,7 +15,7 @@ class LoginForm extends ValidatingForm<any, State> {
         };
         this.state = {username: '', password: '', validity: false};
     }
-    public getValues() {
+    public getValues(): Enj.API.LoginCredentials {
         return {username: this.state.username, password: this.state.password};
     }
     public render() {

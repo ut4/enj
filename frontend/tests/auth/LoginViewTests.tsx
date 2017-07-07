@@ -1,75 +1,57 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import itu from 'inferno-test-utils';
-import AuthBackend from 'src/auth/AuthBackend';
+import AuthService from 'src/auth/AuthService';
 import LoginView from 'src/auth/LoginView';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
 QUnit.module('auth/LoginView', hooks => {
-    let authBackendStub: AuthBackend;
-    let authBackendIocOverride: sinon.SinonStub;
+    let authServiceStub: AuthService;
+    let authServiceIocOverride: sinon.SinonStub;
     let fakeHistory: {push: sinon.SinonSpy};
     let historyIocOverride: sinon.SinonStub;
     let notifySpy: sinon.SinonSpy;
     let notifyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
-        authBackendStub = Object.create(AuthBackend.prototype);
-        authBackendIocOverride = sinon.stub(iocFactories, 'authBackend').returns(authBackendStub);
+        authServiceStub = Object.create(AuthService.prototype);
+        authServiceIocOverride = sinon.stub(iocFactories, 'authService').returns(authServiceStub);
         fakeHistory = {push: sinon.spy()};
         historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
         notifySpy = sinon.spy();
         notifyIocOverride = sinon.stub(iocFactories, 'notify').returns(notifySpy);
     });
     hooks.afterEach(() => {
-        authBackendIocOverride.restore();
+        authServiceIocOverride.restore();
         historyIocOverride.restore();
         notifyIocOverride.restore();
     });
-    QUnit.test('submit postaa credentiansit backendiin, ja ohjaa takaisin #/', assert => {
-        //
+    QUnit.test('submit kutsuu authService.login ja ohjaa takaisin #/', assert => {
+        const loginCallWatch = sinon.stub(authServiceStub, 'login').returns(Promise.resolve(1));
+        // Renderöi view
+        const confirmSpy = sinon.spy(LoginView.prototype, 'confirm');
         const rendered = itu.renderIntoDocument(<LoginView/>);
-        //
         const confirmButton = getConfirmButton(rendered);
         assert.ok(confirmButton.disabled, 'Submit-painike pitäisi olla aluksi disabled');
-        //
-        const testUsername = 'fyy';
-        const testPassword = 'byrs';
-        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        const usernameInputEl = inputEls[0] as HTMLInputElement;
-        const passwordInputEl = inputEls[1] as HTMLInputElement;
-        usernameInputEl.value = testUsername;
-        utils.triggerEvent('input', usernameInputEl);
-        passwordInputEl.value = testPassword;
-        utils.triggerEvent('input', passwordInputEl);
-        //
-        const loginCallWatch = sinon.stub(authBackendStub, 'login').returns(Promise.resolve());
+        // Täytä username & password inputit & lähetä lomake
+        const credentials = fillInputValues(rendered, 'fyy', 'bars');
         confirmButton.click();
         //
-        assert.ok(loginCallWatch.calledOnce, 'Pitäisi postata datan backendiin');
-        assert.deepEqual(loginCallWatch.firstCall.args, [{
-            username: testUsername,
-            password: testPassword
-        }], 'Pitäisi postata lomakkeen tiedot backendiin');
         const done = assert.async();
-        loginCallWatch.firstCall.returnValue.then(() => {
-            assert.ok(
-                fakeHistory.push.calledOnce,
-                'Pitäisi lopuksi ohjata käyttäjän takaisin'
-            );
-            assert.deepEqual(
-                fakeHistory.push.firstCall.args, ['/'],
-                'Pitäisi lopuksi ohjata käyttäjän takaisin /'
-            );
-            assert.ok(
-                notifySpy.calledOnce,
-                'Pitäisi notifioida käyttäjää onnistuneesta kirjautumisesta'
-            );
+        confirmSpy.firstCall.returnValue.then(() => {
+            // Assertoi backendiin POST
+            assert.ok(loginCallWatch.calledOnce, 'Pitäisi postata dataa backendiin');
+            assert.deepEqual(loginCallWatch.firstCall.args, [credentials], 'Pitäisi passata lomakkeen tiedot authService.loginille');
+            // Redirect
+            assert.ok(fakeHistory.push.calledAfter(loginCallWatch), 'Pitäisi lopuksi ohjata käyttäjän takaisin');
+            assert.deepEqual(fakeHistory.push.firstCall.args, ['/'], 'Pitäisi lopuksi ohjata käyttäjän takaisin /');
+            // Notify
+            assert.ok(notifySpy.calledOnce, 'Pitäisi notifioida käyttäjää onnistuneesta kirjautumisesta');
             done();
         });
     });
     QUnit.test('submit näyttää virheviestin backendin rejektoidessa', assert => {
-        const loginCallWatch = sinon.stub(authBackendStub, 'login');
+        const loginCallWatch = sinon.stub(authServiceStub, 'login');
         loginCallWatch.onFirstCall().returns(Promise.reject({response:{status: 401}}));
         loginCallWatch.onSecondCall().returns(Promise.reject({response:{status: 500}}));
         loginCallWatch.onThirdCall().returns(Promise.reject({}));
@@ -104,5 +86,15 @@ QUnit.module('auth/LoginView', hooks => {
     });
     function getConfirmButton(rendered): HTMLButtonElement {
         return itu.findRenderedDOMElementWithClass(rendered, 'nice-button-primary') as HTMLButtonElement;
+    }
+    function fillInputValues(rendered, username, password) {
+        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
+        const usernameInputEl = inputEls[0] as HTMLInputElement;
+        const passwordInputEl = inputEls[1] as HTMLInputElement;
+        usernameInputEl.value = username;
+        utils.triggerEvent('input', usernameInputEl);
+        passwordInputEl.value = password;
+        utils.triggerEvent('input', passwordInputEl);
+        return {username, password};
     }
 });
