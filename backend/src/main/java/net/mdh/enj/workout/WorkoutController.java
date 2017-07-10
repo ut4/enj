@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import static net.mdh.enj.APIResponses.InsertResponse;
 
 /**
  * Vastaa /api/workout REST-pyynnöistä
@@ -39,8 +40,8 @@ public class WorkoutController {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public int insert(@Valid @NotNull Workout workout) {
-        return this.workoutRepository.insert(workout);
+    public InsertResponse insert(@Valid @NotNull Workout workout) {
+        return new InsertResponse(this.workoutRepository.insert(workout));
     }
 
     /**
@@ -53,10 +54,16 @@ public class WorkoutController {
         return (ArrayList<Workout>) this.workoutRepository.selectAll(filters);
     }
 
+    /**
+     * Lisää treenliikkeen tietokantaan mikäli se on validi Workout.Exercise-bean.
+     *
+     * @param workoutExercise Uusi treeniliike
+     * @return int Luodun treeniliikkeen id
+     */
     @POST
     @Path("/exercise")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Object insertExercise(@Valid @NotNull Workout.Exercise exercise) {
-        return this.workoutExerciseRepository.insert(exercise);
+    public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
+        return new InsertResponse(this.workoutExerciseRepository.insert(workoutExercise));
     }
 }

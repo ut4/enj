@@ -1,5 +1,6 @@
 package net.mdh.enj.workout;
 
+import net.mdh.enj.APIResponses;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
@@ -68,7 +69,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     /**
-     * Testaa, että POST /api/workout validoi input datan.
+     * Testaa, että POST /api/workout validoi inputin kaikki kentät.
      */
     @Test
     public void POSTValidoiTreeniInputin() {
@@ -85,20 +86,20 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     /**
-     * Testaa, että POST /api/workout lisää treenin tietokantaan post-datan tie-
-     * doilla, ja palauttaa luodun treenin id:n.
+     * Testaa, että POST /api/workout lisää treenin tietokantaan inputin tie-
+     * doilla, ja palauttaa insertResponsen, jossa luodun treenin id.
      */
     @Test
-    public void POSTLisääTreeninJaPalauttaaTreeninIdn() {
+    public void POSTLisääTreeninJaPalauttaaInsertReponsenJossaTreeninUusiId() {
         // Luo testidata
         Workout data = new Workout();
         data.setStart(System.currentTimeMillis() / 1000L);
         data.setNotes("foo");
-        // Testaa että insertointi pyynnön tiedoilla
+        // Testaa että insertoi pyynnön tiedoilla
         Response response = this.newPostRequest("workout", data);
         Assert.assertEquals(200, response.getStatus());
-        Integer responseBody = response.readEntity(new GenericType<Integer>() {});
-        data.setId(responseBody);
+        APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
+        data.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
         Response getResponse = target("workout").request().get();
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
@@ -139,7 +140,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     /**
-     * Testaa, että POST /api/workout/exercise
+     * Testaa, että POST /api/workout/exercise hylkää pyynnön jos input = null
      */
     @Test
     public void POSTExerciseHylkääPyynnönJosDataPuuttuuKokonaan() {
@@ -155,7 +156,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     /**
-     * Testaa, että POST /api/workout/exercise
+     * Testaa, että POST /api/workout/exercise validoi inputin kaikki kentät.
      */
     @Test
     public void POSTExerciseHylkääPyynnönJosTietojaPuuttuu() {
@@ -174,20 +175,21 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     /**
-     * Testaa, että POST /api/workout/exercise
+     * Testaa, että POST /api/workout/exercise lisää treeniliikkeen tietokantaan
+     * inputin tiedoilla, ja palauttaa insertResponsen, jossa uusi id.
      */
     @Test
-    public void POSTExerciseLisääLiikeenTreeniin() {
+    public void POSTExerciseLisääLiikkeenTreeniin() {
         // Luo testidata
         Workout.Exercise workoutExercise = new Workout.Exercise();
         workoutExercise.setWorkoutId(testWorkout.getId());
         workoutExercise.setOrderDef(0);
         workoutExercise.setExercise(testExercise);
-        // Testaa että insertointi pyynnön tiedoilla
+        // Testaa että insertoi pyynnön tiedoilla
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
-        Integer responseBody = response.readEntity(new GenericType<Integer>() {});
-        workoutExercise.setId(responseBody);
+        APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
+        workoutExercise.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
         Response getResponse = target("workout").request().get();
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
