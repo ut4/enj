@@ -196,10 +196,4 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId() == testWorkout.getId()).findFirst().get();
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
     }
-
-    private Response newPostRequest(String url, Object data) {
-        return target(url)
-            .request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(data));
-    }
 }

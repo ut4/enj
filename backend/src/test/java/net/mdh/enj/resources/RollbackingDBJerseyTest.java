@@ -2,10 +2,9 @@ package net.mdh.enj.resources;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
 
-public class RollbackingDBJerseyTest extends JerseyTest {
+public class RollbackingDBJerseyTest extends JerseyTestCase {
 
     protected final static RollbackingDataSourceFactory rollbackingDSFactory;
     protected final static DataSource rollbackingDataSource;

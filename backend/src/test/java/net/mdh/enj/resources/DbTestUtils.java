@@ -4,6 +4,8 @@ import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.user.User;
 import net.mdh.enj.workout.Workout;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import javax.sql.DataSource;
@@ -11,9 +13,11 @@ import java.util.HashMap;
 
 public class DbTestUtils {
     private final DataSource rollbackingDataSource;
+    private final JdbcTemplate queryTemplate;
     private HashMap<String, SimpleJdbcInsert> inserters = new HashMap<>();
     public DbTestUtils(DataSource rollbackingDataSource) {
         this.rollbackingDataSource = rollbackingDataSource;
+        this.queryTemplate = new JdbcTemplate(rollbackingDataSource);
     }
     public void insertWorkout(Workout w) {
         this.insert(this.getInserter("workout"), w);
@@ -33,6 +37,13 @@ public class DbTestUtils {
     public void insertUser(User u) {
         this.insert(this.getInserter("user"), u);
     }
+    public Object selectOne(String query, RowMapper mapper) {
+        return this.queryTemplate.queryForObject(query, mapper);
+    }
+    public Object selectOneWhere(String query, Object[] bindings, RowMapper mapper) {
+        return this.queryTemplate.queryForObject(query, bindings, mapper);
+    }
+
     private SimpleJdbcInsert getInserter(String tableName) {
         if (!this.inserters.containsKey(tableName)) {
             SimpleJdbcInsert inserter = new SimpleJdbcInsert(this.rollbackingDataSource);

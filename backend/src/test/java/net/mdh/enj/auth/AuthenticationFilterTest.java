@@ -61,7 +61,7 @@ public class AuthenticationFilterTest extends JerseyTest {
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE, response.readEntity(String.class));
     }
     /**
-     * Testaa että @PermitAll-annitaatio skippaa autentikoinnin.
+     * Testaa että @PermitAll-annotaatio skippaa autentikoinnin.
      */
     @Test
     public void permitAllAnnotaatioOhittaaAutentikaation() {

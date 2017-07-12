@@ -1,8 +1,6 @@
 package net.mdh.enj.resources;
 
-import org.junit.After;
 import org.junit.AfterClass;
-
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
