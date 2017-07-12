@@ -1,5 +1,6 @@
 package net.mdh.enj;
 
+import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.auth.TokenService;
 import net.mdh.enj.auth.HashingProvider;
@@ -17,6 +18,9 @@ class InjectionBinder extends AbstractBinder {
         // Common
         bind(SimpleDataSourceFactory.class).to(DataSourceFactory.class);
         bind(TokenService.class).to(TokenService.class);
+        // Sync
+        bind(new SyncRouteRegister()).to(SyncRouteRegister.class);
+        bind(new AppResourceHttpClient()).to(HttpClient.class);
         // Workout
         bind(WorkoutRepository.class).to(WorkoutRepository.class);
         bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);

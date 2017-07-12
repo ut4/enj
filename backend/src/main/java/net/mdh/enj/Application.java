@@ -12,7 +12,7 @@ public class Application {
     /**
      * REST-APIn loppusijoituspaikka
      */
-    private static final String BASE_URI = "http://localhost:4567/api/";
+    public static final String BASE_URI = "http://localhost:4567/api/";
     /**
      * Starttaa applikaation osoitteessa {Application.BASE_URI} käyttäen Grizzly
      * HTTP-serveriä.
@@ -23,6 +23,7 @@ public class Application {
         applicationConfig.packages("net.mdh.enj");
         applicationConfig.register(CORSEnabler.class);
         applicationConfig.register(AuthenticationFilter.class);
+        applicationConfig.register(SyncRouteCollector.class);
         applicationConfig.register(new InjectionBinder());
         applicationConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         // Luo & käynnistä serveri
