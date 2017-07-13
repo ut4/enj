@@ -5,6 +5,7 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
+import net.mdh.enj.resources.SyncTestData;
 import net.mdh.enj.workout.SyncDataPreparers;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.workout.WorkoutController;
@@ -17,9 +18,7 @@ import org.glassfish.jersey.server.validation.ValidationError;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,11 +26,15 @@ import org.junit.Test;
 public class SyncingTest extends RollbackingDBJerseyTest {
 
     private static DbTestUtils utils;
+    private static Route workoutInsertRoute;
+    private static Route workoutExerciseAddRoute;
     private static SyncRouteRegister syncRouteRegister;
     private static Exercise testExercise;
 
     @BeforeClass
     public static void beforeClass() {
+        workoutInsertRoute = SyncTestData.workoutInsertRoute;
+        workoutExerciseAddRoute = SyncTestData.workoutExerciseAddRoute;
         utils = new DbTestUtils(rollbackingDataSource);
         testExercise = new Exercise();
         testExercise.setName("exs");
@@ -76,13 +79,10 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     public void syncAllPalauttaaOnnistuneestiSynkattujenItemeidenIdtFailauksestaHuolimatta() {
         // Simuloi tilanne, jossa synkkaujonon toinen itemi failaa
         List<SyncQueueItem> queue = this.makeSyncQueueWithCoupleOfItems();
-        queue.get(0).setData(this.makeTestWorkoutData());
-        queue.get(1).setData(this.makeBogusWorkoutData());
+        queue.get(0).setData(SyncTestData.getSomeWorkoutData());
+        queue.get(1).setData(SyncTestData.getBogusWorkoutData());
         Response response = this.newPostRequest("sync", queue);
         // Assertoi että ei repinyt pelihousujansa, vaan palautti onnistuneesti synkattujen itemeiden id:t
-        if (response.getStatus() != 200) {
-            System.out.println(response.readEntity(String.class));
-        }
         Assert.assertEquals("Ei pitäisi heittää erroria, koska 1. itemin synkkaus onnistui", 200, response.getStatus());
         List<Integer> responseBody = response.readEntity(new GenericType<List<Integer>>() {});
         Assert.assertArrayEquals(
@@ -134,13 +134,13 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     private List<SyncQueueItem> makeTestSyncQueue() {
         SyncQueueItem testWorkoutSyncItem = new SyncQueueItem();
         testWorkoutSyncItem.setId(2); // frontendin generoima väliaikainen id
-        testWorkoutSyncItem.setRouteName(SyncRouteName.WORKOUT_INSERT.toString());
-        testWorkoutSyncItem.setData(this.makeTestWorkoutData());
+        testWorkoutSyncItem.setRoute(workoutInsertRoute);
+        testWorkoutSyncItem.setData(SyncTestData.getSomeWorkoutData());
         //
         SyncQueueItem testWorkoutExerciseSyncItem = new SyncQueueItem();
         testWorkoutExerciseSyncItem.setId(3); // frontendin generoima väliaikainen id
-        testWorkoutExerciseSyncItem.setRouteName(SyncRouteName.WORKOUT_EXERCISE_ADD.toString());
-        testWorkoutExerciseSyncItem.setData(this.makeTestWorkoutExerciseData(testWorkoutSyncItem.getData()));
+        testWorkoutExerciseSyncItem.setRoute(workoutExerciseAddRoute);
+        testWorkoutExerciseSyncItem.setData(SyncTestData.getSomeWorkoutExerciseData(testWorkoutSyncItem.getData(), testExercise));
         //
         List<SyncQueueItem> testSyncQueue = new ArrayList<>();
         testSyncQueue.add(testWorkoutSyncItem);
@@ -151,11 +151,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     private List<SyncQueueItem> makeSyncQueueWithCoupleOfItems() {
         SyncQueueItem testWorkoutSyncItem1 = new SyncQueueItem();
         testWorkoutSyncItem1.setId(1);
-        testWorkoutSyncItem1.setRouteName(SyncRouteName.WORKOUT_INSERT.toString());
+        testWorkoutSyncItem1.setRoute(workoutInsertRoute);
         //
         SyncQueueItem testWorkoutSyncItem2 = new SyncQueueItem();
         testWorkoutSyncItem2.setId(1);
-        testWorkoutSyncItem2.setRouteName(SyncRouteName.WORKOUT_INSERT.toString());
+        testWorkoutSyncItem2.setRoute(workoutInsertRoute);
         //
         List<SyncQueueItem> queue = new ArrayList<>();
         queue.add(testWorkoutSyncItem1);
@@ -163,48 +163,24 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         return queue;
     }
 
-    private HashMap<String, Object> makeTestWorkoutData() {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("id", 4); // frontendin generoima väliaikainen id
-        data.put("start", 101L);
-        return data;
-    }
-
     private List<SyncQueueItem> makeSyncQueueWithBogusData() {
         SyncQueueItem workoutSyncItemWithBogusData = new SyncQueueItem();
         workoutSyncItemWithBogusData.setId(1);
-        workoutSyncItemWithBogusData.setRouteName(SyncRouteName.WORKOUT_INSERT.toString());
-        workoutSyncItemWithBogusData.setData(this.makeBogusWorkoutData());
+        workoutSyncItemWithBogusData.setRoute(workoutInsertRoute);
+        workoutSyncItemWithBogusData.setData(SyncTestData.getBogusWorkoutData());
         //
         List<SyncQueueItem> queue = new ArrayList<>();
         queue.add(workoutSyncItemWithBogusData);
         return queue;
     }
 
-    private Map<String,Object> makeBogusWorkoutData() {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("id", 0);
-        return data;
-    }
-
-    private Map<String,Object> makeTestWorkoutExerciseData(Map<String, Object> parentWorkoutData) {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("id", 5); // frontendin generoima väliaikainen id
-        data.put("orderDef", 102);
-        data.put("exercise", testExercise);
-        data.put("workoutId", parentWorkoutData.get("id"));
-        return data;
-    }
-
     private static void manuallyPopulateSyncRouteRegister() {
         SyncRoute registeredWorkoutInsertRoute = new SyncRoute();
-        registeredWorkoutInsertRoute.setName(SyncRouteName.WORKOUT_INSERT);
-        registeredWorkoutInsertRoute.setUrl("workout");
-        registeredWorkoutInsertRoute.setMethod("POST");
+        registeredWorkoutInsertRoute.setUrl(workoutInsertRoute.getUrl());
+        registeredWorkoutInsertRoute.setMethod(workoutInsertRoute.getMethod());
         SyncRoute registeredWorkoutExerciseAddRoute = new SyncRoute();
-        registeredWorkoutExerciseAddRoute.setName(SyncRouteName.WORKOUT_EXERCISE_ADD);
-        registeredWorkoutExerciseAddRoute.setUrl("workout/exercise");
-        registeredWorkoutExerciseAddRoute.setMethod("POST");
+        registeredWorkoutExerciseAddRoute.setUrl(workoutExerciseAddRoute.getUrl());
+        registeredWorkoutExerciseAddRoute.setMethod(workoutExerciseAddRoute.getMethod());
         registeredWorkoutExerciseAddRoute.setPreparerClass(SyncDataPreparers.WorkoutExerciseInsertPreparer.class);
         syncRouteRegister = new SyncRouteRegister();
         syncRouteRegister.add(registeredWorkoutInsertRoute);

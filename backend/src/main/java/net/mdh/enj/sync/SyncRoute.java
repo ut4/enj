@@ -3,31 +3,13 @@ package net.mdh.enj.sync;
 /**
  * Jokaisesta @Syncable-reitistä luotava bean. Kerätään SyncRouteRegister-singletoniin.
  */
-public class SyncRoute {
-    private SyncRouteName name;
-    private String url;
-    private String method;
+public class SyncRoute extends Route {
+
     private Class<? extends SyncQueueItemPreparer> preparerClass;
 
-    public SyncRouteName getName() {
-        return this.name;
-    }
-    public void setName(SyncRouteName name) {
-        this.name = name;
-    }
-
-    public String getUrl() {
-        return this.url;
-    }
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getMethod() {
-        return this.method;
-    }
-    public void setMethod(String method) {
-        this.method = method;
+    public SyncRoute() {}
+    public SyncRoute(String url, String method) {
+        super(url, method);
     }
 
     Class<? extends SyncQueueItemPreparer> getPreparerClass() {
@@ -39,8 +21,7 @@ public class SyncRoute {
 
     @Override
     public String toString() {
-        return "{" +
-            "name=" + this.getName() +
+        return "SyncRoute{" +
             ", url=" + this.getUrl() +
             ", method=" + this.getMethod() +
             ", preparerClass=" + this.getPreparerClass() +

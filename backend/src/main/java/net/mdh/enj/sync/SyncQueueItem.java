@@ -1,6 +1,7 @@
 package net.mdh.enj.sync;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import net.mdh.enj.sync.validation.SyncableRoute;
 import java.util.Map;
 
@@ -11,7 +12,8 @@ public class SyncQueueItem {
     @Min(1)
     private int id;
     @SyncableRoute
-    private String routeName;
+    private Route route;
+    @NotNull
     private Map<String, Object> data;
     private Integer syncResult;
 
@@ -22,11 +24,11 @@ public class SyncQueueItem {
         this.id = id;
     }
 
-    public String getRouteName() {
-        return this.routeName;
+    public Route getRoute() {
+        return this.route;
     }
-    public void setRouteName(String routeName) {
-        this.routeName = routeName;
+    public void setRoute(Route route) {
+        this.route = route;
     }
 
     public Map<String, Object> getData() {
@@ -47,7 +49,7 @@ public class SyncQueueItem {
     public String toString() {
         return "{" +
             "id=" + this.getId() +
-            ", routeName=" + this.getRouteName() +
+            ", route=" + this.getRoute() +
             ", data=" + this.getData() +
             ", syncResult=" + (this.getSyncResult() != null ? this.syncResult : "null") +
         "}";

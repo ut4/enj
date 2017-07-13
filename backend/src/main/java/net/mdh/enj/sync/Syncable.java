@@ -12,10 +12,6 @@ import java.lang.annotation.RetentionPolicy;
 @Target(ElementType.METHOD)
 public @interface Syncable {
     /**
-     * Reitin nimi/id, pakollinen.
-     */
-    SyncRouteName routeName();
-    /**
      * Luokka, jonka prepareForSync-metodi triggeröidään SyncControllerin toimesta
      * ennen varsinaista synkkausta. Ei pakollinen.
      */

@@ -50,7 +50,7 @@ public class SyncController {
         for (SyncQueueItem syncableItem: syncQueue) {
             //
             // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
-            SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRouteName());
+            SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
             //
             // Kutsu pre-sync koukkua jos sellainen on määritelty @Syncable-annotaatioon
             this.callSyncQueueItemPreparerIfDefined(routeMatch.getPreparerClass(), syncableItem, alreadySynced);

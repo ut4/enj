@@ -10,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.APIResponses.InsertResponse;
-import net.mdh.enj.sync.SyncRouteName;
 import net.mdh.enj.sync.Syncable;
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -41,10 +40,9 @@ public class WorkoutController {
      * @return int Luodun treenin id
      */
     @POST
-    @Syncable(routeName = SyncRouteName.WORKOUT_INSERT)
+    @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Workout workout) {
-        System.out.println("requesting");
         return new InsertResponse(this.workoutRepository.insert(workout));
     }
 
@@ -66,7 +64,7 @@ public class WorkoutController {
      */
     @POST
     @Path("/exercise")
-    @Syncable(routeName = SyncRouteName.WORKOUT_EXERCISE_ADD, preparedBy = SyncDataPreparers.WorkoutExerciseInsertPreparer.class)
+    @Syncable(preparedBy = SyncDataPreparers.WorkoutExerciseInsertPreparer.class)
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         return new InsertResponse(this.workoutExerciseRepository.insert(workoutExercise));

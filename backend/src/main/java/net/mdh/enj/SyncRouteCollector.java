@@ -1,8 +1,8 @@
 package net.mdh.enj;
 
-import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.sync.SyncRoute;
+import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.sync.SyncQueueItemPreparer;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -49,7 +49,6 @@ public class SyncRouteCollector implements ApplicationEventListener {
             SyncRoute syncRoute = new SyncRoute();
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
-            syncRoute.setName(annotation.routeName());
             Class<? extends SyncQueueItemPreparer> preparer = annotation.preparedBy();
             syncRoute.setPreparerClass(preparer != SyncQueueItemPreparer.class ? preparer : null);
             this.routeRegister.add(syncRoute);

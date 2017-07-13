@@ -1,6 +1,5 @@
 package net.mdh.enj.workout;
 
-import net.mdh.enj.sync.SyncRouteName;
 import net.mdh.enj.sync.SyncQueueItem;
 import net.mdh.enj.sync.SyncQueueItemPreparer;
 import java.util.List;
@@ -18,7 +17,8 @@ public class SyncDataPreparers {
             Integer workoutIdToLookFor = (Integer) itemToPrepare.getData().get("workoutId");
             //
             SyncQueueItem parentWorkoutSyncItem = alreadySyncedItems.stream().filter(si ->
-                si.getRouteName().equals(SyncRouteName.WORKOUT_INSERT.toString()) &&
+                si.getRoute().getUrl().equals("workout") &&
+                si.getRoute().getMethod().equals("POST") &&
                 si.getData().get("id").equals(workoutIdToLookFor)
             ).findFirst().orElse(null);
             //
