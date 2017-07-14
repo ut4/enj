@@ -1,13 +1,15 @@
 package net.mdh.enj.auth;
 
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Claims;
 import javax.annotation.Priority;
 import javax.annotation.security.PermitAll;
-import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.Priorities;
 import javax.inject.Inject;
 
 @Priority(Priorities.AUTHENTICATION)
@@ -41,16 +43,22 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             return;
         }
         final String authHeader = requestContext.getHeaderString(TOKEN_HEADER_NAME);
-        // JWT:tä ei löytynyt -> hylkää pyyntö
-        if (authHeader == null ||
-            !authHeader.startsWith(TOKEN_HEADER_PREFIX) ||
-            !this.tokenService.isValid(authHeader.substring(TOKEN_HEADER_PREFIX.length()))) {
-            requestContext.abortWith(this.newUnauthorizedResponse(MSG_LOGIN_REQUIRED));
+        // Authorization-headeria ei löytynyt tai se on virhellinen -> hylkää pyyntö
+        if (authHeader == null || !authHeader.startsWith(TOKEN_HEADER_PREFIX)) {
+            requestContext.abortWith(this.newUnauthorizedResponse());
+            return;
+        }
+        Jws<Claims> parsedTokenData = this.tokenService.parse(authHeader.substring(TOKEN_HEADER_PREFIX.length()));
+        // JWT virheellinen -> hylkää pyyntö
+        if (parsedTokenData == null) {
+            requestContext.abortWith(this.newUnauthorizedResponse());
+            return;
         }
         // JWT löytyi headerista, hyväksy pyyntö
+        requestContext.setProperty("userId", Integer.valueOf(parsedTokenData.getBody().getSubject()));
     }
 
-    private Response newUnauthorizedResponse(String message) {
-        return Response.status(Response.Status.UNAUTHORIZED).entity(message).build();
+    private Response newUnauthorizedResponse() {
+        return Response.status(Response.Status.UNAUTHORIZED).entity(MSG_LOGIN_REQUIRED).build();
     }
 }

@@ -18,7 +18,6 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
-import java.util.Comparator;
 import java.util.List;
 
 public class AuthControllerTest extends RollbackingDBJerseyTest {
@@ -76,8 +75,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         LoginCredentials emptyData = new LoginCredentials();
         responseForEmptyInput = newLoginRequest(emptyData);
         Assert.assertEquals(400, responseForEmptyInput.getStatus());
-        errorsForEmptyInput = responseForEmptyInput.readEntity(new GenericType<List<ValidationError>>() {});
-        errorsForEmptyInput.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
+        errorsForEmptyInput = this.getValidationErrors(responseForEmptyInput);
         Assert.assertEquals("AuthController.login.arg0.password", errorsForEmptyInput.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errorsForEmptyInput.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.login.arg0.username", errorsForEmptyInput.get(1).getPath());
@@ -89,8 +87,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         badData.setPassword(new char[]{'f', 'o', 'o'});
         responseForBadInput = newLoginRequest(badData);
         Assert.assertEquals(400, responseForBadInput.getStatus());
-        errorsForBadInput = responseForBadInput.readEntity(new GenericType<List<ValidationError>>() {});
-        errorsForBadInput.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
+        errorsForBadInput = this.getValidationErrors(responseForBadInput);
         Assert.assertEquals("AuthController.login.arg0.password", errorsForBadInput.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errorsForBadInput.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.login.arg0.username", errorsForBadInput.get(1).getPath());

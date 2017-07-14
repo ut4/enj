@@ -2,9 +2,9 @@ package net.mdh.enj.auth;
 
 import org.junit.Test;
 import org.junit.Assert;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import javax.ws.rs.core.Response;
 
 public class AuthenticationFilterTest extends JerseyTest {
@@ -54,11 +54,11 @@ public class AuthenticationFilterTest extends JerseyTest {
      * Testaa että validaatio menee läpi jos Authentication-header on validi JWT.
      */
     @Test
-    public void hyväksyyPyynnönMikäliHeaderOnValidi() {
-        String testToken = new TokenService().generateNew("someuser");
+    public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() {
+        String testToken = new TokenService().generateNew(34);
         Response response = target(this.normalUrl).request().header(AuthenticationFilter.TOKEN_HEADER_NAME, "Bearer " + testToken).get();
         Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE, response.readEntity(String.class));
+        Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + "34", response.readEntity(String.class));
     }
     /**
      * Testaa että @PermitAll-annotaatio skippaa autentikoinnin.

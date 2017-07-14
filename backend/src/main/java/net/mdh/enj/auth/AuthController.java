@@ -61,7 +61,7 @@ public class AuthController {
             throw new NotAuthorizedException("Invalid credentials");
         }
         // Kaikki ok -> luo token & palauta frontendiin
-        String tokenHash = this.tokenService.generateNew(loginCredentials.getUsername());
+        String tokenHash = this.tokenService.generateNew(user.getId());
         loginCredentials.nuke();
         return new LoginResponse(tokenHash);
     }

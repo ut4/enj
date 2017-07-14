@@ -10,8 +10,6 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Comparator;
 import java.util.List;
 
 public class SyncControllerTest extends JerseyTestCase {
@@ -50,9 +48,7 @@ public class SyncControllerTest extends JerseyTestCase {
         // Testaa että palauttaa 400
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
-        Assert.assertEquals(5, errors.size());
-        errors.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
+        List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals("SyncController.syncAll.arg0[0].data", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("SyncController.syncAll.arg0[0].id", errors.get(1).getPath());
