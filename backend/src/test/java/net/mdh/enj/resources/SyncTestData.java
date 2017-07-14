@@ -36,4 +36,10 @@ public class SyncTestData {
     public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData) {
         return getSomeWorkoutExerciseData(parentWorkoutData, new Exercise());
     }
+
+    public static Map<String, Object> getSomeJunkData() {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("foo", "bar");
+        return data;
+    }
 }

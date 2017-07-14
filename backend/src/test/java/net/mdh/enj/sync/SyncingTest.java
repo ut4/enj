@@ -1,20 +1,22 @@
 package net.mdh.enj.sync;
 
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.db.DataSourceFactory;
+import net.mdh.enj.auth.AuthenticationFilter;
 import net.mdh.enj.exercise.Exercise;
+import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
-import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import net.mdh.enj.resources.SyncTestData;
+import net.mdh.enj.resources.TestController;
 import net.mdh.enj.workout.SyncDataPreparers;
+import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.workout.WorkoutController;
-import net.mdh.enj.workout.WorkoutExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
+import net.mdh.enj.workout.WorkoutExerciseRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.validation.ValidationError;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -26,15 +28,11 @@ import org.junit.Test;
 public class SyncingTest extends RollbackingDBJerseyTest {
 
     private static DbTestUtils utils;
-    private static Route workoutInsertRoute;
-    private static Route workoutExerciseAddRoute;
     private static SyncRouteRegister syncRouteRegister;
     private static Exercise testExercise;
 
     @BeforeClass
     public static void beforeClass() {
-        workoutInsertRoute = SyncTestData.workoutInsertRoute;
-        workoutExerciseAddRoute = SyncTestData.workoutExerciseAddRoute;
         utils = new DbTestUtils(rollbackingDataSource);
         testExercise = new Exercise();
         testExercise.setName("exs");
@@ -48,6 +46,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     public ResourceConfig configure() {
         return new ResourceConfig()
             .register(SyncController.class)
+            .register(TestController.class)
             // Kontrollerit, joiden dataa synkataan testeissä.
             .register(WorkoutController.class)
             // tänne lisää...
@@ -128,18 +127,38 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         Assert.assertEquals("Tietokantaan synkattu treeni pitäisi sisältää sama data kuin inputissa",
             testSyncQueue.get(1).getData().get("orderDef"), syncedWorkoutExercise.getOrderDef()
         );
-        syncRouteRegister.clear();
+    }
+
+    @Test
+    public void syncAllSisällyttääPyynnönAuhtorizationHeaderinSynkkauspyyntöön() {
+        SyncRoute testRoute = new SyncRoute("test", "PUT");
+        syncRouteRegister.add(testRoute);
+        List<SyncQueueItem> testQueue = new ArrayList<>();
+        SyncQueueItem testItem = new SyncQueueItem();
+        testItem.setId(3);
+        testItem.setData(SyncTestData.getSomeJunkData());
+        testItem.setRoute(testRoute);
+        testQueue.add(testItem);
+        //
+        Response response = this.newPostRequest("sync", testQueue, requestBuilder ->
+            requestBuilder.header(AuthenticationFilter.TOKEN_HEADER_NAME, "asd")
+        );
+        //
+        Assert.assertEquals("Pitäisi sisällyttää Authorization-header synkkauspyyntöihin",
+            "asd", TestController.receivedAuthHeaderValue
+        );
+        response.close();
     }
 
     private List<SyncQueueItem> makeTestSyncQueue() {
         SyncQueueItem testWorkoutSyncItem = new SyncQueueItem();
         testWorkoutSyncItem.setId(2); // frontendin generoima väliaikainen id
-        testWorkoutSyncItem.setRoute(workoutInsertRoute);
+        testWorkoutSyncItem.setRoute(SyncTestData.workoutInsertRoute);
         testWorkoutSyncItem.setData(SyncTestData.getSomeWorkoutData());
         //
         SyncQueueItem testWorkoutExerciseSyncItem = new SyncQueueItem();
         testWorkoutExerciseSyncItem.setId(3); // frontendin generoima väliaikainen id
-        testWorkoutExerciseSyncItem.setRoute(workoutExerciseAddRoute);
+        testWorkoutExerciseSyncItem.setRoute(SyncTestData.workoutExerciseAddRoute);
         testWorkoutExerciseSyncItem.setData(SyncTestData.getSomeWorkoutExerciseData(testWorkoutSyncItem.getData(), testExercise));
         //
         List<SyncQueueItem> testSyncQueue = new ArrayList<>();
@@ -151,11 +170,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     private List<SyncQueueItem> makeSyncQueueWithCoupleOfItems() {
         SyncQueueItem testWorkoutSyncItem1 = new SyncQueueItem();
         testWorkoutSyncItem1.setId(1);
-        testWorkoutSyncItem1.setRoute(workoutInsertRoute);
+        testWorkoutSyncItem1.setRoute(SyncTestData.workoutInsertRoute);
         //
         SyncQueueItem testWorkoutSyncItem2 = new SyncQueueItem();
         testWorkoutSyncItem2.setId(1);
-        testWorkoutSyncItem2.setRoute(workoutInsertRoute);
+        testWorkoutSyncItem2.setRoute(SyncTestData.workoutInsertRoute);
         //
         List<SyncQueueItem> queue = new ArrayList<>();
         queue.add(testWorkoutSyncItem1);
@@ -166,7 +185,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     private List<SyncQueueItem> makeSyncQueueWithBogusData() {
         SyncQueueItem workoutSyncItemWithBogusData = new SyncQueueItem();
         workoutSyncItemWithBogusData.setId(1);
-        workoutSyncItemWithBogusData.setRoute(workoutInsertRoute);
+        workoutSyncItemWithBogusData.setRoute(SyncTestData.workoutInsertRoute);
         workoutSyncItemWithBogusData.setData(SyncTestData.getBogusWorkoutData());
         //
         List<SyncQueueItem> queue = new ArrayList<>();
@@ -176,11 +195,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     private static void manuallyPopulateSyncRouteRegister() {
         SyncRoute registeredWorkoutInsertRoute = new SyncRoute();
-        registeredWorkoutInsertRoute.setUrl(workoutInsertRoute.getUrl());
-        registeredWorkoutInsertRoute.setMethod(workoutInsertRoute.getMethod());
+        registeredWorkoutInsertRoute.setUrl(SyncTestData.workoutInsertRoute.getUrl());
+        registeredWorkoutInsertRoute.setMethod(SyncTestData.workoutInsertRoute.getMethod());
         SyncRoute registeredWorkoutExerciseAddRoute = new SyncRoute();
-        registeredWorkoutExerciseAddRoute.setUrl(workoutExerciseAddRoute.getUrl());
-        registeredWorkoutExerciseAddRoute.setMethod(workoutExerciseAddRoute.getMethod());
+        registeredWorkoutExerciseAddRoute.setUrl(SyncTestData.workoutExerciseAddRoute.getUrl());
+        registeredWorkoutExerciseAddRoute.setMethod(SyncTestData.workoutExerciseAddRoute.getMethod());
         registeredWorkoutExerciseAddRoute.setPreparerClass(SyncDataPreparers.WorkoutExerciseInsertPreparer.class);
         syncRouteRegister = new SyncRouteRegister();
         syncRouteRegister.add(registeredWorkoutInsertRoute);

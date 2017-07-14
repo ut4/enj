@@ -37,7 +37,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
         // Luultavasti login, register jne. -> älä tee mitään
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(PermitAll.class)) {
+        if (this.resourceInfo.getResourceMethod().isAnnotationPresent(PermitAll.class)) {
             return;
         }
         final String authHeader = requestContext.getHeaderString(TOKEN_HEADER_NAME);
