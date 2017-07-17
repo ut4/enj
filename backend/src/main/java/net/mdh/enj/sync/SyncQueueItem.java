@@ -47,7 +47,7 @@ public class SyncQueueItem {
 
     @Override
     public String toString() {
-        return "{" +
+        return "SyncQueueItem{" +
             "id=" + this.getId() +
             ", route=" + this.getRoute() +
             ", data=" + this.getData() +

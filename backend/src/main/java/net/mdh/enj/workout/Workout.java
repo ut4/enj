@@ -14,7 +14,6 @@ import java.util.List;
  * Treenientiteetti (/api/workout)
  */
 public class Workout extends DbEntity {
-    protected int id;
     @Min(value = 1)
     private long start;
     private long end;
@@ -60,7 +59,7 @@ public class Workout extends DbEntity {
 
     @Override
     public String toString() {
-        return "{" +
+        return "Workout{" +
             "id=" + this.getId() +
             ", start=" + this.getStart() +
             ", end=" + this.getEnd() +
@@ -75,7 +74,6 @@ public class Workout extends DbEntity {
      */
     @Produces(MediaType.APPLICATION_JSON)
     public static class Exercise extends DbEntity {
-        protected int id;
         private int orderDef;
         @Min(value = 1)
         private int workoutId;
@@ -121,7 +119,7 @@ public class Workout extends DbEntity {
 
         @Override
         public String toString() {
-            return "{" +
+            return "Workout.Exercise{" +
                 "id=" + this.getId() +
                 ", orderDef=" + this.getOrderDef() +
                 ", workoutId=" + this.getWorkoutId() +
@@ -134,7 +132,6 @@ public class Workout extends DbEntity {
          * Treeniliikesettientiteetti :D
          */
         public static class Set extends DbEntity {
-            protected int id;
             private double weight;
             private int reps;
             private int workoutExerciseId;
@@ -162,7 +159,7 @@ public class Workout extends DbEntity {
 
             @Override
             public String toString() {
-                return "{" +
+                return "Workout.Exercise.Set{" +
                     "id=" + this.getId() +
                     ", weight=" + this.getWeight() +
                     ", reps=" + this.getReps() +

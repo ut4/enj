@@ -22,7 +22,7 @@ public class User extends DbEntity {
 
     @Override
     public String toString() {
-        return "{" +
+        return "User{" +
             "id=" + this.getId() +
             ", username=" + this.getUsername() +
             ", passwordHash=" + this.getPasswordHash() +
