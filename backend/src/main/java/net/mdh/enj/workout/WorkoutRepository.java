@@ -13,7 +13,7 @@ import java.util.List;
 
 public class WorkoutRepository extends BasicRepository<Workout> {
 
-    public final static String TABLE_NAME = "workout";
+    private final static String TABLE_NAME = "workout";
 
     @Inject
     WorkoutRepository(DataSourceFactory dSFactory) {
@@ -68,6 +68,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
             workout.setStart(rs.getLong("workoutStart"));
             workout.setEnd(rs.getLong("workoutEnd"));
             workout.setNotes(rs.getString("workoutNotes"));
+            workout.setUserId(rs.getInt("workoutUserId"));
             workout.setExercises(this.workoutExerciseCollector.collect(rs, rowNum, workout.getId()));
             return workout;
         }

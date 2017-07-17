@@ -6,11 +6,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.container.ContainerRequestContext;
 import static net.mdh.enj.APIResponses.InsertResponse;
 import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.api.Request;
 import javax.inject.Inject;
 import java.util.ArrayList;
 
@@ -52,7 +55,8 @@ public class WorkoutController {
      * @return Workout[] treenit
      */
     @GET
-    public ArrayList<Workout> getAll(@BeanParam SearchFilters filters) {
+    public ArrayList<Workout> getAll(@BeanParam SearchFilters filters, @Context ContainerRequestContext req) {
+        filters.setUserId((Integer) req.getProperty(Request.AUTH_USER_ID));
         return (ArrayList<Workout>) this.workoutRepository.selectAll(filters);
     }
 

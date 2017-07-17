@@ -1,3 +1,6 @@
+-- username asd, password asdf
+INSERT INTO `user` VALUES (1, 'asd', '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw');
+
 INSERT INTO exercise (`name`) VALUES
     ('Maastaveto'),
     ('Leuanveto'),
@@ -66,6 +69,3 @@ INSERT INTO exerciseVariant (exerciseId, content) VALUES
     (21,'lait. yhden jalan'),
     (17,'yhden jalan'),
     (1,'sumo');
-
--- username asd, password asdf
-INSERT INTO `user` (username, passwordHash) VALUES ('asd', '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw');

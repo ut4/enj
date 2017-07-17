@@ -1,6 +1,6 @@
 package net.mdh.enj.workout;
 
-import net.mdh.enj.resources.SyncTestData;
+import net.mdh.enj.resources.TestData;
 import net.mdh.enj.sync.SyncQueueItem;
 import net.mdh.enj.sync.Route;
 import java.util.ArrayList;
@@ -21,15 +21,15 @@ public class WorkoutExerciseAddPreparerTest {
     @Before
     public void beforeEach() {
         this.someAlreadySyncedUnrelatedWorkout = new SyncQueueItem();
-        this.someAlreadySyncedUnrelatedWorkout.setRoute(SyncTestData.workoutInsertRoute);
-        this.someAlreadySyncedUnrelatedWorkout.setData(SyncTestData.getSomeWorkoutData(45, 5L));
+        this.someAlreadySyncedUnrelatedWorkout.setRoute(TestData.workoutInsertRoute);
+        this.someAlreadySyncedUnrelatedWorkout.setData(TestData.getSomeWorkoutData(45, 5L));
         this.someAlreadySyncedUnrelatedItem = new SyncQueueItem();
         this.someAlreadySyncedUnrelatedItem.setRoute(new Route("foo", "PUT"));
-        this.someAlreadySyncedUnrelatedItem.setData(SyncTestData.getSomeWorkoutData(this.frontendGeneratedParentWorkoutId, 6L));
+        this.someAlreadySyncedUnrelatedItem.setData(TestData.getSomeWorkoutData(this.frontendGeneratedParentWorkoutId, 6L));
         this.someAlreadySyncedUnrelatedItem.setSyncResult(this.mariaDBGeneratedParentWorkoutId - 1);
         this.someAlreadySyncedParentWorkout = new SyncQueueItem();
-        this.someAlreadySyncedParentWorkout.setRoute(SyncTestData.workoutInsertRoute);
-        this.someAlreadySyncedParentWorkout.setData(SyncTestData.getSomeWorkoutData(this.frontendGeneratedParentWorkoutId, 6L));
+        this.someAlreadySyncedParentWorkout.setRoute(TestData.workoutInsertRoute);
+        this.someAlreadySyncedParentWorkout.setData(TestData.getSomeWorkoutData(this.frontendGeneratedParentWorkoutId, 6L));
         this.someAlreadySyncedParentWorkout.setSyncResult(this.mariaDBGeneratedParentWorkoutId);
         this.p = new SyncDataPreparers.WorkoutExerciseInsertPreparer();
     }
@@ -60,7 +60,7 @@ public class WorkoutExerciseAddPreparerTest {
     public void prepareForSyncEtsiiTreeniliikedataanOikeanTreeniviiteavaimen() throws Exception {
         // Treeniliike-itemi, jonka workoutId viittaa aiemmin synkattuun treeniin
         SyncQueueItem testWorkoutExerciseSyncItem = new SyncQueueItem();
-        testWorkoutExerciseSyncItem.setData(SyncTestData.getSomeWorkoutExerciseData(
+        testWorkoutExerciseSyncItem.setData(TestData.getSomeWorkoutExerciseData(
             this.someAlreadySyncedParentWorkout.getData()
         ));
         //

@@ -11,26 +11,21 @@ public class SearchFiltersTest {
         this.searchFilters = new SearchFilters();
     }
     @Test
-    public void hasRulesPalauttaaTrueJosVähintäänYksiArvoOnAsetettu() {
-        Assert.assertEquals(false, this.searchFilters.hasRules());
-        this.searchFilters.setStartFrom((long) 1);
+    public void hasRulesPalauttaaAinaTrue() {
         Assert.assertEquals(true, this.searchFilters.hasRules());
-        this.searchFilters.setStartTo((long) 1);
+        this.searchFilters.setUserId(1);
         Assert.assertEquals(true, this.searchFilters.hasRules());
-        this.searchFilters.setStartFrom(null);
-        Assert.assertEquals(true, this.searchFilters.hasRules());
-        this.searchFilters.setStartTo(null);
-        Assert.assertEquals(false, this.searchFilters.hasRules());
     }
     @Test
     public void toSqlLisääAsetetutKentätKyselyyn() {
-        Assert.assertEquals("", this.searchFilters.toSql());
+        String userIdPart = "workoutUserId = :userId";
+        Assert.assertEquals(userIdPart, this.searchFilters.toSql());
         this.searchFilters.setStartFrom((long) 1);
-        String startFromPart = "workoutStart >= :startFrom";
-        Assert.assertEquals(startFromPart, this.searchFilters.toSql());
+        String startFromPart = " AND workoutStart >= :startFrom";
+        Assert.assertEquals(userIdPart + startFromPart, this.searchFilters.toSql());
         this.searchFilters.setStartTo((long) 2);
-        Assert.assertEquals(startFromPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
+        Assert.assertEquals(userIdPart + startFromPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
         this.searchFilters.setStartFrom(null);
-        Assert.assertEquals("workoutStart <= :startTo", this.searchFilters.toSql());
+        Assert.assertEquals(userIdPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
     }
 }

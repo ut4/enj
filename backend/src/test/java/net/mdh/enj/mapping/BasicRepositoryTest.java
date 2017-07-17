@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.Mockito;
 import net.mdh.enj.db.DataSourceFactory;
-import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.resources.RollbackingDBUnitTest;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
@@ -14,11 +13,11 @@ import java.util.List;
 
 public class BasicRepositoryTest extends RollbackingDBUnitTest {
 
-    private StrippedWorkoutRepo testRepo;
+    private SimpleExerciseRepository testRepo;
 
     @Before
     public void beforeEach() {
-        this.testRepo = new StrippedWorkoutRepo(rollbackingDSFactory);
+        this.testRepo = new SimpleExerciseRepository(rollbackingDSFactory);
     }
 
     /**
@@ -28,9 +27,8 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     @Test
     public void insertInsertoiBeaninJaPalauttaaGeneroidunIdn() {
         //
-        StrippedWorkoutEntity data = new StrippedWorkoutEntity();
-        data.setStart(System.currentTimeMillis() / 1000L);
-        data.setEnd(0);
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
         //
         int insertId = this.testRepo.insert(data);
         //
@@ -45,15 +43,15 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     @Test
     public void selectAllEiSisällytäNullRivejä() {
         final int someId = 21;
-        final StrippedWorkoutEntity someBean = new StrippedWorkoutEntity();
+        final SimpleExerciseEntity someBean = new SimpleExerciseEntity();
         //
-        List<StrippedWorkoutEntity> results = this.testRepo.selectAll(
+        List<SimpleExerciseEntity> results = this.testRepo.selectAll(
             "SELECT null as id UNION ALL " +
             "SELECT " + someId + " as id UNION ALL " +
             "SELECT null as id",
             (rs, i) -> rs.getInt("id") == someId ? someBean : null
         );
-        // Assertoi, että excluudasi null mappaukset
+        // Assertoi, että excluudasi null-mappaukset
         Assert.assertEquals(1, results.size());
         Assert.assertEquals(someBean, results.get(0));
     }
@@ -64,10 +62,10 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
      */
     @Test
     public void selectAllEiHeittäydyHankalaksiJosTietokantaEiPalautaMitään() throws SQLException {
-        RowMapper<StrippedWorkoutEntity> mapperSpy = Mockito.spy(new StrippedRepoMapper());
+        RowMapper<SimpleExerciseEntity> mapperSpy = Mockito.spy(new SimpleExerciseMapper());
         //
-        List<StrippedWorkoutEntity> results = this.testRepo.selectAll(
-            "SELECT id FROM `workout` WHERE id = -1",
+        List<SimpleExerciseEntity> results = this.testRepo.selectAll(
+            "SELECT id FROM `exercise` WHERE id = -1",
             mapperSpy
         );
         // Assertoi, ettei yrittänyt mapannut mitään
@@ -80,13 +78,13 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     @Test
     public void selectOnePalauttaaYhdenBeanin() {
         //
-        StrippedWorkoutEntity result = this.testRepo.selectOne(
-            "SELECT 1 as id, 2 as `start`",
-            new StrippedRepoMapper()
+        SimpleExerciseEntity result = this.testRepo.selectOne(
+            "SELECT 1 as id, \"nam\" as `name`",
+            new SimpleExerciseMapper()
         );
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getId());
-        Assert.assertEquals(2, result.getStart());
+        Assert.assertEquals("nam", result.getName());
     }
 
     /**
@@ -95,10 +93,10 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
      */
     @Test
     public void selectOneEiHeittäydyHankalaksiJosTietokantaEiPalautaMitään() throws SQLException {
-        RowMapper<StrippedWorkoutEntity> mapperSpy = Mockito.spy(new StrippedRepoMapper());
+        RowMapper<SimpleExerciseEntity> mapperSpy = Mockito.spy(new SimpleExerciseMapper());
         //
-        StrippedWorkoutEntity result = this.testRepo.selectOne(
-            "SELECT id FROM `workout` WHERE id = -1",
+        SimpleExerciseEntity result = this.testRepo.selectOne(
+            "SELECT id FROM `exercise` WHERE id = -1",
             mapperSpy
         );
         Assert.assertNull(result);
@@ -108,37 +106,30 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     }
 
     /**
-     * Riisuttu versio WorkoutRepositorystä; handlaa entiteettejä, jotka sisältää
-     *  vain schemassa pakollisksi määritellyn kentän "start" & "end".
+     * Riisuttu versio ExerciseRepositorystä; handlaa entiteettejä, jotka sisältää
+     *  vain schemassa pakolliseksi määritellyn kentän "name".
      */
-    private static class StrippedWorkoutRepo extends BasicRepository<StrippedWorkoutEntity> {
-        public StrippedWorkoutRepo(DataSourceFactory dataSourceFac) {
-            super(dataSourceFac, WorkoutRepository.TABLE_NAME, BasicRepository.DEFAULT_ID);
+    private static class SimpleExerciseRepository extends BasicRepository<SimpleExerciseEntity> {
+        SimpleExerciseRepository(DataSourceFactory dataSourceFac) {
+            super(dataSourceFac, "exercise", BasicRepository.DEFAULT_ID);
         }
     }
-    private static class StrippedRepoMapper implements RowMapper<StrippedWorkoutEntity> {
+    private static class SimpleExerciseMapper implements RowMapper<SimpleExerciseEntity> {
         @Override
-        public StrippedWorkoutEntity mapRow(ResultSet resultSet, int i) throws SQLException {
-            StrippedWorkoutEntity strippedWorkoutEntity = new StrippedWorkoutEntity();
-            strippedWorkoutEntity.setId(resultSet.getInt("id"));
-            strippedWorkoutEntity.setStart(resultSet.getInt("start"));
-            return strippedWorkoutEntity;
+        public SimpleExerciseEntity mapRow(ResultSet resultSet, int i) throws SQLException {
+            SimpleExerciseEntity simpleExercise = new SimpleExerciseEntity();
+            simpleExercise.setId(resultSet.getInt("id"));
+            simpleExercise.setName(resultSet.getString("name"));
+            return simpleExercise;
         }
     }
-    private static class StrippedWorkoutEntity extends DbEntity {
-        private long start;
-        private long end;
-        public long getStart() {
-            return this.start;
+    private static class SimpleExerciseEntity extends DbEntity {
+        private String name;
+        public String getName() {
+            return name;
         }
-        public void setStart(long start) {
-            this.start = start;
-        }
-        public long getEnd() {
-            return this.end;
-        }
-        public void setEnd(long end) {
-            this.end = end;
+        public void setName(String name) {
+            this.name = name;
         }
     }
 }

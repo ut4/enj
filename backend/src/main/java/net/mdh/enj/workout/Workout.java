@@ -2,9 +2,10 @@ package net.mdh.enj.workout;
 
 import net.mdh.enj.Utils;
 import net.mdh.enj.mapping.DbEntity;
-import javax.validation.Valid;
+import net.mdh.enj.validation.AuthenticatedUserId;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Produces;
 import java.util.List;
@@ -19,6 +20,8 @@ public class Workout extends DbEntity {
     private long end;
     private String notes;
     private List<Exercise> exercises;
+    @AuthenticatedUserId
+    private int userId;
 
     public long getStart() {
         return this.start;
@@ -48,6 +51,13 @@ public class Workout extends DbEntity {
         this.exercises = exercises;
     }
 
+    public int getUserId() {
+        return this.userId;
+    }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "{" +
@@ -55,6 +65,7 @@ public class Workout extends DbEntity {
             ", start=" + this.getStart() +
             ", end=" + this.getEnd() +
             ", notes=" + this.getNotes() +
+            ", userId=" + this.getUserId() +
             ", exercises=" + Utils.stringifyAll(this.getExercises()) +
         "}";
     }

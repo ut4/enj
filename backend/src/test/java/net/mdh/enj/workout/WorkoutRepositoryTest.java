@@ -4,8 +4,9 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.Assert;
 import net.mdh.enj.exercise.Exercise;
-import net.mdh.enj.resources.RollbackingDBUnitTest;
+import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.DbTestUtils;
+import net.mdh.enj.resources.RollbackingDBUnitTest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,9 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         Workout w2 = this.insertWorkoutWithExerciseButNoSets();
         Workout w3 = this.insertWorkoutWithoutExercisesOrSets();
         //
-        List<Workout> results = this.workoutRepository.selectAll(new SearchFilters());
+        SearchFilters searchFilters = new SearchFilters();
+        searchFilters.setUserId(TestData.TEST_USER_ID);
+        List<Workout> results = this.workoutRepository.selectAll(searchFilters);
         //
         Assert.assertEquals(w3.toString(), results.get(0).toString());
         Assert.assertEquals(0, results.get(0).getExercises().size());
@@ -83,6 +86,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
 
     private Workout insertWorkout() {
         Workout workout = new Workout();
+        workout.setUserId(TestData.TEST_USER_ID);
         workout.setStart(System.currentTimeMillis() / 1000L);
         this.utils.insertWorkout(workout);
         return workout;

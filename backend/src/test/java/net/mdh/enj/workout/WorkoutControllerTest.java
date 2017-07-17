@@ -1,12 +1,14 @@
 package net.mdh.enj.workout;
 
+import net.mdh.enj.api.Request;
 import net.mdh.enj.APIResponses;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Assert;
 import net.mdh.enj.exercise.Exercise;
+import net.mdh.enj.auth.TokenService;
+import net.mdh.enj.resources.TestData;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
+import net.mdh.enj.auth.AuthenticationFilter;
+import net.mdh.enj.resources.AlwaysValidTokenService;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -14,9 +16,9 @@ import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import java.util.Comparator;
+import org.junit.BeforeClass;
+import org.junit.Assert;
+import org.junit.Test;
 import java.util.List;
 
 public class WorkoutControllerTest extends RollbackingDBJerseyTest {
@@ -30,6 +32,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         utils = new DbTestUtils(rollbackingDataSource);
         testWorkout = new Workout();
         testWorkout.setStart(System.currentTimeMillis() / 1000L);
+        testWorkout.setUserId(TestData.TEST_USER_ID);
         utils.insertWorkout(testWorkout);
         testExercise = new Exercise();
         testExercise.setName("exs");
@@ -40,12 +43,14 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public ResourceConfig configure() {
         return new ResourceConfig()
             .register(WorkoutController.class)
+            .register(AuthenticationFilter.class)
             .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
             .register(new AbstractBinder() {
                 @Override
                 protected void configure() {
                     bind(WorkoutRepository.class).to(WorkoutRepository.class);
                     bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
+                    bind(AlwaysValidTokenService.class).to(TokenService.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
             });
@@ -58,8 +63,9 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void POSTHylkääPyynnönJosDataPuuttuuKokonaan() {
         // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout", null);
-        // Testaa että palauttaa 400
+        Response response = this.newPostRequest("workout", null, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
@@ -75,14 +81,37 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public void POSTValidoiTreeniInputin() {
         // Simuloi POST, jossa tyhjä workout
         Workout invalidData = new Workout();
-        Response response = this.newPostRequest("workout", invalidData);
-        // Testaa että palauttaa 400
+        Response response = this.newPostRequest("workout", invalidData, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
-        Assert.assertEquals(1, errors.size());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
         Assert.assertEquals("WorkoutController.insert.arg0.start", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insert.arg0.userId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, ettei käyttäjä voi luoda treenejä kuin itselleen.
+     */
+    @Test
+    public void POSTHylkääPyynnönJosInputinUserIdEiOleSamaKuinKirjautuneenKäyttäjänId() {
+        // Simuloi POST, jonka data muuten ok, mutta userId ei täsmää kirjautuneen käyttäjän id:n kanssa
+        Workout workout = new Workout();
+        workout.setStart(2);
+        workout.setUserId(TestData.TEST_USER_ID + 1);
+        Response response = this.newPostRequest("workout", workout, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insert.arg0.userId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(0).getMessageTemplate());
     }
 
     /**
@@ -95,13 +124,15 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Workout data = new Workout();
         data.setStart(System.currentTimeMillis() / 1000L);
         data.setNotes("foo");
-        // Testaa että insertoi pyynnön tiedoilla
-        Response response = this.newPostRequest("workout", data);
+        data.setUserId(TestData.TEST_USER_ID);
+        Response response = this.newPostRequest("workout", data, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(200, response.getStatus());
         APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
         data.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
-        Response getResponse = target("workout").request().get();
+        Response getResponse = this.newGetRequest("workout");
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
         Assert.assertEquals(data.toString(), workouts.get(0).toString());
     }
@@ -112,7 +143,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
      */
     @Test
     public void GETPalauttaaTreenilistan() {
-        Response response = target("workout").request().get();
+        Response response = this.newGetRequest("workout");
         Assert.assertEquals(200, response.getStatus());
         List<Workout> workouts = response.readEntity(new GenericType<List<Workout>>() {});
         Assert.assertEquals(testWorkout.toString(), workouts.get(0).toString());
@@ -127,11 +158,15 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public void GETPalauttaaTreenitAikaväliltä() {
         Workout anotherWorkout = new Workout();
         anotherWorkout.setStart(1); // 1970-01-01T00:00:01
+        anotherWorkout.setUserId(TestData.TEST_USER_ID);
         utils.insertWorkout(anotherWorkout);
         Workout anotherWorkout2 = new Workout();
         anotherWorkout2.setStart(3); // 1970-01-01T00:00:03
+        anotherWorkout2.setUserId(TestData.TEST_USER_ID);
         utils.insertWorkout(anotherWorkout2);
-        Response response = target("workout").queryParam("startFrom", "1").queryParam("startTo", "3").request().get();
+        Response response = this.newGetRequest("workout", t ->
+            t.queryParam("startFrom", "1").queryParam("startTo", "3")
+        );
         Assert.assertEquals(200, response.getStatus());
         List<Workout> workouts = response.readEntity(new GenericType<List<Workout>>() {});
         Assert.assertEquals(2, workouts.size()); // Pitäisi palauttaa aina 2, ks. timestamp
@@ -145,8 +180,9 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void POSTExerciseHylkääPyynnönJosDataPuuttuuKokonaan() {
         // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout/exercise", null);
-        // Testaa että palauttaa 400
+        Response response = this.newPostRequest("workout/exercise", null, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
@@ -161,13 +197,13 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void POSTExerciseHylkääPyynnönJosTietojaPuuttuu() {
         // Simuloi POST, jonka datassa puuttuu tietoja
-        Response response = this.newPostRequest("workout/exercise", "{}");
-        // Testaa että palauttaa 400
+        Response response = this.newPostRequest("workout/exercise", "{}", r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        errors.sort(Comparator.comparing(ValidationError::getPath));
         Assert.assertEquals("WorkoutController.insertExercise.arg0.exercise", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("WorkoutController.insertExercise.arg0.workoutId", errors.get(1).getPath());
@@ -186,12 +222,14 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         workoutExercise.setOrderDef(0);
         workoutExercise.setExercise(testExercise);
         // Testaa että insertoi pyynnön tiedoilla
-        Response response = this.newPostRequest("workout/exercise", workoutExercise);
+        Response response = this.newPostRequest("workout/exercise", workoutExercise, r ->
+            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+        );
         Assert.assertEquals(200, response.getStatus());
         APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
         workoutExercise.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
-        Response getResponse = target("workout").request().get();
+        Response getResponse = this.newGetRequest("workout");
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
         Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId() == testWorkout.getId()).findFirst().get();
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());

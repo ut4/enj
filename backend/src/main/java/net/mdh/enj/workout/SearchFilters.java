@@ -9,10 +9,18 @@ import java.util.ArrayList;
  */
 public class SearchFilters implements SelectQueryFilters {
 
+    private int userId;
     @QueryParam("startFrom")
     private Long startFrom;
     @QueryParam("startTo")
     private Long startTo;
+
+    public int getUserId() {
+        return this.userId;
+    }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     public Long getStartFrom() {
         return this.startFrom;
@@ -29,10 +37,11 @@ public class SearchFilters implements SelectQueryFilters {
     }
 
     /**
-     * Palauttaa true, jos urlissa oli ainakin yksi arvo, muutoin palauttaa false.
+     * Palauttaa aina true, koska userId on pakollinen arvo kaikissa treenien
+     * SELECT-kyselyissä.
      */
     public boolean hasRules() {
-        return this.startFrom != null || this.startTo != null;
+        return true;
     }
 
     /**
@@ -41,6 +50,7 @@ public class SearchFilters implements SelectQueryFilters {
      */
     public String toSql() {
         ArrayList<String> out = new ArrayList<>();
+        out.add("workoutUserId = :userId");
         if (this.startFrom != null) {
             out.add("workoutStart >= :startFrom");
         }

@@ -1,5 +1,3 @@
-DROP VIEW    IF EXISTS userView;
-DROP TABLE   IF EXISTS `user`;
 DROP VIEW    IF EXISTS workoutExerciseView;
 DROP VIEW    IF EXISTS workoutView;
 DROP TRIGGER IF EXISTS workoutEndTrg;
@@ -9,11 +7,29 @@ DROP TABLE   IF EXISTS workout;
 DROP VIEW    IF EXISTS exerciseView;
 DROP TABLE   IF EXISTS exerciseVariant;
 DROP TABLE   IF EXISTS exercise;
+DROP VIEW    IF EXISTS userView;
+DROP TABLE   IF EXISTS `user`;
 
 -- MariaDB int sizes --
 -- SMALLINT  -32768      to 32767 signed,      0 to 65535 unsigned
 -- MEDIUMINT -8388608    to 8388607 signed,    0 to 16777215 unsigned
 -- INT       -2147483648 to 2147483647 signed, 0 to 4294967295 unsigned
+
+-- == User ====
+-- =============================================================================
+CREATE TABLE `user` (
+    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    username VARCHAR(42) NOT NULL UNIQUE,
+    passwordHash VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+) DEFAULT CHARSET = utf8;
+
+CREATE VIEW userView AS
+    SELECT
+        u.id           AS userId,
+        u.username     AS userUsername,
+        u.passwordHash AS userPasswordHash
+    FROM `user` AS u;
 
 -- == Exercise ====
 -- =============================================================================
@@ -47,6 +63,8 @@ CREATE TABLE workout (
     `start` INT UNSIGNED NOT NULL,
     `end` INT UNSIGNED NOT NULL DEFAULT 0,
     notes TEXT,
+    userId  MEDIUMINT UNSIGNED NOT NULL,
+    FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8;
 
@@ -95,7 +113,8 @@ CREATE VIEW workoutView AS
         w.id      AS workoutId,
         w.`start` AS workoutStart,
         w.`end`   AS workoutEnd,
-        w.notes   AS workoutNotes
+        w.notes   AS workoutNotes,
+        w.userId  AS workoutUserId
     FROM workout AS w;
 
 CREATE VIEW workoutExerciseView AS
@@ -113,19 +132,3 @@ CREATE VIEW workoutExerciseView AS
     JOIN exercise e ON (e.id = we.exerciseId)
     LEFT JOIN exerciseVariant ev ON (ev.id = we.exerciseVariantId)
     LEFT JOIN workoutExerciseSet s ON (s.workoutExerciseId = we.id);
-
--- == User ====
--- =============================================================================
-CREATE TABLE `user` (
-    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    username VARCHAR(42) NOT NULL UNIQUE,
-    passwordHash VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
-
-CREATE VIEW userView AS
-    SELECT
-        u.id           AS userId,
-        u.username     AS userUsername,
-        u.passwordHash AS userPasswordHash
-    FROM `user` AS u;
