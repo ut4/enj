@@ -1,7 +1,7 @@
 package net.mdh.enj.resources;
 
-import net.mdh.enj.api.Request;
 import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.auth.AuthenticationFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.Path;
@@ -13,7 +13,7 @@ public class TestController {
     @PUT
     @Syncable
     public String testMethod(@Context HttpHeaders headers) {
-        receivedAuthHeaderValue = headers.getHeaderString(Request.AUTH_HEADER_NAME);
+        receivedAuthHeaderValue = headers.getHeaderString(AuthenticationFilter.AUTH_HEADER_NAME);
         return "foo";
     }
 }

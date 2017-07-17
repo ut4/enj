@@ -2,10 +2,11 @@ package net.mdh.enj.auth;
 
 import org.junit.Test;
 import org.junit.Assert;
-import net.mdh.enj.api.Request;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import net.mdh.enj.api.RequestContext;
 import javax.ws.rs.core.Response;
 
 public class AuthenticationFilterTest extends JerseyTest {
@@ -24,6 +25,7 @@ public class AuthenticationFilterTest extends JerseyTest {
             .register(new AbstractBinder() {
                 @Override
                 protected void configure() {
+                    bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
                     bind(TokenService.class).to(TokenService.class);
                 }
             });
@@ -37,7 +39,7 @@ public class AuthenticationFilterTest extends JerseyTest {
         Response response = target(this.normalUrl).request().get();
         Assert.assertEquals(401, response.getStatus());
         Assert.assertEquals(AuthenticationFilter.MSG_LOGIN_REQUIRED, response.readEntity(String.class));
-        Response response2 = target(this.normalUrl).request().header(Request.AUTH_HEADER_NAME, "Bearer").get();
+        Response response2 = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer").get();
         Assert.assertEquals(401, response2.getStatus());
         Assert.assertEquals(AuthenticationFilter.MSG_LOGIN_REQUIRED, response2.readEntity(String.class));
     }
@@ -47,7 +49,7 @@ public class AuthenticationFilterTest extends JerseyTest {
      */
     @Test
     public void hylkääPyynnönMikäliAuthenticationHeaderEiOleValidi() {
-        Response response = target(this.normalUrl).request().header(Request.AUTH_HEADER_NAME, "Bearer foo").get();
+        Response response = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer foo").get();
         Assert.assertEquals(401, response.getStatus());
         Assert.assertEquals(AuthenticationFilter.MSG_LOGIN_REQUIRED, response.readEntity(String.class));
     }
@@ -57,7 +59,7 @@ public class AuthenticationFilterTest extends JerseyTest {
     @Test
     public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() {
         String testToken = new TokenService().generateNew(34);
-        Response response = target(this.normalUrl).request().header(Request.AUTH_HEADER_NAME, "Bearer " + testToken).get();
+        Response response = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + testToken).get();
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + "34", response.readEntity(String.class));
     }

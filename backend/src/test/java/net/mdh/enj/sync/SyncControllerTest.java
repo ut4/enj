@@ -1,7 +1,9 @@
 package net.mdh.enj.sync;
 
 import net.mdh.enj.HttpClient;
+import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.resources.JerseyTestCase;
+import net.mdh.enj.resources.TestData;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -22,6 +24,7 @@ public class SyncControllerTest extends JerseyTestCase {
             .register(new AbstractBinder() {
                 @Override
                 protected void configure() {
+                    bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(new SyncRouteRegister()).to(SyncRouteRegister.class);
                     bind(SyncControllerTest.this).to(HttpClient.class);
                 }

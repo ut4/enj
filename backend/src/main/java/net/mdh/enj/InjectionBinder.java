@@ -1,5 +1,6 @@
 package net.mdh.enj;
 
+import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.auth.TokenService;
@@ -11,11 +12,13 @@ import net.mdh.enj.exercise.ExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 
 class InjectionBinder extends AbstractBinder {
     @Override
     protected void configure() {
         // Common
+        bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
         bind(SimpleDataSourceFactory.class).to(DataSourceFactory.class);
         bind(TokenService.class).to(TokenService.class);
         // Sync

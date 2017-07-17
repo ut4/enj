@@ -1,15 +1,13 @@
 package net.mdh.enj.sync;
 
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.api.Request;
+import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
-import net.mdh.enj.auth.TokenService;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.TestController;
-import net.mdh.enj.resources.AlwaysValidTokenService;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.workout.SyncDataPreparers;
@@ -50,7 +48,6 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         return new ResourceConfig()
             .register(SyncController.class)
             .register(TestController.class)
-            .register(AuthenticationFilter.class)
             // Kontrollerit, joiden dataa synkataan testeissä.
             .register(WorkoutController.class)
             // tänne lisää...
@@ -61,7 +58,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                     bind(syncRouteRegister).to(SyncRouteRegister.class);
                     bind(SyncingTest.this).to(HttpClient.class);
-                    bind(AlwaysValidTokenService.class).to(TokenService.class);
+                    bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     // WorkoutController riippuvuudet
                     bind(WorkoutRepository.class).to(WorkoutRepository.class);
                     bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
@@ -72,9 +69,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     @Test
     public void syncAllHylkääPyynnönJosHetiEnsimmäinenSynkkaysEpäonnistuu() {
         //
-        Response response = this.newPostRequest("sync", this.makeSyncQueueWithBogusData(), r ->
-            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
-        );
+        Response response = this.newPostRequest("sync", this.makeSyncQueueWithBogusData());
         // Assertoi että yritti synkata ensimmäisen itemin, ja repi sen jälkeen pelihousunsa
         Assert.assertNotEquals(200, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
@@ -87,9 +82,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         List<SyncQueueItem> queue = this.makeSyncQueueWithCoupleOfItems();
         queue.get(0).setData(TestData.getSomeWorkoutData());
         queue.get(1).setData(TestData.getBogusWorkoutData());
-        Response response = this.newPostRequest("sync", queue, r ->
-            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
-        );
+        Response response = this.newPostRequest("sync", queue);
         // Assertoi että ei repinyt pelihousujansa, vaan palautti onnistuneesti synkattujen itemeiden id:t
         Assert.assertEquals("Ei pitäisi heittää erroria, koska 1. itemin synkkaus onnistui", 200, response.getStatus());
         List<Integer> responseBody = response.readEntity(new GenericType<List<Integer>>() {});
@@ -105,9 +98,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         // Luo testidata
         List<SyncQueueItem> testSyncQueue = this.makeTestSyncQueue();
         //
-        Response response = this.newPostRequest("sync", testSyncQueue, r ->
-            r.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
-        );
+        Response response = this.newPostRequest("sync", testSyncQueue);
         // Testaa että synkkasi jokaisen itemin
         Assert.assertEquals(200, response.getStatus());
         List<Integer> responseBody = response.readEntity(new GenericType<List<Integer>>() {});
@@ -152,11 +143,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         testQueue.add(testItem);
         //
         Response response = this.newPostRequest("sync", testQueue, requestBuilder ->
-            requestBuilder.header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER)
+            requestBuilder.header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER)
         );
         //
         Assert.assertEquals("Pitäisi sisällyttää Authorization-header synkkauspyyntöihin",
-            MOCK_AUTH_HEADER, TestController.receivedAuthHeaderValue
+            TestData.MOCK_AUTH_HEADER, TestController.receivedAuthHeaderValue
         );
         response.close();
     }

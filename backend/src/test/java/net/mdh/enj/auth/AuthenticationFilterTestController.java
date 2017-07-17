@@ -1,11 +1,11 @@
 package net.mdh.enj.auth;
 
+import net.mdh.enj.api.RequestContext;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.annotation.security.PermitAll;
 
 @Path(AuthenticationFilterTestController.TEST_URL)
@@ -15,10 +15,15 @@ public class AuthenticationFilterTestController {
     public final static String NORMAL_PATH = "secured";
     public final static String WHITELISTED_PATH = "not-secured";
     public final static String NORMAL_RESPONSE = "foo";
+    private final RequestContext requestContext;
+    @Inject
+    AuthenticationFilterTestController(RequestContext rc) {
+        this.requestContext = rc;
+    }
     @GET
     @Path(NORMAL_PATH)
-    public String securedMethod(@Context ContainerRequestContext crc) {
-        return NORMAL_RESPONSE + crc.getProperty("userId");
+    public String securedMethod() {
+        return NORMAL_RESPONSE + this.requestContext.getUserId();
     }
     @GET
     @PermitAll

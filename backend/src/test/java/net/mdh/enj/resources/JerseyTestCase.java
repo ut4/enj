@@ -1,7 +1,7 @@
 package net.mdh.enj.resources;
 
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.api.Request;
+import net.mdh.enj.auth.AuthenticationFilter;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.test.JerseyTest;
 import javax.ws.rs.client.Invocation.Builder;
@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 
 public class JerseyTestCase extends JerseyTest implements HttpClient {
-    protected static final String MOCK_AUTH_HEADER = "Bearer foo";
     protected Response newPostRequest(String url, Object data) {
         return this.newPostRequest(url, data, null);
     }
@@ -35,7 +34,7 @@ public class JerseyTestCase extends JerseyTest implements HttpClient {
         if (additionalSetup != null) {
             target = additionalSetup.apply(target);
         }
-        return target.request().header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER).get();
+        return target.request().header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER).get();
     }
     protected List<ValidationError> getValidationErrors(Response response) {
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});

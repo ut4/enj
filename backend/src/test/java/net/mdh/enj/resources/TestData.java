@@ -1,5 +1,7 @@
 package net.mdh.enj.resources;
 
+import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.auth.AuthenticationFilter;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.sync.Route;
 import java.util.HashMap;
@@ -7,8 +9,16 @@ import java.util.Map;
 
 public class TestData {
     public static final int TEST_USER_ID = 1;
+    public static final String MOCK_AUTH_HEADER = AuthenticationFilter.AUTH_HEADER_NAME + "foo";
     public static final Route workoutInsertRoute = new Route("workout", "POST");
     public static final Route workoutExerciseAddRoute = new Route("workout/exercise", "POST");
+    public static RequestContext testUserAwareRequestContext;
+
+    static {
+        testUserAwareRequestContext = new RequestContext();
+        testUserAwareRequestContext.setAuthHeader(MOCK_AUTH_HEADER);
+        testUserAwareRequestContext.setUserId(TEST_USER_ID);
+    }
 
     public static Map<String,Object> getSomeWorkoutData(Integer id, Long start) {
         HashMap<String, Object> data = new HashMap<>();

@@ -1,20 +1,20 @@
 package net.mdh.enj.validation;
 
-import net.mdh.enj.api.Request;
+import net.mdh.enj.api.RequestContext;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
+import javax.inject.Inject;
 
 /**
- * Validoi, onko arvo sama kuin ContainerRequestContex:tiin tallennettu, JWT:stä
+ * Validoi, onko arvo sama kuin RequestContex:tiin tallennettu, JWT:stä
  * ekstraktoitu kirjautuneen käyttäjän tunniste.
  */
 public class AuthenticatedUserIdValidator implements ConstraintValidator<AuthenticatedUserId, Integer> {
 
-    private final ContainerRequestContext requestContext;
+    private final RequestContext requestContext;
 
-    AuthenticatedUserIdValidator(@Context ContainerRequestContext requestContext) {
+    @Inject
+    AuthenticatedUserIdValidator(RequestContext requestContext) {
         this.requestContext = requestContext;
     }
 
@@ -29,7 +29,7 @@ public class AuthenticatedUserIdValidator implements ConstraintValidator<Authent
             return false;
         }
         try {
-            return this.requestContext.getProperty(Request.AUTH_USER_ID).equals(value);
+            return this.requestContext.getUserId() == value;
         } catch (NullPointerException e) {
             return false;
         }
