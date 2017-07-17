@@ -5,7 +5,8 @@ import net.mdh.enj.sync.Route;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SyncTestData {
+public class TestData {
+    public static final int TEST_USER_ID = 1;
     public static final Route workoutInsertRoute = new Route("workout", "POST");
     public static final Route workoutExerciseAddRoute = new Route("workout/exercise", "POST");
 
@@ -13,6 +14,7 @@ public class SyncTestData {
         HashMap<String, Object> data = new HashMap<>();
         data.put("id", id); // frontendin generoima väliaikainen id
         data.put("start", start);
+        data.put("userId", TEST_USER_ID);
         return data;
     }
     public static Map<String,Object> getSomeWorkoutData() {

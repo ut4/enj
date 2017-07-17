@@ -1,7 +1,7 @@
 package net.mdh.enj.resources;
 
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.auth.AuthenticationFilter;
+import net.mdh.enj.api.Request;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.test.JerseyTest;
 import javax.ws.rs.client.Invocation.Builder;
@@ -35,7 +35,7 @@ public class JerseyTestCase extends JerseyTest implements HttpClient {
         if (additionalSetup != null) {
             target = additionalSetup.apply(target);
         }
-        return target.request().header(AuthenticationFilter.TOKEN_HEADER_NAME, MOCK_AUTH_HEADER).get();
+        return target.request().header(Request.AUTH_HEADER_NAME, MOCK_AUTH_HEADER).get();
     }
     protected List<ValidationError> getValidationErrors(Response response) {
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});

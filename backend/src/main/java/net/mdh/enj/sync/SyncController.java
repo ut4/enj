@@ -4,18 +4,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ClientErrorException;
-import net.mdh.enj.APIResponses;
-import net.mdh.enj.HttpClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.mdh.enj.auth.AuthenticationFilter;
-
+import net.mdh.enj.HttpClient;
+import net.mdh.enj.api.Request;
+import net.mdh.enj.APIResponses;
 import java.lang.reflect.InvocationTargetException;
 import javax.validation.constraints.NotNull;
 import javax.validation.Valid;
@@ -62,7 +61,7 @@ public class SyncController {
             // Suorita synkkaus HTTP:lla
             Response syncResponse = this.appHttpClient.target(routeMatch.getUrl())
                 .request(MediaType.APPLICATION_JSON)
-                .header(AuthenticationFilter.TOKEN_HEADER_NAME, headers.getHeaderString(AuthenticationFilter.TOKEN_HEADER_NAME))
+                .header(Request.AUTH_HEADER_NAME, headers.getHeaderString(Request.AUTH_HEADER_NAME))
                 .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
             //
             // Jos vastaus oli ok, aseta synkkauksen tulos itemiin, lisää itemin

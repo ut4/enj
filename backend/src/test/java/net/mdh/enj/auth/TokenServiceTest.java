@@ -1,6 +1,5 @@
 package net.mdh.enj.auth;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
@@ -8,6 +7,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.impl.DefaultJws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.MalformedJwtException;
@@ -34,6 +35,7 @@ public class TokenServiceTest {
     @Test
     public void isValidPalauttaaTrueJosTokeninAvausOnnistuu() {
         Mockito.when(this.mockJwtParser.setSigningKey(Mockito.any(String.class))).thenReturn(this.mockJwtParser);
+        Mockito.when(this.mockJwtParser.parseClaimsJws("foo")).thenReturn(new DefaultJws<>(null, null, null));
         //
         String expectedToken = "foo";
         boolean isValid = this.tokenService.isValid(expectedToken);

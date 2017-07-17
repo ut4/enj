@@ -2,6 +2,7 @@ package net.mdh.enj.auth;
 
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Claims;
+import net.mdh.enj.api.Request;
 import javax.annotation.Priority;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -19,8 +20,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private ResourceInfo resourceInfo;
     private final TokenService tokenService;
 
-    public static final String TOKEN_HEADER_NAME = "Authorization";
-    public static final String TOKEN_HEADER_PREFIX = "Bearer ";
     public static final String MSG_LOGIN_REQUIRED = "Kirjautuminen vaaditaan";
 
     @Inject
@@ -42,20 +41,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         if (this.resourceInfo.getResourceMethod().isAnnotationPresent(PermitAll.class)) {
             return;
         }
-        final String authHeader = requestContext.getHeaderString(TOKEN_HEADER_NAME);
+        final String authHeader = requestContext.getHeaderString(Request.AUTH_HEADER_NAME);
         // Authorization-headeria ei löytynyt tai se on virhellinen -> hylkää pyyntö
-        if (authHeader == null || !authHeader.startsWith(TOKEN_HEADER_PREFIX)) {
+        if (authHeader == null || !authHeader.startsWith(Request.AUTH_TOKEN_PREFIX)) {
             requestContext.abortWith(this.newUnauthorizedResponse());
             return;
         }
-        Jws<Claims> parsedTokenData = this.tokenService.parse(authHeader.substring(TOKEN_HEADER_PREFIX.length()));
+        Jws<Claims> parsedTokenData = this.tokenService.parse(authHeader.substring(Request.AUTH_TOKEN_PREFIX.length()));
         // JWT virheellinen -> hylkää pyyntö
         if (parsedTokenData == null) {
             requestContext.abortWith(this.newUnauthorizedResponse());
             return;
         }
         // JWT löytyi headerista, hyväksy pyyntö
-        requestContext.setProperty("userId", Integer.valueOf(parsedTokenData.getBody().getSubject()));
+        requestContext.setProperty(Request.AUTH_USER_ID, Integer.valueOf(parsedTokenData.getBody().getSubject()));
     }
 
     private Response newUnauthorizedResponse() {
