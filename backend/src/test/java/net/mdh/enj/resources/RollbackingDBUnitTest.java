@@ -10,7 +10,7 @@ public class RollbackingDBUnitTest {
     protected final static DataSource rollbackingDataSource;
 
     static {
-        rollbackingDSFactory = new RollbackingDataSourceFactory();
+        rollbackingDSFactory = RollbackingDataSourceFactory.getInstance();
         rollbackingDataSource = rollbackingDSFactory.getDataSource();
     }
 

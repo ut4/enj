@@ -18,6 +18,7 @@ class InjectionBinder extends AbstractBinder {
     @Override
     protected void configure() {
         // Common
+        bind(new AppConfig().selfload()).to(AppConfig.class);
         bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
         bind(SimpleDataSourceFactory.class).to(DataSourceFactory.class);
         bind(TokenService.class).to(TokenService.class);

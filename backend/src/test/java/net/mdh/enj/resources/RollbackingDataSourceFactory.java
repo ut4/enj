@@ -3,24 +3,34 @@ package net.mdh.enj.resources;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-// Jotta autocommit false ei flushaisi tuloksia kesken kaiken..
+// Ettei autocommit false flushaisi tuloksia kesken kaiken..
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import net.mdh.enj.db.DataSourceFactory;
+import net.mdh.enj.AppConfig;
 
 public class RollbackingDataSourceFactory implements DataSourceFactory {
+    private static RollbackingDataSourceFactory instance;
     private static SingleConnectionDataSource dataSource;
+    private RollbackingDataSourceFactory() {}
+    static RollbackingDataSourceFactory getInstance() {
+        if (instance == null) {
+            instance = new RollbackingDataSourceFactory();
+        }
+        return instance;
+    }
     @Override
     public DataSource getDataSource() {
-        if (RollbackingDataSourceFactory.dataSource == null) {
-            RollbackingDataSourceFactory.dataSource = new InMemoryDS();
-            RollbackingDataSourceFactory.dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
-            RollbackingDataSourceFactory.dataSource.setUrl("jdbc:mariadb://localhost:3306/test");
-            RollbackingDataSourceFactory.dataSource.setUsername("root");
-            RollbackingDataSourceFactory.dataSource.setPassword("test");
+        if (dataSource == null) {
+            AppConfig appConfig = new AppConfig().selfload();
+            dataSource = new RollbackingDS();
+            dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
+            dataSource.setUrl(appConfig.getProperty("db.url"));
+            dataSource.setUsername(appConfig.getProperty("db.username"));
+            dataSource.setPassword(appConfig.getProperty("db.password"));
         }
-        return RollbackingDataSourceFactory.dataSource;
+        return dataSource;
     }
-    private class InMemoryDS extends SingleConnectionDataSource {
+    private class RollbackingDS extends SingleConnectionDataSource {
         @Override
         public Connection getConnection() throws SQLException {
             Connection c = super.getConnection();

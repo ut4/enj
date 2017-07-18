@@ -12,7 +12,7 @@ public class Application {
     /**
      * REST-APIn loppusijoituspaikka
      */
-    public static final String BASE_URI = "http://localhost:4567/api/";
+    static final String BASE_URI = "http://localhost:4567/api/";
     /**
      * Starttaa applikaation osoitteessa {Application.BASE_URI} käyttäen Grizzly
      * HTTP-serveriä.

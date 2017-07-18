@@ -8,3 +8,4 @@ nbproject
 frontend/node_modules
 frontend/src/settings.ts
 backend/target
+backend/**/app.properties
