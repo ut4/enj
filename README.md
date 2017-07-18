@@ -1,21 +1,20 @@
 # Enj: Treeni + ravintopäiväkirja
 
-UBERPWA: Inferno + JSX, serviceWorker, Jersey
+UBERPWA: Inferno + TSX, serviceWorker, Jersey
 
 ## Riippuvuudet
 
-* Backend: Java 8, MariaDb
+* Backend: Java 8, maven, MariaDb
 * Dev-ympäristö: Node v6+
 
 ## Frontend
 
 * Run:
-    * `npm start < nul` -> selaimella osoitteeseen http://localhost:8080
+    * `npm start` -> selaimella osoitteeseen http://localhost:8080
 * Test:
-    * Ks. ylempi ja -> selaimella osoitteeseen http://localhost:8080/tests.html
+    * Sama kuin yllä -> selaimella osoitteeseen http://localhost:8080/tests.html
 * Build:
-    * `npm run build < nul` — Kirjoittaa käännetyn applikaation vendor-riippuvuuksineen public/bundle.js-tiedostoon (muistiin)
-    * `java -jar D:/code2/compiler/compiler.jar --js public/bundle.js --js_output_file public/bundle.min.js --language_in=ES6 --language_out=ES5` - minify
+    * `npm run build` - Kirjoittaa käännetyn applikaation vendor-riippuvuuksineen public/bundle.js-tiedostoon
 
 ## Backend
 
