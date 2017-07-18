@@ -8,6 +8,7 @@ import net.mdh.enj.user.User;
 import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
+import net.mdh.enj.resources.AppConfigProvider;
 import net.mdh.enj.resources.MockHashingProvider;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -29,8 +30,8 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     private static User testUser;
 
     @BeforeClass
-    public static void beforeClass() {
-        AuthControllerTest.tokenService = new TokenService();
+    public static void beforeClass() throws Exception {
+        AuthControllerTest.tokenService = new TokenService(AppConfigProvider.getInstance());
         AuthControllerTest.mockHasherSpy = Mockito.spy(new MockHashingProvider());
         DbTestUtils utils = new DbTestUtils(rollbackingDataSource);
         testUser = new User();

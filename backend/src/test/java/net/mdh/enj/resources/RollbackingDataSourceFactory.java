@@ -21,7 +21,7 @@ public class RollbackingDataSourceFactory implements DataSourceFactory {
     @Override
     public DataSource getDataSource() {
         if (dataSource == null) {
-            AppConfig appConfig = new AppConfig().selfload();
+            AppConfig appConfig = AppConfigProvider.getInstance();
             dataSource = new RollbackingDS();
             dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
             dataSource.setUrl(appConfig.getProperty("db.url"));

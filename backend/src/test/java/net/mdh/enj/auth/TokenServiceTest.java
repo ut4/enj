@@ -3,30 +3,40 @@ package net.mdh.enj.auth;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.impl.DefaultJws;
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.impl.DefaultJws;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import net.mdh.enj.resources.AppConfigProvider;
+import net.mdh.enj.AppConfig;
 import java.util.Date;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
+    private static AppConfig appConfig;
+    private static byte[] expectedSigningKey;
     @Mock
-    public JwtBuilder mockJwtBuilder;
+    private JwtBuilder mockJwtBuilder;
     @Mock
-    public JwtParser mockJwtParser;
+    private JwtParser mockJwtParser;
     private TokenService tokenService;
+    @BeforeClass
+    public static void beforeAll() {
+        appConfig = AppConfigProvider.getInstance();
+        expectedSigningKey = appConfig.getProperty("auth.tokenSigningKey").getBytes();
+    }
     @Before
-    public void beforeEach() {
-        this.tokenService = new TokenService(mockJwtBuilder, mockJwtParser);
+    public void beforeEach() throws Exception {
+        this.tokenService = new TokenService(mockJwtBuilder, mockJwtParser, appConfig);
     }
     /**
      * Testaa, että isValid palauttaa true mikäli jwtParser.parseClaimsJws onnistuu
@@ -34,7 +44,7 @@ public class TokenServiceTest {
      */
     @Test
     public void isValidPalauttaaTrueJosTokeninAvausOnnistuu() {
-        Mockito.when(this.mockJwtParser.setSigningKey(Mockito.any(String.class))).thenReturn(this.mockJwtParser);
+        Mockito.when(this.mockJwtParser.setSigningKey(expectedSigningKey)).thenReturn(this.mockJwtParser);
         Mockito.when(this.mockJwtParser.parseClaimsJws("foo")).thenReturn(new DefaultJws<>(null, null, null));
         //
         String expectedToken = "foo";
@@ -52,7 +62,7 @@ public class TokenServiceTest {
         String expired = "b";
         String invalid = "c";
         String unsupported = "d";
-        Mockito.when(this.mockJwtParser.setSigningKey(Mockito.any(String.class))).thenReturn(this.mockJwtParser);
+        Mockito.when(this.mockJwtParser.setSigningKey(expectedSigningKey)).thenReturn(this.mockJwtParser);
         Mockito.when(this.mockJwtParser.parseClaimsJws(malformed)).thenThrow(MalformedJwtException.class);
         Mockito.when(this.mockJwtParser.parseClaimsJws(expired)).thenThrow(ExpiredJwtException.class);
         Mockito.when(this.mockJwtParser.parseClaimsJws(invalid)).thenThrow(SignatureException.class);
@@ -78,7 +88,7 @@ public class TokenServiceTest {
         String expectedToken = "<token>";
         Mockito.when(this.mockJwtBuilder.setExpiration(Mockito.any())).thenReturn(this.mockJwtBuilder);
         Mockito.when(this.mockJwtBuilder.setSubject(Mockito.any())).thenReturn(this.mockJwtBuilder);
-        Mockito.when(this.mockJwtBuilder.signWith(Mockito.any(), Mockito.any(String.class))).thenReturn(this.mockJwtBuilder);
+        Mockito.when(this.mockJwtBuilder.signWith(Mockito.any(), Mockito.eq(expectedSigningKey))).thenReturn(this.mockJwtBuilder);
         Mockito.when(this.mockJwtBuilder.compact()).thenReturn(expectedToken);
         //
         String actualToken = this.tokenService.generateNew(testUserId);
@@ -88,7 +98,7 @@ public class TokenServiceTest {
             // Eliminoi millisekuntien aiheuttaman epätarkkuuden, dow mon dd hh:mm:ss zzz yyyy
             actualExp.toString().equals(new Date(System.currentTimeMillis() + TokenService.JWT_AGE_IN_MS).toString())
         ));
-        Mockito.verify(this.mockJwtBuilder, Mockito.times(1)).signWith(Mockito.any(SignatureAlgorithm.class), Mockito.any(String.class));
+        Mockito.verify(this.mockJwtBuilder, Mockito.times(1)).signWith(SignatureAlgorithm.HS512, expectedSigningKey);
         Assert.assertEquals(expectedToken, actualToken);
     }
 }

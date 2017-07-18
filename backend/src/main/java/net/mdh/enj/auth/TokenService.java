@@ -10,10 +10,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import net.mdh.enj.AppConfig;
+import javax.inject.Inject;
 import java.util.Date;
 
 public class TokenService {
-    private static final String JWT_KEY = "foobar";
+    private final byte[] JWT_KEY;
     /**
      * Aika, jonka token on validi luomisen jälkeen. Yksikkö millisekunteina.
      */
@@ -22,11 +24,16 @@ public class TokenService {
     private final JwtBuilder jwtBuilder;
     private final JwtParser jwtParser;
 
-    public TokenService() {
-        this.jwtBuilder = Jwts.builder();
-        this.jwtParser = Jwts.parser();
+    @Inject
+    public TokenService(AppConfig appConfig) throws Exception {
+        this(Jwts.builder(), Jwts.parser(), appConfig);
     }
-    public TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser) {
+    public TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser, AppConfig appConfig) throws Exception {
+        String secretKeyConfigValue = appConfig.getProperty("auth.tokenSigningKey");
+        if (secretKeyConfigValue == null) {
+            throw new Exception("auth.tokenSigningKey configuration property not found.");
+        }
+        this.JWT_KEY = secretKeyConfigValue.getBytes();
         this.jwtBuilder = jwtBuilder;
         this.jwtParser = jwtParser;
     }

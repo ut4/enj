@@ -6,7 +6,9 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
+import net.mdh.enj.resources.AppConfigProvider;
 import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.AppConfig;
 import javax.ws.rs.core.Response;
 
 public class AuthenticationFilterTest extends JerseyTest {
@@ -26,6 +28,7 @@ public class AuthenticationFilterTest extends JerseyTest {
                 @Override
                 protected void configure() {
                     bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
+                    bind(AppConfigProvider.getInstance()).to(AppConfig.class);
                     bind(TokenService.class).to(TokenService.class);
                 }
             });
@@ -57,8 +60,8 @@ public class AuthenticationFilterTest extends JerseyTest {
      * Testaa että validaatio menee läpi jos Authentication-header on validi JWT.
      */
     @Test
-    public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() {
-        String testToken = new TokenService().generateNew(34);
+    public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() throws Exception {
+        String testToken = new TokenService(AppConfigProvider.getInstance()).generateNew(34);
         Response response = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + testToken).get();
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + "34", response.readEntity(String.class));
