@@ -14,20 +14,20 @@ class UserMenu extends Component<any, any> {
         };
     }
     public componentWillMount() {
-        const receiveState = state => {
+        const receiveUserState = (state: Enj.OfflineDbSchema.UserStateRecord) => {
             this.setState({
-                offlineIsEnabled: state.isOffline,
-                // Käyttäjä ei voi olla kirjaunut, jos Offline-tila on päällä
-                maybeIsLoggedIn: !state.isOffline && state.maybeIsLoggedIn
+                offlineIsEnabled: state && state.isOffline,
+                // Käyttäjä ei voi olla kirjautunut, jos Offline-tila on päällä
+                maybeIsLoggedIn: state && !state.isOffline && state.token.length > 0
             });
         };
-        this.userState.getState().then(receiveState);
-        // userState triggeröityy receiveState:n aina, kun käyttäjän
-        // offlineIsEnabled, tai maybeIsLoggedIn arvo muuttuu
-        this.userState.subscribe(receiveState);
+        this.userState.getState().then(receiveUserState);
+        // userState triggeröityy receiveUserState:n aina, kun käyttäjän
+        // offlineIsEnabled, tai token arvo muuttuu
+        this.userState.subscribe(receiveUserState);
     }
     public test(e) {
-        this.userState.setMaybeIsLoggedIn(!this.state.maybeIsLoggedIn);
+        this.userState.setToken('');
         e && e.preventDefault();
     }
     public render() {

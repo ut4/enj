@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import EditableWorkout from 'src/workout/EditableWorkout';
-import WorkoutBackend, { Workout } from 'src/workout/WorkoutBackend';
+import WorkoutBackend from 'src/workout/WorkoutBackend';
 import iocFactories from 'src/ioc';
 
 /**
@@ -20,7 +20,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         this.workoutBackend.getTodaysWorkouts().then(
             // Backend-fetch ok, aseta backendin vastaus state.workouts:n arvoksi
             workouts => this.setState({workouts}),
-            // Backend-fetch epäonnistui, aseta thjä taulukko state.workouts:n arvoksi
+            // Backend-fetch epäonnistui, aseta tyhjä taulukko state.workouts:n arvoksi
             err => {
                 (err.response || {}).status !== 401 && iocFactories.notify()('Treenien haku epäonnistui', 'error');
                 this.setState({workouts: []});
@@ -28,7 +28,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         );
     }
     /**
-     * Uudelleenfetchaa staten treenit tarvittaessa.
+     * Uudelleenfetchaa treenit tarvittaessa.
      */
     public componentWillReceiveProps(_, {router}) {
         // Päivitä treenit, jos niihin on tapahtunut muutoksia alinäkymissä
@@ -40,18 +40,20 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         }
     }
     /**
-     * Luo uuden tyhjän treenin kuluvalle päivälle.
+     * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
      */
     private startNewWorkout() {
-        const newWorkout = new Workout();
-        newWorkout.start = Math.floor(new Date().getTime() / 1000);
-        this.workoutBackend.insert(newWorkout).then(
-            () => {
-                this.state.workouts.unshift(newWorkout);
-                this.setState({workouts: this.state.workouts});
-            },
-            err => (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error')
-        );
+        let newWorkout;
+        this.workoutBackend.newWorkout().then(workout => {
+            newWorkout = workout;
+            newWorkout.start = Math.floor(new Date().getTime() / 1000);
+            return this.workoutBackend.insert(newWorkout);
+        }).then(() => {
+            this.state.workouts.unshift(newWorkout);
+            this.setState({workouts: this.state.workouts});
+        }, err => {
+            (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error');
+        });
     }
     public render() {
         return (<div>

@@ -1,10 +1,12 @@
 import RESTBackend  from 'src/common/RESTBackend';
+import UserState from 'src/user/UserState';
 
 class Workout implements Enj.API.WorkoutRecord {
     public id;
     public start;
     public end;
     public exercises;
+    public userId;
     constructor() {
         this.end = 0;
         this.exercises = [];
@@ -16,9 +18,22 @@ class Workout implements Enj.API.WorkoutRecord {
  */
 class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     private workoutExerciseBackend: WorkoutExerciseBackend;
-    constructor(http, urlNamespace) {
+    private userState: UserState;
+    constructor(http, urlNamespace, userState: UserState) {
         super(http, urlNamespace);
         this.workoutExerciseBackend = new WorkoutExerciseBackend(http, 'workout/exercise');
+        this.userState = userState;
+    }
+    /**
+     * Palauttaa uuden treenin jonka userId-arvona kirjautuneen käyttäjän id, tai
+     * rejektoi jos käyttäjää ei löydy.
+     */
+    public newWorkout(): Promise<Workout> {
+        return this.userState.getUserId().then(userId => {
+            const workout = new Workout();
+            workout.userId = userId;
+            return workout;
+        });
     }
     /**
      * Palauttaa tämän päivän treenien hakuun tarvittavat url-parametrit. esim.

@@ -24,7 +24,8 @@ const utils = {
     findButtonByContent: (rendered, content: string): HTMLButtonElement => {
         const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, 'button');
         return Array.from(allButtons).find(el => el.textContent === content) as HTMLButtonElement;
-    }
+    },
+    getValidToken: (): string => '<header>.eyJzdWIiOjF9.<sig>'//btoa(JSON.stringify({sub: 1}));
 };
 
 export default utils;

@@ -32,8 +32,7 @@ class OfflineHttp {
             .then(responseData => {
                 response = new Response(responseData);
                 return this.logRequestToSyncQueue({
-                    method: options.method,
-                    url,
+                    route: {url, method: options.method},
                     data: options.data
                 });
             })
@@ -67,7 +66,7 @@ class OfflineHttp {
      * @return {Promise|void}
      */
     public logRequestToSyncQueue(request: Enj.OfflineDbSchema.SyncQueueRecord) {
-        if (OfflineHttp.urlsToIgnore.hasOwnProperty(request.method + ':' + request.url)) {
+        if (OfflineHttp.urlsToIgnore.hasOwnProperty(request.route.method + ':' + request.route.url)) {
             return;
         }
         return this.db.syncQueue.add(request);

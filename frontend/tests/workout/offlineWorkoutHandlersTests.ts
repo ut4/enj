@@ -15,8 +15,8 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         workoutBackendStub = Object.create(WorkoutBackend.prototype);
         workoutHandlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackendStub);
         mockCachedWorkouts = [
-            {id: 1, start: 2, exercises: []},
-            {id: 2, start: 2, exercises: []}
+            {id: 1, start: 2, exercises: [], userId: 34},
+            {id: 2, start: 2, exercises: [], userId: 34}
         ];
     });
     QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa uuden id:n', assert => {

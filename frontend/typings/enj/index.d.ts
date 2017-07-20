@@ -10,14 +10,15 @@ declare module Enj {
         interface WorkoutRecord {
             id: number;
             start: number;
-            exercises: Array<WorkoutExerciseRecord>
+            exercises: Array<WorkoutExerciseRecord>;
+            userId: number;
         }
         interface WorkoutExerciseRecord {
             id: number;
             orderDef: number;
             workoutId: number;
             exercise: ExerciseRecord;
-            sets: Array<WorkoutExerciseSetRecord>
+            sets: Array<WorkoutExerciseSetRecord>;
         }
         interface WorkoutExerciseSetRecord {
             id: number;
@@ -52,14 +53,13 @@ declare module Enj {
     module OfflineDbSchema {
         interface UserStateRecord {
             id?: number;
-            maybeIsLoggedIn: boolean;
+            token: string;
             isOffline: boolean;
         }
         interface SyncQueueRecord {
             id?: number;
-            method: keyof syncableHttpMethod,
-            url: string;
-            data: any;
+            route: SyncRoute;
+            data: {[key: string]: any};
         }
     }
 

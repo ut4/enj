@@ -1,15 +1,18 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Http from 'src/common/Http';
+import UserState from 'src/user/UserState';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 const SECONDS_IN_DAY = 86400;
 
 QUnit.module('workout/WorkoutBackend', hooks => {
     let httpStub: Http;
+    let userStateStub: UserState;
     let workoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
         httpStub = Object.create(Http.prototype);
-        workoutBackend = new WorkoutBackend(httpStub, 'workout');
+        userStateStub = Object.create(UserState.prototype);
+        workoutBackend = new WorkoutBackend(httpStub, 'workout', userStateStub);
     });
     QUnit.test('getTodaysWorkouts hakee treenit timestamp rangella', assert => {
         const httpCallStub = sinon.stub(httpStub, 'get').returns('foo');

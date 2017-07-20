@@ -19,7 +19,7 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     sinon.stub(offlineHttp, 'logRequestToSyncQueue').returns(Promise.resolve());
     //
     hooks.beforeEach(() => {
-        workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, userStateStub, '/'), 'workout');
+        workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, userStateStub, '/'), 'workout', userStateStub);
         const offlineStub = Object.create(Offline.prototype);
         offlineStub.utils = {getNextId: () => 32};
         handlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackend);

@@ -1,56 +1,53 @@
 import Db from 'src/common/Db';
 
-const CLIENT_ID = 1;
+const FIXED_ROW_ID = 1;
 
 type stateChangeSubscribeFn = (newState: Enj.OfflineDbSchema.UserStateRecord) => void;
 
 /**
  * Vastaa käyttäjän tilan (kirjautunut/ei kirjautunut|offline/online)
  * tallennuksesta indexedDb:hen, ja siihen tapahtuneiden muutosten tiedottami-
- * sesta subscribeFn-vastaanottajalle.
+ * sesta subscribe-vastaanottajille.
  */
 class UserState {
     private db: Db;
-    private subscribeFn?: stateChangeSubscribeFn;
+    private subscribers: Array<stateChangeSubscribeFn>;
     /**
      * @param {Object} db
      */
     public constructor(db: Db) {
         this.db = db;
+        this.subscribers = [];
     }
     /**
      * Palauttaa tiedon käyttäjän tilasta. Palauttaa aina objektin, vaikkei
-     * indexedDb:ssä olisikaan rivejä.
+     * indexedDb:ssä olisikaan dataa.
      */
-    public getState(clientId?: number): Promise<Enj.OfflineDbSchema.UserStateRecord> {
-        return this.db.userState.get(clientId || CLIENT_ID).then(state => {
-            return state || ({
-                maybeIsLoggedIn: false,
+    public getState(): Promise<Enj.OfflineDbSchema.UserStateRecord> {
+        return this.db.userState.get(FIXED_ROW_ID).then(state => {
+            return state || {
+                token: '',
                 isOffline: false
-            } as Enj.OfflineDbSchema.UserStateRecord);
+            };
         });
     }
     /**
-     * Asettaa uuden tilan arvon indexedDb:hen.
-     *
-     * @returns {Promise} ({number} wasSuccesful, {any} error)
+     * Palauttaa käyttäjätunnisteen tallennetusta userState.tokenista, tai heittää
+     * poikkeuksen jos tokenia ei löytynyt, se ei ollut validi, tai se ei sisältänyt
+     * käyttäjätunnistetta.
      */
-    public setMaybeIsLoggedIn(
-        wellIsItNow: boolean,
-        clientId?: number
-    ): Promise<number> {
-        return this.updateState('maybeIsLoggedIn', wellIsItNow, clientId);
-    }
-    /**
-     * Asettaa uuden tilan arvon indexedDb:hen.
-     *
-     * @returns {Promise} ({number} wasSuccesful, {any} error)
-     */
-    public setIsOffline(
-        wellIsItNow: boolean,
-        clientId?: number
-    ): Promise<number> {
-        return this.updateState('isOffline', wellIsItNow, clientId);
+    public getUserId(): Promise<number> {
+        return this.getState().then(state => {
+            if (!state.token.length) {
+                throw new Error('Käyttäjä ei tunnistautunut');
+            }
+            const data = getDataFromToken(state.token);
+            // claims.sub == userId
+            if (data.sub >>> 0 !== parseFloat(data.sub)) {
+                throw new Error('claims.sub pitäisi olla kokonaisluku');
+            }
+            return parseInt(data.sub, 10);
+        });
     }
     /**
      * Palauttaa tiedon onko käyttäjällä aktiivinen sessio indexedDb:ssä. Pa-
@@ -58,7 +55,7 @@ class UserState {
      */
     public maybeIsLoggedIn(): Promise<boolean> {
         return this.getState().then(state =>
-            state.isOffline !== true && state.maybeIsLoggedIn === true
+            state.isOffline !== true && state.token.length > 0 && getDataFromToken(state.token).hasOwnProperty('sub')
         );
     }
     /**
@@ -68,33 +65,56 @@ class UserState {
         return this.getState().then(state => state.isOffline === true);
     }
     /**
-     * Asettaa tiedotuksen vastaanottajaksi fn:n
+     * Asettaa uuden tilan arvon indexedDb:hen.
+     *
+     * @returns {Promise} ({number} wasSuccesful, {any} error)
+     */
+    public setToken(token: string): Promise<number> {
+        return this.updateState(state => { state.token = token; });
+    }
+    /**
+     * Asettaa uuden tilan arvon indexedDb:hen.
+     *
+     * @returns {Promise} ({number} wasSuccesful, {any} error)
+     */
+    public setIsOffline(wellIsItNow: boolean): Promise<number> {
+        return this.updateState(state => { state.isOffline = wellIsItNow; });
+    }
+    /**
+     * Lisää fn:n tiedotuksen vastaanottajiin
      */
     public subscribe(fn: stateChangeSubscribeFn) {
-        this.subscribeFn = fn;
+        this.subscribers.push(fn);
     }
     /**
      * Kirjoittaa uuden arvon indexedDb:hen ja tiedottaa uuden arvon
-     * subscribeFn:lle mikäli kirjoitus onnistui.
+     * subscribeFn:lle mikäli tietoja muuttui.
      */
-    private updateState(
-        key: keyof Enj.OfflineDbSchema.UserStateRecord,
-        value: boolean,
-        clientId?: number
-    ): Promise<number> {
+    private updateState(updater: (state: Enj.OfflineDbSchema.UserStateRecord) => void): Promise<number> {
         let updatedState;
         return this.getState().then(state => {
-            state[key] = value;
-            state.id = state.id || (clientId || CLIENT_ID);
             updatedState = state;
-            return this.db.userState.put(state);
+            state.id = FIXED_ROW_ID;
+            updater(updatedState);
+            return this.db.userState.put(updatedState);
         }).then(wasSuccesful => {
             if (wasSuccesful) {
-                this.subscribeFn && this.subscribeFn(updatedState);
+                this.subscribers.length && this.subscribers.forEach(fn => fn(updatedState));
             }
             return wasSuccesful;
         });
     }
+}
+
+/**
+ * Palauttaa parsitun claims/payload -osion JWT:stä {token}.
+ */
+function getDataFromToken(token: string): {[key:string]: any} {
+    // atob == base64Decode
+    return JSON.parse(atob(
+        // [0] == headers, [1] == claims, [2] == signature
+        token.split('.')[1]
+    ));
 }
 
 export default UserState;

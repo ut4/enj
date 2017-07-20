@@ -2,6 +2,8 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Db from 'src/common/Db';
 import UserState from 'src/user/UserState';
+import utils from 'tests/utils';
+const mockToken: string = utils.getValidToken();
 
 QUnit.module('user/UserState', hooks => {
     hooks.beforeEach(() => {
@@ -10,7 +12,7 @@ QUnit.module('user/UserState', hooks => {
         this.subscribeFn = sinon.spy();
         this.userState.subscribe(this.subscribeFn);
     });
-    QUnit.test('maybeIsLoggedIn palauttaa false jos tietoa ei ole indexedDb:ssä', assert => {
+    QUnit.test('maybeIsLoggedIn palauttaa false jos indexedDb:ssä ei ole dataa', assert => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve(undefined));
         this.userState.maybeIsLoggedIn().then(isIt => {
@@ -18,11 +20,11 @@ QUnit.module('user/UserState', hooks => {
             done();
         });
     });
-    QUnit.test('maybeIsLoggedIn palauttaa false jos indexedDb:n userState.maybeIsLoggedIn == false', assert => {
+    QUnit.test('maybeIsLoggedIn palauttaa false jos indexedDb:n userState.token == \'\'', assert => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve({
             isOffline: 'irrelevant',
-            maybeIsLoggedIn: false
+            token: ''
         }));
         this.userState.maybeIsLoggedIn().then(isIt => {
             assert.equal(isIt, false);
@@ -33,49 +35,39 @@ QUnit.module('user/UserState', hooks => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve({
             isOffline: true,
-            maybeIsLoggedIn: true
+            token: mockToken
         }));
         this.userState.maybeIsLoggedIn().then(isIt => {
             assert.equal(isIt, false);
             done();
         });
     });
-    QUnit.test('maybeIsLoggedIn palauttaa true jos indexedDb:n userState.maybeIsLoggedIn == true', assert => {
+    QUnit.test('maybeIsLoggedIn palauttaa true jos indexedDb:n userState.token on validi token', assert => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve({
             isOffline: 'irrelevant',
-            maybeIsLoggedIn: true
+            token: mockToken
         }));
         this.userState.maybeIsLoggedIn().then(isIt => {
             assert.equal(isIt, true);
             done();
         });
     });
-    QUnit.test('setMaybeIsLoggedIn(true) kirjoittaa merkinnän storageen ja tiedottaa muutoksesta subscribeFn:lle', assert => {
+    QUnit.test('setToken() kirjoittaa merkinnän storageen ja tiedottaa muutoksesta subscribeFn:lle', assert => {
         const done = assert.async();
         const succesfulDbUpdate = 1;
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
-        this.userState.setMaybeIsLoggedIn(true).then(() => {
+        this.userState.setToken(mockToken).then(() => {
             assert.ok(dbUpdate.calledOnce);
-            assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, true);
+            const actualNewData = dbUpdate.firstCall.args[0];
+            assert.equal(actualNewData.token, mockToken);
+            assert.equal(actualNewData.id, 1, 'Pitäisi aina sisällyttää päivitettävään dataan id-vakio 1');
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done();
         });
     });
-    QUnit.test('setMaybeIsLoggedIn(false) kirjoittaa merkinnän storageen ja tiedottaa muutoksesta subscribeFn:lle', assert => {
-        const done = assert.async();
-        const succesfulDbUpdate = 1;
-        const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
-        this.userState.setMaybeIsLoggedIn(false).then(() => {
-            assert.ok(dbUpdate.calledOnce);
-            assert.equal(dbUpdate.firstCall.args[0].maybeIsLoggedIn, false);
-            assert.ok(this.subscribeFn.calledOnce);
-            assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
-            done();
-        });
-    });
-    QUnit.test('isOffline palauttaa false jos tietoa ei ole indexedDb:ssä', assert => {
+    QUnit.test('isOffline palauttaa false jos indexedDb:ssä ei ole dataa', assert => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve(undefined));
         this.userState.isOffline().then(isIt => {
@@ -87,7 +79,7 @@ QUnit.module('user/UserState', hooks => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve({
             isOffline: false,
-            maybeIsLoggedIn: 'irrelevant'
+            token: 'irrelevant'
         }));
         this.userState.isOffline().then(isIt => {
             assert.equal(isIt, false);
@@ -98,7 +90,7 @@ QUnit.module('user/UserState', hooks => {
         const done = assert.async();
         sinon.stub(this.db.userState, 'get').returns(Promise.resolve({
             isOffline: true,
-            maybeIsLoggedIn: 'irrelevant'
+            token: 'irrelevant'
         }));
         this.userState.isOffline().then(isIt => {
             assert.equal(isIt, true);
@@ -111,7 +103,9 @@ QUnit.module('user/UserState', hooks => {
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setIsOffline(true).then(() => {
             assert.ok(dbUpdate.calledOnce);
-            assert.equal(dbUpdate.firstCall.args[0].isOffline, true);
+            const actualNewData = dbUpdate.firstCall.args[0];
+            assert.equal(actualNewData.isOffline, true);
+            assert.equal(actualNewData.id, 1, 'Pitäisi aina sisällyttää päivitettävään dataan id-vakio 1');
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done();
@@ -123,7 +117,9 @@ QUnit.module('user/UserState', hooks => {
         const dbUpdate = sinon.stub(this.db.userState, 'put').returns(Promise.resolve(succesfulDbUpdate));
         this.userState.setIsOffline(false).then(() => {
             assert.ok(dbUpdate.calledOnce);
-            assert.equal(dbUpdate.firstCall.args[0].isOffline, false);
+            const actualNewData = dbUpdate.firstCall.args[0];
+            assert.equal(actualNewData.isOffline, false);
+            assert.equal(actualNewData.id, 1, 'Pitäisi aina sisällyttää päivitettävään dataan id-vakio 1');
             assert.ok(this.subscribeFn.calledOnce);
             assert.deepEqual(this.subscribeFn.firstCall.args, dbUpdate.firstCall.args);
             done();

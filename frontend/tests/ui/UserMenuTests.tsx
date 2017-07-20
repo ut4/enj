@@ -4,28 +4,32 @@ import * as infernoUtils from 'inferno-test-utils';
 import UserState from 'src/user/UserState';
 import UserMenu from 'src/ui/UserMenu';
 import iocFactories from 'src/ioc';
+import utils from 'tests/utils';
+const mockToken: string = utils.getValidToken();
 
 QUnit.module('ui/UserMenu', hooks => {
     let userStateIocFactoryOverride;
+    let userState: UserState;
     hooks.beforeEach(() => {
-        this.userState = Object.create(UserState.prototype);
-        userStateIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(this.userState);
+        userState = Object.create(UserState.prototype);
+        (userState as any).subscribers = [];
+        userStateIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(userState);
     });
     hooks.afterEach(() => {
         userStateIocFactoryOverride.restore();
     });
     QUnit.test('mount näyttää vain kirjautumislinkin, jos käyttäjä ei kirjautunut+online', assert => {
-        const stateInquiry = sinon.stub(this.userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
             isOffline: false,
-            maybeIsLoggedIn: false
-        }));
+            token: ''
+        } as Enj.OfflineDbSchema.UserStateRecord));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         // Assertoi initial tila
         assertOnlyLogInItemIsVisible();
         // Assertoi thenin jälkeinen tila
         const done = assert.async();
-        stateInquiry.firstCall.returnValue.then(() => {
+        onMountUserStateRead.firstCall.returnValue.then(() => {
             assertOnlyLogInItemIsVisible();
             done();
         });
@@ -36,16 +40,16 @@ QUnit.module('ui/UserMenu', hooks => {
         }
     });
     QUnit.test('mount näyttää vain "go-online"-linkin, jos käyttäjä offline', assert => {
-        const stateInquiry = sinon.stub(this.userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
             isOffline: true,
             // Tämän ei pitäisi vaikuttaa, käyttäjä ei voi olla kirjautunut ja offline samaan aikaan
-            maybeIsLoggedIn: true
-        }));
+            token: mockToken
+        } as Enj.OfflineDbSchema.UserStateRecord));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
         const done = assert.async();
-        stateInquiry.firstCall.returnValue.then(() => {
+        onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleUserMenuListItems = getVisibleUserMenuItems(rendered);
             assert.equal(visibleUserMenuListItems.length, 1);
             assert.equal(visibleUserMenuListItems[0].children[0].innerHTML, 'Go online');
@@ -53,15 +57,15 @@ QUnit.module('ui/UserMenu', hooks => {
         });
     });
     QUnit.test('mount näyttää profiili+"go-offline"-linkit jos käyttäjä kirjaunut+online', assert => {
-        const stateInquiry = sinon.stub(this.userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
             isOffline: false,
-            maybeIsLoggedIn: true
-        }));
+            token: mockToken
+        } as Enj.OfflineDbSchema.UserStateRecord));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
         const done = assert.async();
-        stateInquiry.firstCall.returnValue.then(() => {
+        onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleUserMenuListItems = getVisibleUserMenuItems(rendered);
             assert.equal(visibleUserMenuListItems.length, 3);
             assert.ok(visibleUserMenuListItems.some(el => /Profiili/.test(el.innerHTML)));
@@ -71,16 +75,16 @@ QUnit.module('ui/UserMenu', hooks => {
         });
     });
     QUnit.test('Offline-staten tilaaja mutatoi komponentin statea', assert => {
-        const stateInquiry = sinon.stub(this.userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
             isOffline: false,
-            maybeIsLoggedIn: true
-        }));
-        const subscribeRegistration = sinon.spy(this.userState, 'subscribe');
+            token: mockToken
+        } as Enj.OfflineDbSchema.UserStateRecord));
+        const subscribeRegistration = sinon.spy(userState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
         const done = assert.async();
-        stateInquiry.firstCall.returnValue.then(() => {
+        onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleMenuItemsBefore = getVisibleUserMenuItems(rendered);
             assert.ok(visibleMenuItemsBefore.some(el => /Go offline/.test(el.innerHTML)));
             assert.ok(visibleMenuItemsBefore.some(el => /Profiili/.test(el.innerHTML)));
@@ -88,8 +92,8 @@ QUnit.module('ui/UserMenu', hooks => {
             const actualSubscribeFn = subscribeRegistration.firstCall.args[0];
             actualSubscribeFn({
                 isOffline: true, // <----------- Tämä muuttuu false -> true
-                maybeIsLoggedIn: true
-            });
+                token: mockToken
+            } as Enj.OfflineDbSchema.UserStateRecord);
             const visibleMenuItemsAfter = getVisibleUserMenuItems(rendered);
             assert.notOk(visibleMenuItemsAfter.some(el => /Go offline/.test(el.innerHTML)));
             assert.notOk(visibleMenuItemsAfter.some(el => /Profiili/.test(el.innerHTML)));
@@ -97,25 +101,25 @@ QUnit.module('ui/UserMenu', hooks => {
             done();
         });
     });
-    QUnit.test('UserState-staten tilaaja mutatoi komponentin statea', assert => {
-        const stateInquiry = sinon.stub(this.userState, 'getState').returns(Promise.resolve({
+    QUnit.test('Muutos UserState.token arvossa triggeröi komponentin staten päivittymisen', assert => {
+        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
             isOffline: false,
-            maybeIsLoggedIn: false
-        }));
-        const subscribeRegistration = sinon.spy(this.userState, 'subscribe');
+            token: ''
+        } as Enj.OfflineDbSchema.UserStateRecord));
+        const subscribeRegistration = sinon.spy(userState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
         const done = assert.async();
-        stateInquiry.firstCall.returnValue.then(() => {
+        onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleMenuItemsBefore = getVisibleUserMenuItems(rendered);
             assert.equal(visibleMenuItemsBefore[0].children[0].innerHTML, 'Kirjaudu sisään');
-            // Simuloi userStaten-tilan muutos maybeIsLoggedIn false -> true
+            // Simuloi userStaten-tilan muutos token '' -> <validToken>
             const actualSubscribeFn = subscribeRegistration.firstCall.args[0];
             actualSubscribeFn({
                 isOffline: false,
-                maybeIsLoggedIn: true // <----------- Tämä muuttuu false -> true
-            });
+                token: mockToken // <----------- Tämä muuttuu '' -> <token>
+            } as Enj.OfflineDbSchema.UserStateRecord);
             const visibleMenuItemsAfter = getVisibleUserMenuItems(rendered);
             assert.notEqual(visibleMenuItemsAfter[0].children[0].innerHTML, 'Kirjaudu sisään');
             done();

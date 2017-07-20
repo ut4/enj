@@ -24,8 +24,7 @@ QUnit.module('common/OfflineHttp', hooks => {
     });
     QUnit.test('logRequestToSyncQueue kirjoittaa selaintietokantaan', assert => {
         const requestToQueue = {
-            method: 'POST' as 'POST',
-            url: 'some/url',
+            route: {method: 'POST' as 'POST', url: 'some/url'},
             data: {foo: 'bar'}
         };
         const logInsertWatcher = sinon.stub(db.syncQueue, 'add').returns('foo');
@@ -45,7 +44,7 @@ QUnit.module('common/OfflineHttp', hooks => {
     QUnit.test('logRequestToSyncQueue ei kirjoita selaintietokantaan jos url löytyy ignore-listalta', assert => {
         const logInsertWatcher = sinon.stub(db.syncQueue, 'add');
         const requestThatShouldBeIgnored = 'url/bar';
-        const request = {method: 'POST' as 'POST', url: requestThatShouldBeIgnored, data: null};
+        const request = {route: {method: 'POST' as 'POST', url: requestThatShouldBeIgnored}, data: null};
         // Kutsu 1
         offlineHttp.logRequestToSyncQueue(request);
         offlineHttp.ignore('POST', requestThatShouldBeIgnored);
@@ -94,12 +93,11 @@ QUnit.module('common/OfflineHttp', hooks => {
         offlineHttp.addHandler('POST', testUrl, testHandlerFnSpy);
         const requestQueuerWatcher = sinon.stub(offlineHttp, 'logRequestToSyncQueue');
         const request = {
-            method: 'POST' as 'POST',
-            url: testUrl,
+            route: {method: 'POST' as 'POST', url: testUrl},
             data: {baz: 'haz'}
         };
         const done = assert.async();
-        offlineHttp.handle(request.url, {method: request.method, data: request.data})
+        offlineHttp.handle(request.route.url, {method: request.route.method, data: request.data})
             .then(result => {
                 assert.ok(
                     testHandlerFnSpy.called,

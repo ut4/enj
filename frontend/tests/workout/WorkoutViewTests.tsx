@@ -7,6 +7,7 @@ import WorkoutView from 'src/workout/WorkoutView';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import iocFactories from 'src/ioc';
 const emptyMessageRegExp: RegExp = /Ei treenejä/;
+const someUserId = 56;
 
 QUnit.module('workout/WorkoutView', hooks => {
     let someTestWorkout: Enj.API.WorkoutRecord;
@@ -15,7 +16,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     hooks.beforeEach(() => {
         workoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackend);
-        someTestWorkout = {id:1, start: 2, exercises: []};
+        someTestWorkout = {id:1, start: 2, exercises: [], userId: 34};
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
@@ -67,6 +68,9 @@ QUnit.module('workout/WorkoutView', hooks => {
     });
     QUnit.test('"Aloita treeni"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
         const workoutFetchStub = sinon.stub(workoutBackend, 'getTodaysWorkouts').returns(Promise.resolve([someTestWorkout]));
+        const workoutFromService = new Workout();
+        workoutFromService.userId = someUserId;
+        const newWorkoutStub = sinon.stub(workoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
         const workoutsInsertStub = sinon.stub(workoutBackend, 'insert').returns(Promise.resolve());
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -80,8 +84,11 @@ QUnit.module('workout/WorkoutView', hooks => {
             const expectedWorkout = getExpectedNewWorkout();
             addWorkoutButton.click();
             //
-            assert.ok(workoutsInsertStub, 'Pitäisi luoda treeni');
-            workoutsInsertStub.firstCall.returnValue.then(() => {
+            assert.ok(newWorkoutStub.calledOnce, 'Pitäisi hakea uusi treeni');
+            newWorkoutStub.firstCall.returnValue.then(() => {
+                assert.ok(workoutsInsertStub.calledOnce, 'Pitäisi postata treeni backendiin');
+                return workoutsInsertStub.firstCall.returnValue;
+            }).then(() => {
                 const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
                 assert.equal(renderedWorkoutsAfter.length, workoutCountBefore + 1, 'Pitäisi renderöidä uusi treeni');
                 assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listan alkuun');
@@ -98,6 +105,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         workout.start = Math.floor(new Date().getTime() / 1000);
         workout.end = 0;
         workout.exercises = [];
+        workout.userId = someUserId;
         return workout;
     }
 });

@@ -14,9 +14,9 @@ QUnit.module('offline/SyncBackend', hooks => {
         offlineHttpStub = Object.create(OfflineHttp.prototype);
         syncBackend = new SyncBackend(httpStub, 'sync', offlineHttpStub);
         someSyncableItems = [
-            {id: 1, method: 'POST', url: 'foo', data: {k: 'v'}},
-            {id: 2, method: 'POST', url: 'bar', data: {g: 'w'}},
-            {id: 3, method: 'POST', url: 'baz', data: {c: 'y'}},
+            {id: 1, route: {method: 'POST', url: 'foo'}, data: {k: 'v'}},
+            {id: 2, route: {method: 'POST', url: 'bar'}, data: {g: 'w'}},
+            {id: 3, route: {method: 'POST', url: 'baz'}, data: {c: 'y'}},
         ];
     });
     QUnit.test('syncAll postaa synkattavat itemit backendiin, ja siivoaa onnistuneesti synkatut itemit selaintietokannasta', assert => {
