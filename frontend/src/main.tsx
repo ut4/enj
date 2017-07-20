@@ -3,9 +3,9 @@ import { Router, Route, IndexRoute } from 'inferno-router';
 import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
 import iocFactories from 'src/ioc';
-import 'src/bootstrap';
+import asyncBoot from 'src/bootstrap';
 
-render(
+asyncBoot.then(() => render(
     <Router history={ iocFactories.history() }>
         <Route component={ Layout }>
             <IndexRoute component={ views.HomeView }/>
@@ -45,4 +45,4 @@ render(
         </Route>
     </Router>,
     document.getElementById('app')
-);
+));

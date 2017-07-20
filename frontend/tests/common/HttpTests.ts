@@ -71,9 +71,9 @@ QUnit.module('common/Http', hooks => {
         const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
         const requestInterceptor = sinon.spy();
         const responseErrorInterceptor = sinon.spy();
-        http.interceptors.push({
-            request: requestInterceptor,
-            responseError: responseErrorInterceptor
+        http.interceptors.push(new class InterceptorClass {
+            request(req) { return requestInterceptor(req); }
+            responseError(res) { return responseErrorInterceptor(res); }
         });
         //
         const done = assert.async();

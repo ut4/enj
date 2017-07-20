@@ -1,18 +1,15 @@
 import iocFactories from 'src/ioc';
+import AuthHttpInterceptors from 'src/auth/AuthHttpInterceptors';
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 const offlineHttp = iocFactories.offlineHttp();
-const storage = iocFactories.localStorage();
 
-iocFactories.http().interceptors.push({
-    request: request => {
-        request.headers.set('Authorization', 'Bearer ' + storage.getItem('enj_token'));
-    },
-    responseError: response => {
-        if (response.status === 401 && response.url.indexOf('auth/login') < 0) {
-            iocFactories.history().push('/kirjaudu');
-        }
-    }
-});
+// Rekisteröi http-interceptorsit
+const authInterceptors = new AuthHttpInterceptors(
+    iocFactories.userState(),
+    iocFactories.history()
+);
+const done = authInterceptors.setup();
+iocFactories.http().interceptors.push(authInterceptors);
 
 // Rekisteröi kaikki offline-handlerit
 new OfflineWorkoutHandlerRegister(
@@ -21,3 +18,5 @@ new OfflineWorkoutHandlerRegister(
 ).registerHandlers(offlineHttp);
 // Tänne lisää
 // ...
+
+export default done;

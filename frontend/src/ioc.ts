@@ -16,9 +16,6 @@ const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
     // == Common ===============================================================
-    public localStorage(): Storage {
-        return window.localStorage;
-    }
     public db(): Db {
         return this.memoize('db', () => new Db());
     }
@@ -71,7 +68,7 @@ class IocFactories extends IocContainer {
         return this.memoize('authBackend', () => new AuthBackend(this.http(), 'auth'));
     }
     public authService(): AuthService {
-        return this.memoize('authService', () => new AuthService(this.authBackend(), this.localStorage(), this.userState()));
+        return this.memoize('authService', () => new AuthService(this.authBackend(), this.userState()));
     }
     public userBackend(): any {
         return null;

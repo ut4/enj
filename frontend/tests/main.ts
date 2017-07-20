@@ -1,3 +1,4 @@
+import 'tests/auth/AuthHttpInterceptorsTests';
 import 'tests/auth/AuthServiceTests';
 import 'tests/auth/LoginFormTests';
 import 'tests/auth/LoginViewTests';

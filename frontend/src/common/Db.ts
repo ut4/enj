@@ -22,7 +22,7 @@ class Db extends Dexie {
             // key = taulun nimi, value = pilkulla eroteltu lista _indeksejä_
             // (jokaista kenttää ei siis määritellä). Docs löytyy;
             // http://dexie.org/docs/Version/Version.stores()
-            userState: 'id, maybeIsLoggedIn, isOffline',
+            userState: 'id, token, isOffline',
             syncQueue: '++id' // ++ = Auto-incremented
         });
     }

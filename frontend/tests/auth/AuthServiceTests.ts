@@ -6,20 +6,17 @@ import AuthService from 'src/auth/AuthService';
 
 QUnit.module('auth/AuthService', hooks => {
     let authBackendStub: AuthBackend;
-    let localStorageStub: Storage;
     let userStateStub: UserState;
     let authService: AuthService;
     hooks.beforeEach(() => {
         authBackendStub = Object.create(AuthBackend.prototype);
-        localStorageStub = Object.create(window.localStorage.__proto__);
         userStateStub = Object.create(UserState.prototype);
-        authService = new AuthService(authBackendStub, localStorageStub, userStateStub);
+        authService = new AuthService(authBackendStub, userStateStub);
     });
-    QUnit.test('login postaa credentiansit backendiin, tallentaa tokenin, ja päivittää userStaten', assert => {
-        const mockToken = {token: 'tkn'} as Enj.API.LoginResponse;
-        const loginCallWatch = sinon.stub(authBackendStub, 'login').returns(Promise.resolve(mockToken));
-        const tokenSaveWatch = sinon.stub(localStorageStub, 'setItem');
-        const userStateUpdateWatch = sinon.stub(userStateStub, 'setMaybeIsLoggedIn').returns(Promise.resolve());
+    QUnit.test('login postaa credentiansit backendiin, ja tallentaa tokenin selaintietokantaan', assert => {
+        const mockLoginResponse = {token: 'tkn'} as Enj.API.LoginResponse;
+        const loginCallWatch = sinon.stub(authBackendStub, 'login').returns(Promise.resolve(mockLoginResponse));
+        const userStateUpdateWatch = sinon.stub(userStateStub, 'setToken').returns(Promise.resolve());
         //
         const testCredentials = {username:'fyy', password: 'bars'};
         //
@@ -28,12 +25,9 @@ QUnit.module('auth/AuthService', hooks => {
             // Backend POST
             assert.ok(loginCallWatch.calledOnce, 'Pitäisi postata dataa backendiin');
             assert.deepEqual(loginCallWatch.firstCall.args, [testCredentials], 'Pitäisi postata lomakkeen tiedot backendiin');
-            // Tokenin tallennus
-            assert.ok(tokenSaveWatch.calledAfter(loginCallWatch), 'Pitäisi tallentaa token');
-            assert.deepEqual(tokenSaveWatch.firstCall.args, ['enj_token', 'tkn'], 'Pitäisi tallentaa token oikein');
             // Userstaten päivitys
-            assert.ok(userStateUpdateWatch.calledAfter(tokenSaveWatch), 'Pitäisi päivittää käyttäjän tila');
-            assert.deepEqual(userStateUpdateWatch.firstCall.args, [true], 'Pitäisi päivittää userIsMaybeLoggedIn -> true');
+            assert.ok(userStateUpdateWatch.calledAfter(loginCallWatch), 'Pitäisi päivittää token');
+            assert.deepEqual(userStateUpdateWatch.firstCall.args, [mockLoginResponse.token], 'Pitäisi tallentaa token');
             done();
         });
     });

@@ -7,11 +7,9 @@ import AuthBackend from 'src/auth/AuthBackend';
  */
 class AuthService {
     private authBackend: AuthBackend;
-    private localStorage: Storage;
     private userState: UserState;
-    constructor(authBackend: AuthBackend, localStorage: Storage, userState: UserState) {
+    constructor(authBackend: AuthBackend, userState: UserState) {
         this.authBackend = authBackend;
-        this.localStorage = localStorage;
         this.userState = userState;
     }
     /**
@@ -21,9 +19,9 @@ class AuthService {
      * @returns {Promise} -> ({number} wasSucceful (1 = ok, 0 = !ok), {any} error)
      */
     public login(credentials: Enj.API.LoginCredentials): Promise<number> {
-        return this.authBackend.login(credentials)
-            .then(res => this.localStorage.setItem('enj_token', res.token))
-            .then(() => this.userState.setMaybeIsLoggedIn(true));
+        return this.authBackend.login(credentials).then(res =>
+            this.userState.setToken(res.token)
+        );
     }
 }
 

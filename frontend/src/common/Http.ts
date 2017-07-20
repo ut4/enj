@@ -115,7 +115,7 @@ class Http {
      */
     private runInterceptors(method: keyof interceptor, arg: Request|Response) {
         for (const interceptor of this.interceptors) {
-            if (!interceptor.hasOwnProperty(method)) {
+            if (typeof interceptor[method] !== 'function') {
                 continue;
             }
             if ((interceptor[method] as any)(arg) === false) {

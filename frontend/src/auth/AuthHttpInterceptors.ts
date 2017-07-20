@@ -1,0 +1,42 @@
+import UserState from 'src/user/UserState';
+import { History } from 'history';
+
+class AuthHttpInterceptors {
+    public token: string;
+    private userState: UserState;
+    private history: History;
+    public constructor(userState: UserState, history: History) {
+        this.token = '';
+        this.userState = userState;
+        this.userState.subscribe(updatedState => {
+            this.token = updatedState.token;
+        });
+        this.history = history;
+    }
+    /**
+     * Valmistelee luokan. Kuuluisi konstruktoriin, jos se osaisi palauttaa
+     * arvon.
+     */
+    public setup(): Promise<any> {
+        return this.userState.getState().then(state => {
+            this.token = state.token;
+        });
+    }
+    /**
+     * Lisää pyyntöön Authorization-headerin, jos käyttäjä on kirjautunut.
+     */
+    public request(request: Request) {
+        this.token.length && request.headers.set('Authorization', 'Bearer ' + this.token);
+    }
+    /**
+     * Ohjaa kirjautumissivulle, jos vastauksen status = 401/Unauthorized, ja se
+     * ei ole kirjautumisyritys.
+     */
+    public responseError(response: Response) {
+        if (response.status === 401 && response.url.indexOf('auth/login') < 0) {
+            this.history.push('/kirjaudu');
+        }
+    }
+}
+
+export default AuthHttpInterceptors;

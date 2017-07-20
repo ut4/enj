@@ -15,7 +15,8 @@ class OfflineEndView extends Component<any, any> {
     }
     /**
      * Palauttaa applikaation takaisin "online"-tilaan, ja synkkaa offline-tilan
-     * aikana suoritetut toiminnot backendiin, ja siivoaa ne selaintietokannasta.
+     * aikana suoritetut toiminnot backendiin jonka jälkeen siivoaa ne myös
+     * selaintietokannasta.
      */
     private confirm() {
         return (
