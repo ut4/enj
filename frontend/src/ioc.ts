@@ -20,7 +20,7 @@ class IocFactories extends IocContainer {
         return this.memoize('db', () => new Db());
     }
     public http(): Http {
-        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.userState(), settings.baseUrl));
+        return this.memoize('http', () => new Http(window, this.offlineHttp(), this.userState(), settings.baseUrl + settings.baseApiNamespace));
     }
     public offlineHttp(): OfflineHttp {
         return this.memoize('offlineHttp', () => new OfflineHttp(this.db()));

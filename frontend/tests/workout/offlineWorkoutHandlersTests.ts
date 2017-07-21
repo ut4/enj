@@ -22,7 +22,6 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa uuden id:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
-        sinon.stub(workoutBackendStub, 'completeUrl').returns('foo');
         const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
         const newWorkout = new Workout();
         newWorkout.id = 2;
@@ -31,7 +30,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         workoutHandlerRegister.insert(newWorkout).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
-                'foo' + workoutBackendStub.makeTimestampRangeUrlParams(),
+                'workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
                 [newWorkout].concat(mockCachedWorkouts as any)
             ], 'Pitäisi päivittää current-day-treenicache uudella liikkeellä varustettuna');
             assert.equal(result, JSON.stringify({insertId: 32}), 'Pitäisi palauttaa uusi id');
@@ -42,7 +41,6 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     QUnit.test('addExercise lisää uuden liikkeen treenicacheen, ja palauttaa uuden id:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
-        sinon.stub(workoutBackendStub, 'completeUrl').returns('foo');
         const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
         const newWorkoutExercise = new WorkoutExercise();
         newWorkoutExercise.workoutId = 2;
@@ -51,7 +49,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         workoutHandlerRegister.addExercise(newWorkoutExercise).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
-                'foo' + workoutBackendStub.makeTimestampRangeUrlParams(),
+                'workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
                 // Ei pitäis muuttaa [0], koska id != newWorkoutExercise.workoutId
                 [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
                     exercises: [newWorkoutExercise]

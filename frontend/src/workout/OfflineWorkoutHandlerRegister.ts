@@ -19,12 +19,12 @@ class OfflineWorkoutHandlerRegister {
     public registerHandlers(offlineHttp: OfflineHttp) {
         offlineHttp.addHandler(
             'POST' as 'POST',
-            this.workoutBackend.completeUrl(''),
+            'workout',
             workout => this.insert(workout)
         );
         offlineHttp.addHandler(
             'POST' as 'POST',
-            this.workoutBackend.completeUrl('/exercise'),
+            'workout/exercise',
             workoutExercise => this.addExercise(workoutExercise)
         );
     }
@@ -40,8 +40,7 @@ class OfflineWorkoutHandlerRegister {
                 workouts.unshift(workout);
             // 3. Tallenna päivitetty cache
                 return this.offline.updateCache(
-                    this.workoutBackend.completeUrl('') +
-                    this.workoutBackend.makeTimestampRangeUrlParams(),
+                    'workout' + this.workoutBackend.makeTimestampRangeUrlParams(),
                     workouts
                 );
             })
@@ -64,8 +63,7 @@ class OfflineWorkoutHandlerRegister {
                 parentWorkout.exercises.push(workoutExercise);
             // 3. Tallenna päivitetty cache
                 return this.offline.updateCache(
-                    this.workoutBackend.completeUrl('') +
-                    this.workoutBackend.makeTimestampRangeUrlParams(),
+                    'workout' + this.workoutBackend.makeTimestampRangeUrlParams(),
                     workouts
                 );
             })

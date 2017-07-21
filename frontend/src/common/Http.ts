@@ -45,7 +45,7 @@ class Http {
      */
     public get<T>(url: string): Promise<T> {
         Http.pendingRequestCount++;
-        return this.fetchContainer.fetch(this.newRequest(this.baseUrl + url))
+        return this.fetchContainer.fetch(this.newRequest(url))
             .then(response => this.processResponse(response))
             .then(response => this.parseResponseData<T>(response));
     }
@@ -61,7 +61,7 @@ class Http {
             .then(isUserOffline =>
                 !isUserOffline
                     // Käyttäjä online: lähetä HTTP-pyyntö normaalisti
-                    ? this.fetchContainer.fetch(this.newRequest(this.baseUrl + url, {
+                    ? this.fetchContainer.fetch(this.newRequest(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ class Http {
      * modifioitavaksi jos sellaisia löytyy.
      */
     private newRequest(url: string, settings?: RequestInit): Request {
-        const request = new Request(url, settings);
+        const request = new Request(this.baseUrl + url, settings);
         this.runInterceptors('request', request);
         return request;
     }

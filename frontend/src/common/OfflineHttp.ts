@@ -7,7 +7,7 @@ import Db from 'src/common/Db';
  * yhteyden palautuessa.
  */
 class OfflineHttp {
-    public static requestHandlers: {[_:string]: Enj.offlineHandler} = {};
+    public static requestHandlers: {[_: string]: Enj.offlineHandler} = {};
     public static urlsToIgnore = {};
     private db: Db;
     /**

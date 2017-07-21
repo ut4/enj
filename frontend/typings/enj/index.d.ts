@@ -32,7 +32,7 @@ declare module Enj {
         interface ExerciseRecord {
             id: number;
             name: string;
-            variants: Array<ExerciseVariantRecord>
+            variants: Array<ExerciseVariantRecord>;
         }
         interface InsertResponse {
             insertId: number;
@@ -73,7 +73,7 @@ declare module Enj {
     }
 
     type appSettings = {
-        baseUrl: string,
-        baseApiNamespace: string
+        baseUrl: string;
+        baseApiNamespace: string;
     };
 }

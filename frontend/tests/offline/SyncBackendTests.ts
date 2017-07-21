@@ -29,7 +29,7 @@ QUnit.module('offline/SyncBackend', hooks => {
             assert.ok(httpCallStub.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
             assert.deepEqual(
                 httpCallStub.firstCall.args, // 0 = url, 1 = data
-                ['api/sync', someSyncableItems],
+                ['sync', someSyncableItems],
                 'Pitäisi POSTata syncQueue backendiin'
             );
             assert.ok(cleanUpCallStub.calledAfter(httpCallStub));

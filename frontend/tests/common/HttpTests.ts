@@ -3,9 +3,9 @@ import sinon from 'sinon';
 import Http from 'src/common/Http';
 import OfflineHttp from 'src/common/OfflineHttp';
 import UserState from 'src/user/UserState';
+const testBaseUrl:string = 'http://smthng/api/v2/';
 
 QUnit.module('common/Http', hooks => {
-    const mockBaseUrl:string = 'http://smthng/';
     let fetchContainer: GlobalFetch = window;
     let mockResponse: {status: number, json: Function};
     let offlineHttp: OfflineHttp;
@@ -16,7 +16,7 @@ QUnit.module('common/Http', hooks => {
         mockResponse = {status: 200, json: () => Promise.resolve('foo')};
         offlineHttp = Object.create(OfflineHttp.prototype);
         userState = Object.create(UserState.prototype);
-        http = new Http(fetchContainer, offlineHttp, userState, mockBaseUrl);
+        http = new Http(fetchContainer, offlineHttp, userState, testBaseUrl);
     });
     QUnit.test('get päivittää pendingRequestsCounterin arvon', assert => {
         sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
@@ -51,7 +51,7 @@ QUnit.module('common/Http', hooks => {
         const done = assert.async();
         http.get(getCallUrl).then(processedResponseValue => {
             const actualUrl = fetchCallWatch.firstCall.args[0].url;
-            const expectedUrl = mockBaseUrl + getCallUrl;
+            const expectedUrl = testBaseUrl + getCallUrl;
             assert.equal(
                 actualUrl,
                 expectedUrl,
@@ -108,8 +108,8 @@ QUnit.module('common/Http', hooks => {
         const fetchCallWatch = sinon.mock(fetchContainer);
         fetchCallWatch.expects('fetch').once()
             .withExactArgs(new Request(
-                // Pitäisi prefiksoida urlin
-                mockBaseUrl + requestUrl,
+                // Pitäisi prefiksoida url
+                testBaseUrl + requestUrl,
                 {
                     method: 'POST',
                     headers: {
@@ -165,7 +165,7 @@ QUnit.module('common/Http', hooks => {
     QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
         sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
         const fetchCallWatch = sinon.spy(fetchContainer, 'fetch');
-        const requestUrl = '/baz/haz';
+        const requestUrl = 'baz/haz';
         const requestData = {baz: 'haz'};
         const mockHandlerResponseData = '{"j":"son"}';
         const mockOfflineHandlerWatcher = sinon.mock(offlineHttp);

@@ -2,7 +2,6 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Http from 'src/common/Http';
 import RESTBackend from 'src/common/RESTBackend';
-import settings from 'src/config/settings';
 
 interface TestType { foo: string; }
 class TestBackend extends RESTBackend<TestType> {}
@@ -19,7 +18,7 @@ QUnit.module('common/RESTBackend', hooks => {
     QUnit.test('selectAll kutsuu http.get namespacella, ja palauttaa backendin palauttaman datan', assert => {
         const httpGet = sinon.mock(http);
         httpGet.expects('get').once()
-            .withExactArgs(settings.baseApiNamespace + testUrlNamespace)
+            .withExactArgs(testUrlNamespace)
             .returns('foo');
         //
         const actualResults = RESTBackend.getAll();
@@ -31,7 +30,7 @@ QUnit.module('common/RESTBackend', hooks => {
         const httpPost = sinon.mock(http);
         const data = {foo: 'bar'};
         httpPost.expects('post').once()
-            .withExactArgs(settings.baseApiNamespace + testUrlNamespace, data)
+            .withExactArgs(testUrlNamespace, data)
             .returns(Promise.resolve({insertId: 1} as Enj.API.InsertResponse));
         //
         const resultPromise = RESTBackend.insert(data);
