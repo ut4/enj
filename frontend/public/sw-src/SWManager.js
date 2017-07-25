@@ -5,24 +5,19 @@ function SWManager(mainSWScope) {
     'use strict';
     /**
      * Etsii $cachedArrayUrl taulukosta itemin, jonka $key on yhtä kuin
-     * $valueToMatch. Käytetään tilanteissa, jossa esim. GET /api/programs/all
-     * on cachetettu, mutta GET /api/programs/2 ei. Tällöin se voidaan hakea
-     * getall-tulosjoukosta (FindFromCachedArrayBy('id', 42,
-     * 'api/programs/getall'))
+     * $valueToMatch. Käytetään tilanteissa, jossa esim. GET api/programs/all on
+     * cachetettu, mutta GET api/programs/42 ei. Tällöin se voidaan hakea getall-
+     * tulosjoukosta (findFromCachedArrayBy('id', 42, 'api/programs/getall'))
      *
      * @param {string} key esim. 'id'
-     * @param {any} valueToMatch esim. 42
+     * @param {any} valueToMatch esim. 14
      * @param {string} cachedArrayUrl esim. api/programs/all
      * @return {Promise} -> ({any|undefined} data, {Object} error)
      */
-    this.findFromCachedArrayBy = function (key, valueToMatch, cachedArrayUrl) {
-        return getCachedJson(cachedArrayUrl)
-            .then(function (json) {
-                return json.find(function (item) {
-                    return item[key] === valueToMatch;
-                });
-            });
-    };
+    this.findFromCachedArrayBy = (key, valueToMatch, cachedArrayUrl) =>
+        getCachedJson(cachedArrayUrl).then(json => json.find(item =>
+            item[key] === valueToMatch
+        ));
     /**
      * Palauttaa DYNAMIC_CACHE handlerin palauttaman arvon paketoituna
      * jsonina Responseen.
@@ -30,49 +25,44 @@ function SWManager(mainSWScope) {
      * @param {string} url (event.request.url)
      * @return {Promise|null} -> ({Response} response, {any} any)
      */
-    this.makeResponder = function (url) {
-        var dynamicDataPromise = callDataGetter(url);
+    this.makeResponder = url => {
+        const dynamicDataPromise = callDataGetter(url);
         if (!dynamicDataPromise) {
             return null;
         }
-        return dynamicDataPromise.then(function (data) {
-            return new Response(data ? JSON.stringify(data) : '[]'); 
-        });
+        return dynamicDataPromise.then(data =>
+            new Response(data ? JSON.stringify(data) : '[]')
+        );
     };
     /**
      * @param {string} url esim. api/foo/bar
      * @param {any} newValue
      * @return {Promise} -> ({void} nothing, {Object} error)
      */
-    this.updateCache = function (url, newValue) {
-        return validateCacheUpdateAction(url, newValue)
-            .then(function () {
-                return setCachedJson(url, newValue);
-            });
-    };
+    this.updateCache = (url, newValue) =>
+        validateCacheUpdateAction(url, newValue).then(() =>
+            setCachedJson(url, newValue)
+        );
     /**
-     * @param {string} url esim. foo/bar, täydentyy http://site/api/foo/bar
+     * @param {string} url
      * @param {any} newValue
      * @return {Promise} -> ({void} nothing, {Object|string} error)
      */
-    this.TODOpushToCache = function (url, newValue) {
-        return validateCacheUpdateAction(url, newValue)
-            .then(function () {
-                return getCachedJson(url);
-            })
-            .then(function (json) {
+    this.TODOpushToCache = (url, newValue) =>
+        validateCacheUpdateAction(url, newValue)
+            .then(() => getCachedJson(url))
+            .then(json => {
                 if (!Array.isArray(json)) {
                     return Promise.reject('Ei voi pushata cacheen ' + url + ', arvo ei taulukko');
                 }
                 json.push(newValue);
                 return setCachedJson(url, json);
             });
-    };
     /**
      * @param {boolean} newValue
      * @return {void}
      */
-    this.setIsOnline = function (newValue) {
+    this.setIsOnline = newValue => {
         mainSWScope.isOnline = newValue === true;
         console.info('Asetettiin isOnline -> ' + (mainSWScope.isOnline ? 'true' : 'false'));
     };
@@ -80,25 +70,41 @@ function SWManager(mainSWScope) {
      * @param {boolean} newValue
      * @return {void}
      */
-    this.setDevMode = function (newValue) {
+    this.setDevMode = newValue => {
         mainSWScope.devMode = newValue === true;
         console.info('Asetettiin devMode -> ' + (mainSWScope.devMode ? 'true' : 'false'));
     };
-
+    /**
+     * @return {Promise} -> ({string} token, {string|any} error)
+     */
+    this.getAuthToken = () =>
+        new Promise((resolve, reject) => {
+            const dbRequest = mainSWScope.indexedDB.open('enjOfflineDb');
+            dbRequest.onsuccess = e => {
+                const transaction = e.target.result.transaction('userState').objectStore('userState').get(1);
+                transaction.onsuccess = e => {
+                    resolve(e.target.result.token);
+                };
+                transaction.onerror = e => {
+                    reject(store + ':n lukeminen epäonnistui' + e.target.errorCode);
+                };
+            };
+            dbRequest.onerror = e => {
+                reject('IndexedDb-yhteyden avaaminen epäonnistui ' + e.target.errorCode);
+            };
+        });
 
 
 
     function getCachedJson(url) {
         return mainSWScope.caches
             .match(makeApiRequest(url))
-            .then(function (response) {
-                return response.json();
-            });
+            .then(response => response.json());
     }
     function setCachedJson(url, newValue) {
         return mainSWScope.caches.open(mainSWScope.CACHE_NAME)
-            .then(function (cache) {
-                console.info('Ylikirjoitetaan cache ' + url);
+            .then(cache => {
+                console.info(`Ylikirjoitetaan cache ${url}`);
                 return cache.put(
                     makeApiRequest(url),
                     new Response(JSON.stringify(newValue))
@@ -106,8 +112,8 @@ function SWManager(mainSWScope) {
             });
     }
     function callDataGetter(url) {
-        for (var definition of mainSWScope.DYNAMIC_CACHE) {
-            var matches = url.match(new RegExp(definition.urlMatcher));
+        for (const definition of mainSWScope.DYNAMIC_CACHE) {
+            const matches = url.match(new RegExp(definition.urlMatcher));
             if (!matches) {
                 continue;
             }
@@ -116,8 +122,8 @@ function SWManager(mainSWScope) {
         return null;
     }
     function validateCacheUpdateAction(url, newValue) {
-        return new Promise(function (resolve, reject) {
-            var completedUrl = url.split('?')[0];
+        return new Promise((resolve, reject) => {
+            const completedUrl = url.split('?')[0];
             if (mainSWScope.CACHE_FILES.indexOf(completedUrl) < 0) {
                 reject('Cache url ' + completedUrl + ' ei validi');
             } else if (!newValue) {

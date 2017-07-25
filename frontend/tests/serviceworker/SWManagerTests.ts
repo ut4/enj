@@ -2,10 +2,13 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import utils from 'tests/utils';
 
+const testApiNamespace = 'api/v2';
+
 QUnit.module('SWManager', hooks => {
     hooks.beforeEach(() => {
         this.fakeSWScope = utils.fakeSWScope('somecache');
         this.fakeSWScope.baseUrl = {href: 'http://a.b:3000/'};
+        this.buildFullUrl = url => this.fakeSWScope.baseUrl.href + url;
         this.swManager = new SWManager(this.fakeSWScope);
     });
     hooks.afterEach(() => {
@@ -17,18 +20,19 @@ QUnit.module('SWManager', hooks => {
         delete this.fakeSWScope.CACHE_FILES;
     });
     QUnit.test('findFromCachedArrayBy etsii taulusta objektin avaimella', assert => {
-        const cachedUrl = 'foo/bar';
-        const cachedValue = [{akey: 'fo', bkey: 'foo'}, {akey: 'fy', bkey: 'fyy'}];
+        const cachedUrl = 'foo/bar'; // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain baseUrlista...
+        const cachedData = [{akey: 'fo', bkey: 'foo'}, {akey: 'fy', bkey: 'fyy'}];
+        console.log(this.buildFullUrl(cachedUrl));
         const prep = this.fakeSWScope.putTestCache({
-            url: this.fakeSWScope.baseUrl.href + cachedUrl,
-            value: cachedValue
+            url: this.buildFullUrl(cachedUrl),
+            value: cachedData
         });
         //
         const done = assert.async();
         prep
             .then(() => this.swManager.findFromCachedArrayBy('akey', 'fy', cachedUrl))
             .then(found => {
-                assert.deepEqual(found, cachedValue[1], 'Pitäisi palauttaa itemin jonka "akey" === "fy"');
+                assert.deepEqual(found, cachedData[1], 'Pitäisi palauttaa itemi, jonka "akey" === "fy"');
                 return this.swManager.findFromCachedArrayBy('akey', 'afuy', cachedUrl);
             }).then(empty => {
                 assert.deepEqual(empty, undefined, 'Pitäisi palauttaa undefined jos itemiä ei löydy');
@@ -59,7 +63,7 @@ QUnit.module('SWManager', hooks => {
         }];
         const done = assert.async(2);
         // Yksi regexp-capture
-        this.swManager.makeResponder('http://a.b/foo/24').then(dynamicResponse => {
+        this.swManager.makeResponder(this.buildFullUrl('foo/24')).then(dynamicResponse => {
             const actualMatchCaptures = getter.firstCall.args[0];
             const expectedMatchCaptures = ['24'];
             assert.deepEqual(actualMatchCaptures, expectedMatchCaptures);
@@ -70,7 +74,7 @@ QUnit.module('SWManager', hooks => {
             done();
         });
         // Ei regexp-capturea
-        this.swManager.makeResponder('http://asd.com:4545/segment').then(dynamicResponse2 => {
+        this.swManager.makeResponder(this.buildFullUrl('segment')).then(dynamicResponse2 => {
             const actualMatchCaptures2 = getter2.firstCall.args[0];
             const expectedMatchCaptures2 = [];
             assert.deepEqual(actualMatchCaptures2, expectedMatchCaptures2);
@@ -88,13 +92,14 @@ QUnit.module('SWManager', hooks => {
             dataGetter: getter
         }];
         //
-        const res = this.swManager.makeResponder('http://asd.com:4545/bar');
+        const res = this.swManager.makeResponder(this.buildFullUrl('bar'));
         assert.deepEqual(res, null);
         assert.equal(getter.called, false);
     });
     QUnit.test('updateCache asettaa uuden cache-arvon', assert => {
-        const urlToUpdate = 'foo/bar';
-        const fullUrl = this.fakeSWScope.baseUrl.href + urlToUpdate;
+        // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain baseUrlista...
+        const urlToUpdate = testApiNamespace + '/' + 'foo/bar';
+        const fullUrl = this.buildFullUrl(urlToUpdate);
         const dataToCache = {foo: 'bar'};
         this.fakeSWScope.CACHE_FILES = [urlToUpdate];
         //
@@ -117,21 +122,31 @@ QUnit.module('SWManager', hooks => {
             });
     });
     QUnit.test('updateCache rejektoi jos urlia ei ole CACHE_FILES -rekisterissä', assert => {
-        this.fakeSWScope.CACHE_FILES = ['registred'];
+        const registeredUrl = testApiNamespace + '/registred';
+        const notRegisteredUrl = testApiNamespace + '/not/registered';
+        this.fakeSWScope.CACHE_FILES = [registeredUrl];
         //
         const done = assert.async(2);
         // Pitäisi rejektoida
-        this.swManager.updateCache('not/registered', {})
+        this.swManager.updateCache(notRegisteredUrl, {})
             .then(null, () => {
                 assert.ok(true);
                 done();
             });
         // Ei pitäisi rejektoida, koska url parametrien ei pitäisi vaikuttaa
-        this.swManager.updateCache('registred?foo=bar', {})
+        this.swManager.updateCache(registeredUrl + '?foo=bar', {})
             .then(() => {
                 assert.ok(true);
                 done();
             });
+    });
+    QUnit.test('setIsOnline asettaa arvon scopeen', assert => {
+        const initialValue = this.fakeSWScope.isOnline;
+        this.swManager.setIsOnline(true);
+        assert.notEqual(this.fakeSWScope.isOnline, initialValue);
+        assert.equal(this.fakeSWScope.isOnline, true);
+        this.swManager.setIsOnline(false);
+        assert.equal(this.fakeSWScope.isOnline, false);
     });
     QUnit.test('setDevMode asettaa arvon scopeen', assert => {
         const initialValue = this.fakeSWScope.devMode;
@@ -141,12 +156,30 @@ QUnit.module('SWManager', hooks => {
         this.swManager.setDevMode(false);
         assert.equal(this.fakeSWScope.devMode, false);
     });
-    QUnit.test('setIsOnline asettaa arvon scopeen', assert => {
-        const initialValue = this.fakeSWScope.isOnline;
-        this.swManager.setIsOnline(true);
-        assert.notEqual(this.fakeSWScope.isOnline, initialValue);
-        assert.equal(this.fakeSWScope.isOnline, true);
-        this.swManager.setIsOnline(false);
-        assert.equal(this.fakeSWScope.isOnline, false);
+    QUnit.test('getAuthToken palauttaa jwt:n selaintietokannasta', assert => {
+        const mockDb = {onsuccess: e => null};
+        const indexedDBStub = sinon.stub(this.fakeSWScope.indexedDB, 'open').returns(mockDb);
+        // Stubbaa mockDbConnection.transaction('userState').objectStore('userState').get(1) takaperin
+        const mockReadTransaction = {onsuccess: e => null};
+        const mockStore = {get: sinon.stub().returns(mockReadTransaction)};
+        const mockTransaction = {objectStore: sinon.stub().returns(mockStore)};
+        const mockDbConnection = {transaction: sinon.stub().returns(mockTransaction)};
+        // Aja testimetodi & tietokannan normaalisti suorittamat onsuccess-callbackit
+        const tokenPromise = this.swManager.getAuthToken();
+        mockDb.onsuccess({target: {result: mockDbConnection}});
+        mockReadTransaction.onsuccess({target: {result: {token: 'token'}}});
+        // Assertoi, että db.transaction('userState').objectStore('userState').get(1)'d
+        const done = assert.async();
+        tokenPromise.then(token => {
+            assert.ok(mockDbConnection.transaction.calledOnce, 'Pitäisi luoda transaktio');
+            assert.deepEqual(mockDbConnection.transaction.firstCall.args, ['userState']);
+            assert.ok(mockTransaction.objectStore.calledAfter(mockDbConnection.transaction), 'Pitäisi avata objectStore');
+            assert.deepEqual(mockTransaction.objectStore.firstCall.args, ['userState']);
+            assert.ok(mockStore.get.calledAfter(mockTransaction.objectStore), 'Pitäisi lukea rivi');
+            assert.deepEqual(mockStore.get.firstCall.args, [1]);
+            assert.equal(token, 'token');
+            indexedDBStub.restore();
+            done();
+        });
     });
 });

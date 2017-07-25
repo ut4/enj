@@ -41,7 +41,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
     private confirm() {
         iocFactories.workoutBackend().addExercise(this.state.workoutExercise).then(
             () => iocFactories.history().push(this.returnUrl + '?refresh=1'),
-            () => iocFactories.notify()('Treenien haku epäonnistui', 'error')
+            () => iocFactories.notify()('Treeniliikkeen lisääminen epäonnistui', 'error')
         );
     }
     private cancel() {

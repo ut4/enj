@@ -16,21 +16,26 @@ self.isOnline = false;
 // hijackauksen
 self.devMode = false;
 // Kasa metodeja, jotka pääasiassa mutatoi self:n statea
-var swManager = new SWManager(self);
+const swManager = new SWManager(self);
+
+const apiNamespace = 'api';
+function prefixWithApiNamespace(url) {
+    return apiNamespace + '/' + url;
+}
 
 self.CACHE_NAME = 'enjOffline-v0.0';
 self.CACHE_FILES = [
     '',
     'index.html',
-    // == Scriptit ========
+    // == Skriptit ===========
     'vendor/app-vendor.bundle.js',
     'vendor/app-vendor.bundle.css',
     'app.bundle.js',
     // == API-pyynnöt ========
     // (pidettävä päivitettynä manuaalisesti)
-    'api/workout',
-    'api/exercise',
-    // == Teema ===========
+    prefixWithApiNamespace('workout'),
+    prefixWithApiNamespace('exercise'),
+    // == Teema ==============
     'theme/favicon.ico',
     'theme/favicon.png',
     'theme/firasans-heavy-webfont.eot',
@@ -45,35 +50,33 @@ self.CACHE_FILES = [
     'theme/spinner.gif'
 ];
 self.DYNAMIC_CACHE = [{
-    urlMatcher: 'api/program/(\\d+)',
-    dataGetter: function (matchCaptures) {
-        return swManager.findFromCachedArrayBy(
-            'id',
-            parseInt(matchCaptures[0], 10),
-            'api/program'
-        );
-    }
+    urlMatcher: prefixWithApiNamespace('program/(\\d+)'),
+    dataGetter: matchCaptures => swManager.findFromCachedArrayBy(
+        'id',
+        parseInt(matchCaptures[0], 10),
+        prefixWithApiNamespace('program')
+    )
 }];
 
 // == Workerin staten manipulointi ==
 // =============================================================================
-self.addEventListener('message', function (event) {
+self.addEventListener('message', event => {
     switch (event.data.action) {
         case 'updateCache' :
             console.log('Saatiin cachen päivityspyyntö', event.data);
-            swManager.updateCache(event.data.url, event.data.data)
-                .then(function () {
+            swManager.updateCache(prefixWithApiNamespace(event.data.url), event.data.data)
+                .then(() => {
                     event.ports[0].postMessage({ok: true});
-                }, function (errorMessage) {
+                }, errorMessage => {
                     event.ports[0].postMessage({error: errorMessage});
                 });
             break;
         case 'pushToCache' :
             console.log('Saatiin cachen pushpyyntö', event.data);
-            swManager.updateCache(event.data.url, event.data.data)
-                .then(function () {
+            swManager.updateCache(prefixWithApiNamespace(event.data.url), event.data.data)
+                .then(() => {
                     event.ports[0].postMessage({ok: true});
-                }, function (errorMessage) {
+                }, errorMessage => {
                     event.ports[0].postMessage({error: errorMessage});
                 });
             break;
@@ -93,57 +96,60 @@ self.addEventListener('message', function (event) {
 
 // == Install ==
 // =============================================================================
-self.addEventListener('install', function (event) {
+self.addEventListener('install', event => {
     event.waitUntil(
-        self.caches.open(self.CACHE_NAME)
-            .then(function (cache) {
-                return cache.addAll(self.CACHE_FILES.map(function (url) {
-                    console.log(url)
-                    // file.ext -> /afoo/file.ext
-                    return new Request(self.baseUrl.pathname + url);
-                }));
-            })
-            .then(function () {
-                // forces the waiting service worker to become the active
-                // service worker
-                return self.skipWaiting();
-            })
+        Promise.all([
+            swManager.getAuthToken(),
+            self.caches.open(self.CACHE_NAME)
+        ]).then(([token, cache]) => {
+            const headers = new Headers();
+            headers.set('Authorization', 'Bearer ' + token);
+            return cache.addAll(self.CACHE_FILES.map(url =>
+                // file.ext -> /afoo/file.ext
+                new Request(self.baseUrl.pathname + url, {headers})
+            ));
+        }).then(() =>
+            // forces the waiting service worker to become the active
+            // service worker
+            self.skipWaiting()
+        )
     );
 });
 
 // == Refresh ==
 // =============================================================================
-self.addEventListener('activate', function (event) {
+self.addEventListener('activate', event => {
     event.waitUntil(
-        self.caches.keys().then(function (cacheNames) {
+        self.caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(function (cacheName) {
+                cacheNames.map(cacheName => {
                     if (cacheName !== self.CACHE_NAME) {
                         return self.caches.delete(cacheName);
                     }
                 })
-            ).then(function () {
+            ).then(() =>
                 // Calling claim() to force a "controllerchange" event on
                 // navigator.serviceWorker
-                return self.clients.claim();
-            });
+                self.clients.claim()
+            );
         })
     );
 });
 
 // == HTTP hijacks ==
 // =============================================================================
-self.addEventListener('fetch', function (event) {
-    var isApiRequest = /\/api\//.test(event.request.url);
+const apiUrlRegExp = new RegExp(`/${apiNamespace}/`);
+self.addEventListener('fetch', event => {
+    var isApiRequest = apiUrlRegExp.test(event.request.url);
     if ((self.devMode && !isApiRequest) || self.isOnline) {
         return;
     }
     var responder = isApiRequest && swManager.makeResponder(event.request.url);
     event.respondWith(
-        responder || self.caches.match(event.request).then(function (response) {
-            return response || fetch(event.request);
-        }).catch(function () {
-            return new Response('fallback');
-        })
+        responder || self.caches.match(event.request).then(response =>
+            response || fetch(event.request)
+        ).catch(() =>
+            new Response('fallback')
+        )
     );
 });

@@ -73,7 +73,7 @@ class Http {
                     : this.offlineHttp.handle(url, {method: 'POST', data})
             )
             .then(response => this.processResponse(response))
-            .then(response => this.parseResponseData(response));
+            .then(response => this.parseResponseData<T>(response));
     }
     /**
      * Luo uuden Request-instanssin, ja tarjoaa sen request-interceptorien

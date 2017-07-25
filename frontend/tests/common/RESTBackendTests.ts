@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import Http from 'src/common/Http';
 import RESTBackend from 'src/common/RESTBackend';
 
-interface TestType { foo: string; }
+interface TestType { id?: number; foo: string; }
 class TestBackend extends RESTBackend<TestType> {}
 
 QUnit.module('common/RESTBackend', hooks => {
