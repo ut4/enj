@@ -8,21 +8,12 @@
     "build": "webpack -p",
     "lint": "tslint src/*.ts{,x} src/**/*.ts{,x}",
     "start-hard": "webpack --watch",
-    "start": "webpack-dev-server --inline"
+    "start": "webpack-dev-server"
   },
   "devDependencies": {
-    "@types/history": "^4.5.1",
-    "babel-core": "^6.24.1",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-inferno": "^3.2.0",
-    "babel-preset-es2016": "^6.24.1",
-    "inferno": "^3.2.2",
-    "inferno-component": "^3.2.2",
-    "inferno-router": "^3.2.2",
-    "inferno-test-utils": "^3.2.2",
-    "ts-loader": "^2.0.3",
-    "typescript": "^2.3.2",
-    "webpack": "^2.5.1",
-    "webpack-dev-server": "^2.4.5"
+    "ts-loader": "^2.3.1",
+    "typescript": "^2.4.2",
+    "webpack": "^3.3.0",
+    "webpack-dev-server": "^2.6.1"
   }
 }

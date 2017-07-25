@@ -1,26 +1,25 @@
 {
-    "version": "2.3.2",
+    "version": "2.4.2",
+    "baseUrl": ".",
     "include": [
         "src/**/*",
         "tests/**/*",
-        "typings/enj/globals.ts"
+        "typings/**/*"
     ],
     "compilerOptions": {
-        "baseUrl": "./",
-        "moduleResolution": "node",
         "target": "es6",
         "module": "es6",
+        "jsx": "react",
+        "jsxFactory": "Inferno.createElement",
         "lib": [
             "es6",
             "es7",
-            "dom"
+            "dom",
+            "webworker"
         ],
         "typeRoots": [
-            "./node_modules/@types",
-            "./typings"
-        ],
-        "jsx": "preserve",
-        "noUnusedLocals": true
+            "typings"
+        ]
     },
     "compileOnSave": false
 }

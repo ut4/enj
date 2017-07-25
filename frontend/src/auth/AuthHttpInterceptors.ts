@@ -1,11 +1,10 @@
 import UserState from 'src/user/UserState';
-import { History } from 'history';
 
 class AuthHttpInterceptors {
     public token: string;
     private userState: UserState;
-    private history: History;
-    public constructor(userState: UserState, history: History) {
+    private history: any;
+    public constructor(userState: UserState, history: any) {
         this.token = '';
         this.userState = userState;
         this.userState.subscribe(updatedState => {

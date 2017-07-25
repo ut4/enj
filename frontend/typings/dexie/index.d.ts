@@ -22,7 +22,7 @@ interface ProbablyError {
 // Dexie is actually default exported at the end of this file.
 // Still, need to keep this explicit export anyway. Needed in order for
 // Typescript 2.1 to allow extension of the Dexie API.
- declare class Dexie {
+declare class Dexie {
     constructor(databaseName: string, options?: {
         addons?: Array<(db: Dexie) => void>,
         autoOpen?: boolean,
@@ -121,7 +121,7 @@ interface ProbablyError {
     Collection: new()=>Dexie.Collection<any,any>;
 }
 
- declare module Dexie {
+declare module Dexie {
 
     interface Promise<T> {
         // From Promise<T> in lib.es2015.d.ts and lib.es2015.symbol.wellknown.d.ts but with return type Dexie.Promise<T>:
@@ -273,7 +273,7 @@ interface ProbablyError {
     }
 
     interface DbEvents extends DexieEventSet {
-        (eventName: 'ready', subscriber: () => any, bSticky: boolean): void;
+        (eventName: 'ready', subscriber: () => any, bSticky?: boolean): void;
         (eventName: 'populate', subscriber: () => any): void;
         (eventName: 'blocked', subscriber: () => any): void;
         (eventName: 'versionchange', subscriber: (event: IDBVersionChangeEvent) => any): void;
@@ -283,11 +283,26 @@ interface ProbablyError {
         versionchange: Dexie.DexieVersionChangeEvent;        
     }
 
+    interface CreatingHookContext<T,Key> {
+        onsuccess?: (primKey: Key) => void;
+        onerror?: (err: any) => void;
+    }
+
+    interface UpdatingHookContext<T,Key> {
+        onsuccess?: (updatedObj: T) => void;
+        onerror?: (err: any) => void;
+    }
+
+    interface DeletingHookContext<T,Key> {
+        onsuccess?: () => void;
+        onerror?: (err: any) => void;
+    }
+
     interface TableHooks<T,Key> extends DexieEventSet {
-        (eventName: 'creating', subscriber: (primKey:Key, obj:T, transaction:Transaction) => any): void;
+        (eventName: 'creating', subscriber: (this: CreatingHookContext<T,Key>, primKey:Key, obj:T, transaction:Transaction) => any): void;
         (eventName: 'reading', subscriber: (obj:T) => T | any): void;
-        (eventName: 'updating', subscriber: (modifications:Object, primKey:Key, obj:T, transaction:Transaction) => any): void;
-        (eventName: 'deleting', subscriber: (primKey:Key, obj:T, transaction:Transaction) => any): void;
+        (eventName: 'updating', subscriber: (this: UpdatingHookContext<T,Key>, modifications:Object, primKey:Key, obj:T, transaction:Transaction) => any): void;
+        (eventName: 'deleting', subscriber: (this: DeletingHookContext<T,Key>, primKey:Key, obj:T, transaction:Transaction) => any): void;
         creating: DexieEvent;
         reading: DexieEvent;
         updating: DexieEvent;

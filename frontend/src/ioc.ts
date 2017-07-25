@@ -3,7 +3,7 @@ import Db              from 'src/common/Db';
 import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
-import { History, createHashHistory } from 'history';
+import { createHashHistory } from 'history';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
@@ -12,6 +12,7 @@ import AuthService     from 'src/auth/AuthService';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
 import settings        from 'src/config/settings';
+
 const routerHistory = createHashHistory();
 
 class IocFactories extends IocContainer {
@@ -28,7 +29,7 @@ class IocFactories extends IocContainer {
     public notify(): notify {
         return notify;
     }
-    public history(): History {
+    public history(): any {
         return routerHistory;
     }
 

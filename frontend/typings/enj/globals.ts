@@ -1,3 +1,9 @@
+declare var Inferno: any;
+
+declare module "history" {
+    var createHashHistory: Function;
+    export { createHashHistory };
+}
 declare module "dexie" {
     export default Dexie;
 }
