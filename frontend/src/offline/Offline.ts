@@ -15,6 +15,7 @@ const serviceWorkerState = {
 class Offline {
     private userState: UserState;
     private serviceWorkerContainer: ServiceWorkerContainer;
+    private controllingServiceWorker: ServiceWorker;
     public utils: {getNextId: (collection: Array<Object>, key?: string) => number};
     /**
      * @param {UserState} userState
@@ -25,10 +26,8 @@ class Offline {
         serviceWorkerContainer?: ServiceWorkerContainer
     ) {
         this.userState = userState;
-        this.serviceWorkerContainer = (
-            // TODO checkkaa onko serviceworker navigaattorissa??
-            serviceWorkerContainer || window.navigator.serviceWorker
-        );
+        this.serviceWorkerContainer = serviceWorkerContainer || window.navigator.serviceWorker;
+        this.controllingServiceWorker = this.serviceWorkerContainer.controller;
         this.utils = {
             getNextId: (collection: Array<Object>, key: string = 'id'): number =>
                 collection.length ? Math.max(...collection.map(item => item[key])) + 1 : 1
@@ -44,9 +43,9 @@ class Offline {
         // TODO - checkkaa isonline ensin?
         return (
         // == 1. Handlaa serviceworker =========================================
-        this.serviceWorkerContainer.controller
+        this.controllingServiceWorker
             // ServiceWorker jo rekisteröity
-            ? resolveWhenActive(this.serviceWorkerContainer.controller)
+            ? resolveWhenActive(this.controllingServiceWorker)
             // ServiceWorkeriä ei vielä rekisteröity (tai tarvitsee upgraden?)
             : this.serviceWorkerContainer.register(SERVICE_WORKER_FILEPATH)
                 .then(registration => {
@@ -69,6 +68,7 @@ class Offline {
                 action: 'setIsOnline',
                 value: false
             });
+            this.controllingServiceWorker = serviceWorker;
             return this.userState.setIsOffline(true);
         });
     }
@@ -79,7 +79,7 @@ class Offline {
      * @return {Promise} -> ({integer} wasSuccesful, {Object} error)
      */
     public disable(): Promise<number> {
-        this.serviceWorkerContainer.controller.postMessage({
+        this.controllingServiceWorker.postMessage({
             action: 'setIsOnline',
             value: true
         });
@@ -110,7 +110,7 @@ class Offline {
             // The service worker can then use the transferred port to reply via postMessage(), which
             // will in turn trigger the onmessage handler on messageChannel.port1.
             // See https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-            this.serviceWorkerContainer.controller.postMessage(
+            this.controllingServiceWorker.postMessage(
                 message,
                 [messageChannel.port2]
             );
@@ -128,9 +128,9 @@ function resolveWhenActive(serviceWorker: ServiceWorker): Promise<ServiceWorker>
     }
     // lisää fail timeout (jos ei resolvattu timeoutin sisällä -> reject)??
     return new Promise(resolve => {
-        serviceWorker.addEventListener('statechange', e => {
-            if ((<any>e.target).state === serviceWorkerState.ACTIVATED) {
-                resolve(<ServiceWorker>e.target);
+        serviceWorker.addEventListener('statechange', (e: Event & {target: ServiceWorker}) => {
+            if (e.target.state === serviceWorkerState.ACTIVATED) {
+                resolve(e.target);
             }
         });
     });

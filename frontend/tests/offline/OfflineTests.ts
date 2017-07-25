@@ -9,29 +9,33 @@ QUnit.module('offline/Offline', hooks => {
     let offline: Offline;
     let mockServiceWorker: {state: string, postMessage: Function};
     hooks.beforeEach(() => {
-        userState = Object.create(UserState.prototype);//new UserState();
+        userState = Object.create(UserState.prototype);
         mockServiceWorkerContainer = {register: () => {}, controller: null};
-        offline = new Offline(userState, mockServiceWorkerContainer as any);
         mockServiceWorker = {state: 'activated', postMessage: () => {}};
+        offline = new Offline(userState, mockServiceWorkerContainer as any);
     });
     QUnit.test('enable asentaa serviceworkerin ja päivittää statuksen selaintietokantaan', assert => {
         const mockRegistration = {installing: mockServiceWorker};
         const swRegistration = sinon.mock(mockServiceWorkerContainer);
-        swRegistration.expects('register').once()
-            .withExactArgs('sw-main.js')
-            .returns(Promise.resolve(mockRegistration));
-        const isOnlineSwStateUpdate = sinon.spy(mockServiceWorker, 'postMessage');
-        const dbUpdate = sinon.stub(userState, 'setIsOffline').returns(Promise.resolve(1));
+        swRegistration.expects('register').once().withExactArgs('sw-main.js').returns(Promise.resolve(mockRegistration));
+        const swInformOperation = sinon.spy(mockServiceWorker, 'postMessage');
+        const dbUpdateOperation = sinon.stub(userState, 'setIsOffline').returns(Promise.resolve(1));
+        assert.deepEqual((offline as any).controllingServiceWorker, null,
+            'Initial controllingServiceWorker pitäisi olla null'
+        );
         const done = assert.async();
         offline.enable().then(() => {
             swRegistration.verify();
-            assert.ok(isOnlineSwStateUpdate.calledOnce);
-            assert.deepEqual(isOnlineSwStateUpdate.firstCall.args, [{
+            assert.ok(swInformOperation.calledOnce, 'Pitäisi lähettää uusi status workerille');
+            assert.deepEqual(swInformOperation.firstCall.args, [{
                 action: 'setIsOnline',
                 value: false
             }]);
-            assert.ok(dbUpdate.calledOnce);
-            assert.deepEqual(dbUpdate.firstCall.args, [true]);
+            assert.ok(dbUpdateOperation.calledOnce, 'Pitäisi päivittää offline-status selaintietokantaan');
+            assert.deepEqual(dbUpdateOperation.firstCall.args, [true]);
+            assert.deepEqual((offline as any).controllingServiceWorker, mockServiceWorker,
+                'Pitäisi asettaa rekisteröity worker this.controllingServiceWorker:iin'
+            );
             done();
         });
     });
@@ -39,7 +43,7 @@ QUnit.module('offline/Offline', hooks => {
     // TODO enable serviceWorker jo asennettu
     // TODO enable käyttäjä on jo offline?
     QUnit.test('disable synkkaa syncQueuen ja päivittää statuksen selaintietokantaan', assert => {
-        mockServiceWorkerContainer.controller = mockServiceWorker;
+        (offline as any).controllingServiceWorker = mockServiceWorker;
         const isOnlineSwStateUpdate = sinon.spy(mockServiceWorker, 'postMessage');
         const fakeDbUpdate = sinon.stub(userState, 'setIsOffline').returns(Promise.resolve(1));
         const done = assert.async();
@@ -56,8 +60,8 @@ QUnit.module('offline/Offline', hooks => {
     });
     QUnit.test('sendAsyncMessage lähettää viestin serviceWorkerille, ja passaa sille ' +
         'messageportin, jolla worker voi palauttaa tietoa takaisin', assert => {
-        mockServiceWorkerContainer.controller = mockServiceWorker;
-        const postMessageSpy = sinon.spy(mockServiceWorkerContainer.controller, 'postMessage');
+        (offline as any).controllingServiceWorker = mockServiceWorker;
+        const postMessageSpy = sinon.spy(mockServiceWorker, 'postMessage');
         const someMessage = {foo: 'bar'};
         //
         const promise = offline.sendAsyncMessage(someMessage);
@@ -89,8 +93,8 @@ QUnit.module('offline/Offline', hooks => {
         });
     });
     QUnit.test('sendAsyncMessage rejektoi, jos serviceWorkerin porttiin kuittaama arvo sisältää {error:...}', assert => {
-        mockServiceWorkerContainer.controller = mockServiceWorker;
-        const postMessageSpy = sinon.spy(mockServiceWorkerContainer.controller, 'postMessage');
+        (offline as any).controllingServiceWorker = mockServiceWorker;
+        const postMessageSpy = sinon.spy(mockServiceWorker, 'postMessage');
         //
         const promise = offline.sendAsyncMessage({fo: 'bar'});
         //
@@ -108,8 +112,8 @@ QUnit.module('offline/Offline', hooks => {
         });
     });
     QUnit.test('updateCache lähettää serviceWorkerille updateCache-komennon', assert => {
-        mockServiceWorkerContainer.controller = mockServiceWorker;
-        const postMessageStub = sinon.stub(mockServiceWorkerContainer.controller, 'postMessage');
+        (offline as any).controllingServiceWorker = mockServiceWorker;
+        const postMessageStub = sinon.stub(mockServiceWorker, 'postMessage');
         const someUrl = 'foo/bar';
         const someData = {foo: 'bar'};
         //
