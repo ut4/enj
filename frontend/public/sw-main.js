@@ -5,6 +5,7 @@ if (!self || !(self instanceof ServiceWorkerGlobalScope)) {
         '(window.navigator.serviceWorker.register(<urlToThisFile>)');
 }
 
+self.importScripts('vendor/sw-vendor.bundle.js');
 self.importScripts('sw-src/SWManager.js');
 
 // http://mysite.com/sw.js -> /, http://mysite.com/afoo/sw.js -> /afoo/
@@ -50,11 +51,12 @@ self.CACHE_FILES = [
     'theme/spinner.gif'
 ];
 self.DYNAMIC_CACHE = [{
-    urlMatcher: prefixWithApiNamespace('program/(\\d+)'),
-    dataGetter: matchCaptures => swManager.findFromCachedArrayBy(
-        'id',
-        parseInt(matchCaptures[0], 10),
-        prefixWithApiNamespace('program')
+    urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),
+    dataGetter: ([startFrom, startTo]) => swManager.findFromCachedArrayBy(
+        {start: {$where: function () { // function () instead of fat-arrow because of "this"
+            return this >= startFrom && this <= startTo
+        }}},
+        prefixWithApiNamespace('workout')
     )
 }];
 

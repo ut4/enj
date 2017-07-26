@@ -19,10 +19,9 @@ QUnit.module('SWManager', hooks => {
         delete this.fakeSWScope.CACHE_NAME;
         delete this.fakeSWScope.CACHE_FILES;
     });
-    QUnit.test('findFromCachedArrayBy etsii taulusta objektin avaimella', assert => {
+    QUnit.test('findFromCachedArrayBy etsii taulusta filttereitä vastaavan objektin', assert => {
         const cachedUrl = 'foo/bar'; // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain baseUrlista...
         const cachedData = [{akey: 'fo', bkey: 'foo'}, {akey: 'fy', bkey: 'fyy'}];
-        console.log(this.buildFullUrl(cachedUrl));
         const prep = this.fakeSWScope.putTestCache({
             url: this.buildFullUrl(cachedUrl),
             value: cachedData
@@ -30,12 +29,12 @@ QUnit.module('SWManager', hooks => {
         //
         const done = assert.async();
         prep
-            .then(() => this.swManager.findFromCachedArrayBy('akey', 'fy', cachedUrl))
+            .then(() => this.swManager.findFromCachedArrayBy({akey: {$eq: 'fy'}}, cachedUrl))
             .then(found => {
-                assert.deepEqual(found, cachedData[1], 'Pitäisi palauttaa itemi, jonka "akey" === "fy"');
-                return this.swManager.findFromCachedArrayBy('akey', 'afuy', cachedUrl);
+                assert.deepEqual(found, [cachedData[1]], 'Pitäisi palauttaa itemit, joiden "akey" === "fy"');
+                return this.swManager.findFromCachedArrayBy({akey: {$eq: 'asdc'}}, cachedUrl);
             }).then(empty => {
-                assert.deepEqual(empty, undefined, 'Pitäisi palauttaa undefined jos itemiä ei löydy');
+                assert.deepEqual(empty, [], 'Pitäisi palauttaa [] jos itemiä ei löydy');
                 return this.fakeSWScope.cleanTestCache();
             }).then(wasCleanupSuccessful => {
                 assert.ok(wasCleanupSuccessful);

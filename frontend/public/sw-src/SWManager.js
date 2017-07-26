@@ -7,17 +7,16 @@ function SWManager(mainSWScope) {
      * Etsii $cachedArrayUrl taulukosta itemin, jonka $key on yhtä kuin
      * $valueToMatch. Käytetään tilanteissa, jossa esim. GET api/programs/all on
      * cachetettu, mutta GET api/programs/42 ei. Tällöin se voidaan hakea getall-
-     * tulosjoukosta (findFromCachedArrayBy('id', 42, 'api/programs/getall'))
+     * tulosjoukosta (findFromCachedArrayBy({id:{$eq:42}}, 'api/programs/getall'))
      *
-     * @param {string} key esim. 'id'
-     * @param {any} valueToMatch esim. 14
+     * @param {Object} filters esim. {id: {$eq: 1}}
      * @param {string} cachedArrayUrl esim. api/programs/all
      * @return {Promise} -> ({any|undefined} data, {Object} error)
      */
-    this.findFromCachedArrayBy = (key, valueToMatch, cachedArrayUrl) =>
-        getCachedJson(cachedArrayUrl).then(json => json.find(item =>
-            item[key] === valueToMatch
-        ));
+    this.findFromCachedArrayBy = (filters, cachedArrayUrl) =>
+        getCachedJson(cachedArrayUrl).then(json =>
+            json ? sift(filters, json) : []
+        );
     /**
      * Palauttaa DYNAMIC_CACHE handlerin palauttaman arvon paketoituna
      * jsonina Responseen.
@@ -63,6 +62,11 @@ function SWManager(mainSWScope) {
      * @return {void}
      */
     this.setIsOnline = newValue => {
+        if (newValue === false && mainSWScope.isOnline === true) {
+            // forces the waiting service worker to become the active
+            // service worker
+            mainSWScope.skipWaiting();
+        }
         mainSWScope.isOnline = newValue === true;
         console.info('Asetettiin isOnline -> ' + (mainSWScope.isOnline ? 'true' : 'false'));
     };
@@ -99,12 +103,12 @@ function SWManager(mainSWScope) {
     function getCachedJson(url) {
         return mainSWScope.caches
             .match(makeApiRequest(url))
-            .then(response => response.json());
+            .then(response => response.json());// Tämä on tarkoitus .catch:ata
     }
     function setCachedJson(url, newValue) {
         return mainSWScope.caches.open(mainSWScope.CACHE_NAME)
             .then(cache => {
-                console.info(`Ylikirjoitetaan cache ${url}`);
+                console.info(`Ylikirjoitetaan cache ${url}`, newValue);
                 return cache.put(
                     makeApiRequest(url),
                     new Response(JSON.stringify(newValue))
