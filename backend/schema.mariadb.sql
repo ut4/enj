@@ -10,19 +10,14 @@ DROP TABLE   IF EXISTS exercise;
 DROP VIEW    IF EXISTS userView;
 DROP TABLE   IF EXISTS `user`;
 
--- MariaDB int sizes --
--- SMALLINT  -32768      to 32767 signed,      0 to 65535 unsigned
--- MEDIUMINT -8388608    to 8388607 signed,    0 to 16777215 unsigned
--- INT       -2147483648 to 2147483647 signed, 0 to 4294967295 unsigned
-
 -- == User ====
 -- =============================================================================
 CREATE TABLE `user` (
-    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     passwordHash VARCHAR(255) NOT NULL,
     PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
+) DEFAULT CHARSET = utf8mb4;
 
 CREATE VIEW userView AS
     SELECT
@@ -34,18 +29,18 @@ CREATE VIEW userView AS
 -- == Exercise ====
 -- =============================================================================
 CREATE TABLE exercise (
-    id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
     PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
+) DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE exerciseVariant (
-    id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     content VARCHAR(32) NOT NULL,
-    exerciseId SMALLINT UNSIGNED NOT NULL,
+    exerciseId CHAR(36) NOT NULL,
     FOREIGN KEY (exerciseId) REFERENCES exercise(id),
     PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
+) DEFAULT CHARSET = utf8mb4;
 
 CREATE VIEW exerciseView AS
     SELECT
@@ -59,35 +54,35 @@ CREATE VIEW exerciseView AS
 -- == Workout ====
 -- =============================================================================
 CREATE TABLE workout (
-    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     `start` INT UNSIGNED NOT NULL,
     `end` INT UNSIGNED NOT NULL DEFAULT 0,
     notes TEXT,
-    userId  MEDIUMINT UNSIGNED NOT NULL,
+    userId CHAR(36) NOT NULL,
     FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
-) DEFAULT CHARSET = utf8;
+) DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE workoutExercise (
-    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     orderDef TINYINT(1) UNSIGNED NOT NULL,
-    workoutId MEDIUMINT UNSIGNED NOT NULL,
-    exerciseId SMALLINT UNSIGNED NOT NULL,
-    exerciseVariantId SMALLINT UNSIGNED DEFAULT NULL,
+    workoutId CHAR(36) NOT NULL,
+    exerciseId CHAR(36) NOT NULL,
+    exerciseVariantId CHAR(36) DEFAULT NULL,
     FOREIGN KEY (workoutId) REFERENCES workout(id),
     FOREIGN KEY (exerciseId) REFERENCES exercise(id),
     FOREIGN KEY (exerciseVariantId) REFERENCES exerciseVariant(id),
     PRIMARY KEY (id)
-);
+) DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE workoutExerciseSet (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(36) NOT NULL,
     weight FLOAT NOT NULL,
     reps SMALLINT UNSIGNED NOT NULL,
-    workoutExerciseId MEDIUMINT UNSIGNED NOT NULL,
+    workoutExerciseId CHAR(36) NOT NULL,
     FOREIGN KEY (workoutExerciseId) REFERENCES workoutExercise(id),
     PRIMARY KEY (id)
-);
+) DEFAULT CHARSET = utf8mb4;
 
 -- Treenin valmiiksi merkkauksen yhteydessä ajautuva triggeri joka poistaa
 -- treenin "tyhjät" liikkeet (jolla ei tehtyjä settejä)
