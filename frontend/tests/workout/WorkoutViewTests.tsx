@@ -7,7 +7,7 @@ import WorkoutView from 'src/workout/WorkoutView';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import iocFactories from 'src/ioc';
 const emptyMessageRegExp: RegExp = /Ei treenejä/;
-const someUserId = 56;
+const someUserId = 'uuid56';
 
 QUnit.module('workout/WorkoutView', hooks => {
     let someTestWorkout: Enj.API.WorkoutRecord;
@@ -16,7 +16,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     hooks.beforeEach(() => {
         workoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackend);
-        someTestWorkout = {id:1, start: 2, exercises: [], userId: 34};
+        someTestWorkout = {id:'uuid', start: 2, exercises: [], userId: 'uuid2'};
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();

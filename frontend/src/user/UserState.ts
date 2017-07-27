@@ -36,17 +36,14 @@ class UserState {
      * poikkeuksen jos tokenia ei löytynyt, se ei ollut validi, tai se ei sisältänyt
      * käyttäjätunnistetta.
      */
-    public getUserId(): Promise<number> {
+    public getUserId(): Promise<AAGUID> {
         return this.getState().then(state => {
             if (!state.token.length) {
                 throw new Error('Käyttäjä ei tunnistautunut');
             }
             const data = getDataFromToken(state.token);
             // claims.sub == userId
-            if (data.sub >>> 0 !== parseFloat(data.sub)) {
-                throw new Error('claims.sub pitäisi olla kokonaisluku');
-            }
-            return parseInt(data.sub, 10);
+            return data.sub;
         });
     }
     /**

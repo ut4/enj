@@ -20,15 +20,15 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     //
     hooks.beforeEach(() => {
         workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, userStateStub, '/'), 'workout', userStateStub);
-        const offlineStub = Object.create(Offline.prototype);
-        offlineStub.utils = {getNextId: () => 32};
+        workoutBackend.utils = {uuidv4: () => 'uuid32'};
+        const offlineStub: Offline = Object.create(Offline.prototype);
         handlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackend);
         handlerRegister.registerHandlers(offlineHttp);
     });
     QUnit.test('workoutBackend.insert kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
         const testWorkout = new Workout();
         const fetchCallSpy = sinon.spy(fetchContainer.fetch);
-        const handlerCallStub = sinon.stub(handlerRegister, 'insert').returns(Promise.resolve('{"insertId": 9}'));
+        const handlerCallStub = sinon.stub(handlerRegister, 'insert').returns(Promise.resolve('{"insertCount": 9}'));
         //
         const done = assert.async();
         workoutBackend.insert(testWorkout).then(res => {
@@ -44,7 +44,7 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     QUnit.test('workoutBackend.addExercise kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
         const testWorkoutExercise = new WorkoutExercise();
         const fetchCallSpy = sinon.spy(fetchContainer.fetch);
-        const handlerCallStub = sinon.stub(handlerRegister, 'addExercise').returns(Promise.resolve('{"insertId": 56}'));
+        const handlerCallStub = sinon.stub(handlerRegister, 'addExercise').returns(Promise.resolve('{"insertCount": 56}'));
         //
         const done = assert.async();
         workoutBackend.addExercise(testWorkoutExercise).then(res => {

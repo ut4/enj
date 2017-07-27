@@ -6,57 +6,57 @@ import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegi
 
 QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     let offlineStub: Offline;
+    let mockNewUuid: AAGUID = 'uuid32';
     let workoutBackendStub: WorkoutBackend;
     let workoutHandlerRegister: OfflineWorkoutHandlerRegister;
     let mockCachedWorkouts: Array<Enj.API.WorkoutRecord>;
     hooks.beforeEach(() => {
         offlineStub = Object.create(Offline.prototype);
-        offlineStub.utils = {getNextId: () => 32};
         workoutBackendStub = Object.create(WorkoutBackend.prototype);
+        workoutBackendStub.utils = {uuidv4: () => mockNewUuid};
         workoutHandlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackendStub);
         mockCachedWorkouts = [
-            {id: 1, start: 2, exercises: [], userId: 34},
-            {id: 2, start: 2, exercises: [], userId: 34}
+            {id: 'someuuid1', start: 2, exercises: [], userId: 'someuuid2'},
+            {id: 'someuuid3', start: 2, exercises: [], userId: 'someuuid4'}
         ];
     });
-    QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa uuden id:n', assert => {
+    QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa insertCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
+        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
         const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
         const newWorkout = new Workout();
-        newWorkout.id = 2;
         //
         const done = assert.async();
         workoutHandlerRegister.insert(newWorkout).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
-                'workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
+                'workout',
                 [newWorkout].concat(mockCachedWorkouts as any)
             ], 'Pitäisi päivittää current-day-treenicache uudella liikkeellä varustettuna');
-            assert.equal(result, JSON.stringify({insertId: 32}), 'Pitäisi palauttaa uusi id');
-            assert.equal(newWorkout.id, 32, 'Pitäisi asettaa uusi id treeniin');
+            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(newWorkout.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
         });
     });
-    QUnit.test('addExercise lisää uuden liikkeen treenicacheen, ja palauttaa uuden id:n', assert => {
+    QUnit.test('addExercise lisää uuden liikkeen treenicacheen, ja palauttaa insertCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getTodaysWorkouts').returns(Promise.resolve(cacheWorkoutsCopy));
+        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
         const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
         const newWorkoutExercise = new WorkoutExercise();
-        newWorkoutExercise.workoutId = 2;
+        newWorkoutExercise.workoutId = cacheWorkoutsCopy[1].id;
         //
         const done = assert.async();
         workoutHandlerRegister.addExercise(newWorkoutExercise).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
-                'workout' + workoutBackendStub.makeTimestampRangeUrlParams(),
-                // Ei pitäis muuttaa [0], koska id != newWorkoutExercise.workoutId
+                'workout',
+                // Ei pitäis muuttaa [0], koska eri treeni (id != newWorkoutExercise.workoutId)
                 [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
                     exercises: [newWorkoutExercise]
                 })]
             ], 'Pitäisi lisätä uusi liike current-day-treenicachen oikeaan treeniin');
-            assert.equal(result, JSON.stringify({insertId: 32}), 'Pitäisi palauttaa uusi id');
-            assert.equal(newWorkoutExercise.id, 32, 'Pitäisi asettaa uusi id liikkeeseen');
+            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(newWorkoutExercise.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
         });
     });

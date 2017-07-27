@@ -6,7 +6,7 @@ import iocFactories from 'src/ioc';
 
 interface Props {
     params: {
-        id: number, // Treenin id, ks. url
+        id: AAGUID, // Treenin id, ks. url
         orderDef: number
     };
 }
@@ -21,7 +21,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
         this.returnUrl = '/treeni/tanaan';
         //
         const workoutExercise = new WorkoutExercise();
-        workoutExercise.workoutId = parseInt(props.params.id, 10);
+        workoutExercise.workoutId = props.params.id;
         workoutExercise.orderDef = parseInt(props.params.orderDef, 10);
         this.state = {workoutExercise};
     }

@@ -130,14 +130,4 @@ QUnit.module('offline/Offline', hooks => {
         );
     });
     // TODO unregister offline kutsuu unregister jos getregistration palauttaa
-    QUnit.test('utils.nextId palauttaa taulukon itemeistä suurimman id:n + 1', assert => {
-        //
-        const nextId1 = offline.utils.getNextId([]);
-        const nextId2 = offline.utils.getNextId([{id: 3}, {id: 2}]);
-        const nextId3 = offline.utils.getNextId([{rd: 4}, {rd: 5}], 'rd');
-        //
-        assert.equal(nextId1, 1, 'Pitäisi palauttaa 1, jos edellistä id:tä ei ole');
-        assert.equal(nextId2, 4, 'Pitäisi palauttaa suurimman id:n arvo + 1');
-        assert.equal(nextId3, 6, 'Pitäisi palauttaa suurimman rd:n arvo + 1');
-    });
 });

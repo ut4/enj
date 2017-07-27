@@ -2,11 +2,11 @@ import RESTBackend  from 'src/common/RESTBackend';
 import UserState from 'src/user/UserState';
 
 class Workout implements Enj.API.WorkoutRecord {
-    public id;
-    public start;
-    public end;
-    public exercises;
-    public userId;
+    public id: AAGUID;
+    public start: number;
+    public end: number;
+    public exercises: Array<Enj.API.WorkoutExerciseRecord>;
+    public userId: AAGUID;
     constructor() {
         this.end = 0;
         this.exercises = [];
@@ -64,11 +64,11 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
 }
 
 class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
-    public id;
-    public orderDef;
-    public workoutId;
-    public exercise;
-    public sets;
+    public id: AAGUID;
+    public orderDef: number;
+    public workoutId: AAGUID;
+    public exercise: Enj.API.ExerciseRecord;
+    public sets: Array<Enj.API.WorkoutExerciseSetRecord>;
     constructor() {
         this.orderDef = 0;
         this.sets = [];
@@ -76,9 +76,9 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
 }
 
 class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
-    public id;
-    public weight;
-    public reps;
+    public id: AAGUID;
+    public weight: number;
+    public reps: number;
 }
 
 /**

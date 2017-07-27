@@ -8,34 +8,35 @@ declare module Enj {
             password: string;
         }
         interface WorkoutRecord {
-            id: number;
+            id: AAGUID;
             start: number;
             exercises: Array<WorkoutExerciseRecord>;
-            userId: number;
+            userId: string;
         }
         interface WorkoutExerciseRecord {
-            id: number;
+            id: AAGUID;
             orderDef: number;
-            workoutId: number;
+            workoutId: AAGUID;
             exercise: ExerciseRecord;
             sets: Array<WorkoutExerciseSetRecord>;
         }
         interface WorkoutExerciseSetRecord {
-            id: number;
+            id: AAGUID;
             weight: number;
             reps: number;
         }
         interface ExerciseVariantRecord {
-            id: number;
+            id: AAGUID;
             content: string;
         }
         interface ExerciseRecord {
-            id: number;
+            id: AAGUID;
             name: string;
             variants: Array<ExerciseVariantRecord>;
         }
         interface InsertResponse {
-            insertId: number;
+            insertCount: number;
+            insertId?: AAGUID;
         }
         interface UpdateResponse {
             updateCount: number;

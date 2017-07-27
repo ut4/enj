@@ -16,7 +16,6 @@ class Offline {
     private userState: UserState;
     private serviceWorkerContainer: ServiceWorkerContainer;
     private controllingServiceWorker: ServiceWorker;
-    public utils: {getNextId: (collection: Array<Object>, key?: string) => number};
     /**
      * @param {UserState} userState
      * @param {ServiceWorkerContainer=} serviceWorkerContainer esim. window.navigator.serviceWorker
@@ -28,10 +27,6 @@ class Offline {
         this.userState = userState;
         this.serviceWorkerContainer = serviceWorkerContainer || window.navigator.serviceWorker;
         this.controllingServiceWorker = this.serviceWorkerContainer.controller;
-        this.utils = {
-            getNextId: (collection: Array<Object>, key: string = 'id'): number =>
-                collection.length ? Math.max(...collection.map(item => item[key])) + 1 : 1
-        };
     }
     /**
      * Rekisteröi tai uudelleenaktivoi Service workerin, ja asettaa
@@ -103,7 +98,6 @@ class Offline {
         return new Promise((resolve, reject) => {
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = event => {
-                console.log('got', event.data);
                 !event.data.error ? resolve(event.data) : reject(event.data.error);
             };
             // This sends the message data as well as transferring messageChannel.port2 to the service worker.
