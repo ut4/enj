@@ -47,7 +47,8 @@ public class WorkoutController {
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Workout workout) {
-        return new InsertResponse(this.workoutRepository.insert(workout));
+        int insertCount = this.workoutRepository.insert(workout);
+        return new InsertResponse(insertCount, workout.getId());
     }
 
     /**
@@ -72,6 +73,7 @@ public class WorkoutController {
     @Syncable(preparedBy = SyncDataPreparers.WorkoutExerciseInsertPreparer.class)
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
-        return new InsertResponse(this.workoutExerciseRepository.insert(workoutExercise));
+        int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
+        return new InsertResponse(insertCount, workoutExercise.getId());
     }
 }

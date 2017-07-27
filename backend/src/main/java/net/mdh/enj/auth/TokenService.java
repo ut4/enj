@@ -46,9 +46,9 @@ public class TokenService {
      * @param userId "subject"-kentän arvo
      * @return Signattu JWT
      */
-    public String generateNew(Integer userId) {
+    public String generateNew(String userId) {
         return this.jwtBuilder
-            .setSubject(String.valueOf(userId))
+            .setSubject(userId)
             .setExpiration(new Date(System.currentTimeMillis() + JWT_AGE_IN_MS))
             .signWith(SIGNATURE_ALGO, JWT_KEY)
             .compact();

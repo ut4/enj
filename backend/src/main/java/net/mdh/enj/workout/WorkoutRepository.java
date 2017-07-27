@@ -43,7 +43,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                 "SELECT wv.*, wev.* " +
                 "FROM (SELECT * FROM workoutView%s LIMIT %d) wv " +
                 "LEFT JOIN workoutExerciseView wev ON (wev.workoutExerciseWorkoutId = wv.workoutId) " +
-                "ORDER BY wv.workoutId DESC",
+                "ORDER BY wv.workoutStart DESC",
                 filters.hasRules() ? " WHERE " + filters.toSql() : "",
                 limit
             ),
@@ -64,11 +64,11 @@ public class WorkoutRepository extends BasicRepository<Workout> {
         @Override
         public Workout doMapRow(ResultSet rs, int rowNum) throws SQLException {
             Workout workout = new Workout();
-            workout.setId(rs.getInt("workoutId"));
+            workout.setId(rs.getString("workoutId"));
             workout.setStart(rs.getLong("workoutStart"));
             workout.setEnd(rs.getLong("workoutEnd"));
             workout.setNotes(rs.getString("workoutNotes"));
-            workout.setUserId(rs.getInt("workoutUserId"));
+            workout.setUserId(rs.getString("workoutUserId"));
             workout.setExercises(this.workoutExerciseCollector.collect(rs, rowNum, workout.getId()));
             return workout;
         }
@@ -91,8 +91,8 @@ public class WorkoutRepository extends BasicRepository<Workout> {
             @Override
             public Workout.Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Workout.Exercise workoutExercise = new Workout.Exercise();
-                workoutExercise.setId(rs.getInt(ID_COL));
-                workoutExercise.setWorkoutId(rs.getInt("workoutExerciseWorkoutId"));
+                workoutExercise.setId(rs.getString(ID_COL));
+                workoutExercise.setWorkoutId(rs.getString("workoutExerciseWorkoutId"));
                 workoutExercise.setSets(this.setCollector.collect(rs, rowNum, workoutExercise.getId()));
                 workoutExercise.setExercise(this.exerciseMapper.doMapRow(rs, rowNum));
                 return workoutExercise;
@@ -110,7 +110,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                 @Override
                 public Workout.Exercise.Set doMapRow(ResultSet rs, int rowNum) throws SQLException {
                     Workout.Exercise.Set set = new Workout.Exercise.Set();
-                    set.setId(rs.getInt("workoutExerciseSetId"));
+                    set.setId(rs.getString("workoutExerciseSetId"));
                     set.setWeight(rs.getDouble("workoutExerciseSetWeight"));
                     set.setReps(rs.getInt("workoutExerciseSetReps"));
                     return set;

@@ -61,10 +61,11 @@ public class AuthenticationFilterTest extends JerseyTest {
      */
     @Test
     public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() throws Exception {
-        String testToken = new TokenService(AppConfigProvider.getInstance()).generateNew(34);
+        String mockUuid = "uuid34";
+        String testToken = new TokenService(AppConfigProvider.getInstance()).generateNew(mockUuid);
         Response response = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + testToken).get();
         Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + "34", response.readEntity(String.class));
+        Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + mockUuid, response.readEntity(String.class));
     }
     /**
      * Testaa että @PermitAll-annotaatio skippaa autentikoinnin.

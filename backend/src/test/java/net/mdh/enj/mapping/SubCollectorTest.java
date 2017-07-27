@@ -33,13 +33,13 @@ public class SubCollectorTest {
     @Test
     public void collectIgnorettaaRivitJoidenForeignKeytEiMatchaa() throws SQLException {
         int currentRsCursorPosition = 2;
-        int foreignOriginValue = 24;
+        String foreignOriginValue = "uuid24";
         SomeEntity firstMappedEntity = new SomeEntity();
         SomeEntity secondMappedEntity = new SomeEntity();
         // Resultset, jossa kolme itemiä,
         Mockito.when(this.mockResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
         // joista ensimmäinen pitäisi skippautua, koska foreign key ei matchaa.
-        Mockito.when(this.mockResultSet.getInt(this.TEST_FOREIGN_COL)).thenReturn(23).thenReturn(24).thenReturn(24);
+        Mockito.when(this.mockResultSet.getString(this.TEST_FOREIGN_COL)).thenReturn("uuid23").thenReturn("uuid24").thenReturn("uuid24");
         Mockito.when(this.mockResultSet.getRow())/*.thenReturn(0) pitäisi skippautua*/.thenReturn(1).thenReturn(2);
         // Mockito.when(this.mockRowMapper.mapRow(this.mockResultSet, 0)) pitäisi skippautua
         Mockito.when(this.mockRowMapper.mapRow(this.mockResultSet, 1)).thenReturn(firstMappedEntity);
@@ -75,13 +75,13 @@ public class SubCollectorTest {
         // Resultset, jossa kaksi itemiä,
         Mockito.when(this.mockResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
         // joista kaikki pitäisi matchata foreignOriginValue:en.
-        Mockito.when(this.mockResultSet.getInt(this.TEST_FOREIGN_COL)).thenReturn(25).thenReturn(25);
+        Mockito.when(this.mockResultSet.getString(this.TEST_FOREIGN_COL)).thenReturn("uuid25").thenReturn("uuid25");
         Mockito.when(this.mockResultSet.getRow()).thenReturn(0).thenReturn(1);
         // Ensimmäinen palauttaa null
         Mockito.when(this.mockRowMapper.mapRow(this.mockResultSet, 0)).thenReturn(firstMappedEntity);
         Mockito.when(this.mockRowMapper.mapRow(this.mockResultSet, 1)).thenReturn(secondMappedEntity);
         //
-        List<SomeEntity> results = this.subCollector.collect(this.mockResultSet, 0, 25);
+        List<SomeEntity> results = this.subCollector.collect(this.mockResultSet, 0, "uuid25");
         Assert.assertEquals("Ei pitäisi kerätä null mappausta", 1, results.size());
         Assert.assertEquals(secondMappedEntity, results.get(0));
     }

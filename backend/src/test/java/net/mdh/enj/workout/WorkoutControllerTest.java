@@ -112,7 +112,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     public void POSTLisääTreeninJaPalauttaaInsertReponsenJossaTreeninUusiId() {
         // Luo testidata
         Workout data = new Workout();
-        data.setStart(System.currentTimeMillis() / 1000L);
+        data.setStart(WorkoutControllerTest.testWorkout.getStart() + 1);
         data.setNotes("foo");
         data.setUserId(TestData.TEST_USER_ID);
         Response response = this.newPostRequest("workout", data);
@@ -191,7 +191,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals("WorkoutController.insertExercise.arg0.exercise", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("WorkoutController.insertExercise.arg0.workoutId", errors.get(1).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
     }
 
     /**
@@ -213,7 +213,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         // Testaa että insertoitui, ja palautti id:n
         Response getResponse = this.newGetRequest("workout");
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
-        Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId() == testWorkout.getId()).findFirst().get();
+        Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId().equals(testWorkout.getId())).findFirst().get();
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
     }
 }

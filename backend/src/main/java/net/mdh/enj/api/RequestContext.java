@@ -7,7 +7,7 @@ public class RequestContext {
     // Authorization-headerin arvo
     private String authHeader;
     // Tokenista ekstraktoitu käyttäjätunniste
-    private int userId;
+    private String userId;
 
     public Object getAuthHeader() {
         return this.authHeader;
@@ -16,10 +16,10 @@ public class RequestContext {
         this.authHeader = authHeader;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 }

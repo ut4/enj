@@ -13,7 +13,7 @@ public class SearchFiltersTest {
     @Test
     public void hasRulesPalauttaaAinaTrue() {
         Assert.assertEquals(true, this.searchFilters.hasRules());
-        this.searchFilters.setUserId(1);
+        this.searchFilters.setUserId("uuid1");
         Assert.assertEquals(true, this.searchFilters.hasRules());
     }
     @Test

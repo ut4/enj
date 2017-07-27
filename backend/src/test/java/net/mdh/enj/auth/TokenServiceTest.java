@@ -84,7 +84,7 @@ public class TokenServiceTest {
      */
     @Test
     public void generateNewLuoTokeninJaAsettaaSiihenArvot() {
-        Integer testUserId = 23;
+        String testUserId = "uuid23";
         String expectedToken = "<token>";
         Mockito.when(this.mockJwtBuilder.setExpiration(Mockito.any())).thenReturn(this.mockJwtBuilder);
         Mockito.when(this.mockJwtBuilder.setSubject(Mockito.any())).thenReturn(this.mockJwtBuilder);
@@ -93,7 +93,7 @@ public class TokenServiceTest {
         //
         String actualToken = this.tokenService.generateNew(testUserId);
         //
-        Mockito.verify(this.mockJwtBuilder, Mockito.times(1)).setSubject("23");
+        Mockito.verify(this.mockJwtBuilder, Mockito.times(1)).setSubject(testUserId);
         Mockito.verify(this.mockJwtBuilder, Mockito.times(1)).setExpiration(Mockito.argThat(actualExp ->
             // Eliminoi millisekuntien aiheuttaman epätarkkuuden, dow mon dd hh:mm:ss zzz yyyy
             actualExp.toString().equals(new Date(System.currentTimeMillis() + TokenService.JWT_AGE_IN_MS).toString())

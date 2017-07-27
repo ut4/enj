@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.RowMapper;
 import java.util.Objects;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Luokka, joka sisältää yleisimmät CRUD-toiminnallisuudet (insert, selectAll jne).
@@ -20,9 +21,7 @@ public abstract class BasicRepository<T extends DbEntity> {
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName, String idColumn) {
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
-        this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource())
-            .withTableName(tableName)
-            .usingGeneratedKeyColumns(idColumn);
+        this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource()).withTableName(tableName);
     }
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
@@ -33,13 +32,13 @@ public abstract class BasicRepository<T extends DbEntity> {
      * Lisää beanin {data} tietokantaan. HUOM - olettaa, että {data} on jo validoitu!
      *
      * @param data T
-     * @return Lisätyn rivin id
+     * @return Lisättyjen rivien lukumäärä
      */
     public int insert(T data) {
-        SqlParameterSource parameters = new BeanPropertySqlParameterSource(data);
-        Number newId = this.inserter.executeAndReturnKey(parameters);
-        data.setId(newId.intValue());
-        return data.getId();
+        if (data.getId() == null) {
+            data.setId(UUID.randomUUID().toString());
+        }
+        return this.inserter.execute(new BeanPropertySqlParameterSource(data));
     }
 
     /**

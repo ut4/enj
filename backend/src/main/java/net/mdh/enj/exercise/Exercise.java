@@ -34,7 +34,7 @@ public class Exercise extends DbEntity {
 
     public static class Variant extends DbEntity {
         private String content;
-        private int exerciseId;
+        private String exerciseId;
 
         public String getContent() {
             return this.content;
@@ -43,10 +43,10 @@ public class Exercise extends DbEntity {
             this.content = content;
         }
 
-        public int getExerciseId() {
+        public String getExerciseId() {
             return this.exerciseId;
         }
-        public void setExerciseId(int exerciseId) {
+        public void setExerciseId(String exerciseId) {
             this.exerciseId = exerciseId;
         }
 

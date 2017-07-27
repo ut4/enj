@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.Mockito;
 import net.mdh.enj.db.DataSourceFactory;
+import net.mdh.enj.validation.UUIDValidator;
 import net.mdh.enj.resources.RollbackingDBUnitTest;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
@@ -22,19 +23,21 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
 
     /**
      * Testaa, että insert() lisää beanin tietokantaan, asettaa sen primääriavaimen
-     * arvoksi tietokannan generoiman id:n, ja lopuksi palauttaa generoidun id:n.
+     * arvoksi uuden UUID:n, ja lopuksi palauttaa insertoitujen rivien lukumäärän.
      */
     @Test
-    public void insertInsertoiBeaninJaPalauttaaGeneroidunIdn() {
+    public void insertInsertoiBeaninJaPalauttaaInsertoitujenRivienLukumäärän() {
         //
         SimpleExerciseEntity data = new SimpleExerciseEntity();
         data.setName("foo");
         //
-        int insertId = this.testRepo.insert(data);
+        int insertCount = this.testRepo.insert(data);
         //
-        Assert.assertTrue(insertId > 0);
-        Assert.assertTrue(data.getId() > 0);
-        Assert.assertEquals(insertId, data.getId());
+        Assert.assertEquals("Pitäisi palauttaa insertoitujen rivien lukumäärän", 1, insertCount);
+        Assert.assertNotNull("Pitäisi luoda primääriavain", data.getId());
+        Assert.assertTrue("Pitäisi luoda primääriavaineksi validi uuidv4",
+            new UUIDValidator().isValid(data.getId(), null)
+        );
     }
 
     /**
@@ -79,11 +82,11 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     public void selectOnePalauttaaYhdenBeanin() {
         //
         SimpleExerciseEntity result = this.testRepo.selectOne(
-            "SELECT 1 as id, \"nam\" as `name`",
+            "SELECT \"mockuuid\" as id, \"nam\" as `name`",
             new SimpleExerciseMapper()
         );
         Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.getId());
+        Assert.assertEquals("mockuuid", result.getId());
         Assert.assertEquals("nam", result.getName());
     }
 
@@ -118,7 +121,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         @Override
         public SimpleExerciseEntity mapRow(ResultSet resultSet, int i) throws SQLException {
             SimpleExerciseEntity simpleExercise = new SimpleExerciseEntity();
-            simpleExercise.setId(resultSet.getInt("id"));
+            simpleExercise.setId(resultSet.getString("id"));
             simpleExercise.setName(resultSet.getString("name"));
             return simpleExercise;
         }

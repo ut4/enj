@@ -1,15 +1,16 @@
 package net.mdh.enj.resources;
 
-import net.mdh.enj.exercise.Exercise;
-import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.user.User;
 import net.mdh.enj.workout.Workout;
-import org.springframework.jdbc.core.JdbcTemplate;
+import net.mdh.enj.mapping.DbEntity;
+import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import javax.sql.DataSource;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class DbTestUtils {
     private final DataSource rollbackingDataSource;
@@ -48,15 +49,14 @@ public class DbTestUtils {
         if (!this.inserters.containsKey(tableName)) {
             SimpleJdbcInsert inserter = new SimpleJdbcInsert(this.rollbackingDataSource);
             inserter.withTableName(tableName);
-            inserter.usingGeneratedKeyColumns("id");
             this.inserters.put(tableName, inserter);
         }
         return this.inserters.get(tableName);
     }
     private void insert(SimpleJdbcInsert inserter, DbEntity data) {
-        Number newWeId = inserter.executeAndReturnKey(
-            new BeanPropertySqlParameterSource(data)
-        );
-        data.setId(newWeId.intValue());
+        if (data.getId() == null) {
+            data.setId(UUID.randomUUID().toString());
+        }
+        inserter.execute(new BeanPropertySqlParameterSource(data));
     }
 }

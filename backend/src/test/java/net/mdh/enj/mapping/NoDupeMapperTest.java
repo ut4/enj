@@ -21,13 +21,18 @@ public class NoDupeMapperTest {
     }
     /**
      * Testaa, että mapRow() ei mappaa riviä (kutsu doMapRow:ia), jos kyseinen
-     * rivi on jo kerätty, tai sinä ei ole dataa (rivin getInt({primaryKeyColumn})
-     * palauttaa arvon 0).
+     * rivi on jo kerätty, tai sinä ei ole dataa (rivin getString({primaryKeyColumn})
+     * palauttaa arvon null).
      */
     @Test
     public void mapRowIgnorettaaRivitJotkaOnJoKerätty() throws SQLException {
         // Mockaa rivien primääriavain-arvot
-        Mockito.when(this.mockResultSet.getInt(TestMapper.TEST_ID_COL)).thenReturn(1).thenReturn(1).thenReturn(2).thenReturn(0).thenReturn(0);
+        Mockito.when(this.mockResultSet.getString(TestMapper.TEST_ID_COL))
+            .thenReturn("mockuuid1")
+            .thenReturn("mockuuid1")
+            .thenReturn("mockuuid2")
+            .thenReturn(null)
+            .thenReturn(null);
         // Simuloi muutama mappaus (normaalisti Spring Jdbc:n tekee tämän)
         TestEntity mapped1 = this.testNoDupeMapper.mapRow(this.mockResultSet, 0);
         TestEntity mapped2 = this.testNoDupeMapper.mapRow(this.mockResultSet, 1);
@@ -37,11 +42,11 @@ public class NoDupeMapperTest {
         TestEntity mapped6 = this.testNoDupeMapper.mapRow(this.mockResultSet, 5);
         // Assertoi
         Assert.assertNotNull("Pitäisi mapata ensimmäisen normaalisti", mapped1);
-        Assert.assertNull("Pitäisi ignorettaa, koska id 1 jo kerätty", mapped2);
+        Assert.assertNull("Pitäisi ignorettaa, koska id mockuuid1 jo kerätty", mapped2);
         Assert.assertNotNull("Pitäisi mapata normaalisti", mapped3);
-        Assert.assertNull("Pitäisi ignorettaa, koska id 0", mapped4);
-        Assert.assertNull("Pitäisi ignorettaa, koska id 0", mapped5);
-        Assert.assertNull("Pitäisi ignorettaa, koska id 2 jo kerätty", mapped6);
+        Assert.assertNull("Pitäisi ignorettaa, koska id null", mapped4);
+        Assert.assertNull("Pitäisi ignorettaa, koska id null", mapped5);
+        Assert.assertNull("Pitäisi ignorettaa, koska id mockuuid2 jo kerätty", mapped6);
     }
 
     public static class TestMapper extends NoDupeRowMapper<TestEntity> {

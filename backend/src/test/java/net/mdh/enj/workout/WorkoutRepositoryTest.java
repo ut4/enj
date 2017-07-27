@@ -40,8 +40,8 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
     @Test
     public void selectAllSisältääLiikkeetJaSetit() {
         Workout w1 = this.insertWorkoutWithExerciseAndSet();
-        Workout w2 = this.insertWorkoutWithExerciseButNoSets();
-        Workout w3 = this.insertWorkoutWithoutExercisesOrSets();
+        Workout w2 = this.insertWorkoutWithExerciseButNoSets(this.newTimestamp() + 1);
+        Workout w3 = this.insertWorkoutWithoutExercisesOrSets(this.newTimestamp() + 2);
         //
         SearchFilters searchFilters = new SearchFilters();
         searchFilters.setUserId(TestData.TEST_USER_ID);
@@ -61,7 +61,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
 
     private Workout insertWorkoutWithExerciseAndSet() {
         // Treeni
-        Workout workout = this.insertWorkout();
+        Workout workout = this.insertWorkout(this.newTimestamp());
         // Treenille 1 liike
         Workout.Exercise we = this.insertWorkoutExercise(workout.getId());
         this.addExercisesToWorkout(workout, we);
@@ -71,28 +71,28 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         return workout;
     }
 
-    private Workout insertWorkoutWithExerciseButNoSets() {
+    private Workout insertWorkoutWithExerciseButNoSets(long timestamp) {
         // Treeni
-        Workout workout = this.insertWorkout();
+        Workout workout = this.insertWorkout(timestamp);
         // Treenille 1 liike
         Workout.Exercise we = this.insertWorkoutExercise(workout.getId());
         this.addExercisesToWorkout(workout, we);
         return workout;
     }
 
-    private Workout insertWorkoutWithoutExercisesOrSets() {
-        return this.insertWorkout();
+    private Workout insertWorkoutWithoutExercisesOrSets(long timestamp) {
+        return this.insertWorkout(timestamp);
     }
 
-    private Workout insertWorkout() {
+    private Workout insertWorkout(long timestamp) {
         Workout workout = new Workout();
         workout.setUserId(TestData.TEST_USER_ID);
-        workout.setStart(System.currentTimeMillis() / 1000L);
+        workout.setStart(timestamp);
         this.utils.insertWorkout(workout);
         return workout;
     }
 
-    private Workout.Exercise insertWorkoutExercise(int workoutId) {
+    private Workout.Exercise insertWorkoutExercise(String workoutId) {
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(workoutId);
         we.setExercise(WorkoutRepositoryTest.testExercise);
@@ -106,7 +106,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         workout.setExercises(wexs);
     }
 
-    private Workout.Exercise.Set insertWorkoutExercseSet(int workoutExerciseId) {
+    private Workout.Exercise.Set insertWorkoutExercseSet(String workoutExerciseId) {
         Workout.Exercise.Set wes = new Workout.Exercise.Set();
         wes.setWeight(100);
         wes.setReps(6);
@@ -119,5 +119,9 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         List<Workout.Exercise.Set> weSets = new ArrayList<>();
         Collections.addAll(weSets, wes);
         we.setSets(weSets);
+    }
+
+    private long newTimestamp() {
+        return System.currentTimeMillis() / 1000L;
     }
 }

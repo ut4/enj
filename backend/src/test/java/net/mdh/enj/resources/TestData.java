@@ -6,9 +6,12 @@ import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.sync.Route;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class TestData {
-    public static final int TEST_USER_ID = 1;
+    public static final String TEST_USER_ID = "69891648-07bb-4991-8035-7fbc89fb6035";
+    public static final String TEST_WORKOUT_ID = "4d98360a-a077-4410-8bf1-e98532714683";
+    public static final String TEST_WORKOUT_EXERCISE_ID = "cbbcefe7-00e7-45c4-9b89-75dd70bd23f4";
     public static final String MOCK_AUTH_HEADER = AuthenticationFilter.AUTH_HEADER_NAME + "foo";
     public static final Route workoutInsertRoute = new Route("workout", "POST");
     public static final Route workoutExerciseAddRoute = new Route("workout/exercise", "POST");
@@ -20,26 +23,29 @@ public class TestData {
         testUserAwareRequestContext.setUserId(TEST_USER_ID);
     }
 
-    public static Map<String,Object> getSomeWorkoutData(Integer id, Long start) {
+    public static Map<String,Object> getSomeWorkoutData(String id, Long start) {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("id", id); // frontendin generoima väliaikainen id
+        data.put("id", id);
         data.put("start", start);
         data.put("userId", TEST_USER_ID);
         return data;
     }
+    public static Map<String,Object> getSomeWorkoutData(boolean withNewUuid) {
+        return getSomeWorkoutData(UUID.randomUUID().toString(), 101L);
+    }
     public static Map<String,Object> getSomeWorkoutData() {
-        return getSomeWorkoutData(4, 101L);
+        return getSomeWorkoutData(TEST_WORKOUT_ID, 101L);
     }
 
     public static Map<String,Object> getBogusWorkoutData() {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("id", 0);
+        data.put("start", -4L);
         return data;
     }
 
     public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData, Exercise exercise) {
         HashMap<String, Object> data = new HashMap<>();
-        data.put("id", 5); // frontendin generoima väliaikainen id
+        data.put("id", TEST_WORKOUT_EXERCISE_ID);
         data.put("orderDef", 102);
         data.put("exercise", exercise);
         data.put("workoutId", parentWorkoutData.get("id"));

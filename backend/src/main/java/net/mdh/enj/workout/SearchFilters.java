@@ -9,16 +9,16 @@ import java.util.ArrayList;
  */
 public class SearchFilters implements SelectQueryFilters {
 
-    private int userId;
+    private String userId;
     @QueryParam("startFrom")
     private Long startFrom;
     @QueryParam("startTo")
     private Long startTo;
 
-    public int getUserId() {
+    public String getUserId() {
         return this.userId;
     }
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

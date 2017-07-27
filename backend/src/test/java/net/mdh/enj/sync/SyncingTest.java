@@ -80,7 +80,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     public void syncAllPalauttaaOnnistuneestiSynkattujenItemeidenIdtFailauksestaHuolimatta() {
         // Simuloi tilanne, jossa synkkaujonon toinen itemi failaa
         List<SyncQueueItem> queue = this.makeSyncQueueWithCoupleOfItems();
-        queue.get(0).setData(TestData.getSomeWorkoutData());
+        queue.get(0).setData(TestData.getSomeWorkoutData(true));
         queue.get(1).setData(TestData.getBogusWorkoutData());
         Response response = this.newPostRequest("sync", queue);
         // Assertoi että ei repinyt pelihousujansa, vaan palautti onnistuneesti synkattujen itemeiden id:t
@@ -109,8 +109,8 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         );
         //
         Workout syncedWorkout = (Workout) utils.selectOne(
-            "SELECT id as i, `start` as s FROM workout ORDER BY id DESC LIMIT 1", (rs, i) -> {
-                Workout w = new Workout(); w.setId(rs.getInt("i")); w.setStart(rs.getInt("s")); return w;
+            "SELECT id as i, `start` as s FROM workout ORDER BY `start` DESC LIMIT 1", (rs, i) -> {
+                Workout w = new Workout(); w.setId(rs.getString("i")); w.setStart(rs.getInt("s")); return w;
             }
         );
         Assert.assertNotNull("Synkattu data pitäisi olla insertoituna tietokantaan", syncedWorkout);
@@ -154,12 +154,12 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     private List<SyncQueueItem> makeTestSyncQueue() {
         SyncQueueItem testWorkoutSyncItem = new SyncQueueItem();
-        testWorkoutSyncItem.setId(2); // frontendin generoima väliaikainen id
+        testWorkoutSyncItem.setId(2);
         testWorkoutSyncItem.setRoute(TestData.workoutInsertRoute);
         testWorkoutSyncItem.setData(TestData.getSomeWorkoutData());
         //
         SyncQueueItem testWorkoutExerciseSyncItem = new SyncQueueItem();
-        testWorkoutExerciseSyncItem.setId(3); // frontendin generoima väliaikainen id
+        testWorkoutExerciseSyncItem.setId(3);
         testWorkoutExerciseSyncItem.setRoute(TestData.workoutExerciseAddRoute);
         testWorkoutExerciseSyncItem.setData(TestData.getSomeWorkoutExerciseData(testWorkoutSyncItem.getData(), testExercise));
         //

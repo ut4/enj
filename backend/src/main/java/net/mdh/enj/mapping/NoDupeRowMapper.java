@@ -14,7 +14,7 @@ import java.util.HashMap;
 public abstract class NoDupeRowMapper<T> implements RowMapper<T> {
 
     private final String primaryKeyColumn;
-    private final HashMap<Integer, Object> ids;
+    private final HashMap<String, Object> ids;
 
     /**
      * @param primaryKeyColumn Pääavaincolumnin nimi, jonka avulla tiedetään mikä rivi on jo kerätty.
@@ -29,8 +29,8 @@ public abstract class NoDupeRowMapper<T> implements RowMapper<T> {
      * jo kerätty, tai kerättävän rivin pääavaimen arvo on null/0.
      */
     public T mapRow(ResultSet rs, int rowNum) throws SQLException {
-        int id = rs.getInt(this.primaryKeyColumn);
-        if (id == 0 || this.isAlreadyCollected(id)) {
+        String id = rs.getString(this.primaryKeyColumn);
+        if (id == null || this.isAlreadyCollected(id)) {
             return null;
         }
         T collected = this.doMapRow(rs, rowNum);
@@ -43,11 +43,11 @@ public abstract class NoDupeRowMapper<T> implements RowMapper<T> {
      */
     protected abstract T doMapRow(ResultSet rs, int rowNum) throws SQLException;
 
-    private boolean isAlreadyCollected(int id) {
+    private boolean isAlreadyCollected(String id) {
         return this.ids.containsKey(id);
     }
 
-    private void setAsCollected(int id) {
-        this.ids.put(id, null);
+    private void setAsCollected(String id) {
+        this.ids.put(id, 'y');
     }
 }

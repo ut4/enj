@@ -62,7 +62,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         // JWT header OK, tallenna tokenin sisältö contekstiin & hyväksy pyyntö
         RequestContext rc = this.requestContextProvider.get();
         rc.setAuthHeader(authHeader);
-        rc.setUserId(Integer.valueOf(parsedTokenData.getBody().getSubject()));
+        rc.setUserId(parsedTokenData.getBody().getSubject());
     }
 
     private Response newUnauthorizedResponse() {

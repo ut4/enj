@@ -109,7 +109,7 @@ public class SyncController {
 
     private Integer getSyncResult(Response syncResponse, String method) {
         if (method.equals("POST")) {
-            return syncResponse.readEntity(APIResponses.InsertResponse.class).insertId;
+            return syncResponse.readEntity(APIResponses.InsertResponse.class).insertCount;
         }
         //if (method.equals("PUT")) {
         //    return syncResponse.readEntity(APIResponses.UpdateResponse.class).updateCount;

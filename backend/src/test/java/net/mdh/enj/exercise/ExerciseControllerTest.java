@@ -1,8 +1,8 @@
 package net.mdh.enj.exercise;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
@@ -11,8 +11,8 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExerciseControllerTest extends RollbackingDBJerseyTest {
@@ -49,13 +49,14 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         List<Exercise.Variant> variants = new ArrayList<>();
         variants.add(insertTestVariant("var1", testExercise.getId()));
         variants.add(insertTestVariant("var2", testExercise.getId()));
+        Collections.swap(variants, 0, 1);
         testExercise.setVariants(variants);
         Exercise anotherWithoutVariants = insertTestExercise("bar");
         Response response = target("exercise").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
-        Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
-        Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
+        Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(1).toString());
+        Assert.assertEquals(testExercise.toString(), exercises.get(0).toString());
     }
 
     private static Exercise insertTestExercise(String name) {
@@ -65,7 +66,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         return e;
     }
 
-    private static Exercise.Variant insertTestVariant(String content, int exerciseId) {
+    private static Exercise.Variant insertTestVariant(String content, String exerciseId) {
         Exercise.Variant v = new Exercise.Variant();
         v.setContent(content);
         v.setExerciseId(exerciseId);

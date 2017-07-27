@@ -1,11 +1,11 @@
 package net.mdh.enj.mapping;
 
 public abstract class DbEntity {
-    protected int id;
-    public void setId(int id) {
+    protected String id;
+    public void setId(String id) {
         this.id = id;
     }
-    public int getId() {
+    public String getId() {
         return this.id;
     }
 }

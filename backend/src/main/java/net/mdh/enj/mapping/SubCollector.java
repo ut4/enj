@@ -28,19 +28,20 @@ public class SubCollector<T> {
      * arvolla {foreignOriginValue}, eli jos:
      *
      * {this.foreignKeyColumn} = "afoo", ja
-     * {foreignOriginValue} = 45, niin:
+     * {foreignOriginValue} = "uuid2", niin:
      *
-     * {"foo": "sthng", "bar": 1, "afoo": 43} <- skippaa
-     * {"foo": "sthng", "bar": 2, "afoo": 44} <- skippaa
-     * {"foo": "sthng", "bar": 3, "afoo": 45} <- Mappaa & lisää listaan
-     * {"foo": "sthng", "bar": 4, "afoo": 45} <- Mappaa & lisää listaan
-     * {"foo": "sthng", "bar": 5, "afoo": 46} <- skippaa
+     * {"foo": "sthng", "bar": 1, "afoo": "uuid1"} <- skippaa
+     * {"foo": "sthng", "bar": 2, "afoo": "uuid1"} <- skippaa
+     * {"foo": "sthng", "bar": 3, "afoo": "uuid2"} <- Mappaa & lisää listaan
+     * {"foo": "sthng", "bar": 4, "afoo": "uuid2"} <- Mappaa & lisää listaan
+     * {"foo": "sthng", "bar": 5, "afoo": "uuid3"} <- skippaa
      */
-    public List<T> collect(ResultSet rs, int rowNum, int foreignOriginValue) throws SQLException {
+    public List<T> collect(ResultSet rs, int rowNum, String foreignOriginValue) throws SQLException {
         rs.absolute(0);
         List<T> out = new ArrayList<>();
         while (rs.next()) {
-            if (rs.getInt(this.foreignKeyColumn) != foreignOriginValue) {
+            String foreignTargetValue = rs.getString(this.foreignKeyColumn);
+            if (foreignTargetValue == null || !foreignTargetValue.equals(foreignOriginValue)) {
                 continue;
             }
             T mapped = this.rowMapper.mapRow(rs, rs.getRow());

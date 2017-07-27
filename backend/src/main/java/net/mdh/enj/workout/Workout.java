@@ -2,6 +2,7 @@ package net.mdh.enj.workout;
 
 import net.mdh.enj.Utils;
 import net.mdh.enj.mapping.DbEntity;
+import net.mdh.enj.validation.UUID;
 import net.mdh.enj.validation.AuthenticatedUserId;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -20,7 +21,7 @@ public class Workout extends DbEntity {
     private String notes;
     private List<Exercise> exercises;
     @AuthenticatedUserId
-    private int userId;
+    private String userId;
 
     public long getStart() {
         return this.start;
@@ -50,10 +51,10 @@ public class Workout extends DbEntity {
         this.exercises = exercises;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return this.userId;
     }
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -75,8 +76,8 @@ public class Workout extends DbEntity {
     @Produces(MediaType.APPLICATION_JSON)
     public static class Exercise extends DbEntity {
         private int orderDef;
-        @Min(value = 1)
-        private int workoutId;
+        @UUID
+        private String workoutId;
         @Valid
         @NotNull
         private net.mdh.enj.exercise.Exercise exercise;
@@ -89,17 +90,17 @@ public class Workout extends DbEntity {
             this.orderDef = orderDef;
         }
 
-        public int getWorkoutId() {
-            return this.workoutId;
+        public String getWorkoutId() {
+            return this.workoutId.toString();
         }
-        public void setWorkoutId(int workoutId) {
+        public void setWorkoutId(String workoutId) {
             this.workoutId = workoutId;
         }
 
-        public int getExerciseId() {
-            return this.exercise != null ? this.exercise.getId() : 0;
+        public String getExerciseId() {
+            return this.exercise != null ? this.exercise.getId().toString() : null;
         }
-        public void setExerciseId(int exerciseId) {
+        public void setExerciseId(String exerciseId) {
             this.exercise.setId(exerciseId);
         }
 
@@ -134,7 +135,7 @@ public class Workout extends DbEntity {
         public static class Set extends DbEntity {
             private double weight;
             private int reps;
-            private int workoutExerciseId;
+            private String workoutExerciseId;
 
             public double getWeight() {
                 return weight;
@@ -150,10 +151,10 @@ public class Workout extends DbEntity {
                 this.reps = reps;
             }
 
-            public int getWorkoutExerciseId() {
+            public String getWorkoutExerciseId() {
                 return this.workoutExerciseId;
             }
-            public void setWorkoutExerciseId(int workoutExerciseId) {
+            public void setWorkoutExerciseId(String workoutExerciseId) {
                 this.workoutExerciseId = workoutExerciseId;
             }
 

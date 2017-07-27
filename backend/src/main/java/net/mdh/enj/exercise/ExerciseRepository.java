@@ -19,13 +19,13 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     /**
-     * Palauttaa kaikki liikkeet tietokannasta "uusin ensin" -järjestyksessä.
+     * Palauttaa kaikki liikkeet tietokannasta.
      *
      * @return liikkeet
      */
     List<Exercise> selectAll() {
         return super.selectAll(
-            String.format("SELECT * FROM %sView ORDER BY exerciseId DESC", TABLE_NAME),
+            String.format("SELECT * FROM %sView", TABLE_NAME),
             new ExerciseMapper()
         );
     }
@@ -46,7 +46,7 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
         @Override
         public Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
             Exercise exercise = new Exercise();
-            int id = rs.getInt(ID_COL);
+            String id = rs.getString(ID_COL);
             exercise.setId(id);
             exercise.setName(rs.getString("exerciseName"));
             exercise.setVariants(this.variantCollector.collect(rs, rowNum, id));
@@ -65,9 +65,9 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
             @Override
             public Exercise.Variant doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Exercise.Variant variant = new Exercise.Variant();
-                variant.setId(rs.getInt("exerciseVariantId"));
+                variant.setId(rs.getString("exerciseVariantId"));
                 variant.setContent(rs.getString("exerciseVariantContent"));
-                variant.setExerciseId(rs.getInt("exerciseId"));
+                variant.setExerciseId(rs.getString("exerciseId"));
                 return variant;
             }
         }

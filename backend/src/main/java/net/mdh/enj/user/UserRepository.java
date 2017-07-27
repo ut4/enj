@@ -32,7 +32,7 @@ public class UserRepository extends BasicRepository<User> {
         @Override
         public User doMapRow(ResultSet rs, int rowNum) throws SQLException {
             User user = new User();
-            user.setId(rs.getInt("userId"));
+            user.setId(rs.getString("userId"));
             user.setUsername(rs.getString("userUsername"));
             user.setPasswordHash(rs.getString("userPasswordHash"));
             return user;
