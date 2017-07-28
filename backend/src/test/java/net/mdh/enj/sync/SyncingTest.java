@@ -10,7 +10,6 @@ import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.TestController;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import net.mdh.enj.workout.Workout;
-import net.mdh.enj.workout.SyncDataPreparers;
 import net.mdh.enj.workout.WorkoutController;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
@@ -202,7 +201,6 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         SyncRoute registeredWorkoutExerciseAddRoute = new SyncRoute();
         registeredWorkoutExerciseAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl());
         registeredWorkoutExerciseAddRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
-        registeredWorkoutExerciseAddRoute.setPreparerClass(SyncDataPreparers.WorkoutExerciseInsertPreparer.class);
         syncRouteRegister = new SyncRouteRegister();
         syncRouteRegister.add(registeredWorkoutInsertRoute);
         syncRouteRegister.add(registeredWorkoutExerciseAddRoute);

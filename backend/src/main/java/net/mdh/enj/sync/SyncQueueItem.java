@@ -15,7 +15,6 @@ public class SyncQueueItem {
     private Route route;
     @NotNull
     private Map<String, Object> data;
-    private Integer syncResult;
 
     public int getId() {
         return this.id;
@@ -38,20 +37,12 @@ public class SyncQueueItem {
         this.data = data;
     }
 
-    public Integer getSyncResult() {
-        return this.syncResult;
-    }
-    public void setSyncResult(Integer syncResult) {
-        this.syncResult = syncResult;
-    }
-
     @Override
     public String toString() {
         return "SyncQueueItem{" +
             "id=" + this.getId() +
             ", route=" + this.getRoute() +
             ", data=" + this.getData() +
-            ", syncResult=" + (this.getSyncResult() != null ? this.syncResult : "null") +
         "}";
     }
 }

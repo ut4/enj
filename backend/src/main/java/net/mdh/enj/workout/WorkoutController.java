@@ -70,7 +70,7 @@ public class WorkoutController {
      */
     @POST
     @Path("/exercise")
-    @Syncable(preparedBy = SyncDataPreparers.WorkoutExerciseInsertPreparer.class)
+    @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);

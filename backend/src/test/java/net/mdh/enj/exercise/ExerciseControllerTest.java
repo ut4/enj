@@ -55,8 +55,8 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Response response = target("exercise").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
-        Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(1).toString());
-        Assert.assertEquals(testExercise.toString(), exercises.get(0).toString());
+        Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
+        Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
     }
 
     private static Exercise insertTestExercise(String name) {

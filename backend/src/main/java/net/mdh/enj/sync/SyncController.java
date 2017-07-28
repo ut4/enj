@@ -11,10 +11,8 @@ import javax.ws.rs.ClientErrorException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.APIResponses;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
-import java.lang.reflect.InvocationTargetException;
 import javax.validation.constraints.NotNull;
 import javax.validation.Valid;
 import javax.inject.Inject;
@@ -49,19 +47,14 @@ public class SyncController {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws NoSuchMethodException,
-        InvocationTargetException, IllegalAccessException, JsonProcessingException, InstantiationException {
+    public List<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
         //
         ArrayList<Integer> idsOfSuccesfullySyncedItems = new ArrayList<>();
-        ArrayList<SyncQueueItem> alreadySynced = new ArrayList<>();
         //
         for (SyncQueueItem syncableItem: syncQueue) {
             //
             // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
             SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
-            //
-            // Kutsu pre-sync koukkua jos sellainen on määritelty @Syncable-annotaatioon
-            this.callSyncQueueItemPreparerIfDefined(routeMatch.getPreparerClass(), syncableItem, alreadySynced);
             //
             // Suorita synkkaus HTTP:lla
             Response syncResponse = this.appHttpClient.target(routeMatch.getUrl())
@@ -69,54 +62,19 @@ public class SyncController {
                 .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
                 .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
             //
-            // Jos vastaus oli ok, aseta synkkauksen tulos itemiin, lisää itemin
-            // id vastaustaulukkoon, ja lisää itemi alreadySynced-taulukkoon
+            // Jos vastaus oli ok, lisää itemin id vastaustaulukkoon
             if (syncResponse.getStatus() >= 200 && syncResponse.getStatus() < 300) {
-                syncableItem.setSyncResult(this.getSyncResult(syncResponse, routeMatch.getMethod()));
                 idsOfSuccesfullySyncedItems.add(syncableItem.getId());
-                alreadySynced.add(syncableItem);
             // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
-            // vastauksen sijaan, jos 1> itemi oli synkattu ennen failausta
+            // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
             } else if (idsOfSuccesfullySyncedItems.size() > 0) {
                 syncResponse.close();
                 break;
             // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
             } else {
-                //syncResponse.close();
-                //syncResponse.
                 throw new ClientErrorException(syncResponse);
             }
         }
         return idsOfSuccesfullySyncedItems;
-    }
-
-    private void callSyncQueueItemPreparerIfDefined(
-        Class<? extends SyncQueueItemPreparer> preparerClass,
-        SyncQueueItem syncableItem,
-        List<SyncQueueItem> alreadySyncedItems
-    ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-        //
-        if (preparerClass == null) {
-            return;
-        }
-        //
-        preparerClass.getDeclaredMethod("prepareForSync", SyncQueueItem.class, List.class).invoke(
-            preparerClass.newInstance(),
-            syncableItem,      // 1. argumentti
-            alreadySyncedItems // 2. argumentti
-        );
-    }
-
-    private Integer getSyncResult(Response syncResponse, String method) {
-        if (method.equals("POST")) {
-            return syncResponse.readEntity(APIResponses.InsertResponse.class).insertCount;
-        }
-        //if (method.equals("PUT")) {
-        //    return syncResponse.readEntity(APIResponses.UpdateResponse.class).updateCount;
-        //}
-        //if (method.equals("DELETE")) {
-        //    return syncResponse.readEntity(APIResponses.DeleteResponse.class).deleteCount;
-        //}
-        return -1;
     }
 }

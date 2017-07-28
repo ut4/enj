@@ -10,10 +10,4 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Syncable {
-    /**
-     * Luokka, jonka prepareForSync-metodi triggeröidään SyncControllerin toimesta
-     * ennen varsinaista synkkausta. Ei pakollinen.
-     */
-    Class<? extends SyncQueueItemPreparer> preparedBy() default SyncQueueItemPreparer.class;
-}
+public @interface Syncable {}

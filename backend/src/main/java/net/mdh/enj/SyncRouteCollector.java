@@ -3,7 +3,6 @@ package net.mdh.enj;
 import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.sync.SyncRoute;
 import net.mdh.enj.sync.SyncRouteRegister;
-import net.mdh.enj.sync.SyncQueueItemPreparer;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -45,12 +44,9 @@ public class SyncRouteCollector implements ApplicationEventListener {
 
     private void collectSyncableRoutes(Resource resource, String parentPath) {
         for (ResourceMethod syncableMethod: this.getSyncableResourceMethods(resource)) {
-            Syncable annotation = syncableMethod.getInvocable().getHandlingMethod().getAnnotation(Syncable.class);
             SyncRoute syncRoute = new SyncRoute();
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
-            Class<? extends SyncQueueItemPreparer> preparer = annotation.preparedBy();
-            syncRoute.setPreparerClass(preparer != SyncQueueItemPreparer.class ? preparer : null);
             this.routeRegister.add(syncRoute);
         }
     }
