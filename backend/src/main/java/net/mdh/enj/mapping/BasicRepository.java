@@ -3,9 +3,11 @@ package net.mdh.enj.mapping;
 import net.mdh.enj.db.DataSourceFactory;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.RowMapper;
+import java.util.stream.IntStream;
 import java.util.Objects;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +63,7 @@ public abstract class BasicRepository<T extends DbEntity> {
      *
      * @return Lista beaneja {T} | tyhjä lista.
      */
-    protected List<T> selectAll(String query, RowMapper<T> mapper) {
+    public List<T> selectAll(String query, RowMapper<T> mapper) {
         return this.selectAll(query, null, mapper);
     }
 
@@ -84,5 +86,14 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public T selectOne(String query, RowMapper<T> mapper) {
         return this.selectOne(query, null, mapper);
+    }
+
+    /**
+     * Ajaa tietokantakyselyn {q} jokaisesta batchin {data} itemistä.
+     *
+     * @return {int} Päivitettyjen rivien lukumäärä
+     */
+    public int updateMany(String q, List<T> data) {
+        return IntStream.of(this.qTemplate.batchUpdate(q, SqlParameterSourceUtils.createBatch(data.toArray()))).sum();
     }
 }

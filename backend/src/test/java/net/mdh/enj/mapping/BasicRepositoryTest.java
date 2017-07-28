@@ -8,8 +8,10 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.validation.UUIDValidator;
 import net.mdh.enj.resources.RollbackingDBUnitTest;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BasicRepositoryTest extends RollbackingDBUnitTest {
@@ -108,6 +110,35 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
             .mapRow(Mockito.any(ResultSet.class), Mockito.anyInt());
     }
 
+    @Test
+    public void updateManyPäivittääKaikkiBeanitJaPalauttaaPäivitettyjenRivienLukumäärän() {
+        //
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
+        SimpleExerciseEntity data2 = new SimpleExerciseEntity();
+        data2.setName("bar");
+        Assert.assertEquals(2, this.testRepo.insert(data) + this.testRepo.insert(data2));
+        // Päivitä kummankin beanin name
+        String newName = "foo2";
+        String newName2 = "bar2";
+        data.setName(newName);
+        data2.setName(newName2);
+        List<SimpleExerciseEntity> updateList = new ArrayList<>();
+        updateList.add(data);
+        updateList.add(data2);
+        int updateCount = this.testRepo.updateMany(updateList);
+        // Päivittikö 2 riviä?
+        Assert.assertEquals("Pitäisi päivittää kumpikin itemi", 2, updateCount);
+        // Hae päivitetty data tietokannasta & assertoi että data päivittyi
+        List<SimpleExerciseEntity> updated = this.testRepo.selectAll(
+            "SELECT id, `name` FROM exercise WHERE id IN (:id1, :id2)",
+            new MapSqlParameterSource().addValue("id1", data.getId()).addValue("id2", data2.getId()),
+            new SimpleExerciseMapper()
+        );
+        Assert.assertEquals("Pitäisi päivittää data", newName, updated.get(0).getName());
+        Assert.assertEquals("Pitäisi päivittää data", newName2, updated.get(1).getName());
+    }
+
     /**
      * Riisuttu versio ExerciseRepositorystä; handlaa entiteettejä, jotka sisältää
      *  vain schemassa pakolliseksi määritellyn kentän "name".
@@ -115,6 +146,9 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     private static class SimpleExerciseRepository extends BasicRepository<SimpleExerciseEntity> {
         SimpleExerciseRepository(DataSourceFactory dataSourceFac) {
             super(dataSourceFac, "exercise", BasicRepository.DEFAULT_ID);
+        }
+        int updateMany(List<SimpleExerciseEntity> items) {
+            return super.updateMany("UPDATE `exercise` SET `name` = :name WHERE id = :id", items);
         }
     }
     private static class SimpleExerciseMapper implements RowMapper<SimpleExerciseEntity> {
