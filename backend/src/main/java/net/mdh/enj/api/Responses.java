@@ -1,9 +1,9 @@
-package net.mdh.enj;
+package net.mdh.enj.api;
 
 /**
  * Oletusvastaukset INSERT, UPDATE ja DELETE REST-pyynnöille.
  */
-public abstract class APIResponses {
+public abstract class Responses {
     /**
      * Oletusvastaus INSERT REST-pyynnölle {"insertCount": ${Integer}, "insertId": ${String}}.
      */

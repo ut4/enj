@@ -1,6 +1,6 @@
 package net.mdh.enj.workout;
 
-import net.mdh.enj.APIResponses;
+import net.mdh.enj.api.Responses;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.TestData;
@@ -117,7 +117,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         data.setUserId(TestData.TEST_USER_ID);
         Response response = this.newPostRequest("workout", data);
         Assert.assertEquals(200, response.getStatus());
-        APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
         data.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
         Response getResponse = this.newGetRequest("workout");
@@ -208,7 +208,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         // Testaa että insertoi pyynnön tiedoilla
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
-        APIResponses.InsertResponse responseBody = response.readEntity(new GenericType<APIResponses.InsertResponse>() {});
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
         workoutExercise.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
         Response getResponse = this.newGetRequest("workout");

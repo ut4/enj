@@ -9,7 +9,7 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import static net.mdh.enj.APIResponses.InsertResponse;
+import static net.mdh.enj.api.Responses.InsertResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
 import javax.inject.Inject;
