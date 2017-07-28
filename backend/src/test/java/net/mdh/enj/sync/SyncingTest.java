@@ -14,6 +14,7 @@ import net.mdh.enj.workout.WorkoutController;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -118,10 +119,12 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         );
         //
         Workout.Exercise syncedWorkoutExercise = (Workout.Exercise) utils.selectOneWhere(
-            "SELECT orderDef as od FROM workoutExercise WHERE workoutId = ?",
-            new Object[]{syncedWorkout.getId()},
+            "SELECT orderDef as od FROM workoutExercise WHERE workoutId = :id",
+            new MapSqlParameterSource().addValue("id", syncedWorkout.getId()),
             (rs, i) -> {
-                Workout.Exercise w = new Workout.Exercise(); w.setOrderDef(rs.getInt("od")); return w;
+                Workout.Exercise w = new Workout.Exercise();
+                w.setOrderDef(rs.getInt("od"));
+                return w;
             }
         );
         Assert.assertNotNull("Synkattu data pitäisi olla insertoituna tietokantaan", syncedWorkoutExercise);

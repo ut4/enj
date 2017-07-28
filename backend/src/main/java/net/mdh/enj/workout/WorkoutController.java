@@ -1,6 +1,7 @@
 package net.mdh.enj.workout;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
@@ -10,10 +11,11 @@ import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.UpdateResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
 import javax.inject.Inject;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Vastaa /api/workout REST-pyynnöistä
@@ -57,9 +59,21 @@ public class WorkoutController {
      * @return Workout[] treenit
      */
     @GET
-    public ArrayList<Workout> getAll(@BeanParam SearchFilters filters) {
+    public List<Workout> getAll(@BeanParam SearchFilters filters) {
         filters.setUserId(this.requestContext.getUserId());
-        return (ArrayList<Workout>) this.workoutRepository.selectAll(filters);
+        return this.workoutRepository.selectAll(filters);
+    }
+
+    /**
+     * Pävittää kaikki treenit taulukosta {workouts}.
+     *
+     * @return Workout[] treenit
+     */
+    @PUT
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse updateMany(@Valid @NotNull List<Workout> workouts) {
+        return new UpdateResponse(this.workoutRepository.updateMany(workouts));
     }
 
     /**

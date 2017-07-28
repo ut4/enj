@@ -3,19 +3,22 @@ package net.mdh.enj.workout;
 import net.mdh.enj.api.Responses;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.exercise.Exercise;
+import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
-import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.server.validation.ValidationError;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WorkoutControllerTest extends RollbackingDBJerseyTest {
@@ -118,11 +121,14 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Response response = this.newPostRequest("workout", data);
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
+        // Testaa että insertoitui, ja palautti oikean id:n
+        Workout workout = (Workout) utils.selectOneWhere(
+            "SELECT * FROM workout WHERE id = :id1",
+            new MapSqlParameterSource().addValue("id1", responseBody.insertId),
+            new SimpleMappers.WorkoutMapper()
+        );
         data.setId(responseBody.insertId);
-        // Testaa että insertoitui, ja palautti id:n
-        Response getResponse = this.newGetRequest("workout");
-        List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
-        Assert.assertEquals(data.toString(), workouts.get(0).toString());
+        Assert.assertEquals(data.toString(), workout.toString());
     }
 
     /**
@@ -160,6 +166,54 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(2, workouts.size()); // Pitäisi palauttaa aina 2, ks. timestamp
         Assert.assertEquals(anotherWorkout2.toString(), workouts.get(0).toString());
         Assert.assertEquals(anotherWorkout.toString(), workouts.get(1).toString());
+    }
+
+    @Test
+    public void PUTValidoiInputTaulukon() {
+        // Simuloi PUT, jonka input-taulukon toinen itemi on cag
+        List<Workout> workouts = this.makeCoupleOfWorkouts();
+        workouts.get(1).setStart(0);
+        workouts.get(1).setUserId("gier");
+        Response response = this.newPutRequest("workout", workouts);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.updateMany.arg0[1].start", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.updateMany.arg0[1].userId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTPäivittääTreenitJaPalauttaaUpdateReponsenJossaPäivitettyjenRivienLukumäärä() {
+        // Luo ensin pari treeniä
+        List<Workout> array = this.makeCoupleOfWorkouts();
+        Workout first = array.get(0);
+        Workout second = array.get(1);
+        utils.insertWorkout(first);
+        utils.insertWorkout(second);
+        // Päivitä niiden tietoja
+        first.setNotes("fsroi");
+        first.setStart(first.getStart() + 1);
+        second.setNotes("ster");
+        second.setStart(second.getStart() + 1);
+        // Suorita PUT-pyyntö päivitetyillä tiedoilla
+        Response response = this.newPutRequest("workout", array);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 2", (Integer)2, responseBody.updateCount);
+        // Testaa, että PUT /workout päivitti kummatkin
+        List<?> updated = utils.selectAllWhere(
+            "SELECT * FROM workout WHERE id IN(:id1, :id2)",
+            new MapSqlParameterSource().addValue("id1", first.getId()).addValue("id2", second.getId()),
+            new SimpleMappers.WorkoutMapper()
+        );
+        Assert.assertEquals(2, updated.size());
+        Assert.assertEquals(first.getNotes(), ((Workout)updated.get(0)).getNotes());
+        Assert.assertEquals(first.getStart(), ((Workout)updated.get(0)).getStart());
+        Assert.assertEquals(second.getNotes(), ((Workout)updated.get(1)).getNotes());
+        Assert.assertEquals(second.getStart(), ((Workout)updated.get(1)).getStart());
     }
 
     /**
@@ -215,5 +269,21 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
         Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId().equals(testWorkout.getId())).findFirst().get();
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
+    }
+
+    private List<Workout> makeCoupleOfWorkouts() {
+        Workout data = new Workout();
+        data.setStart(System.currentTimeMillis() / 1000L);
+        data.setNotes("fus");
+        data.setUserId(TestData.TEST_USER_ID);
+        Workout data2 = new Workout();
+        data2.setStart(data.getStart() + 1);
+        data2.setNotes("ro");
+        data2.setUserId(TestData.TEST_USER_ID);
+        //
+        List<Workout> array = new ArrayList<>();
+        array.add(data);
+        array.add(data2);
+        return array;
     }
 }

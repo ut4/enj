@@ -5,20 +5,22 @@ import net.mdh.enj.workout.Workout;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.List;
 
 public class DbTestUtils {
     private final DataSource rollbackingDataSource;
-    private final JdbcTemplate queryTemplate;
+    private final NamedParameterJdbcTemplate queryTemplate;
     private HashMap<String, SimpleJdbcInsert> inserters = new HashMap<>();
     public DbTestUtils(DataSource rollbackingDataSource) {
         this.rollbackingDataSource = rollbackingDataSource;
-        this.queryTemplate = new JdbcTemplate(rollbackingDataSource);
+        this.queryTemplate = new NamedParameterJdbcTemplate(rollbackingDataSource);
     }
     public void insertWorkout(Workout w) {
         this.insert(this.getInserter("workout"), w);
@@ -38,11 +40,14 @@ public class DbTestUtils {
     public void insertUser(User u) {
         this.insert(this.getInserter("user"), u);
     }
-    public Object selectOne(String query, RowMapper mapper) {
-        return this.queryTemplate.queryForObject(query, mapper);
+    public Object selectOne(String query, RowMapper<?> mapper) {
+        return this.queryTemplate.query(query, mapper);
     }
-    public Object selectOneWhere(String query, Object[] bindings, RowMapper mapper) {
-        return this.queryTemplate.queryForObject(query, bindings, mapper);
+    public Object selectOneWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
+        return this.queryTemplate.queryForObject(query, params, mapper);
+    }
+    public List<?> selectAllWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
+        return this.queryTemplate.query(query, params, mapper);
     }
 
     private SimpleJdbcInsert getInserter(String tableName) {

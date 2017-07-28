@@ -52,6 +52,18 @@ public class WorkoutRepository extends BasicRepository<Workout> {
         );
     }
 
+    /**
+     * Päivittää kaikki treenit, ja palauttaa päivitettyjen rivien lukumäärän.
+     *
+     * @return {int} Päivitettyjen rivien lukumäärä
+     */
+    int updateMany(List<Workout> workouts) {
+        return super.updateMany(
+            "UPDATE workout SET `start` = :start, `end` = :end, `notes` = :notes WHERE id = :id",
+            workouts
+        );
+    }
+
     private static final class WorkoutMapper extends NoDupeRowMapper<Workout> {
 
         private final SubCollector<Workout.Exercise> workoutExerciseCollector;
