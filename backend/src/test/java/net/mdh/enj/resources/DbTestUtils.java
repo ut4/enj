@@ -44,7 +44,7 @@ public class DbTestUtils {
         return this.queryTemplate.query(query, mapper);
     }
     public Object selectOneWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
-        return this.queryTemplate.queryForObject(query, params, mapper);
+        return this.queryTemplate.query(query, params, mapper);
     }
     public List<?> selectAllWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
         return this.queryTemplate.query(query, params, mapper);

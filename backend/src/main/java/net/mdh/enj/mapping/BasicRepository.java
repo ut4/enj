@@ -2,6 +2,7 @@ package net.mdh.enj.mapping;
 
 import net.mdh.enj.db.DataSourceFactory;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,10 +21,12 @@ public abstract class BasicRepository<T extends DbEntity> {
     public final static String DEFAULT_ID = "id";
     protected final NamedParameterJdbcTemplate qTemplate;
     protected final SimpleJdbcInsert inserter;
+    protected final String tableName;
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName, String idColumn) {
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource()).withTableName(tableName);
+        this.tableName = tableName;
     }
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
@@ -95,5 +98,17 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public int updateMany(String q, List<T> data) {
         return IntStream.of(this.qTemplate.batchUpdate(q, SqlParameterSourceUtils.createBatch(data.toArray()))).sum();
+    }
+
+    /**
+     * Poistaa rivin {this.tableName}-taulusta, jonka id = id.
+     *
+     * @return {int} Poistettujen rivien lukumäärä
+     */
+    public int delete(String id) {
+        return this.qTemplate.update(
+            String.format("DELETE FROM `%s` WHERE id = :id", this.tableName),
+            new MapSqlParameterSource("id", id)
+        );
     }
 }

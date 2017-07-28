@@ -139,6 +139,24 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         Assert.assertEquals("Pitäisi päivittää data", newName2, updated.get(1).getName());
     }
 
+    @Test
+    public void deletePoistaaDatanJaPalauttaaPoistettujenRivienLukumäärän() {
+        // Insertoi
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
+        Assert.assertEquals(1, this.testRepo.insert(data));
+        // Poista
+        int deleteCount = this.testRepo.delete(data.getId());
+        // Poistuiko?
+        Assert.assertEquals("Pitäisi poistaa 1 rivi", 1, deleteCount);
+        SimpleExerciseEntity deleted = this.testRepo.selectOne(
+            "SELECT id FROM exercise WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", data.getId()),
+            new SimpleExerciseMapper()
+        );
+        Assert.assertNull("Pitäisi poistaa data", deleted);
+    }
+
     /**
      * Riisuttu versio ExerciseRepositorystä; handlaa entiteettejä, jotka sisältää
      *  vain schemassa pakolliseksi määritellyn kentän "name".
@@ -148,7 +166,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
             super(dataSourceFac, "exercise", BasicRepository.DEFAULT_ID);
         }
         int updateMany(List<SimpleExerciseEntity> items) {
-            return super.updateMany("UPDATE `exercise` SET `name` = :name WHERE id = :id", items);
+            return super.updateMany("UPDATE exercise SET `name` = :name WHERE id = :id", items);
         }
     }
     private static class SimpleExerciseMapper implements RowMapper<SimpleExerciseEntity> {
