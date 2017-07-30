@@ -3,8 +3,10 @@ package net.mdh.enj.workout;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.core.MediaType;
@@ -12,8 +14,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
+import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.validation.UUID;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -41,9 +45,6 @@ public class WorkoutController {
 
     /**
      * Lisää treenin tietokantaan mikäli se on validi Workout-bean.
-     *
-     * @param workout Uusi treeni
-     * @return int Luodun treenin id
      */
     @POST
     @Syncable
@@ -55,8 +56,6 @@ public class WorkoutController {
 
     /**
      * Palauttaa kaikki treenit tietokannasta.
-     *
-     * @return Workout[] treenit
      */
     @GET
     public List<Workout> getAll(@BeanParam SearchFilters filters) {
@@ -65,9 +64,7 @@ public class WorkoutController {
     }
 
     /**
-     * Pävittää kaikki treenit taulukosta {workouts}.
-     *
-     * @return Workout[] treenit
+     * Päivittää kaikki treenit taulukon {workouts} tiedoilla.
      */
     @PUT
     @Syncable
@@ -77,10 +74,18 @@ public class WorkoutController {
     }
 
     /**
-     * Lisää treenliikkeen tietokantaan mikäli se on validi Workout.Exercise-bean.
-     *
-     * @param workoutExercise Uusi treeniliike
-     * @return int Luodun treeniliikkeen id
+     * Poistaa treenin tietokannasta, jolla urlin uuid.
+     */
+    @DELETE
+    @Path("/{id}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse delete(@PathParam("id") @UUID String url) {
+        return new DeleteResponse(this.workoutRepository.delete(url));
+    }
+
+    /**
+     * Lisää treeniliikkeen tietokantaan mikäli se on validi Workout.Exercise-bean.
      */
     @POST
     @Path("/exercise")

@@ -26,4 +26,14 @@ public abstract class Responses {
             this.updateCount = updateCount;
         }
     }
+    /**
+     * Oletusvastaus DELETE REST-pyynnölle {"deleteCount": ${Integer}}.
+     */
+    public static class DeleteResponse {
+        public Integer deleteCount;
+        public DeleteResponse() {}
+        public DeleteResponse(Integer deleteCount) {
+            this.deleteCount = deleteCount;
+        }
+    }
 }

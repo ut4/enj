@@ -122,11 +122,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
         // Testaa että insertoitui, ja palautti oikean id:n
-        Workout workout = (Workout) utils.selectOneWhere(
-            "SELECT * FROM workout WHERE id = :id1",
-            new MapSqlParameterSource().addValue("id1", responseBody.insertId),
-            new SimpleMappers.WorkoutMapper()
-        );
+        Workout workout = this.selectWorkout(responseBody.insertId);
         data.setId(responseBody.insertId);
         Assert.assertEquals(data.toString(), workout.toString());
     }
@@ -216,6 +212,33 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(second.getStart(), ((Workout)updated.get(1)).getStart());
     }
 
+    @Test
+    public void DELETEValidoiUrlin() {
+        //
+        Response response = this.newDeleteRequest("workout/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.delete.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void DeletePoistaaTreeninJaPalauttaaDeleteReponsenJossaPoistettujenRivienLukumäärä() {
+        // Lisää treeni
+        Workout workout = this.makeCoupleOfWorkouts().get(0);
+        utils.insertWorkout(workout);
+        Assert.assertNotNull(this.selectWorkout(workout.getId()));
+        // Suorita DELETE-pyyntö
+        Response response = this.newDeleteRequest("workout/" + workout.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Testaa, että poistui
+        Assert.assertNull(this.selectWorkout(workout.getId()));
+    }
+
     /**
      * Testaa, että POST /api/workout/exercise hylkää pyynnön jos input = null
      */
@@ -285,5 +308,13 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         array.add(data);
         array.add(data2);
         return array;
+    }
+
+    private Workout selectWorkout(String id) {
+        return (Workout) utils.selectOneWhere(
+            "SELECT * FROM workout WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", id),
+            new SimpleMappers.WorkoutMapper()
+        );
     }
 }

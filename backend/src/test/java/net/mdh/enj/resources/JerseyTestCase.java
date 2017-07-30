@@ -25,6 +25,9 @@ public class JerseyTestCase extends JerseyTest implements HttpClient {
     protected Response newPutRequest(String url, Object data) {
         return this.newRequest(url, "PUT", data, null);
     }
+    protected Response newDeleteRequest(String url) {
+        return this.newRequest(url, "DELETE", null, null);
+    }
     private Response newRequest(String url, String method, Object data, Consumer<Builder> additionalSetup) {
         Builder builder = target(url).request(MediaType.APPLICATION_JSON_TYPE);
         if (additionalSetup != null) {

@@ -4,6 +4,7 @@ import net.mdh.enj.user.User;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -44,7 +45,11 @@ public class DbTestUtils {
         return this.queryTemplate.query(query, mapper);
     }
     public Object selectOneWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
-        return this.queryTemplate.query(query, params, mapper);
+        try {
+            return this.queryTemplate.queryForObject(query, params, mapper);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
     public List<?> selectAllWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
         return this.queryTemplate.query(query, params, mapper);
