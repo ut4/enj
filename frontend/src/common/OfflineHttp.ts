@@ -22,7 +22,7 @@ class OfflineHttp {
      * sijaan offline-handlerin palauttama data. Lisäksi reitit, joita ei ole rekisteröity,
      * palauttaa Responsen statuskoodilla 454, ei 404.
      */
-    public handle(url: string, options: {method: keyof Enj.syncableHttpMethod, data?: any}): Promise<Response> {
+    public handle(url: string, options: {method: keyof Enj.httpMethod, data?: any}): Promise<Response> {
         const handler = this.getHandler(options.method, url);
         if (!handler) {
             return Promise.resolve(makeOffline404(options.method, url));
@@ -43,14 +43,14 @@ class OfflineHttp {
      * @param {string} url HTTP-pyynnön url joka halutaan hadlata offline-moden aikana
      * @param {Function} fn funktio jolla handlataan
      */
-    public addHandler(method: keyof Enj.syncableHttpMethod, url: string, fn: Enj.offlineHandler) {
+    public addHandler(method: keyof Enj.httpMethod, url: string, fn: Enj.offlineHandler) {
         OfflineHttp.requestHandlers[method + ':' + url] = fn;
     }
     /**
      * @param {string} method
      * @param {string} url url jonka HTTP-pyyntöjä ei haluta logattavan
      */
-    public ignore(method: keyof Enj.syncableHttpMethod, url: string) {
+    public ignore(method: keyof Enj.httpMethod, url: string) {
         OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
     }
     /**
@@ -58,7 +58,7 @@ class OfflineHttp {
      * @param {string} url
      * @return {boolean}
      */
-    public getHandler(method: keyof Enj.syncableHttpMethod, url: string): Enj.offlineHandler {
+    public getHandler(method: keyof Enj.httpMethod, url: string): Enj.offlineHandler {
         return OfflineHttp.requestHandlers[method + ':' + url];
     }
     /**

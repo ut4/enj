@@ -51,26 +51,50 @@ class Http {
     }
     /**
      * @param {string} url
-     * @param {Object} data POST -data
+     * @param {Object} data
      * @param {boolean=} skipOfflineCheck true, jos halutaan suorittaa HTTP-pyyntö käyttäjän offline-statuksesta huolimatta
-     * @return {Promise} -> ({any} responseData, {ResponseError|SyntaxError|any} rejectedValue)
+     * @return {Promise} -> ({any} response muodossa T, {ResponseError|SyntaxError|any} rejectedValue)
      */
     public post<T>(url: string, data: Object, skipOfflineCheck?: boolean): Promise<T> {
+        return this.sendRequest<T>(url, 'POST', data, skipOfflineCheck);
+    }
+    /**
+     * @param {string} url
+     * @param {Object} data
+     * @param {boolean=} skipOfflineCheck true, jos halutaan suorittaa HTTP-pyyntö käyttäjän offline-statuksesta huolimatta
+     * @return {Promise} -> ({any} response muodossa T, {ResponseError|SyntaxError|any} rejectedValue)
+     */
+    public put<T>(url: string, data: Object, skipOfflineCheck?: boolean): Promise<T> {
+        return this.sendRequest<T>(url, 'PUT', data, skipOfflineCheck);
+    }
+    /**
+     * @param {string} url
+     * @param {boolean=} skipOfflineCheck true, jos halutaan suorittaa HTTP-pyyntö käyttäjän offline-statuksesta huolimatta
+     * @return {Promise} -> ({any} response muodossa T, {ResponseError|SyntaxError|any} rejectedValue)
+     */
+    public delete<T>(url: string, skipOfflineCheck?: boolean): Promise<T> {
+        return this.sendRequest<T>(url, 'DELETE', null, skipOfflineCheck);
+    }
+    /**
+     * Lähettää POST|PUT|DELETE -pyynnön backendiin, tai ohjaa sen offline-handerille,
+     * jos käyttäjä on offline-tilassa (ja skipOfflineCheck ei ole true).
+     */
+    private sendRequest<T>(url: string, method: keyof Enj.httpMethod, data?: Object, skipOfflineCheck?: boolean): Promise<T> {
         Http.pendingRequestCount++;
-        return (!skipOfflineCheck ? this.userState.isOffline() : Promise.resolve(false))
+        return (skipOfflineCheck !== true ? this.userState.isOffline() : Promise.resolve(false))
             .then(isUserOffline =>
                 !isUserOffline
                     // Käyttäjä online: lähetä HTTP-pyyntö normaalisti
                     ? this.fetchContainer.fetch(this.newRequest(url, {
-                        method: 'POST',
+                        method: method,
                         headers: {
                             'Content-Type': 'application/json',
                             Accept: 'application/json'
                         },
-                        body: JSON.stringify(data)
+                        body: data ? JSON.stringify(data) : null
                     }))
                     // Käyttäjä offline: ohjaa pyyntö offlineHttp:lle
-                    : this.offlineHttp.handle(url, {method: 'POST', data})
+                    : this.offlineHttp.handle(url, {method, data})
             )
             .then(response => this.processResponse(response))
             .then(response => this.parseResponseData<T>(response));

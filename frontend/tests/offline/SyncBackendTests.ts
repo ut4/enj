@@ -28,8 +28,8 @@ QUnit.module('offline/SyncBackend', hooks => {
         syncBackend.syncAll().then(results => {
             assert.ok(httpCallStub.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
             assert.deepEqual(
-                httpCallStub.firstCall.args, // 0 = url, 1 = data
-                ['sync', someSyncableItems],
+                httpCallStub.firstCall.args, // 0 = url, 1 = data, 2 = forceRequest/skipOfflineCheck
+                ['sync', someSyncableItems, undefined],
                 'Pitäisi POSTata syncQueue backendiin'
             );
             assert.ok(cleanUpCallStub.calledAfter(httpCallStub));
