@@ -17,6 +17,7 @@ import 'tests/serviceworker/SWManagerTests';
 import 'tests/ui/UserMenuTests';
 import 'tests/user/UserStateTests';
 import 'tests/workout/EditableWorkoutExerciseTests';
+import 'tests/workout/EditableWorkoutTests';
 import 'tests/workout/OfflineHandlerRegisterationTests';
 import 'tests/workout/offlineWorkoutHandlersTests';
 import 'tests/workout/WorkoutBackendTests';

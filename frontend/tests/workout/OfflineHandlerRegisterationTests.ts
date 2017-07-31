@@ -36,8 +36,38 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
             assert.ok(fetchCallSpy.notCalled);
             assert.ok(handlerCallStub.calledOnce);
             assert.deepEqual(handlerCallStub.firstCall.args, [testWorkout]);
-            assert.equal(res, 9, 'Pitäisi palauttaa offline-handlerin palauttama ' +
-                'arvo (RESTBackending modifioimana)');
+            assert.equal(res, 9, 'Pitäisi palauttaa offline-handlerin palauttama insertCount');
+            done();
+        });
+    });
+    QUnit.test('workoutBackend.update kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const testWorkout = new Workout();
+        const fetchCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'updateAll').returns(Promise.resolve('{"updateCount": 2}'));
+        //
+        const done = assert.async();
+        workoutBackend.update([testWorkout]).then(res => {
+            //
+            assert.ok(fetchCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [[testWorkout]]);
+            assert.equal(res, 2, 'Pitäisi palauttaa offline-handlerin palauttama updateCount)');
+            done();
+        });
+    });
+    QUnit.test('workoutBackend.delete kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const testWorkout = new Workout();
+        testWorkout.id = 'someuuid';
+        const fetchCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'delete').returns(Promise.resolve('{"deleteCount": 1}'));
+        //
+        const done = assert.async();
+        workoutBackend.delete(testWorkout).then(res => {
+            //
+            assert.ok(fetchCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testWorkout.id]);
+            assert.equal(res, 1, 'Pitäisi palauttaa offline-handlerin palauttama deleteCount');
             done();
         });
     });
