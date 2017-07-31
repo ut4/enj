@@ -28,7 +28,7 @@ class OfflineHttp {
             return Promise.resolve(makeOffline404(options.method, url));
         }
         let response: Response;
-        return handler(options.data)
+        return handler(options.data, url)
             .then(responseData => {
                 response = new Response(responseData);
                 return this.logRequestToSyncQueue({
@@ -56,10 +56,20 @@ class OfflineHttp {
     /**
      * @param {string} method
      * @param {string} url
-     * @return {boolean}
+     * @return {Object|undefined}
      */
     public getHandler(method: keyof Enj.httpMethod, url: string): Enj.offlineHandler {
-        return OfflineHttp.requestHandlers[method + ':' + url];
+        const handler = OfflineHttp.requestHandlers[method + ':' + url];
+        if (handler) {
+            return handler;
+        }
+        for (const route in OfflineHttp.requestHandlers) {
+            const [iterMethod, urlPattern] = route.split(':');
+            if (iterMethod === method && patternToRegexp(urlPattern).test(url)) {
+                return OfflineHttp.requestHandlers[route];
+            }
+        }
+        return undefined;
     }
     /**
      * @param {Object} request logattava pyyntö {method, url, data}
@@ -93,6 +103,10 @@ function makeOffline404(method, url): Response {
         status: 454,
         statusText: 'Offline handler not found'
     });
+}
+
+function patternToRegexp(pattern: string): RegExp {
+    return RegExp(pattern.replace('*', '.+'));
 }
 
 export default OfflineHttp;

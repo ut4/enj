@@ -22,6 +22,15 @@ QUnit.module('common/OfflineHttp', hooks => {
         const getd = offlineHttp.getHandler(method, urlToHandle);
         assert.deepEqual(getd, handler);
     });
+    QUnit.test('getHandler etsii handerin regexpillä', assert => {
+        const handler1 = () => Promise.resolve('1');
+        offlineHttp.addHandler('POST', 'some/url', handler1);
+        const handler2 = () => Promise.resolve('2');
+        offlineHttp.addHandler('PUT', 'some/*', handler2);
+        //
+        const getd = offlineHttp.getHandler('PUT', 'some/string');
+        assert.deepEqual(getd, handler2);
+    });
     QUnit.test('logRequestToSyncQueue kirjoittaa selaintietokantaan', assert => {
         const requestToQueue = {
             route: {method: 'POST' as 'POST', url: 'some/url'},
@@ -105,8 +114,8 @@ QUnit.module('common/OfflineHttp', hooks => {
                 );
                 assert.deepEqual(
                     testHandlerFnSpy.firstCall.args,
-                    [request.data],
-                    'Pitäisi passata pyynnön data handlerille'
+                    [request.data, request.route.url],
+                    'Pitäisi passata handlerille pyynnön data & url'
                 );
                 assert.ok(
                     requestQueuerWatcher.called,
