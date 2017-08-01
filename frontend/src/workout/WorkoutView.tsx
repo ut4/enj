@@ -46,7 +46,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         let newWorkout;
         this.workoutBackend.newWorkout().then(workout => {
             newWorkout = workout;
-            newWorkout.start = Math.floor(new Date().getTime() / 1000);
+            newWorkout.start = Math.floor(Date.now() / 1000);
             return this.workoutBackend.insert(newWorkout);
         }).then(() => {
             this.state.workouts.unshift(newWorkout);
@@ -61,7 +61,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         this.setState({ workouts });
     }
     public render() {
-        return (<div>
+        return (<div class="workout-view">
             <h2>Treeni tänään</h2>
             <div>{ this.state.workouts && (
                 this.state.workouts.length

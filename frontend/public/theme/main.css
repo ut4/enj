@@ -580,6 +580,12 @@ footer a {
     width: 100%;
 }
 
+/* -- Treeninäkymät ---------- */
+.workout-view > div { margin-top: -10px; }
+.workout-timer { float: left; margin-bottom: 10px; }
+.workout-timer + button { float: right; margin-top: -7px; }
+.editable-workout > ul:first-of-type { clear: both;}
+
 /* ==== Media queries ====
 ==============================================================================*/
 /* -- main-menun olon käydessä ahtaaksi ---------- */

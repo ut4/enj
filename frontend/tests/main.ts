@@ -14,6 +14,7 @@ import 'tests/offline/OfflineStartViewTests';
 import 'tests/offline/OfflineTests';
 import 'tests/offline/SyncBackendTests';
 import 'tests/serviceworker/SWManagerTests';
+import 'tests/ui/TimerTests';
 import 'tests/ui/UserMenuTests';
 import 'tests/user/UserStateTests';
 import 'tests/workout/EditableWorkoutExerciseTests';

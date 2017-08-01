@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import WorkoutBackend, { Workout, WorkoutExercise } from 'src/workout/WorkoutBackend';
+import Timer from 'src/ui/Timer';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
@@ -23,13 +24,14 @@ QUnit.module('workout/EditableWorkout', hooks => {
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
     });
-    QUnit.test('endWorkout päivittää treenin lopetusajan backendiin, ja uudeleenrenderöi komponentin', assert => {
+    QUnit.test('endWorkout päivittää treenin lopetusajan backendiin, ja uudelleenrenderöi komponentin', assert => {
         testWorkoutExercise.sets = [{id: 'someuuid3', weight: 10, reps: 5}];
         const rendered = itu.renderIntoDocument(
             <EditableWorkout workout={ testWorkout } onDelete={ () => null }/>
         );
+        const timerStopSpy = sinon.spy(itu.findRenderedVNodeWithType(rendered, Timer).children, 'stop');
         const updateCallStub = sinon.stub(workoutBackend, 'update').returns(Promise.resolve('fo'));
-        const expectedEndTime = Math.floor(new Date().getTime() / 1000);
+        const expectedEndTime = Math.floor(Date.now() / 1000);
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
         endWorkoutButton.click();
@@ -43,6 +45,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             assert.deepEqual(utils.findButtonByContent(rendered, 'Valmis!'), undefined,
                 'Pitäisi piilottaa Valmis!-painike'
             );
+            assert.ok(timerStopSpy.calledOnce, 'Pitäisi pysäyttää treenin timer');
             done();
         });
     });

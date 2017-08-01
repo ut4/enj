@@ -102,7 +102,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     }
     function getExpectedNewWorkout() {
         const workout = new Workout();
-        workout.start = Math.floor(new Date().getTime() / 1000);
+        workout.start = Math.floor(Date.now() / 1000);
         workout.end = 0;
         workout.exercises = [];
         workout.userId = someUserId;
