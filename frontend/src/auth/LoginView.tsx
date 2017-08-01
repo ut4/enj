@@ -4,12 +4,14 @@ import LoginForm from 'src/auth/LoginForm';
 import ioc from 'src/ioc';
 
 /**
- * Näkymä #/kirjaudu.
+ * Näkymä #/kirjaudu[?returnTo=/foo/bar?baz].
  */
 class LoginView extends Component<any, any> {
     private loginForm: LoginForm;
+    private returnPath: string;
     public componentWillMount() {
         this.state = {goodToGo: false};
+        this.returnPath = this.context.router.location.search.split('?returnTo=')[1];
     }
     private setValidity(newValidity) {
         this.setState({goodToGo: newValidity});
@@ -18,7 +20,7 @@ class LoginView extends Component<any, any> {
         return ioc.authService().login(this.loginForm.getValues()).then(wasOk => {
             if (!wasOk) { throw new Error('indexedDb:hen kirjoitus epäonnistui'); }
             ioc.notify()('Olet nyt kirjautunut sisään', 'success');
-            ioc.history().push('/');
+            ioc.history().push(this.returnPath || '/');
         }, err => {
             if ((err.response || {}).status === 401) {
                 ioc.notify()('Käyttäjätunnus tai salasana ei täsmännyt', 'notice');

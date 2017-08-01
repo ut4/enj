@@ -33,7 +33,8 @@ class AuthHttpInterceptors {
      */
     public responseError(response: Response) {
         if (response.status === 401 && response.url.indexOf('auth/login') < 0) {
-            this.history.push('/kirjaudu');
+            const hashLocation = this.history.location;
+            this.history.push('/kirjaudu?returnTo=' + hashLocation.pathname + hashLocation.search);
         }
     }
 }

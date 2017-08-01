@@ -10,7 +10,7 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
     let authInterceptor: AuthHttpInterceptors;
     hooks.beforeEach(() => {
         userState = new UserState(new Db());
-        mockHistory = {push: sinon.spy()};
+        mockHistory = {push: sinon.spy(), location: {pathname: 'fus', search: '?ro'}};
         authInterceptor = new AuthHttpInterceptors(userState, mockHistory);
     });
     QUnit.test('.setup asettaa tokenin UserStatelta, hurrdurr', assert => {
@@ -47,6 +47,10 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
         const res3 = new FakeResponse('foo/bar', 401);
         authInterceptor.responseError(res3 as any);
         assert.ok(mockHistory.push.calledOnce, 'Pitäisi ohjata kirjautumissivulle');
+        assert.deepEqual(mockHistory.push.firstCall.args,
+            ['/kirjaudu?returnTo=' + mockHistory.location.pathname + mockHistory.location.search],
+            'Pitäisi passata kirjautumis-urliin returnTo-parametri'
+        );
     });
     QUnit.test('UserState-tilaaja päivittää tokenin arvon', assert => {
         sinon.stub(userState, 'getState').returns(Promise.resolve({token: ''}));
