@@ -6,16 +6,16 @@ import WorkoutBackend from 'src/workout/WorkoutBackend';
 const SECONDS_IN_DAY = 86400;
 
 QUnit.module('workout/WorkoutBackend', hooks => {
-    let httpStub: Http;
-    let userStateStub: UserState;
+    let shallowHttp: Http;
+    let shallowUserState: UserState;
     let workoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
-        httpStub = Object.create(Http.prototype);
-        userStateStub = Object.create(UserState.prototype);
-        workoutBackend = new WorkoutBackend(httpStub, 'workout', userStateStub);
+        shallowHttp = Object.create(Http.prototype);
+        shallowUserState = Object.create(UserState.prototype);
+        workoutBackend = new WorkoutBackend(shallowHttp, 'workout', shallowUserState);
     });
     QUnit.test('getTodaysWorkouts hakee treenit timestamp rangella', assert => {
-        const httpCallStub = sinon.stub(httpStub, 'get').returns('foo');
+        const httpCallStub = sinon.stub(shallowHttp, 'get').returns('foo');
         //
         workoutBackend.getTodaysWorkouts();
         //

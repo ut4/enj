@@ -8,17 +8,17 @@ import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
 QUnit.module('workout/WorkoutExeriseAddView', hooks => {
-    let workoutBackendStub: WorkoutBackend;
+    let shallowWorkoutBackend: WorkoutBackend;
     let workoutBackendIocOverride: sinon.SinonStub;
-    let exerciseBackendStub: WorkoutBackend;
+    let shallowExerciseBackend: WorkoutBackend;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let fakeHistory: {push: sinon.SinonSpy};
     let historyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
-        workoutBackendStub = Object.create(WorkoutBackend.prototype);
-        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackendStub);
-        exerciseBackendStub = Object.create(ExerciseBackend.prototype);
-        exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(exerciseBackendStub);
+        shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
+        shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
+        exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
         fakeHistory = {push: sinon.spy()};
         historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
     });
@@ -28,9 +28,9 @@ QUnit.module('workout/WorkoutExeriseAddView', hooks => {
         historyIocOverride.restore();
     });
     QUnit.test('submit postaa datan backendiin, ja ohjaa takaisin #/treeni/tanaan', assert => {
-        const exerciseListFetch = sinon.stub(exerciseBackendStub, 'getAll')
+        const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll')
             .returns(Promise.resolve([{id: 1, name: 'foo', variants: []}]));
-        const workoutExerciseInsert = sinon.stub(workoutBackendStub, 'addExercise')
+        const workoutExerciseInsert = sinon.stub(shallowWorkoutBackend, 'addExercise')
             .returns(Promise.resolve());
         const urlParams = {id: 2, orderDef: 1};
         //

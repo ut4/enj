@@ -9,17 +9,17 @@ const mockToken: string = utils.getValidToken();
 
 QUnit.module('ui/UserMenu', hooks => {
     let userStateIocFactoryOverride;
-    let userState: UserState;
+    let shallowUserState: UserState;
     hooks.beforeEach(() => {
-        userState = Object.create(UserState.prototype);
-        (userState as any).subscribers = [];
-        userStateIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(userState);
+        shallowUserState = Object.create(UserState.prototype);
+        (shallowUserState as any).subscribers = [];
+        userStateIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(shallowUserState);
     });
     hooks.afterEach(() => {
         userStateIocFactoryOverride.restore();
     });
     QUnit.test('mount näyttää vain kirjautumislinkin, jos käyttäjä ei kirjautunut+online', assert => {
-        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: ''
         } as Enj.OfflineDbSchema.UserStateRecord));
@@ -40,7 +40,7 @@ QUnit.module('ui/UserMenu', hooks => {
         }
     });
     QUnit.test('mount näyttää vain "go-online"-linkin, jos käyttäjä offline', assert => {
-        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: true,
             // Tämän ei pitäisi vaikuttaa, käyttäjä ei voi olla kirjautunut ja offline samaan aikaan
             token: mockToken
@@ -57,7 +57,7 @@ QUnit.module('ui/UserMenu', hooks => {
         });
     });
     QUnit.test('mount näyttää profiili+"go-offline"-linkit jos käyttäjä kirjaunut+online', assert => {
-        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: mockToken
         } as Enj.OfflineDbSchema.UserStateRecord));
@@ -75,11 +75,11 @@ QUnit.module('ui/UserMenu', hooks => {
         });
     });
     QUnit.test('Offline-staten tilaaja mutatoi komponentin statea', assert => {
-        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: mockToken
         } as Enj.OfflineDbSchema.UserStateRecord));
-        const subscribeRegistration = sinon.spy(userState, 'subscribe');
+        const subscribeRegistration = sinon.spy(shallowUserState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
@@ -102,11 +102,11 @@ QUnit.module('ui/UserMenu', hooks => {
         });
     });
     QUnit.test('Muutos UserState.token arvossa triggeröi komponentin staten päivittymisen', assert => {
-        const onMountUserStateRead = sinon.stub(userState, 'getState').returns(Promise.resolve({
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: ''
         } as Enj.OfflineDbSchema.UserStateRecord));
-        const subscribeRegistration = sinon.spy(userState, 'subscribe');
+        const subscribeRegistration = sinon.spy(shallowUserState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //

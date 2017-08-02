@@ -12,17 +12,17 @@ const someUserId = 'uuid56';
 QUnit.module('workout/WorkoutView', hooks => {
     let someTestWorkout: Enj.API.WorkoutRecord;
     let workoutBackendIocOverride: sinon.SinonStub;
-    let workoutBackend: WorkoutBackend;
+    let shallowWorkoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
-        workoutBackend = Object.create(WorkoutBackend.prototype);
-        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackend);
+        shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
         someTestWorkout = {id:'uuid', start: 2, exercises: [], userId: 'uuid2'};
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
             .returns(Promise.resolve([someTestWorkout]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -35,7 +35,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount näyttää viestin mikäli current-treenejä ei löydy', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
             .returns(Promise.resolve([]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -50,7 +50,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount handlaa epäonnistuneen current-treenien haun', assert => {
-        const currentWorkoutsFetch = sinon.stub(workoutBackend, 'getTodaysWorkouts')
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
             .returns(Promise.reject({err: 'fo'}));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -66,12 +66,12 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('"Aloita treeni"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
-        const workoutFetchStub = sinon.stub(workoutBackend, 'getTodaysWorkouts').returns(Promise.resolve([someTestWorkout]));
+    QUnit.test('"Aloita uusi"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
+        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts').returns(Promise.resolve([someTestWorkout]));
         const workoutFromService = new Workout();
         workoutFromService.userId = someUserId;
-        const newWorkoutStub = sinon.stub(workoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
-        const workoutsInsertStub = sinon.stub(workoutBackend, 'insert').returns(Promise.resolve());
+        const newWorkoutStub = sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
+        const workoutsInsertStub = sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve());
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
         // odota, että näkymä latautuu

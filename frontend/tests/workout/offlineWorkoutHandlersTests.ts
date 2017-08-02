@@ -5,16 +5,16 @@ import WorkoutBackend, { Workout, WorkoutExercise } from 'src/workout/WorkoutBac
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 
 QUnit.module('workout/offlineWorkoutHandlers', hooks => {
-    let offlineStub: Offline;
+    let shallowOffline: Offline;
     let mockNewUuid: AAGUID = 'uuid32';
-    let workoutBackendStub: WorkoutBackend;
+    let shallowWorkoutBackend: WorkoutBackend;
     let workoutHandlerRegister: OfflineWorkoutHandlerRegister;
     let mockCachedWorkouts: Array<Enj.API.WorkoutRecord>;
     hooks.beforeEach(() => {
-        offlineStub = Object.create(Offline.prototype);
-        workoutBackendStub = Object.create(WorkoutBackend.prototype);
-        workoutBackendStub.utils = {uuidv4: () => mockNewUuid};
-        workoutHandlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackendStub);
+        shallowOffline = Object.create(Offline.prototype);
+        shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        shallowWorkoutBackend.utils = {uuidv4: () => mockNewUuid};
+        workoutHandlerRegister = new OfflineWorkoutHandlerRegister(shallowOffline, shallowWorkoutBackend);
         mockCachedWorkouts = [
             {id: 'someuuid1', start: 2, exercises: [], userId: 'someuuid2'},
             {id: 'someuuid3', start: 3, exercises: [], userId: 'someuuid4'},
@@ -23,8 +23,8 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     });
     QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa insertCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
-        const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
         const newWorkout = new Workout();
         //
         const done = assert.async();
@@ -42,8 +42,8 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     QUnit.test('updateAll päivittää treenit cacheen, ja palauttaa deleteCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         const cacheWorkoutsCopy2 = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
-        const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
         // Tee jotain muutoksia
         const workoutsToUpdate = [cacheWorkoutsCopy2[1], cacheWorkoutsCopy2[2]];
         workoutsToUpdate[0].start += 1;
@@ -62,8 +62,8 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     });
     QUnit.test('delete poistaa treenin cachesta, ja palauttaa deleteCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
-        const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
         // Poista cachen keskimmäinen treeni
         const done = assert.async();
         workoutHandlerRegister.delete(mockCachedWorkouts[1].id).then(result => {
@@ -78,8 +78,8 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     });
     QUnit.test('addExercise lisää uuden liikkeen treenicacheen, ja palauttaa insertCount:n', assert => {
         const cacheWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        sinon.stub(workoutBackendStub, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
-        const cacheUpdate = sinon.stub(offlineStub, 'updateCache').returns(Promise.resolve());
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cacheWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
         const newWorkoutExercise = new WorkoutExercise();
         newWorkoutExercise.workoutId = cacheWorkoutsCopy[1].id;
         // Lisää liike cachen keskimmäiseen treeniin

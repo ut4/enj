@@ -1,5 +1,4 @@
 import Component from 'inferno-component';
-import { Link } from 'inferno-router';
 
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
@@ -18,12 +17,12 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
                     : <div> - </div>
                 }
             </div>
-            <Link class="nice-button icon-button add with-text" to={ '/treeni/' + this.props.workoutExercise.workoutId + '/sarja/lisaa/' + this.props.workoutExercise.id }>
+            <a class="nice-button icon-button add with-text" href={ '#/treeni/' + this.props.workoutExercise.workoutId + '/sarja/lisaa/' + this.props.workoutExercise.id }>
                 Uusi sarja
-            </Link>
+            </a>
             <div class="action-buttons">
-                <Link class="icon-button edit" to={ '/treeni/' + this.props.workoutExercise.workoutId + '/liike/muokkaa/' + this.props.workoutExercise.id } title="Muokkaa"></Link>
-                <Link class="icon-button delete" to={ '/treeni/' + this.props.workoutExercise.workoutId + '/liike/poista/' + this.props.workoutExercise.id } title="Poista"></Link>
+                <a class="icon-button edit" href={ '#/treeni/' + this.props.workoutExercise.workoutId + '/liike/muokkaa/' + this.props.workoutExercise.id } title="Muokkaa"></a>
+                <a class="icon-button delete" href={ '#/treeni/' + this.props.workoutExercise.workoutId + '/liike/poista/' + this.props.workoutExercise.id } title="Poista"></a>
                 <button class="icon-button arrow up" title="Siirrä ylös"></button>
                 <button class="icon-button arrow down" title="Siirrä alas"></button>
             </div>

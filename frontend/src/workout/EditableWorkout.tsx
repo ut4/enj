@@ -1,5 +1,4 @@
 import Component from 'inferno-component';
-import { Link } from 'inferno-router';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 import { notify } from 'src/ui/Notifier';
@@ -55,7 +54,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
                     : <li>Ei vielä liikkeitä.</li>
                 }
             </ul>
-            <Link class="nice-button" to={ '/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</Link>
+            <a href={ '#/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</a>
         </div>);
     }
     private hasAtleastOneValidSet(workout) {

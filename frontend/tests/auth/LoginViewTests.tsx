@@ -14,15 +14,15 @@ class ContextFakingLoginView extends LoginView {
 }
 
 QUnit.module('auth/LoginView', hooks => {
-    let authServiceStub: AuthService;
+    let shallowAuthService: AuthService;
     let authServiceIocOverride: sinon.SinonStub;
     let fakeHistory: {push: sinon.SinonSpy};
     let historyIocOverride: sinon.SinonStub;
     let notifySpy: sinon.SinonSpy;
     let notifyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
-        authServiceStub = Object.create(AuthService.prototype);
-        authServiceIocOverride = sinon.stub(iocFactories, 'authService').returns(authServiceStub);
+        shallowAuthService = Object.create(AuthService.prototype);
+        authServiceIocOverride = sinon.stub(iocFactories, 'authService').returns(shallowAuthService);
         fakeHistory = {push: sinon.spy()};
         historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
         notifySpy = sinon.spy();
@@ -34,7 +34,7 @@ QUnit.module('auth/LoginView', hooks => {
         notifyIocOverride.restore();
     });
     QUnit.test('confirm kutsuu authService.login ja ohjaa takaisin #/', assert => {
-        const loginCallWatch = sinon.stub(authServiceStub, 'login').returns(Promise.resolve(1));
+        const loginCallWatch = sinon.stub(shallowAuthService, 'login').returns(Promise.resolve(1));
         // Renderöi view
         const confirmSpy = sinon.spy(ContextFakingLoginView.prototype, 'confirm');
         const rendered = itu.renderIntoDocument(<ContextFakingLoginView/>);
@@ -58,7 +58,7 @@ QUnit.module('auth/LoginView', hooks => {
         });
     });
     QUnit.test('confirm ohjaa takaisin ?returnTo:hn\'dt', assert => {
-        const loginCallWatch = sinon.stub(authServiceStub, 'login').returns(Promise.resolve(1));
+        const loginCallWatch = sinon.stub(shallowAuthService, 'login').returns(Promise.resolve(1));
         const instance = new ContextFakingLoginView({}, {}) as any;
         instance.context.router.location.search = '?returnTo=/foo';
         instance.loginForm = {getValues: () => null};
@@ -73,7 +73,7 @@ QUnit.module('auth/LoginView', hooks => {
         });
     });
     QUnit.test('confirm näyttää virheviestin backendin rejektoidessa', assert => {
-        const loginCallWatch = sinon.stub(authServiceStub, 'login');
+        const loginCallWatch = sinon.stub(shallowAuthService, 'login');
         loginCallWatch.onFirstCall().returns(Promise.reject({response:{status: 401}}));
         loginCallWatch.onSecondCall().returns(Promise.reject({response:{status: 500}}));
         loginCallWatch.onThirdCall().returns(Promise.reject({}));

@@ -5,18 +5,18 @@ import UserState from 'src/user/UserState';
 import AuthService from 'src/auth/AuthService';
 
 QUnit.module('auth/AuthService', hooks => {
-    let authBackendStub: AuthBackend;
-    let userStateStub: UserState;
+    let shallowAuthBackend: AuthBackend;
+    let shallowUserState: UserState;
     let authService: AuthService;
     hooks.beforeEach(() => {
-        authBackendStub = Object.create(AuthBackend.prototype);
-        userStateStub = Object.create(UserState.prototype);
-        authService = new AuthService(authBackendStub, userStateStub);
+        shallowAuthBackend = Object.create(AuthBackend.prototype);
+        shallowUserState = Object.create(UserState.prototype);
+        authService = new AuthService(shallowAuthBackend, shallowUserState);
     });
     QUnit.test('login postaa credentiansit backendiin, ja tallentaa tokenin selaintietokantaan', assert => {
         const mockLoginResponse = {token: 'tkn'} as Enj.API.LoginResponse;
-        const loginCallWatch = sinon.stub(authBackendStub, 'login').returns(Promise.resolve(mockLoginResponse));
-        const userStateUpdateWatch = sinon.stub(userStateStub, 'setToken').returns(Promise.resolve());
+        const loginCallWatch = sinon.stub(shallowAuthBackend, 'login').returns(Promise.resolve(mockLoginResponse));
+        const userStateUpdateWatch = sinon.stub(shallowUserState, 'setToken').returns(Promise.resolve());
         //
         const testCredentials = {username:'fyy', password: 'bars'};
         //

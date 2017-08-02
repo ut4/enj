@@ -11,15 +11,15 @@ QUnit.module('workout/EditableWorkout', hooks => {
     let testWorkout: Workout;
     let testWorkoutExercise: WorkoutExercise;
     let workoutBackendIocOverride: sinon.SinonStub;
-    let workoutBackend: WorkoutBackend;
+    let shallowWorkoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
         testWorkout = new Workout();
         testWorkout.id = 'someuuid';
         testWorkoutExercise = new WorkoutExercise();
         testWorkoutExercise.exercise = {id: 'someuuid2', name:'exs', variants: []};
         testWorkout.exercises = [testWorkoutExercise];
-        workoutBackend = Object.create(WorkoutBackend.prototype);
-        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(workoutBackend);
+        shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
@@ -30,7 +30,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             <EditableWorkout workout={ testWorkout } onDelete={ () => null }/>
         );
         const timerStopSpy = sinon.spy(itu.findRenderedVNodeWithType(rendered, Timer).children, 'stop');
-        const updateCallStub = sinon.stub(workoutBackend, 'update').returns(Promise.resolve('fo'));
+        const updateCallStub = sinon.stub(shallowWorkoutBackend, 'update').returns(Promise.resolve('fo'));
         const expectedEndTime = Math.floor(Date.now() / 1000);
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
@@ -54,7 +54,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
         const rendered = itu.renderIntoDocument(
             <EditableWorkout workout={ testWorkout } onDelete={ onDelete }/>
         );
-        const deleteCallStub = sinon.stub(workoutBackend, 'delete').returns(Promise.resolve('fo'));
+        const deleteCallStub = sinon.stub(shallowWorkoutBackend, 'delete').returns(Promise.resolve('fo'));
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
         endWorkoutButton.click();

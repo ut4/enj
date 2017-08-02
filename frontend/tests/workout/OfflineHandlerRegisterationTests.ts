@@ -13,16 +13,16 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     let workoutBackend: WorkoutBackend;
     let handlerRegister: OfflineWorkoutHandlerRegister;
     // beforeAll
-    const userStateStub: UserState = Object.create(UserState.prototype);
-    sinon.stub(userStateStub, 'isOffline').returns(Promise.resolve(true));
+    const shallowUserState: UserState = Object.create(UserState.prototype);
+    sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(true));
     const offlineHttp: OfflineHttp = iocFactories.offlineHttp();
     sinon.stub(offlineHttp, 'logRequestToSyncQueue').returns(Promise.resolve());
     //
     hooks.beforeEach(() => {
-        workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, userStateStub, '/'), 'workout', userStateStub);
+        workoutBackend = new WorkoutBackend(new Http(window, offlineHttp, shallowUserState, '/'), 'workout', shallowUserState);
         workoutBackend.utils = {uuidv4: () => 'uuid32'};
-        const offlineStub: Offline = Object.create(Offline.prototype);
-        handlerRegister = new OfflineWorkoutHandlerRegister(offlineStub, workoutBackend);
+        const shallowOffline: Offline = Object.create(Offline.prototype);
+        handlerRegister = new OfflineWorkoutHandlerRegister(shallowOffline, workoutBackend);
         handlerRegister.registerHandlers(offlineHttp);
     });
     QUnit.test('workoutBackend.insert kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {

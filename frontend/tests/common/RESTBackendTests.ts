@@ -8,15 +8,15 @@ class TestBackend extends RESTBackend<TestType> {}
 
 QUnit.module('common/RESTBackend', hooks => {
     let testUrlNamespace: string;
-    let http: Http;
+    let shallowUserState: Http;
     let RESTBackend: TestBackend;
     hooks.beforeEach(() => {
         testUrlNamespace = 'foo';
-        http = Object.create(Http.prototype);
-        RESTBackend = new TestBackend(http, testUrlNamespace);
+        shallowUserState = Object.create(Http.prototype);
+        RESTBackend = new TestBackend(shallowUserState, testUrlNamespace);
     });
     QUnit.test('selectAll kutsuu http.get namespacella, ja palauttaa backendin palauttaman datan', assert => {
-        const httpGet = sinon.mock(http);
+        const httpGet = sinon.mock(shallowUserState);
         httpGet.expects('get').once()
             .withExactArgs(testUrlNamespace)
             .returns('foo');
@@ -27,7 +27,7 @@ QUnit.module('common/RESTBackend', hooks => {
         assert.equal(actualResults, 'foo');
     });
     QUnit.test('insert kutsuu http.post namespacella, ja palauttaa insertCountin', assert => {
-        const httpPost = sinon.mock(http);
+        const httpPost = sinon.mock(shallowUserState);
         const data = {foo: 'bar'};
         httpPost.expects('post').once()
             .withExactArgs(testUrlNamespace, data)
@@ -45,7 +45,7 @@ QUnit.module('common/RESTBackend', hooks => {
     QUnit.test('insert asettaa insertId:n data.id:ksi, jos sellaista ei ole vielä asetettu', assert => {
         const data = {id: null, foo: 'bar'};
         const insertIdFromBackend = 'uuidsa';
-        sinon.stub(http, 'post').returns(Promise.resolve({
+        sinon.stub(shallowUserState, 'post').returns(Promise.resolve({
             insertCount: 1,
             insertId: insertIdFromBackend
         } as Enj.API.InsertResponse));
@@ -57,7 +57,7 @@ QUnit.module('common/RESTBackend', hooks => {
         });
     });
     QUnit.test('update kutsuu http.put namespacella, ja palauttaa updateCountin', assert => {
-        const httpPost = sinon.mock(http);
+        const httpPost = sinon.mock(shallowUserState);
         const data = {foo: 'bar'};
         httpPost.expects('put').once()
             .withExactArgs(testUrlNamespace, data)
@@ -73,7 +73,7 @@ QUnit.module('common/RESTBackend', hooks => {
         });
     });
     QUnit.test('delete kutsuu http.delete namespacella, ja palauttaa deleteCountin', assert => {
-        const httpPost = sinon.mock(http);
+        const httpPost = sinon.mock(shallowUserState);
         const data = {id: 'someuuid', foo: 'bar'};
         httpPost.expects('delete').once()
             .withExactArgs(testUrlNamespace + '/' + data.id)
