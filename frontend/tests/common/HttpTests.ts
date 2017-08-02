@@ -66,33 +66,48 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('get ajaa interceptorit', assert => {
-        mockResponse.status = 500;
-        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
+        const badResponse = JSON.parse(JSON.stringify(mockResponse));
+        badResponse.status = 500;
+        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch');
+        fetchCallWatch.onFirstCall().returns(Promise.resolve(mockResponse));
+        fetchCallWatch.onSecondCall().returns(Promise.resolve(badResponse));
         const requestInterceptor = sinon.spy();
+        const responseInterceptor = sinon.spy();
         const responseErrorInterceptor = sinon.spy();
         http.interceptors.push(new class InterceptorClass {
             request(req) { return requestInterceptor(req); }
+            response(res) { return responseInterceptor(res); }
             responseError(res) { return responseErrorInterceptor(res); }
         });
         //
         const done = assert.async();
-        http.get('foo').then(null, () => {
-            assert.ok(
-                requestInterceptor.calledOnce,
-                'Pitäisi kutsua pre-interceptoria'
+        http.get('foo').then(() => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
             );
-            assert.ok(
-                requestInterceptor.firstCall.args[0] instanceof Request,
-                'Pitäisi passata pre-interceptorille window.Request-instanssin'
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
             );
-            assert.ok(
-                responseErrorInterceptor.calledOnce,
-                'Pitäisi kutsua post-interceptoria'
+            assert.ok(responseInterceptor.calledOnce,
+                'Pitäisi kutsua response-interceptoria'
             );
-            assert.deepEqual(
-                responseErrorInterceptor.firstCall.args[0],
-                mockResponse,
-                'Pitäisi passata post-interceptorille fetchin palauttaman arvon'
+            assert.deepEqual(responseInterceptor.firstCall.args[0], mockResponse,
+                'Pitäisi passata response-interceptorille fetchin palauttaman arvon'
+            );
+            requestInterceptor.reset();
+            return http.get('bar');
+        }).then(null, () => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
+            );
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
+            );
+            assert.ok(responseErrorInterceptor.calledOnce,
+                'Pitäisi kutsua responseError-interceptoria'
+            );
+            assert.deepEqual(responseErrorInterceptor.firstCall.args[0], badResponse,
+                'Pitäisi passata responseError-interceptorille fetchin palauttaman arvon'
             );
             done();
         });
@@ -127,34 +142,49 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('sendRequest ajaa interceptorit', assert => {
-        mockResponse.status = 500;
+        const badResponse = JSON.parse(JSON.stringify(mockResponse));
+        badResponse.status = 500;
         sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(false));
-        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
+        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch');
+        fetchCallWatch.onFirstCall().returns(Promise.resolve(badResponse));
+        fetchCallWatch.onSecondCall().returns(Promise.resolve(mockResponse));
         const requestInterceptor = sinon.spy();
+        const responseInterceptor = sinon.spy();
         const responseErrorInterceptor = sinon.spy();
         http.interceptors.push({
             request: requestInterceptor,
+            response: responseInterceptor,
             responseError: responseErrorInterceptor
         });
         //
         const done = assert.async();
         (http as any).sendRequest('foo', 'POST', {foo: 'bar'}).then(null, () => {
-            assert.ok(
-                requestInterceptor.calledOnce,
-                'Pitäisi kutsua pre-interceptoria'
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
             );
-            assert.ok(
-                requestInterceptor.firstCall.args[0] instanceof Request,
-                'Pitäisi passata pre-interceptorille window.Request-instanssin'
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
             );
-            assert.ok(
-                responseErrorInterceptor.calledOnce,
-                'Pitäisi kutsua post-interceptoria'
+            assert.ok(responseErrorInterceptor.calledOnce,
+                'Pitäisi kutsua responseError-interceptoria'
             );
-            assert.deepEqual(
-                responseErrorInterceptor.firstCall.args[0],
-                mockResponse,
-                'Pitäisi passata post-interceptorille fetchin palauttaman arvon'
+            assert.deepEqual(responseErrorInterceptor.firstCall.args[0], badResponse,
+                'Pitäisi passata responseError-interceptorille fetchin palauttaman arvon'
+            );
+            requestInterceptor.reset();
+            return (http as any).sendRequest('foo', 'POST', {foo: 'bar'});
+        }).then(() => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
+            );
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
+            );
+            assert.ok(responseInterceptor.calledOnce,
+                'Pitäisi kutsua response-interceptoria'
+            );
+            assert.deepEqual(responseInterceptor.firstCall.args[0], mockResponse,
+                'Pitäisi passata response-interceptorille fetchin palauttaman arvon'
             );
             done();
         });

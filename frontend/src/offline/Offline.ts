@@ -41,7 +41,7 @@ class Offline {
         this.controllingServiceWorker
             // ServiceWorker jo rekisteröity
             ? resolveWhenActive(this.controllingServiceWorker)
-            // ServiceWorkeriä ei vielä rekisteröity (tai tarvitsee upgraden?)
+            // ServiceWorkeriä ei vielä rekisteröity
             : this.serviceWorkerContainer.register(SERVICE_WORKER_FILEPATH)
                 .then(registration => {
                     let serviceWorker;

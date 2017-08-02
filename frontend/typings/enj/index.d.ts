@@ -78,4 +78,9 @@ declare module Enj {
         baseUrl: string;
         baseApiNamespace: string;
     };
+
+    interface Utils {
+        revealLoadingIndicator: () => any;
+        hideLoadingIndicator: () => any;
+    }
 }

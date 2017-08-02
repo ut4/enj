@@ -3,6 +3,7 @@ import OfflineHttp from 'src/common/OfflineHttp';
 
 interface interceptor {
     request?: (request: Request) => void|false;
+    response?: (response: Response) => void|false;
     responseError?: (response: Response) => void|false;
 }
 
@@ -117,6 +118,7 @@ class Http {
     private processResponse(response: Response): Response {
         Http.pendingRequestCount--;
         if (response.status >= 200 && response.status < 300) {
+            this.runInterceptors('response', response);
             return response;
         }
         this.runInterceptors('responseError', response);

@@ -13,20 +13,23 @@ class OfflineStartView extends Component<any, any> {
     }
     /**
      * Asettaa applikaation tilaksi "offline", jonka aikana serviceworker
-     * "hijackaa" kaikkien stattisten filujen, ja GET-tyypisten api-kutsujen
+     * "hijackaa" kaikkien staattisten filujen, ja GET-tyyppisten api-kutsujen
      * HTTP-pyynnöt (tarjoilee sisällön cachesta), ja offline-http kaikkien
      * POST etc. -tyyppisten api-kutsujen pyynnöt (loggaa tiedot indexedDb-
      * selaintietokantaan).
      */
     public confirm() {
+        const utils = iocFactories.utils();
+        utils.revealLoadingIndicator();
         return this.offline.enable()
             .then(() => {
                 // TODO userService.setMaybeIsAuthenticated(false);
                 iocFactories.notify()('Offline-tila asetettu, voit nyt sulkea internet-yhteyden', 'success');
+                utils.hideLoadingIndicator();
                 this.close();
-            }, err => {
+            }, () => {
                 iocFactories.notify()('Offline-tilaan asettaminen epäonnistui', 'error');
-                console.error(err);
+                utils.hideLoadingIndicator();
             });
     }
     public close() {
