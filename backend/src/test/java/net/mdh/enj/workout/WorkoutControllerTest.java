@@ -51,6 +51,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(WorkoutRepository.class).to(WorkoutRepository.class);
                     bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
+                    bind(WorkoutExerciseSetRepository.class).to(WorkoutExerciseSetRepository.class);
                 }
             });
     }
@@ -65,7 +66,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Response response = this.newPostRequest("workout", null);
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(1, errors.size());
         Assert.assertEquals("WorkoutController.insert.arg0", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
@@ -201,7 +202,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 2", (Integer)2, responseBody.updateCount);
         // Testaa, että PUT /workout päivitti kummatkin
         List<?> updated = utils.selectAllWhere(
-            "SELECT * FROM workout WHERE id IN(:id1, :id2)",
+            "SELECT * FROM workout WHERE id IN(:id1, :id2) ORDER BY notes ASC",
             new MapSqlParameterSource().addValue("id1", first.getId()).addValue("id2", second.getId()),
             new SimpleMappers.WorkoutMapper()
         );
@@ -248,7 +249,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Response response = this.newPostRequest("workout/exercise", null);
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(1, errors.size());
         Assert.assertEquals("WorkoutController.insertExercise.arg0", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
@@ -282,7 +283,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         workoutExercise.setWorkoutId(testWorkout.getId());
         workoutExercise.setOrderDef(0);
         workoutExercise.setExercise(testExercise);
-        // Testaa että insertoi pyynnön tiedoilla
+        // Lähetä pyyntö
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
@@ -292,6 +293,57 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
         Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId().equals(testWorkout.getId())).findFirst().get();
         Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
+    }
+
+    @Test
+    public void POSTExerciseSetHylkääPyynnönJosDataPuuttuuKokonaan() {
+        Response response = this.newPostRequest("workout/exercise/set", null);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetValidoiInputin() {
+        Response response = this.newPostRequest("workout/exercise/set", "{}");
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0.reps", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0.workoutExerciseId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetLisääTreeniliikkeelleSetin() {
+        // Luo ensin treeniliike, johon setti lisätään
+        Workout.Exercise we = new Workout.Exercise();
+        we.setWorkoutId(testWorkout.getId());
+        we.setExercise(testExercise);
+        utils.insertWorkoutExercise(we);
+        // Luo testidata
+        Workout.Exercise.Set workoutExerciseSet = new Workout.Exercise.Set();
+        workoutExerciseSet.setWorkoutExerciseId(we.getId());
+        workoutExerciseSet.setWeight(12.5);
+        workoutExerciseSet.setReps(10);
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("workout/exercise/set", workoutExerciseSet);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
+        workoutExerciseSet.setId(responseBody.insertId);
+        // Testaa että insertoitui, ja palautti id:n
+        Workout.Exercise.Set inserted = (Workout.Exercise.Set) utils.selectOneWhere(
+            "SELECT * FROM workoutExerciseSet WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", workoutExerciseSet.getId()),
+            new SimpleMappers.WorkoutExerciseSetMapper()
+        );
+        Assert.assertNotNull("Pitäisi insertoida liikkelle setti", inserted);
+        Assert.assertEquals("Pitäisi insertoida POST-datalla", workoutExerciseSet.toString(),
+            inserted.toString()
+        );
     }
 
     private List<Workout> makeCoupleOfWorkouts() {

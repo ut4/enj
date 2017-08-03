@@ -18,4 +18,15 @@ public class SimpleMappers {
             return workout;
         }
     }
+    public static class WorkoutExerciseSetMapper implements RowMapper<Workout.Exercise.Set> {
+        @Override
+        public Workout.Exercise.Set mapRow(ResultSet rs, int i) throws SQLException {
+            Workout.Exercise.Set set = new Workout.Exercise.Set();
+            set.setId(rs.getString("id"));
+            set.setWeight(rs.getDouble("weight"));
+            set.setReps(rs.getInt("reps"));
+            set.setWorkoutExerciseId(rs.getString("workoutExerciseId"));
+            return set;
+        }
+    }
 }

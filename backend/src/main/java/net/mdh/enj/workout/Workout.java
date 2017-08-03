@@ -134,7 +134,9 @@ public class Workout extends DbEntity {
          */
         public static class Set extends DbEntity {
             private double weight;
+            @Min(value = 1)
             private int reps;
+            @UUID
             private String workoutExerciseId;
 
             public double getWeight() {
@@ -164,6 +166,7 @@ public class Workout extends DbEntity {
                     "id=" + this.getId() +
                     ", weight=" + this.getWeight() +
                     ", reps=" + this.getReps() +
+                    ", workoutExerciseId=" + this.getWorkoutExerciseId() +
                 "}";
             }
         }

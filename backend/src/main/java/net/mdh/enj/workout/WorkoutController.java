@@ -30,16 +30,19 @@ public class WorkoutController {
 
     private final WorkoutRepository workoutRepository;
     private final WorkoutExerciseRepository workoutExerciseRepository;
+    private final WorkoutExerciseSetRepository workoutExerciseSetRepository;
     private final RequestContext requestContext;
 
     @Inject
     public WorkoutController(
         WorkoutRepository workoutRepository,
         WorkoutExerciseRepository workoutExerciseRepository,
+        WorkoutExerciseSetRepository workoutExerciseSetRepository,
         RequestContext requestContext
     ) {
         this.workoutRepository = workoutRepository;
         this.workoutExerciseRepository = workoutExerciseRepository;
+        this.workoutExerciseSetRepository = workoutExerciseSetRepository;
         this.requestContext = requestContext;
     }
 
@@ -94,5 +97,17 @@ public class WorkoutController {
     public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
         return new InsertResponse(insertCount, workoutExercise.getId());
+    }
+
+    /**
+     * Lisää uuden setin treeniliikkeelle {workoutExerciseSet.workoutExerciseId}.
+     */
+    @POST
+    @Path("/exercise/set")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public InsertResponse insertExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
+        int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSet);
+        return new InsertResponse(insertCount, workoutExerciseSet.getId());
     }
 }
