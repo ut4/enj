@@ -1,5 +1,4 @@
 import Component from 'inferno-component';
-import Overlay from 'src/ui/Overlay';
 import { WorkoutExercise } from 'src/workout/WorkoutBackend';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
 import iocFactories from 'src/ioc';
@@ -48,14 +47,14 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
         iocFactories.history().push(this.returnUrl);
     }
     public render() {
-        return (<Overlay>
+        return (<div>
             <h3>Lisää liike treeniin</h3>
             <ExerciseSelector onSelect={ this.onExerciseSelect.bind(this) }/>
             <div class="form-buttons">
                 <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) } disabled={ !this.state.workoutExercise.exercise }>Ok</button>
                 <button class="text-button" type="button" onClick={ this.cancel.bind(this) }>Peruuta</button>
             </div>
-        </Overlay>);
+        </div>);
     }
 }
 

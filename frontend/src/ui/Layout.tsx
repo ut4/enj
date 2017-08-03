@@ -1,10 +1,12 @@
 import Component from 'inferno-component';
 import MainMenu from 'src/ui/MainMenu';
 import { Notifier } from 'src/ui/Notifier';
+import Modal from 'src/ui/Modal';
 
 class Layout extends Component<any, any> {
     public render() {
         return (<div>
+            <Modal/>
             <header>
                 <MainMenu/>
             </header>
