@@ -1,28 +1,25 @@
 import Component from 'inferno-component';
 import { WorkoutExercise } from 'src/workout/WorkoutBackend';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
+import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
     params: {
-        id: AAGUID, // Treenin id, ks. url
-        orderDef: number
+        workoutId: AAGUID,
+        orderDef: number,
+        afterInsert: Function
     };
 }
 
-/**
- * Näkymä #/treeni/:id/liike/lisaa/:orderDef, liikkeen lisäys treeniin {:id}.
- */
-class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutExercise}> {
-    private returnUrl: string;
+class WorkoutExerciseAddModal extends Component<Props, {workoutExercise: WorkoutExercise}> {
     public constructor(props, context) {
         super(props, context);
-        this.returnUrl = '/treeni/tanaan';
         //
         const workoutExercise = new WorkoutExercise();
-        workoutExercise.workoutId = props.params.id;
-        workoutExercise.orderDef = parseInt(props.params.orderDef, 10);
-        this.state = {workoutExercise};
+        workoutExercise.workoutId = props.workoutId;
+        workoutExercise.orderDef = parseInt(props.orderDef, 10);
+        this.state = { workoutExercise };
     }
     /**
      * Asettaa valitun liikkeen luotavaan dataan. Triggeröityy ExerciseSelectorin
@@ -31,7 +28,7 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
     public onExerciseSelect(selectedExercise, selectedVariant) {
         const workoutExercise = this.state.workoutExercise;
         workoutExercise.exercise = selectedExercise || null;
-        this.setState({workoutExercise});
+        this.setState({ workoutExercise });
     }
     /**
      * Lähettää treeniliikkeen backendiin tallennettavaksi, ja ohjaa käyttäjän
@@ -39,23 +36,17 @@ class WorkoutExerciseAddView extends Component<Props, {workoutExercise: WorkoutE
      */
     private confirm() {
         iocFactories.workoutBackend().addExercise(this.state.workoutExercise).then(
-            () => iocFactories.history().push(this.returnUrl + '?refresh=1'),
+            () => this.props.afterInsert(this.state.workoutExercise),
             () => iocFactories.notify()('Treeniliikkeen lisääminen epäonnistui', 'error')
         );
     }
-    private cancel() {
-        iocFactories.history().push(this.returnUrl);
-    }
     public render() {
-        return (<div>
+        return <div>
             <h3>Lisää liike treeniin</h3>
             <ExerciseSelector onSelect={ this.onExerciseSelect.bind(this) }/>
-            <div class="form-buttons">
-                <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) } disabled={ !this.state.workoutExercise.exercise }>Ok</button>
-                <button class="text-button" type="button" onClick={ this.cancel.bind(this) }>Peruuta</button>
-            </div>
-        </div>);
+            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exercise } autoCloseOnConfirm={ true }/>
+        </div>;
     }
 }
 
-export default WorkoutExerciseAddView;
+export default WorkoutExerciseAddModal;

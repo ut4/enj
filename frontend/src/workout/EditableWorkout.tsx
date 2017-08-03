@@ -1,52 +1,34 @@
 import Component from 'inferno-component';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
-import WorkoutBackend from 'src/workout/WorkoutBackend';
-import WorkoutEndConfirmation from 'src/workout/WorkoutEndConfirmation';
-import { notify } from 'src/ui/Notifier';
+import WorkoutEndModal from 'src/workout/WorkoutEndModal';
+import WorkoutExerciseAddModal from 'src/workout/WorkoutExerciseAddModal';
 import Timer from 'src/ui/Timer';
-import iocFactories from 'src/ioc';
 import Modal from 'src/ui/Modal';
 
 /**
  * #/treeni/:id -näkymään renderöitävän treenilistan yksi itemi.
  */
 class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelete: Function}, any> {
-    private workoutBackend: WorkoutBackend;
-    private notify: notify;
     private timer?: Timer;
-    constructor(props, context) {
-        super(props, context);
-        this.workoutBackend = iocFactories.workoutBackend();
-        this.notify = iocFactories.notify();
-        this.context.workout = this.props.workout;
-    }
     private openWorkoutEndModal() {
-        const hasValidSets = hasAtleastOneValidSet(this.props.workout);
         Modal.open(() =>
-            <WorkoutEndConfirmation hasValidSets={ hasValidSets } onConfirm={ () => this.endWorkout(hasValidSets) }/>
+            <WorkoutEndModal workout={ this.props.workout } afterEnd={ hadValidSets => {
+                if (hadValidSets) {
+                    this.timer.stop();
+                    this.forceUpdate();
+                } else {
+                    this.props.onDelete();
+                }
+            } }/>
         );
     }
-    /**
-     * Päivittää treenille lopetusajan backendiin, tai poistaa treenin kokonaan,
-     * jos sillä ei ollut yhtään tehtyä settiä.
-     */
-    private endWorkout(hasValidSets: boolean) {
-        this.props.workout.end = Math.floor(Date.now() / 1000);
-        return (hasValidSets
-            ? this.workoutBackend.update([this.props.workout])
-            : this.workoutBackend.delete(this.props.workout)).then(
-                () => {
-                    if (hasValidSets) {
-                        this.timer.stop();
-                        this.forceUpdate();
-                        this.notify('Treeni merkattu valmiiksi', 'success');
-                    } else {
-                        this.props.onDelete();
-                        this.notify('Tyhjä treeni poistettu', 'info');
-                    }
-                },
-                err => this.notify('Treenin lopettaminen epäonnistui', 'error')
-            );
+    private openExerciseAddModal() {
+        Modal.open(() =>
+            <WorkoutExerciseAddModal workoutId={ this.props.workout.id } orderDef={ this.props.workout.exercises.length } afterInsert={ workoutExercise => {
+                this.props.workout.exercises.push(workoutExercise);
+                this.forceUpdate();
+            } }/>
+        );
     }
     public render() {
         return (<div class="editable-workout">
@@ -64,13 +46,9 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
                     : <li>Ei vielä liikkeitä.</li>
                 }
             </ul>
-            <a class="nice-button" href={ '#/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</a>
+            <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
         </div>);
     }
-}
-
-function hasAtleastOneValidSet(workout) {
-    return workout.exercises.length && workout.exercises.some(exs => exs.sets.length > 0);
 }
 
 export default EditableWorkout;

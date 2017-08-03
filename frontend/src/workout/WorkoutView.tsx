@@ -28,18 +28,6 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         );
     }
     /**
-     * Uudelleenfetchaa treenit tarvittaessa.
-     */
-    public componentWillReceiveProps(_, {router}) {
-        // Päivitä treenit, jos niihin on tapahtunut muutoksia alinäkymissä
-        // (liike lisätty tjmv.)
-        if (router.location.search.indexOf('refresh=1') > -1) {
-            this.componentDidMount();
-            // Poista refresh parametri
-            iocFactories.history().replace(router.location.pathname);
-        }
-    }
-    /**
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
      */
     private startNewWorkout() {
