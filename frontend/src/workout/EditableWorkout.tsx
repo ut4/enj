@@ -1,22 +1,52 @@
 import Component from 'inferno-component';
-import { Link } from 'inferno-router';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
+import WorkoutEndModal from 'src/workout/WorkoutEndModal';
+import WorkoutExerciseAddModal from 'src/workout/WorkoutExerciseAddModal';
+import Timer from 'src/ui/Timer';
+import Modal from 'src/ui/Modal';
 
 /**
  * #/treeni/:id -näkymään renderöitävän treenilistan yksi itemi.
  */
-class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord}, any> {
+class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelete: Function}, any> {
+    private timer?: Timer;
+    private openWorkoutEndModal() {
+        Modal.open(() =>
+            <WorkoutEndModal workout={ this.props.workout } afterEnd={ hadValidSets => {
+                if (hadValidSets) {
+                    this.timer.stop();
+                    this.forceUpdate();
+                } else {
+                    this.props.onDelete();
+                }
+            } }/>
+        );
+    }
+    private openExerciseAddModal() {
+        Modal.open(() =>
+            <WorkoutExerciseAddModal workoutId={ this.props.workout.id } orderDef={ this.props.workout.exercises.length } afterInsert={ workoutExercise => {
+                this.props.workout.exercises.push(workoutExercise);
+                this.forceUpdate();
+            } }/>
+        );
+    }
     public render() {
-        return (<div>
+        return (<div class="editable-workout">
             <div class="workout-timer">
-                Kesto { this.props.workout.start }:00:00
+                Kesto <Timer start={ this.props.workout.start } end={ this.props.workout.end } ref={ timer => { this.timer = timer; }}/>
             </div>
+            { !this.props.workout.end &&
+                <button class="nice-button" onClick={ () => this.openWorkoutEndModal() }>Valmis!</button>
+            }
             <ul class="dark-list">
-                { this.props.workout.exercises.map(workoutExercise =>
-                    <EditableWorkoutExercise workoutExercise={ workoutExercise }/>
-                ) }
+                { this.props.workout.exercises.length
+                    ? this.props.workout.exercises.map(workoutExercise =>
+                        <EditableWorkoutExercise workoutExercise={ workoutExercise }/>
+                    )
+                    : <li>Ei vielä liikkeitä.</li>
+                }
             </ul>
-            <Link class="nice-button" to={ '/treeni/' + this.props.workout.id + '/liike/lisaa/' + this.props.workout.exercises.length }>Lisää liike</Link>
+            <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
         </div>);
     }
 }

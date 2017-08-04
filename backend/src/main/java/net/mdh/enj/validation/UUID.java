@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Constraint(validatedBy = UUIDValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UUID {

@@ -1,4 +1,4 @@
-import ValidatingForm, { messages } from 'src/common/ValidatingForm';
+import ValidatingForm, { messages } from 'src/ui/ValidatingForm';
 
 interface State {
     username: string;

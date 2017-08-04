@@ -1,5 +1,6 @@
 DROP VIEW    IF EXISTS workoutExerciseView;
 DROP VIEW    IF EXISTS workoutView;
+DROP TRIGGER IF EXISTS workoutExerciseDeleteTrg;
 DROP TRIGGER IF EXISTS workoutEndTrg;
 DROP TABLE   IF EXISTS workoutExerciseSet;
 DROP TABLE   IF EXISTS workoutExercise;
@@ -65,7 +66,7 @@ CREATE TABLE workout (
 
 CREATE TABLE workoutExercise (
     id CHAR(36) NOT NULL,
-    orderDef TINYINT(1) UNSIGNED NOT NULL,
+    orderDef TINYINT UNSIGNED NOT NULL,
     workoutId CHAR(36) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     exerciseVariantId CHAR(36) DEFAULT NULL,
@@ -103,6 +104,15 @@ FOR EACH ROW BEGIN
 END;//
 DELIMITER ;
 
+-- Treeniliikkeen poiston yhteydessä ajautuva triggeri joka poistaa kaikki sille
+-- kuuluvat setit
+DELIMITER //
+CREATE TRIGGER workoutExerciseDeleteTrg BEFORE DELETE ON workoutExercise
+FOR EACH ROW BEGIN
+    DELETE FROM workoutExerciseSet WHERE workoutExerciseId = OLD.id;
+END;//
+DELIMITER ;
+
 CREATE VIEW workoutView AS
     SELECT
         w.id      AS workoutId,
@@ -115,14 +125,16 @@ CREATE VIEW workoutView AS
 CREATE VIEW workoutExerciseView AS
     SELECT
         we.id         AS workoutExerciseId,
+        we.orderDef   AS workoutExerciseOrderDef,
         we.workoutId  AS workoutExerciseWorkoutId,
         e.id          AS exerciseId,
         e.`name`      AS exerciseName,
         ev.id         AS exerciseVariantId,
-        ev.`content`  AS exerciseVariantName,
+        ev.`content`  AS exerciseVariantContent,
         s.id          AS workoutExerciseSetId,
         s.weight      AS workoutExerciseSetWeight,
-        s.reps        AS workoutExerciseSetReps
+        s.reps        AS workoutExerciseSetReps,
+        s.workoutExerciseId AS workoutExerciseSetWorkoutExerciseId
     FROM workoutExercise we
     JOIN exercise e ON (e.id = we.exerciseId)
     LEFT JOIN exerciseVariant ev ON (ev.id = we.exerciseVariantId)

@@ -10,6 +10,7 @@ declare module Enj {
         interface WorkoutRecord {
             id: AAGUID;
             start: number;
+            end?: number;
             exercises: Array<WorkoutExerciseRecord>;
             userId: string;
         }
@@ -64,9 +65,9 @@ declare module Enj {
         }
     }
 
-    type syncableHttpMethod = {POST: 1};
+    type httpMethod = {POST: 1; PUT: 1; DELETE: 1};
     interface SyncRoute {
-        method: keyof syncableHttpMethod;
+        method: keyof httpMethod;
         url: string;
     }
     interface offlineHandler {
@@ -77,4 +78,9 @@ declare module Enj {
         baseUrl: string;
         baseApiNamespace: string;
     };
+
+    interface Utils {
+        revealLoadingIndicator: () => any;
+        hideLoadingIndicator: () => any;
+    }
 }

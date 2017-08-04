@@ -4,22 +4,22 @@ import UserState from 'src/user/UserState';
 import Offline from 'src/offline/Offline';
 
 QUnit.module('offline/Offline', hooks => {
-    let userState: UserState;
+    let shallowUserState: UserState;
     let mockServiceWorkerContainer: {register: Function, controller: Object};
     let offline: Offline;
     let mockServiceWorker: {state: string, postMessage: Function};
     hooks.beforeEach(() => {
-        userState = Object.create(UserState.prototype);
+        shallowUserState = Object.create(UserState.prototype);
         mockServiceWorkerContainer = {register: () => {}, controller: null};
         mockServiceWorker = {state: 'activated', postMessage: () => {}};
-        offline = new Offline(userState, mockServiceWorkerContainer as any);
+        offline = new Offline(shallowUserState, mockServiceWorkerContainer as any);
     });
     QUnit.test('enable asentaa serviceworkerin ja päivittää statuksen selaintietokantaan', assert => {
         const mockRegistration = {installing: mockServiceWorker};
         const swRegistration = sinon.mock(mockServiceWorkerContainer);
         swRegistration.expects('register').once().withExactArgs('sw-main.js').returns(Promise.resolve(mockRegistration));
         const swInformOperation = sinon.spy(mockServiceWorker, 'postMessage');
-        const dbUpdateOperation = sinon.stub(userState, 'setIsOffline').returns(Promise.resolve(1));
+        const dbUpdateOperation = sinon.stub(shallowUserState, 'setIsOffline').returns(Promise.resolve(1));
         assert.deepEqual((offline as any).controllingServiceWorker, null,
             'Initial controllingServiceWorker pitäisi olla null'
         );
@@ -45,7 +45,7 @@ QUnit.module('offline/Offline', hooks => {
     QUnit.test('disable synkkaa syncQueuen ja päivittää statuksen selaintietokantaan', assert => {
         (offline as any).controllingServiceWorker = mockServiceWorker;
         const isOnlineSwStateUpdate = sinon.spy(mockServiceWorker, 'postMessage');
-        const fakeDbUpdate = sinon.stub(userState, 'setIsOffline').returns(Promise.resolve(1));
+        const fakeDbUpdate = sinon.stub(shallowUserState, 'setIsOffline').returns(Promise.resolve(1));
         const done = assert.async();
         offline.disable().then(() => {
             assert.ok(isOnlineSwStateUpdate.calledOnce);

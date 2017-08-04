@@ -1,5 +1,4 @@
 import Component from 'inferno-component';
-import { Link } from 'inferno-router';
 import UserState from 'src/user/UserState';
 import iocFactories from 'src/ioc';
 
@@ -34,15 +33,15 @@ class UserMenu extends Component<any, any> {
         return (<nav id="user-menu">
             <ul>
                 { this.state.offlineIsEnabled &&
-                    <li><Link to="/palauta-online">Go online</Link></li>
+                    <li><a href="/#palauta-online">Go online</a></li>
                 }
                 { (!this.state.offlineIsEnabled && !this.state.maybeIsLoggedIn) &&
-                    <li><Link to="/kirjaudu">Kirjaudu sisään</Link></li>
+                    <li><a href="/#kirjaudu">Kirjaudu sisään</a></li>
                 }
                 { (!this.state.offlineIsEnabled && this.state.maybeIsLoggedIn) && [
-                    <li><Link to="/profiili">Profiili</Link></li>,
+                    <li><a href="/#profiili">Profiili</a></li>,
                     <li><a href="" onClick={ this.test.bind(this) }>Kirjaudu ulos</a></li>,
-                    <li><Link to="/aloita-offline">Go offline</Link></li>
+                    <li><a href="/#aloita-offline">Go offline</a></li>
                 ] }
             </ul>
         </nav>);

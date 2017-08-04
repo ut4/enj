@@ -22,13 +22,13 @@ class OfflineHttp {
      * sijaan offline-handlerin palauttama data. Lisäksi reitit, joita ei ole rekisteröity,
      * palauttaa Responsen statuskoodilla 454, ei 404.
      */
-    public handle(url: string, options: {method: keyof Enj.syncableHttpMethod, data?: any}): Promise<Response> {
+    public handle(url: string, options: {method: keyof Enj.httpMethod, data?: any}): Promise<Response> {
         const handler = this.getHandler(options.method, url);
         if (!handler) {
             return Promise.resolve(makeOffline404(options.method, url));
         }
         let response: Response;
-        return handler(options.data)
+        return handler(options.data, url)
             .then(responseData => {
                 response = new Response(responseData);
                 return this.logRequestToSyncQueue({
@@ -43,23 +43,33 @@ class OfflineHttp {
      * @param {string} url HTTP-pyynnön url joka halutaan hadlata offline-moden aikana
      * @param {Function} fn funktio jolla handlataan
      */
-    public addHandler(method: keyof Enj.syncableHttpMethod, url: string, fn: Enj.offlineHandler) {
+    public addHandler(method: keyof Enj.httpMethod, url: string, fn: Enj.offlineHandler) {
         OfflineHttp.requestHandlers[method + ':' + url] = fn;
     }
     /**
      * @param {string} method
      * @param {string} url url jonka HTTP-pyyntöjä ei haluta logattavan
      */
-    public ignore(method: keyof Enj.syncableHttpMethod, url: string) {
+    public ignore(method: keyof Enj.httpMethod, url: string) {
         OfflineHttp.urlsToIgnore[method + ':' + url] = 'don\'t log this request';
     }
     /**
      * @param {string} method
      * @param {string} url
-     * @return {boolean}
+     * @return {Object|undefined}
      */
-    public getHandler(method: keyof Enj.syncableHttpMethod, url: string): Enj.offlineHandler {
-        return OfflineHttp.requestHandlers[method + ':' + url];
+    public getHandler(method: keyof Enj.httpMethod, url: string): Enj.offlineHandler {
+        const handler = OfflineHttp.requestHandlers[method + ':' + url];
+        if (handler) {
+            return handler;
+        }
+        for (const route in OfflineHttp.requestHandlers) {
+            const [iterMethod, urlPattern] = route.split(':');
+            if (iterMethod === method && patternToRegexp(urlPattern).test(url)) {
+                return OfflineHttp.requestHandlers[route];
+            }
+        }
+        return undefined;
     }
     /**
      * @param {Object} request logattava pyyntö {method, url, data}
@@ -93,6 +103,10 @@ function makeOffline404(method, url): Response {
         status: 454,
         statusText: 'Offline handler not found'
     });
+}
+
+function patternToRegexp(pattern: string): RegExp {
+    return RegExp(pattern.replace('*', '.+'));
 }
 
 export default OfflineHttp;

@@ -13,7 +13,9 @@ import net.mdh.enj.workout.Workout;
 import net.mdh.enj.workout.WorkoutController;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
+import net.mdh.enj.workout.WorkoutExerciseSetRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,6 +64,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
                     // WorkoutController riippuvuudet
                     bind(WorkoutRepository.class).to(WorkoutRepository.class);
                     bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
+                    bind(WorkoutExerciseSetRepository.class).to(WorkoutExerciseSetRepository.class);
                 }
             });
     }
@@ -96,6 +100,8 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienTempIdt() {
         // Luo testidata
         List<SyncQueueItem> testSyncQueue = this.makeTestSyncQueue();
+        Map<String, Object> testWorkoutSyncData = testSyncQueue.get(0).getData();
+        Map<String, Object> testWorkoutExerciseSyncData = testSyncQueue.get(1).getData();
         //
         Response response = this.newPostRequest("sync", testSyncQueue);
         // Testaa että synkkasi jokaisen itemin
@@ -107,26 +113,30 @@ public class SyncingTest extends RollbackingDBJerseyTest {
             responseBody.toArray(new Integer[2])
         );
         //
-        Workout syncedWorkout = (Workout) utils.selectOne(
-            "SELECT id as i, `start` as s FROM workout ORDER BY `start` DESC LIMIT 1", (rs, i) -> {
+        Workout syncedWorkout = (Workout) utils.selectOneWhere(
+            "SELECT id as i, `start` as s FROM workout WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", testWorkoutSyncData.get("id")),
+            (rs, i) -> {
                 Workout w = new Workout(); w.setId(rs.getString("i")); w.setStart(rs.getInt("s")); return w;
             }
         );
-        Assert.assertNotNull("Synkattu data pitäisi olla insertoituna tietokantaan", syncedWorkout);
+        Assert.assertNotNull("Synkattava data pitäisi insertoitua tietokantaan", syncedWorkout);
         Assert.assertEquals("Tietokantaan synkattu treeni pitäisi sisältää sama data kuin inputissa",
-            testSyncQueue.get(0).getData().get("start"), syncedWorkout.getStart()
+            testWorkoutSyncData.get("start"), syncedWorkout.getStart()
         );
         //
         Workout.Exercise syncedWorkoutExercise = (Workout.Exercise) utils.selectOneWhere(
-            "SELECT orderDef as od FROM workoutExercise WHERE workoutId = ?",
-            new Object[]{syncedWorkout.getId()},
+            "SELECT orderDef FROM workoutExercise WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", testWorkoutExerciseSyncData.get("id")),
             (rs, i) -> {
-                Workout.Exercise w = new Workout.Exercise(); w.setOrderDef(rs.getInt("od")); return w;
+                Workout.Exercise we = new Workout.Exercise();
+                we.setOrderDef(rs.getInt("orderDef"));
+                return we;
             }
         );
-        Assert.assertNotNull("Synkattu data pitäisi olla insertoituna tietokantaan", syncedWorkoutExercise);
-        Assert.assertEquals("Tietokantaan synkattu treeni pitäisi sisältää sama data kuin inputissa",
-            testSyncQueue.get(1).getData().get("orderDef"), syncedWorkoutExercise.getOrderDef()
+        Assert.assertNotNull("Synkattava data pitäisi insertoitua tietokantaan", syncedWorkoutExercise);
+        Assert.assertEquals("Tietokantaan synkattu treeniliike pitäisi sisältää sama data kuin inputissa",
+            testWorkoutExerciseSyncData.get("orderDef"), syncedWorkoutExercise.getOrderDef()
         );
     }
 

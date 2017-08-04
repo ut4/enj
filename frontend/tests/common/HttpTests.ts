@@ -6,20 +6,21 @@ import UserState from 'src/user/UserState';
 const testBaseUrl:string = 'http://smthng/api/v2/';
 
 QUnit.module('common/Http', hooks => {
-    let fetchContainer: GlobalFetch = window;
+    let fetchContainer: GlobalFetch;
     let mockResponse: {status: number, json: Function};
-    let offlineHttp: OfflineHttp;
-    let userState: UserState;
+    let shallowOfflineHttp: OfflineHttp;
+    let shallowUserState: UserState;
     let http: Http;
     hooks.beforeEach(() => {
         Http.pendingRequestCount = 0;
         mockResponse = {status: 200, json: () => Promise.resolve('foo')};
-        offlineHttp = Object.create(OfflineHttp.prototype);
-        userState = Object.create(UserState.prototype);
-        http = new Http(fetchContainer, offlineHttp, userState, testBaseUrl);
+        shallowOfflineHttp = Object.create(OfflineHttp.prototype);
+        shallowUserState = Object.create(UserState.prototype);
+        fetchContainer = {fetch: () => null};
+        http = new Http(fetchContainer, shallowOfflineHttp, shallowUserState, testBaseUrl);
     });
     QUnit.test('get päivittää pendingRequestsCounterin arvon', assert => {
-        sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
+        sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(false));
         const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
         const initialCounterValue = Http.pendingRequestCount;
         // == GET =====
@@ -37,7 +38,6 @@ QUnit.module('common/Http', hooks => {
             assert.equal(Http.pendingRequestCount, initialCounterValue,
                 'Pitäisi palauttaa counterin alkuperäiseen arvoon'
             );
-            fetchCallWatch.restore();
             done();
         });
     });
@@ -62,45 +62,58 @@ QUnit.module('common/Http', hooks => {
                 mockResponseValue,
                 'Pitäisi resolvata response.json():nin arvon'
             );
-            fetchCallWatch.restore();
             done();
         });
     });
     QUnit.test('get ajaa interceptorit', assert => {
-        mockResponse.status = 500;
-        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
+        const badResponse = JSON.parse(JSON.stringify(mockResponse));
+        badResponse.status = 500;
+        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch');
+        fetchCallWatch.onFirstCall().returns(Promise.resolve(mockResponse));
+        fetchCallWatch.onSecondCall().returns(Promise.resolve(badResponse));
         const requestInterceptor = sinon.spy();
+        const responseInterceptor = sinon.spy();
         const responseErrorInterceptor = sinon.spy();
         http.interceptors.push(new class InterceptorClass {
             request(req) { return requestInterceptor(req); }
+            response(res) { return responseInterceptor(res); }
             responseError(res) { return responseErrorInterceptor(res); }
         });
         //
         const done = assert.async();
-        http.get('foo').then(null, () => {
-            assert.ok(
-                requestInterceptor.calledOnce,
-                'Pitäisi kutsua pre-interceptoria'
+        http.get('foo').then(() => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
             );
-            assert.ok(
-                requestInterceptor.firstCall.args[0] instanceof Request,
-                'Pitäisi passata pre-interceptorille window.Request-instanssin'
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
             );
-            assert.ok(
-                responseErrorInterceptor.calledOnce,
-                'Pitäisi kutsua post-interceptoria'
+            assert.ok(responseInterceptor.calledOnce,
+                'Pitäisi kutsua response-interceptoria'
             );
-            assert.deepEqual(
-                responseErrorInterceptor.firstCall.args[0],
-                mockResponse,
-                'Pitäisi passata post-interceptorille fetchin palauttaman arvon'
+            assert.deepEqual(responseInterceptor.firstCall.args[0], mockResponse,
+                'Pitäisi passata response-interceptorille fetchin palauttaman arvon'
             );
-            fetchCallWatch.restore();
+            requestInterceptor.reset();
+            return http.get('bar');
+        }).then(null, () => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
+            );
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
+            );
+            assert.ok(responseErrorInterceptor.calledOnce,
+                'Pitäisi kutsua responseError-interceptoria'
+            );
+            assert.deepEqual(responseErrorInterceptor.firstCall.args[0], badResponse,
+                'Pitäisi passata responseError-interceptorille fetchin palauttaman arvon'
+            );
             done();
         });
     });
-    QUnit.test('post kutsuu fetchiä baseUrlilla prefiksoituna', assert => {
-        sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
+    QUnit.test('sendRequest kutsuu fetchiä', assert => {
+        sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(false));
         const requestUrl = '/foo/bar';
         const requestData = {foo: 'bar'};
         const mockResponseData = 'qwe';
@@ -111,7 +124,7 @@ QUnit.module('common/Http', hooks => {
                 // Pitäisi prefiksoida url
                 testBaseUrl + requestUrl,
                 {
-                    method: 'POST',
+                    method: 'BOST',
                     headers: {
                         'Content-Type': 'application/json',
                         Accept: 'application/json'
@@ -122,73 +135,127 @@ QUnit.module('common/Http', hooks => {
             ))
             .returns(Promise.resolve(mockResponse));
         const done = assert.async();
-        http.post(requestUrl, requestData).then(result => {
+        (http as any).sendRequest(requestUrl, 'BOST', requestData).then(result => {
             fetchCallWatch.verify();
             assert.deepEqual(result, mockResponseData);
             done();
         });
     });
-    QUnit.test('post ajaa interceptorit', assert => {
-        mockResponse.status = 500;
-        sinon.stub(userState, 'isOffline').returns(Promise.resolve(false));
-        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch').returns(Promise.resolve(mockResponse));
+    QUnit.test('sendRequest ajaa interceptorit', assert => {
+        const badResponse = JSON.parse(JSON.stringify(mockResponse));
+        badResponse.status = 500;
+        sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(false));
+        const fetchCallWatch = sinon.stub(fetchContainer, 'fetch');
+        fetchCallWatch.onFirstCall().returns(Promise.resolve(badResponse));
+        fetchCallWatch.onSecondCall().returns(Promise.resolve(mockResponse));
         const requestInterceptor = sinon.spy();
+        const responseInterceptor = sinon.spy();
         const responseErrorInterceptor = sinon.spy();
         http.interceptors.push({
             request: requestInterceptor,
+            response: responseInterceptor,
             responseError: responseErrorInterceptor
         });
         //
         const done = assert.async();
-        http.post('foo', {foo: 'bar'}).then(null, () => {
-            assert.ok(
-                requestInterceptor.calledOnce,
-                'Pitäisi kutsua pre-interceptoria'
+        (http as any).sendRequest('foo', 'POST', {foo: 'bar'}).then(null, () => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
             );
-            assert.ok(
-                requestInterceptor.firstCall.args[0] instanceof Request,
-                'Pitäisi passata pre-interceptorille window.Request-instanssin'
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
             );
-            assert.ok(
-                responseErrorInterceptor.calledOnce,
-                'Pitäisi kutsua post-interceptoria'
+            assert.ok(responseErrorInterceptor.calledOnce,
+                'Pitäisi kutsua responseError-interceptoria'
             );
-            assert.deepEqual(
-                responseErrorInterceptor.firstCall.args[0],
-                mockResponse,
-                'Pitäisi passata post-interceptorille fetchin palauttaman arvon'
+            assert.deepEqual(responseErrorInterceptor.firstCall.args[0], badResponse,
+                'Pitäisi passata responseError-interceptorille fetchin palauttaman arvon'
             );
-            fetchCallWatch.restore();
+            requestInterceptor.reset();
+            return (http as any).sendRequest('foo', 'POST', {foo: 'bar'});
+        }).then(() => {
+            assert.ok(requestInterceptor.calledOnce,
+                'Pitäisi kutsua request-interceptoria'
+            );
+            assert.ok(requestInterceptor.firstCall.args[0] instanceof Request,
+                'Pitäisi passata request-interceptorille window.Request-instanssin'
+            );
+            assert.ok(responseInterceptor.calledOnce,
+                'Pitäisi kutsua response-interceptoria'
+            );
+            assert.deepEqual(responseInterceptor.firstCall.args[0], mockResponse,
+                'Pitäisi passata response-interceptorille fetchin palauttaman arvon'
+            );
             done();
         });
     });
-    QUnit.test('post korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
-        sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
+    QUnit.test('sendRequest korvaa HTTP-kutsun offlineHandlerilla jos käyttäjä on offline', assert => {
+        sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(true));
         const fetchCallWatch = sinon.spy(fetchContainer, 'fetch');
         const requestUrl = 'baz/haz';
-        const requestData = {baz: 'haz'};
+        const requestData = {foo: 'bar'};
         const mockHandlerResponseData = '{"j":"son"}';
-        const mockOfflineHandlerWatcher = sinon.mock(offlineHttp);
+        const mockOfflineHandlerWatcher = sinon.mock(shallowOfflineHttp);
         mockOfflineHandlerWatcher.expects('handle').once()
-            .withExactArgs(requestUrl, {method:'POST', data: requestData})
+            .withExactArgs(requestUrl, {method: 'BOST', data: requestData})
             .returns(Promise.resolve(new Response(mockHandlerResponseData)));
         const done = assert.async();
-        http.post(requestUrl, requestData).then(result => {
+        (http as any).sendRequest(requestUrl, 'BOST', requestData).then(result => {
             assert.ok(fetchCallWatch.notCalled, 'Ei pitäisi tehdä HTTP-pyyntöä');
             mockOfflineHandlerWatcher.verify();
             assert.deepEqual(result, JSON.parse(mockHandlerResponseData));
-            fetchCallWatch.restore();
             done();
         });
     });
-    QUnit.test('post suorittaa HTTP-pyynnön käyttäjän offline-tilasta huolimatta, jos skipOfflineCheck = true', assert => {
-        sinon.stub(userState, 'isOffline').returns(Promise.resolve(true));
-        const offlineHandlerCallSpy = sinon.spy(offlineHttp, 'handle');
+    QUnit.test('sendRequest suorittaa HTTP-pyynnön käyttäjän offline-tilasta huolimatta, jos skipOfflineCheck = true', assert => {
+        sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(true));
+        const offlineHandlerCallSpy = sinon.spy(shallowOfflineHttp, 'handle');
         const fetchCallStub = sinon.stub(fetchContainer, 'fetch').returns(new Response('{"o":0}'));
         const done = assert.async();
-        http.post('foo', {foo: 'bar'}, true).then(() => {
-            assert.ok(fetchCallStub.calledOnce, 'Pitäisi tehdä HTTP-pyynnön');
+        (http as any).sendRequest('foo', 'POST', {foo: 'bar'}, true).then(() => {
+            assert.ok(fetchCallStub.calledOnce, 'Pitäisi tehdä HTTP-pyyntö');
             assert.ok(offlineHandlerCallSpy.notCalled, 'Ei pitäisi ohjata offline-handerille');
+            done();
+        });
+    });
+    QUnit.test('post lähettää POST HTTP-pyynnön', assert => {
+        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const url = 'foo';
+        const data = {foo: 'bar'};
+        //
+        const done = assert.async();
+        http.post(url, data).then(() => {
+            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
+            assert.deepEqual(request.firstCall.args, [
+                url, 'POST', data, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
+            ], 'Pitäisi lähettää nämä tiedot');
+            done();
+        });
+    });
+    QUnit.test('put lähettää PUT HTTP-pyynnön', assert => {
+        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const url = 'foo';
+        const data = {foo: 'bar'};
+        //
+        const done = assert.async();
+        http.put(url, data).then(() => {
+            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
+            assert.deepEqual(request.firstCall.args, [
+                url, 'PUT', data, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
+            ], 'Pitäisi lähettää nämä tiedot');
+            done();
+        });
+    });
+    QUnit.test('delete lähettää DELETE HTTP-pyynnön ilman bodyä', assert => {
+        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const url = 'foo';
+        //
+        const done = assert.async();
+        http.delete(url).then(() => {
+            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
+            assert.deepEqual(request.firstCall.args, [
+                url, 'DELETE', null, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
+            ], 'Pitäisi lähettää nämä tiedot');
             done();
         });
     });

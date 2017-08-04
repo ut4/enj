@@ -16,4 +16,24 @@ public abstract class Responses {
             this.insertId = insertId;
         }
     }
+    /**
+     * Oletusvastaus UPDATE REST-pyynnölle {"updateCount": ${Integer}}.
+     */
+    public static class UpdateResponse {
+        public Integer updateCount;
+        public UpdateResponse() {}
+        public UpdateResponse(Integer updateCount) {
+            this.updateCount = updateCount;
+        }
+    }
+    /**
+     * Oletusvastaus DELETE REST-pyynnölle {"deleteCount": ${Integer}}.
+     */
+    public static class DeleteResponse {
+        public Integer deleteCount;
+        public DeleteResponse() {}
+        public DeleteResponse(Integer deleteCount) {
+            this.deleteCount = deleteCount;
+        }
+    }
 }

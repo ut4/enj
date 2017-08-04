@@ -37,20 +37,32 @@ class RESTBackend<T extends {id?: AAGUID}> {
      * @returns Promise -> ({number} insertId, {any} error)
      */
     public insert(data: T, url?: string): Promise<number> {
-        return this.post<Enj.API.InsertResponse>(data, url).then(response => {
-            response.insertId && (data.id = response.insertId);
+        return this.http.post<Enj.API.InsertResponse>(this.completeUrl(url), data).then(response => {
+            !data.id && (data.id = response.insertId);
             return response.insertCount;
         });
     }
     /**
-     * Postaa backendiin datan <T> urlilla <this.urlNamespace>[<url>].
-     *
-     * @returns Promise -> ({any} response, {any} error)
+     * @returns Promise -> ({number} updateCount, {any} error)
      */
-    protected post<R>(data: T, url?: string, forceOnline?: boolean): Promise<R> {
-        return !forceOnline
-            ? this.http.post<R>(this.completeUrl(url), data)
-            : this.http.post<R>(this.completeUrl(url), data, forceOnline);
+    public update(data: T|Array<T>, url?: string): Promise<number> {
+        return this.http.put<Enj.API.UpdateResponse>(this.completeUrl(url), data).then(response =>
+            response.updateCount
+        );
+    }
+    /**
+     * @returns Promise -> ({number} deleteCount, {any} error)
+     */
+    public delete(data: T, url?: string): Promise<number> {
+        return this.http.delete<Enj.API.DeleteResponse>(this.completeUrl((url || '') + '/' + data.id)).then(response =>
+            response.deleteCount
+        );
+    }
+    /**
+     * @returns Promise -> ({any} response muodossa R, {any} error)
+     */
+    protected post<R>(data: T|Array<T>, url?: string, forceOnline?: boolean): Promise<R> {
+        return this.http.post<R>(this.completeUrl(url), data, forceOnline);
     }
     /**
      * '?foo' -> '<this.urlNamespace>?foo' (someresource?foo),

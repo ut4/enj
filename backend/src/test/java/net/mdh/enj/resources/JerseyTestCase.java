@@ -17,16 +17,25 @@ import java.util.List;
 
 public class JerseyTestCase extends JerseyTest implements HttpClient {
     protected Response newPostRequest(String url, Object data) {
-        return this.newPostRequest(url, data, null);
+        return this.newRequest(url, "POST", data, null);
     }
     protected Response newPostRequest(String url, Object data, Consumer<Builder> additionalSetup) {
+        return this.newRequest(url, "POST", data, additionalSetup);
+    }
+    protected Response newPutRequest(String url, Object data) {
+        return this.newRequest(url, "PUT", data, null);
+    }
+    protected Response newDeleteRequest(String url) {
+        return this.newRequest(url, "DELETE", null, null);
+    }
+    private Response newRequest(String url, String method, Object data, Consumer<Builder> additionalSetup) {
         Builder builder = target(url).request(MediaType.APPLICATION_JSON_TYPE);
         if (additionalSetup != null) {
             additionalSetup.accept(builder);
         }
-        return builder.post(Entity.json(data));
+        return builder.method(method, Entity.json(data));
     }
-    public Response newGetRequest(String url) {
+    protected Response newGetRequest(String url) {
         return this.newGetRequest(url, null);
     }
     protected Response newGetRequest(String url, Function<WebTarget, WebTarget> additionalSetup) {

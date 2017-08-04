@@ -28,25 +28,13 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         );
     }
     /**
-     * Uudelleenfetchaa treenit tarvittaessa.
-     */
-    public componentWillReceiveProps(_, {router}) {
-        // Päivitä treenit, jos niihin on tapahtunut muutoksia alinäkymissä
-        // (liike lisätty tjmv.)
-        if (router.location.search.indexOf('refresh=1') > -1) {
-            this.componentDidMount();
-            // Poista refresh parametri
-            iocFactories.history().replace(router.location.pathname);
-        }
-    }
-    /**
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
      */
     private startNewWorkout() {
         let newWorkout;
         this.workoutBackend.newWorkout().then(workout => {
             newWorkout = workout;
-            newWorkout.start = Math.floor(new Date().getTime() / 1000);
+            newWorkout.start = Math.floor(Date.now() / 1000);
             return this.workoutBackend.insert(newWorkout);
         }).then(() => {
             this.state.workouts.unshift(newWorkout);
@@ -55,13 +43,18 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
             (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error');
         });
     }
+    private removeFromList(workout) {
+        const workouts = this.state.workouts;
+        workouts.splice(workouts.indexOf(workout), 1);
+        this.setState({ workouts });
+    }
     public render() {
-        return (<div>
+        return (<div class="workout-view">
             <h2>Treeni tänään</h2>
             <div>{ this.state.workouts && (
                 this.state.workouts.length
                     ? this.state.workouts.map(workout =>
-                        <EditableWorkout workout={ workout }/>
+                        <EditableWorkout workout={ workout } onDelete={ () => this.removeFromList(workout) }/>
                     )
                     : <p>Ei treenejä</p>
             ) } </div>

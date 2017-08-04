@@ -58,16 +58,22 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
          */
         public static final class ExerciseVariantMapper extends NoDupeRowMapper<Exercise.Variant> {
 
-            ExerciseVariantMapper() {
+            public ExerciseVariantMapper() {
                 super("exerciseVariantId");
             }
 
             @Override
             public Exercise.Variant doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Exercise.Variant variant = new Exercise.Variant();
-                variant.setId(rs.getString("exerciseVariantId"));
-                variant.setContent(rs.getString("exerciseVariantContent"));
-                variant.setExerciseId(rs.getString("exerciseId"));
+                String id = rs.getString("exerciseVariantId");
+                variant.setId(id);
+                if (id != null) {
+                    variant.setContent(rs.getString("exerciseVariantContent"));
+                    variant.setExerciseId(rs.getString("exerciseId"));
+                } else {
+                    variant.setContent(null);
+                    variant.setExerciseId(null);
+                }
                 return variant;
             }
         }

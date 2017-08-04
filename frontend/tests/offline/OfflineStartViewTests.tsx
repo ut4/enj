@@ -6,16 +6,17 @@ import Offline from 'src/offline/Offline';
 import iocFactories from 'src/ioc';
 
 QUnit.module('offline/OfflineStartView', hooks => {
+    let shallowOffline: Offline;
     let offlineIocFactoryOverride;
     hooks.beforeEach(() => {
-        this.offline = Object.create(Offline.prototype);
-        offlineIocFactoryOverride = sinon.stub(iocFactories, 'offline').returns(this.offline);
+        shallowOffline = Object.create(Offline.prototype);
+        offlineIocFactoryOverride = sinon.stub(iocFactories, 'offline').returns(shallowOffline);
     });
     hooks.afterEach(() => {
         offlineIocFactoryOverride.restore();
     });
     QUnit.test('confirm enabloi offline-tilan', assert => {
-        const goOffline = sinon.stub(this.offline, 'enable').returns(Promise.resolve(1));
+        const goOffline = sinon.stub(shallowOffline, 'enable').returns(Promise.resolve(1));
         const close = sinon.spy(OfflineStartView.prototype, 'close');
         //
         const rendered = infernoUtils.renderIntoDocument(<OfflineStartView/>);
