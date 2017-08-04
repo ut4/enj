@@ -106,7 +106,7 @@ public class WorkoutController {
     @Path("/exercise")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public UpdateResponse updateManyExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
+    public UpdateResponse updateAllExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
         return new UpdateResponse(this.workoutExerciseRepository.updateMany(workoutExercises));
     }
 
@@ -120,5 +120,16 @@ public class WorkoutController {
     public InsertResponse insertExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
         int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSet);
         return new InsertResponse(insertCount, workoutExerciseSet.getId());
+    }
+
+    /**
+     * Päivittää kaikki treeniliikesetit {workoutExerciseSets}:n tiedoilla.
+     */
+    @PUT
+    @Path("/exercise/set")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse updateAllExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
+        return new UpdateResponse(this.workoutExerciseSetRepository.updateMany(workoutExerciseSets));
     }
 }
