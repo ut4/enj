@@ -226,7 +226,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void DeletePoistaaTreeninJaPalauttaaDeleteReponsenJossaPoistettujenRivienLukumäärä() {
+    public void DELETEPoistaaTreeninJaPalauttaaDeleteReponsenJossaPoistettujenRivienLukumäärä() {
         // Lisää treeni
         Workout workout = this.makeCoupleOfWorkouts().get(0);
         utils.insertWorkout(workout);
@@ -281,7 +281,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         // Luo testidata
         Workout.Exercise workoutExercise = new Workout.Exercise();
         workoutExercise.setWorkoutId(testWorkout.getId());
-        workoutExercise.setOrderDef(0);
+        workoutExercise.setOrderDef(2);
         workoutExercise.setExercise(testExercise);
         workoutExercise.setExerciseVariant(new Exercise.Variant());
         // Lähetä pyyntö

@@ -52,7 +52,7 @@ public class DbTestUtils {
         this.insert(this.getInserter("user"), u);
     }
     public Object selectOne(String query, RowMapper<?> mapper) {
-        return this.queryTemplate.query(query, mapper);
+        return this.queryTemplate.queryForObject(query, (Map<String, ?>) null, mapper);
     }
     public Object selectOneWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
         try {

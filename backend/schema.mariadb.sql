@@ -65,7 +65,7 @@ CREATE TABLE workout (
 
 CREATE TABLE workoutExercise (
     id CHAR(36) NOT NULL,
-    orderDef TINYINT(1) UNSIGNED NOT NULL,
+    orderDef TINYINT UNSIGNED NOT NULL,
     workoutId CHAR(36) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     exerciseVariantId CHAR(36) DEFAULT NULL,

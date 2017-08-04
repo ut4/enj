@@ -47,8 +47,9 @@ public class TestData {
         HashMap<String, Object> data = new HashMap<>();
         data.put("id", TEST_WORKOUT_EXERCISE_ID);
         data.put("orderDef", 102);
-        data.put("exercise", exercise);
         data.put("workoutId", parentWorkoutData.get("id"));
+        data.put("exercise", exercise);
+        data.put("exerciseVariant", new Exercise.Variant());
         return data;
     }
     public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData) {

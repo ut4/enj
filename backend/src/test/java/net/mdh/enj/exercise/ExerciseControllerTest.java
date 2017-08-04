@@ -12,8 +12,10 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExerciseControllerTest extends RollbackingDBJerseyTest {
 
@@ -49,12 +51,13 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         List<Exercise.Variant> variants = new ArrayList<>();
         variants.add(insertTestVariant("var1", testExercise.getId()));
         variants.add(insertTestVariant("var2", testExercise.getId()));
-        Collections.swap(variants, 0, 1);
         testExercise.setVariants(variants);
         Exercise anotherWithoutVariants = insertTestExercise("bar");
         Response response = target("exercise").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
+        exercises = exercises.stream().filter(e -> e.getName().equals("foo") || e.getName().equals("bar")).collect(Collectors.toList());
+        exercises.sort(Comparator.comparing(Exercise::getName));
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
         Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
     }
