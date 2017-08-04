@@ -24,7 +24,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0", errors.get(0).getPath());
+        Assert.assertEquals("WorkoutController.insertWorkoutExerciseSet.arg0", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
     }
 
@@ -34,9 +34,9 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0.reps", errors.get(0).getPath());
+        Assert.assertEquals("WorkoutController.insertWorkoutExerciseSet.arg0.reps", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("WorkoutController.insertExerciseSet.arg0.workoutExerciseId", errors.get(1).getPath());
+        Assert.assertEquals("WorkoutController.insertWorkoutExerciseSet.arg0.workoutExerciseId", errors.get(1).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
     }
 

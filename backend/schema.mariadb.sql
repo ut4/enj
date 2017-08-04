@@ -1,5 +1,6 @@
 DROP VIEW    IF EXISTS workoutExerciseView;
 DROP VIEW    IF EXISTS workoutView;
+DROP TRIGGER IF EXISTS workoutExerciseDeleteTrg;
 DROP TRIGGER IF EXISTS workoutEndTrg;
 DROP TABLE   IF EXISTS workoutExerciseSet;
 DROP TABLE   IF EXISTS workoutExercise;
@@ -100,6 +101,15 @@ FOR EACH ROW BEGIN
             WHERE workoutExerciseId = workoutExercise.id
         );
     END IF;
+END;//
+DELIMITER ;
+
+-- Treeniliikkeen poiston yhteydessä ajautuva triggeri joka poistaa kaikki sille
+-- kuuluvat setit
+DELIMITER //
+CREATE TRIGGER workoutExerciseDeleteTrg BEFORE DELETE ON workoutExercise
+FOR EACH ROW BEGIN
+    DELETE FROM workoutExerciseSet WHERE workoutExerciseId = OLD.id;
 END;//
 DELIMITER ;
 

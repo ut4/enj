@@ -80,11 +80,11 @@ public class WorkoutController {
      * Poistaa treenin tietokannasta, jolla urlin uuid.
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/{workoutId}")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public DeleteResponse delete(@PathParam("id") @UUID String url) {
-        return new DeleteResponse(this.workoutRepository.delete(url));
+    public DeleteResponse delete(@PathParam("workoutId") @UUID String id) {
+        return new DeleteResponse(this.workoutRepository.delete(id));
     }
 
     /**
@@ -94,7 +94,7 @@ public class WorkoutController {
     @Path("/exercise")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
+    public InsertResponse insertWorkoutExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
         return new InsertResponse(insertCount, workoutExercise.getId());
     }
@@ -111,13 +111,24 @@ public class WorkoutController {
     }
 
     /**
+     * Poistaa treeniliikkeen tietokannasta, jolla urlin uuid.
+     */
+    @DELETE
+    @Path("/exercise/{workoutExerciseId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse deleteWorkoutExercise(@PathParam("workoutExerciseId") @UUID String id) {
+        return new DeleteResponse(this.workoutExerciseRepository.delete(id));
+    }
+
+    /**
      * Lisää uuden setin treeniliikkeelle {workoutExerciseSet.workoutExerciseId}.
      */
     @POST
     @Path("/exercise/set")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public InsertResponse insertExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
+    public InsertResponse insertWorkoutExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
         int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSet);
         return new InsertResponse(insertCount, workoutExerciseSet.getId());
     }
