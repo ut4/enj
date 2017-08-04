@@ -8,10 +8,12 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.RowMapper;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.Objects;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 /**
  * Luokka, joka sisältää yleisimmät CRUD-toiminnallisuudet (insert, selectAll jne).
@@ -44,6 +46,12 @@ public abstract class BasicRepository<T extends DbEntity> {
             data.setId(UUID.randomUUID().toString());
         }
         return this.inserter.execute(new BeanPropertySqlParameterSource(data));
+    }
+    public int insert(T data, Supplier<Map<String, Object>> transformer) {
+        if (data.getId() == null) {
+            data.setId(UUID.randomUUID().toString());
+        }
+        return this.inserter.execute(transformer.get());
     }
 
     /**

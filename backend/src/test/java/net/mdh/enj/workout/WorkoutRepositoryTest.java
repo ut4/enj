@@ -95,7 +95,9 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
     private Workout.Exercise insertWorkoutExercise(String workoutId) {
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(workoutId);
+        we.setOrderDef(1);
         we.setExercise(WorkoutRepositoryTest.testExercise);
+        we.setExerciseVariant(new Exercise.Variant());
         this.utils.insertWorkoutExercise(we);
         return we;
     }

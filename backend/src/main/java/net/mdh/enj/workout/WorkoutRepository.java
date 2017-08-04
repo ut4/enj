@@ -93,20 +93,24 @@ public class WorkoutRepository extends BasicRepository<Workout> {
             private static final String ID_COL = "workoutExerciseId";
             private final SubCollector<Workout.Exercise.Set> setCollector;
             private final ExerciseRepository.ExerciseMapper exerciseMapper;
+            private final ExerciseRepository.ExerciseMapper.ExerciseVariantMapper exerciseVariantMapper;
 
             private WorkoutExerciseMapper() {
                 super(ID_COL);
                 this.setCollector = new SubCollector<>(new SetMapper(), ID_COL);
                 this.exerciseMapper = new ExerciseRepository.ExerciseMapper();
+                this.exerciseVariantMapper = new ExerciseRepository.ExerciseMapper.ExerciseVariantMapper();
             }
 
             @Override
             public Workout.Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Workout.Exercise workoutExercise = new Workout.Exercise();
                 workoutExercise.setId(rs.getString(ID_COL));
+                workoutExercise.setOrderDef(rs.getInt("workoutExerciseOrderDef"));
                 workoutExercise.setWorkoutId(rs.getString("workoutExerciseWorkoutId"));
                 workoutExercise.setSets(this.setCollector.collect(rs, rowNum, workoutExercise.getId()));
                 workoutExercise.setExercise(this.exerciseMapper.doMapRow(rs, rowNum));
+                workoutExercise.setExerciseVariant(this.exerciseVariantMapper.doMapRow(rs, rowNum));
                 return workoutExercise;
             }
 
@@ -125,6 +129,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                     set.setId(rs.getString("workoutExerciseSetId"));
                     set.setWeight(rs.getDouble("workoutExerciseSetWeight"));
                     set.setReps(rs.getInt("workoutExerciseSetReps"));
+                    set.setWorkoutExerciseId(rs.getString("workoutExerciseSetWorkoutExerciseId"));
                     return set;
                 }
             }

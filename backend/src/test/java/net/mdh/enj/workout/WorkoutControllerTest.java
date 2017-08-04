@@ -283,16 +283,60 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         workoutExercise.setWorkoutId(testWorkout.getId());
         workoutExercise.setOrderDef(0);
         workoutExercise.setExercise(testExercise);
+        workoutExercise.setExerciseVariant(new Exercise.Variant());
         // Lähetä pyyntö
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
-        workoutExercise.setId(responseBody.insertId);
         // Testaa että insertoitui, ja palautti id:n
-        Response getResponse = this.newGetRequest("workout");
-        List<Workout> workouts = getResponse.readEntity(new GenericType<List<Workout>>() {});
-        Workout fetchedTestWorkout = workouts.stream().filter(w -> w.getId().equals(testWorkout.getId())).findFirst().get();
-        Assert.assertEquals(workoutExercise.toString(), fetchedTestWorkout.getExercises().get(0).toString());
+        Workout.Exercise inserted = (Workout.Exercise) utils.selectOneWhere(
+            "SELECT * FROM workoutExercise WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", responseBody.insertId),
+            new SimpleMappers.WorkoutExerciseMapper()
+        );
+        Assert.assertEquals(workoutExercise.getWorkoutId(), inserted.getWorkoutId());
+        Assert.assertEquals(workoutExercise.getOrderDef(), inserted.getOrderDef());
+        Assert.assertEquals(workoutExercise.getExercise().getId(), inserted.getExercise().getId());
+        Assert.assertNull(inserted.getExerciseVariant().getId());
+    }
+
+    @Test
+    public void PUTExercisePäivittääTreeniliikkeetJaPalauttaaUpdateReponsenJossaPäivitettyjenRivienLukumäärä() {
+        // Testivariantti
+        Exercise.Variant variant = new Exercise.Variant();
+        variant.setContent("fus");
+        variant.setExerciseId(testExercise.getId());
+        utils.insertExerciseVariant(variant);
+        // Luo ensin pari treeniliikettä
+        List<Workout.Exercise> array = this.makeCoupleOfWorkoutExercises();
+        Workout.Exercise first = array.get(0);
+        Workout.Exercise second = array.get(1);
+        utils.insertWorkoutExercise(first);
+        utils.insertWorkoutExercise(second);
+        // Päivitä niiden tietoja
+        first.setOrderDef(4);
+        first.setExerciseVariant(variant);
+        second.setOrderDef(5);
+        // Suorita PUT-pyyntö päivitetyillä tiedoilla
+        Response response = this.newPutRequest("workout/exercise", array);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 2", (Integer)2, responseBody.updateCount);
+        // Testaa, että PUT /workout/exercise päivitti kummatkin
+        List<?> updated = utils.selectAllWhere(
+            "SELECT * FROM workoutExercise WHERE id IN(:id1, :id2) ORDER BY orderDef ASC",
+            new MapSqlParameterSource().addValue("id1", first.getId()).addValue("id2", second.getId()),
+            new SimpleMappers.WorkoutExerciseMapper()
+        );
+        Assert.assertEquals(2, updated.size());
+        Workout.Exercise updated1 = (Workout.Exercise)updated.get(0);
+        Workout.Exercise updated2 = (Workout.Exercise)updated.get(1);
+        Assert.assertEquals(4, updated1.getOrderDef());
+        Assert.assertEquals(first.getExercise().getId(), updated1.getExercise().getId());
+        Assert.assertEquals(first.getExerciseVariant().getId(), updated1.getExerciseVariant().getId());
+        Assert.assertEquals(5, updated2.getOrderDef());
+        Assert.assertEquals(second.getExercise().getId(), updated2.getExercise().getId());
+        Assert.assertNull(updated2.getExerciseVariant().getId());
     }
 
     @Test
@@ -323,6 +367,7 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(testWorkout.getId());
         we.setExercise(testExercise);
+        we.setExerciseVariant(new Exercise.Variant());
         utils.insertWorkoutExercise(we);
         // Luo testidata
         Workout.Exercise.Set workoutExerciseSet = new Workout.Exercise.Set();
@@ -357,6 +402,24 @@ public class WorkoutControllerTest extends RollbackingDBJerseyTest {
         data2.setUserId(TestData.TEST_USER_ID);
         //
         List<Workout> array = new ArrayList<>();
+        array.add(data);
+        array.add(data2);
+        return array;
+    }
+
+    private List<Workout.Exercise> makeCoupleOfWorkoutExercises() {
+        Workout.Exercise data = new Workout.Exercise();
+        data.setOrderDef(1);
+        data.setWorkoutId(testWorkout.getId());
+        data.setExercise(testExercise);
+        data.setExerciseVariant(new Exercise.Variant());
+        Workout.Exercise data2 = new Workout.Exercise();
+        data2.setOrderDef(2);
+        data2.setWorkoutId(testWorkout.getId());
+        data2.setExercise(testExercise);
+        data2.setExerciseVariant(new Exercise.Variant());
+        //
+        List<Workout.Exercise> array = new ArrayList<>();
         array.add(data);
         array.add(data2);
         return array;

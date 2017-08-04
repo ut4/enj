@@ -115,14 +115,16 @@ CREATE VIEW workoutView AS
 CREATE VIEW workoutExerciseView AS
     SELECT
         we.id         AS workoutExerciseId,
+        we.orderDef   AS workoutExerciseOrderDef,
         we.workoutId  AS workoutExerciseWorkoutId,
         e.id          AS exerciseId,
         e.`name`      AS exerciseName,
         ev.id         AS exerciseVariantId,
-        ev.`content`  AS exerciseVariantName,
+        ev.`content`  AS exerciseVariantContent,
         s.id          AS workoutExerciseSetId,
         s.weight      AS workoutExerciseSetWeight,
-        s.reps        AS workoutExerciseSetReps
+        s.reps        AS workoutExerciseSetReps,
+        s.workoutExerciseId AS workoutExerciseSetWorkoutExerciseId
     FROM workoutExercise we
     JOIN exercise e ON (e.id = we.exerciseId)
     LEFT JOIN exerciseVariant ev ON (ev.id = we.exerciseVariantId)

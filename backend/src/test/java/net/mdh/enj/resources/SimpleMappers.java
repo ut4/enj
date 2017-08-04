@@ -1,6 +1,7 @@
 package net.mdh.enj.resources;
 
 import net.mdh.enj.workout.Workout;
+import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -16,6 +17,22 @@ public class SimpleMappers {
             workout.setNotes(rs.getString("notes"));
             workout.setUserId(rs.getString("userId"));
             return workout;
+        }
+    }
+    public static class WorkoutExerciseMapper implements RowMapper<Workout.Exercise> {
+        @Override
+        public Workout.Exercise mapRow(ResultSet rs, int i) throws SQLException {
+            Workout.Exercise we = new Workout.Exercise();
+            we.setId(rs.getString("id"));
+            we.setOrderDef(rs.getInt("orderDef"));
+            we.setWorkoutId(rs.getString("workoutId"));
+            Exercise e = new Exercise();
+            e.setId(rs.getString("exerciseId"));
+            we.setExercise(e);
+            Exercise.Variant v = new Exercise.Variant();
+            v.setId(rs.getString("exerciseVariantId"));
+            we.setExerciseVariant(v);
+            return we;
         }
     }
     public static class WorkoutExerciseSetMapper implements RowMapper<Workout.Exercise.Set> {

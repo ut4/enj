@@ -1,6 +1,7 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.Utils;
+import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
 import net.mdh.enj.validation.AuthenticatedUserId;
@@ -82,6 +83,7 @@ public class Workout extends DbEntity {
         @NotNull
         private net.mdh.enj.exercise.Exercise exercise;
         private List<Set> sets;
+        private net.mdh.enj.exercise.Exercise.Variant exerciseVariant;
 
         public int getOrderDef() {
             return this.orderDef;
@@ -91,24 +93,24 @@ public class Workout extends DbEntity {
         }
 
         public String getWorkoutId() {
-            return this.workoutId.toString();
+            return this.workoutId;
         }
         public void setWorkoutId(String workoutId) {
             this.workoutId = workoutId;
         }
 
-        public String getExerciseId() {
-            return this.exercise != null ? this.exercise.getId().toString() : null;
-        }
-        public void setExerciseId(String exerciseId) {
-            this.exercise.setId(exerciseId);
-        }
-
         public net.mdh.enj.exercise.Exercise getExercise() {
-            return exercise;
+            return this.exercise;
         }
         public void setExercise(net.mdh.enj.exercise.Exercise exercise) {
             this.exercise = exercise;
+        }
+
+        public net.mdh.enj.exercise.Exercise.Variant getExerciseVariant() {
+            return this.exerciseVariant;
+        }
+        public void setExerciseVariant(net.mdh.enj.exercise.Exercise.Variant variant) {
+            this.exerciseVariant = variant;
         }
 
         public List<Set> getSets() {
@@ -124,7 +126,8 @@ public class Workout extends DbEntity {
                 "id=" + this.getId() +
                 ", orderDef=" + this.getOrderDef() +
                 ", workoutId=" + this.getWorkoutId() +
-                ", exercise=" + this.getExercise().toString() +
+                ", exercise=" + this.getExercise() +
+                ", exerciseVariant=" + this.getExerciseVariant() +
                 ", sets=" + Utils.stringifyAll(this.getSets()) +
             "}";
         }

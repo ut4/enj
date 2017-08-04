@@ -6,8 +6,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
@@ -16,8 +16,8 @@ import static net.mdh.enj.api.Responses.InsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
 import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.validation.UUID;
+import net.mdh.enj.sync.Syncable;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class WorkoutController {
     }
 
     /**
-     * Päivittää kaikki treenit taulukon {workouts} tiedoilla.
+     * Päivittää kaikki treenit {workouts}:n tiedoilla.
      */
     @PUT
     @Syncable
@@ -97,6 +97,17 @@ public class WorkoutController {
     public InsertResponse insertExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
         return new InsertResponse(insertCount, workoutExercise.getId());
+    }
+
+    /**
+     * Päivittää kaikki treeniliikkeet {workoutExercises}:n tiedoilla.
+     */
+    @PUT
+    @Path("/exercise")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse updateManyExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
+        return new UpdateResponse(this.workoutExerciseRepository.updateMany(workoutExercises));
     }
 
     /**
