@@ -114,6 +114,35 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Assert.assertEquals(second.toString(), updated.get(1).toString());
     }
 
+    @Test
+    public void DELETEExerciseSetValidoiUrlin() {
+        //
+        Response response = this.newDeleteRequest("workout/exercise/set/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.deleteWorkoutExerciseSet.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void DELETEExerciseSetPoistaaTreeniliikesetinJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
+        // Luo ensin treeniliike, johon setti lisätään, josta se sitten voidaan poistaa :D
+        Workout.Exercise we = this.insertTestWorkoutExercise();
+        // Lisää treeniliikesetti
+        Workout.Exercise.Set workoutExerciseSet = this.makeCoupleOfWorkoutExerciseSets(we.getId()).get(0);
+        utils.insertWorkoutExerciseSet(workoutExerciseSet);
+        Assert.assertNotNull(this.selectWorkoutExerciseSet(workoutExerciseSet.getId()));
+        // Suorita DELETE-pyyntö
+        Response response = this.newDeleteRequest("workout/exercise/set/" + workoutExerciseSet.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Testaa, että poistui
+        Assert.assertNull(this.selectWorkoutExerciseSet(workoutExerciseSet.getId()));
+    }
+
     private List<Workout.Exercise.Set> makeCoupleOfWorkoutExerciseSets(String workoutExerciseId) {
         Workout.Exercise.Set data = new Workout.Exercise.Set();
         data.setWeight(100);
@@ -138,5 +167,13 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         we.setExerciseVariant(new Exercise.Variant());
         utils.insertWorkoutExercise(we);
         return we;
+    }
+
+    private Workout.Exercise.Set selectWorkoutExerciseSet(String id) {
+        return (Workout.Exercise.Set) utils.selectOneWhere(
+            "SELECT * FROM workoutExerciseSet WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", id),
+            new SimpleMappers.WorkoutExerciseSetMapper()
+        );
     }
 }

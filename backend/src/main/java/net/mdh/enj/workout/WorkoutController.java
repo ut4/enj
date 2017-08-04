@@ -111,7 +111,7 @@ public class WorkoutController {
     }
 
     /**
-     * Poistaa treeniliikkeen tietokannasta, jolla urlin uuid.
+     * Poistaa treeniliikkeen, ja kaikki sille kuuluvat setit tietokannasta.
      */
     @DELETE
     @Path("/exercise/{workoutExerciseId}")
@@ -142,5 +142,16 @@ public class WorkoutController {
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
         return new UpdateResponse(this.workoutExerciseSetRepository.updateMany(workoutExerciseSets));
+    }
+
+    /**
+     * Poistaa treeniliikesetin tietokannasta, jolla urlin uuid.
+     */
+    @DELETE
+    @Path("/exercise/set/{workoutExerciseSetId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse deleteWorkoutExerciseSet(@PathParam("workoutExerciseSetId") @UUID String id) {
+        return new DeleteResponse(this.workoutExerciseSetRepository.delete(id));
     }
 }
