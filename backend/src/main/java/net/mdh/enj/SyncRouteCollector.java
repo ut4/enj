@@ -47,6 +47,7 @@ public class SyncRouteCollector implements ApplicationEventListener {
             SyncRoute syncRoute = new SyncRoute();
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
+            syncRoute.setPattern(resource.getPathPattern().getRegex());
             this.routeRegister.add(syncRoute);
         }
     }
