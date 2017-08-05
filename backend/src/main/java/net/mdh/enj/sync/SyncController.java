@@ -48,33 +48,43 @@ public class SyncController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public List<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
-        //
-        ArrayList<Integer> idsOfSuccesfullySyncedItems = new ArrayList<>();
-        //
-        for (SyncQueueItem syncableItem: syncQueue) {
+        List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue).optimize();
+        List<Integer> idsOfSuccesfullySyncedItems = new ArrayList<>();
+        for (SyncQueueItem syncable: syncQueue) {
             //
-            // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
-            SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
-            //
-            // Suorita synkkaus HTTP:lla
-            Response syncResponse = this.appHttpClient.target(routeMatch.getUrl())
-                .request(MediaType.APPLICATION_JSON)
-                .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
-                .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
-            //
-            // Jos vastaus oli ok, lisää itemin id vastaustaulukkoon
+            if (!optimized.contains(syncable)) {
+                idsOfSuccesfullySyncedItems.add(syncable.getId());
+                continue;
+            }
+            Response syncResponse = this.callSyncableResource(syncable);
+            // Vastaus ok, lisää itemin id paluuarvoon
             if (syncResponse.getStatus() >= 200 && syncResponse.getStatus() < 300) {
-                idsOfSuccesfullySyncedItems.add(syncableItem.getId());
-            // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
-            // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
+                idsOfSuccesfullySyncedItems.add(syncable.getId());
+                // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
+                // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
             } else if (idsOfSuccesfullySyncedItems.size() > 0) {
                 syncResponse.close();
                 break;
-            // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
+                // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
             } else {
                 throw new ClientErrorException(syncResponse);
             }
         }
         return idsOfSuccesfullySyncedItems;
+    }
+
+    /**
+     * Lähettää HTTP-pyynnön {syncableItem}:in routen määrittelemään urliin.
+     */
+    private Response callSyncableResource(SyncQueueItem syncableItem) throws JsonProcessingException {
+        //
+        // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
+        SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
+        // Suorita synkkaus HTTP:lla
+        System.out.println(routeMatch.getUrl());
+        return this.appHttpClient.target(routeMatch.getUrl())
+            .request(MediaType.APPLICATION_JSON)
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
+            .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
     }
 }

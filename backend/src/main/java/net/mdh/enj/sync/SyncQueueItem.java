@@ -1,9 +1,7 @@
 package net.mdh.enj.sync;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import net.mdh.enj.sync.validation.SyncableRoute;
-import java.util.Map;
 
 /**
  * Bean POST /api/sync-reitin datalle.
@@ -13,8 +11,7 @@ public class SyncQueueItem {
     private int id;
     @SyncableRoute
     private Route route;
-    @NotNull
-    private Map<String, Object> data;
+    private Object data;
 
     public int getId() {
         return this.id;
@@ -30,11 +27,16 @@ public class SyncQueueItem {
         this.route = route;
     }
 
-    public Map<String, Object> getData() {
+    public Object getData() {
         return this.data;
     }
-    public void setData(Map<String, Object> data) {
+    public void setData(Object data) {
         this.data = data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o instanceof SyncQueueItem && ((SyncQueueItem) o).getId() == this.getId();
     }
 
     @Override

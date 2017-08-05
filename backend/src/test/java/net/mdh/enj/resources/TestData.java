@@ -14,6 +14,7 @@ public class TestData {
     public static final String TEST_WORKOUT_EXERCISE_ID = "cbbcefe7-00e7-45c4-9b89-75dd70bd23f4";
     public static final String MOCK_AUTH_HEADER = AuthenticationFilter.AUTH_HEADER_NAME + "foo";
     public static final Route workoutInsertRoute = new Route("workout", "POST");
+    public static final Route workoutDeleteRoute = new Route("workout/{workoutId}", "DELETE");
     public static final Route workoutExerciseAddRoute = new Route("workout/exercise", "POST");
     public static RequestContext testUserAwareRequestContext;
 
@@ -43,17 +44,14 @@ public class TestData {
         return data;
     }
 
-    public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData, Exercise exercise) {
+    public static Map<String,Object> getSomeWorkoutExerciseData(Object parentWorkoutData, Exercise exercise) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("id", TEST_WORKOUT_EXERCISE_ID);
         data.put("orderDef", 102);
-        data.put("workoutId", parentWorkoutData.get("id"));
+        data.put("workoutId", ((Map) parentWorkoutData).get("id"));
         data.put("exercise", exercise);
         data.put("exerciseVariant", new Exercise.Variant());
         return data;
-    }
-    public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData) {
-        return getSomeWorkoutExerciseData(parentWorkoutData, new Exercise());
     }
 
     public static Map<String, Object> getSomeJunkData() {
