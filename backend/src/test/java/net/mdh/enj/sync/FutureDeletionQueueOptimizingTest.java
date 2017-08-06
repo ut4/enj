@@ -1,21 +1,12 @@
 package net.mdh.enj.sync;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QueryOptimizerTest {
-
-    private final ObjectMapper objectMapper;
-
-    public QueryOptimizerTest() {
-        this.objectMapper = new ObjectMapper();
-    }
-
+public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaIteminKaikkiEsiintymätJosSePoistetaanMyöhemmin() throws IOException {
         List<SyncQueueItem> ordered = this.jsonToSyncQueue("[" +
@@ -32,7 +23,7 @@ public class QueryOptimizerTest {
         // Pitäisi poistaa (3)
         expected.add(ordered.get(4));
         Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun itemin kaikki esiintymät",
-            expected.toString(), new QueueOptimizer(ordered).optimize().toString()
+            expected.toString(), new QueueOptimizer(ordered).optimize(QueueOptimizer.DELETIONS).toString()
         );
     }
     @Test
@@ -52,7 +43,7 @@ public class QueryOptimizerTest {
         expected.add(unordered.get(4));
         Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun itemin kaikki " +
             "esiintymät, vaikkei ne olisi järjestyksessä",
-            expected.toString(), new QueueOptimizer(unordered).optimize().toString()
+            expected.toString(), new QueueOptimizer(unordered).optimize(QueueOptimizer.DELETIONS).toString()
         );
     }
     @Test
@@ -73,7 +64,7 @@ public class QueryOptimizerTest {
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi poistaa arvo batch-datasta, eikä sync-itemiä itsessään," +
             " koska batch-datan toista arvoa ei poisteta",
-            expected.toString(), new QueueOptimizer(input).optimize().toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
         );
     }
     @Test
@@ -97,7 +88,7 @@ public class QueryOptimizerTest {
         // Pitäisi poistaa (4)
         // Pitäisi poistaa (5)
         Assert.assertEquals("Pitäisi batch-data-itemi kokonaan",
-            expected.toString(), new QueueOptimizer(input).optimize().toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
         );
     }
     @Test
@@ -116,7 +107,7 @@ public class QueryOptimizerTest {
         expected.add(input.get(3));
         expected.add(input.get(4));
         Assert.assertEquals("Ei pitäisi poistaa itemeitä, joiden data on jo tietokannassa",
-            expected.toString(), new QueueOptimizer(input).optimize().toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
         );
     }
     @Test
@@ -129,28 +120,7 @@ public class QueryOptimizerTest {
         expected.add(input.get(0));
         expected.add(input.get(1));
         Assert.assertEquals("Ei pitäisi poistaa itemeitä, joiden data on jo tietokannassa2",
-            expected.toString(), new QueueOptimizer(input).optimize().toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
         );
-    }
-    @Test
-    public void handlaaTyhjänInputin() throws IOException {
-        List<SyncQueueItem> empty = new ArrayList<>();
-        Assert.assertEquals(0, new QueueOptimizer(empty).optimize().size());
-    }
-
-    private List<SyncQueueItem> jsonToSyncQueue(String json) throws IOException {
-        return this.objectMapper.readValue(json, new TypeReference<List<SyncQueueItem>>() {});
-    }
-    private SyncQueueItem getItemWithExpectedBatch(SyncQueueItem item, int... batchIndexes) {
-        List originalBatch = (List) item.getData();
-        List<Object> reducedBatch = new ArrayList<>();
-        for (int i: batchIndexes) {
-            reducedBatch.add(originalBatch.get(i));
-        }
-        SyncQueueItem clone = new SyncQueueItem();
-        clone.setId(item.getId());
-        clone.setRoute(item.getRoute());
-        clone.setData(reducedBatch);
-        return clone;
     }
 }

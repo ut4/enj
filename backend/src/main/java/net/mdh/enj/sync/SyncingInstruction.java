@@ -1,14 +1,15 @@
 package net.mdh.enj.sync;
 
+import java.util.ArrayList;
+import java.util.List;
 class SyncingInstruction {
     private Code code;
-    private int syncQueueItemIndex;
-    private final Integer batchDataIndex;
+    private List<Pointer> dataPointers;
     private boolean isProcessed;
     SyncingInstruction(Code code, int syncQueueItemIndex, Integer batchDataIndex) {
         this.code = code;
-        this.syncQueueItemIndex = syncQueueItemIndex;
-        this.batchDataIndex = batchDataIndex;
+        this.dataPointers = new ArrayList<>();
+        this.addDataPointer(syncQueueItemIndex, batchDataIndex);
         this.isProcessed = false;
     }
     void setCode(Code code) {
@@ -18,13 +19,19 @@ class SyncingInstruction {
         return this.code;
     }
     int getSyncQueueItemIndex() {
-        return this.syncQueueItemIndex;
+        return this.dataPointers.get(0).syncQueueItemIndex;
     }
-    int getBatchDataIndex() {
-        return this.batchDataIndex;
+    Integer getBatchDataIndex() {
+        return this.dataPointers.get(0).batchDataIndex;
+    }
+    void addDataPointer(int syncQueueItemIndex, Integer batchDataIndex) {
+        this.dataPointers.add(new Pointer(syncQueueItemIndex, batchDataIndex));
+    }
+    List<Pointer> getDataPointers() {
+        return this.dataPointers;
     }
     boolean isPartOfBatch() {
-        return this.batchDataIndex != null;
+        return this.getBatchDataIndex() != null;
     }
     boolean getIsProcessed() {
         return this.isProcessed;
@@ -36,12 +43,26 @@ class SyncingInstruction {
     public String toString() {
         return "SyncingInstruction{" +
             "code=" + code.name() +
-            ", syncQueueItemIndex=" + syncQueueItemIndex +
-            ", batchDataIndex=" + (batchDataIndex != null ? batchDataIndex : "null") +
+            ", dataPointers=" + this.getDataPointers() +
             ", isProcessed=" + (isProcessed ? "true" : "false") +
         "}";
     }
+    static class Pointer {
+        final int syncQueueItemIndex;
+        final Integer batchDataIndex;
+        Pointer(int syncQueueItemIndex, Integer batchDataIndex) {
+            this.syncQueueItemIndex = syncQueueItemIndex;
+            this.batchDataIndex = batchDataIndex;
+        }
+        @Override
+        public String toString() {
+            return "SyncingInstruction.Pointer{" +
+                ", syncQueueItemIndex=" + syncQueueItemIndex +
+                ", batchDataIndex=" + (batchDataIndex != null ? batchDataIndex : "null") +
+            "}";
+        }
+    }
     enum Code {
-        SKIP, DEFAULT;
+        SKIP, GROUP, DEFAULT
     }
 }

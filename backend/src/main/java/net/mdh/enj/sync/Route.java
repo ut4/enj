@@ -26,6 +26,13 @@ public class Route {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o != null && o instanceof Route &&
+            ((Route) o).getUrl().equals(this.getUrl()) &&
+            ((Route) o).getMethod().equals(this.getMethod());
+    }
+
+    @Override
     public String toString() {
         return "Route{" +
             ", url=" + this.getUrl() +

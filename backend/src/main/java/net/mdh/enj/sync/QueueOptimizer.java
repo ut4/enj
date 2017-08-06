@@ -3,61 +3,76 @@ package net.mdh.enj.sync;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
+import javax.ws.rs.HttpMethod;
 
 class QueueOptimizer {
 
+    static final int DELETIONS     = 2;
+    static final int GROUP_INSERTS = 4;
+    static final int ALL           = 6;
+
     private final List<SyncQueueItem> queue;
-    private final int queueSize;
-    private List<SyncingInstruction> instructions;
+    private final List<SyncingInstruction> instructions;
 
     QueueOptimizer(List<SyncQueueItem> queue) {
         this.queue = queue;
-        this.queueSize = this.queue.size();
         this.instructions = this.newInstructionList();
     }
 
     /**
-     * Palauttaa optimoidun SyncQueueItem-listan, josta on poistettu kaikki itemit,
-     * joiden CRUD-operaatiot voidaan elinoida (esim. itemin (jota ei ole vielä
-     * olemassa) PUT/POST-operaatiot voidaan välttää, jos samainen itemi poistetaan
-     * kokonaan jonossa myöhemmin).
+     * Palauttaa optimoidun SyncQueueItem-listan {optimizations} optimisaatioilla.
+     *
+     * optimize(QueueOptimizer.DELETIONS)     - Poistaa CRUD-operaatiot, joiden data poistetaan myöhemmin
+     * optimize(QueueOptimizer.GROUP_INSERTS) - Ryhmittelee samantyyppiset CREATE-operaatiot
+     * optimize(QueueOptimizer.ALL)           - Kaikki optimisaatiot
      */
-    List<SyncQueueItem> optimize() {
-        if (this.queueSize < 1) {
+    List<SyncQueueItem> optimize(int optimizations) {
+        if (this.instructions == null) {
             return this.queue;
         }
-        if (this.queueSize > 0) {
-            this.handleFutureDeletions();
+        if ((optimizations & DELETIONS) > 0) {
+            this.traverse((item, s) -> {
+                if (// Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
+                    !item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
+                    this.removeFutureDeletedOccurences(getDataIdentity(item, s), this.instructions.indexOf(s));
+                }
+            });
+        }
+        if ((optimizations & GROUP_INSERTS) > 0) {
+            this.traverse((item, s) -> {
+                if (!s.getIsProcessed() &&
+                    item.getRoute().getMethod().equals(HttpMethod.POST)) {
+                    this.groupInsertOccurences(item, this.instructions.indexOf(s));
+                }
+            });
         }
         return this.getOutput();
+    }
+
+    /**
+     */
+    private void traverse(BiConsumer<SyncQueueItem, SyncingInstruction> processor) {
+        for (SyncingInstruction s: this.instructions) {
+            SyncQueueItem item = this.queue.get(s.getSyncQueueItemIndex());
+            processor.accept(item, s);
+        }
     }
 
     /**
      * Poistaa itemin kaikki esiintymät, jos se poistetaan jonossa myöhemmin (miksi
      * lisätä tai päivittää turhaan, jos data kuitenkin lopuksi poistetaan?).
      */
-    private void handleFutureDeletions() {
-        for (SyncingInstruction s: this.instructions) {
-            SyncQueueItem item = this.queue.get(s.getSyncQueueItemIndex());
-            if (// Itemi jo prosessoitu
-                item != null &&
-                // Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
-                !item.getRoute().getMethod().equals("DELETE")) {
-                this.removeFutureDeletedOccurences(getDataIdentity(item, s), s);
-            }
-        }
-    }
-
-    private void removeFutureDeletedOccurences(String dataUUID, SyncingInstruction s) {
+    private void removeFutureDeletedOccurences(String dataUUID, int indexToProcess) {
         List<Integer> skippables = new ArrayList<>();
-        int indexToProcess = this.instructions.indexOf(s);
         boolean hasLaterDeletion = false;
+        //
         // Käänteisessä järjestyksessä prosessoitavaan indeksiin asti.
         for (int i = this.instructions.size() - 1; i >= indexToProcess; i--) {
             if (!this.instructions.get(i).getIsProcessed()) {
                 String operation = getOpIdentity(this.instructions.get(i));
                 // Löytyikö DELETE-${uuid} operaatio?
-                if (operation.equals("DELETE-" + dataUUID)) {
+                if (operation.equals(HttpMethod.DELETE + "-" + dataUUID)) {
                     hasLaterDeletion = true;
                     skippables.add(i);
                     // Itemillä oli DELETE-${uuid} operaatio, merkkaa kaikki skipattavaksi
@@ -66,10 +81,43 @@ class QueueOptimizer {
                 }
             }
         }
-        skippables.forEach(i -> {
-            this.instructions.get(i).setCode(SyncingInstruction.Code.SKIP);
-            this.instructions.get(i).setAsProcessed();
-        });
+        for (int i: skippables) {
+            SyncingInstruction inst = this.instructions.get(i);
+            inst.setCode(SyncingInstruction.Code.SKIP);
+            inst.setAsProcessed();
+        }
+    }
+
+    /**
+     * Ryhmittelee samantyppiset POST-operaatiot yhteen (miksi suorittaa useita
+     * POST-pyyntöjä jos ne voi tehdä kerralla?).
+     */
+    private void groupInsertOccurences(SyncQueueItem insertItem, int indexToProcess) {
+        List<Integer> mergables = new ArrayList<>();
+        // Prosessoitavasta indeksista loppuun
+        for (int i = indexToProcess; i < this.instructions.size(); i++) {
+            if (insertItem.getRoute().equals(
+                this.queue.get(this.instructions.get(i).getSyncQueueItemIndex()).getRoute()
+            )) {
+                mergables.add(i);
+            }
+        }
+        //
+        if (mergables.size() < 2) {
+            return;
+        }
+        // Tee ensimmäisestä insertistä GROUP ..
+        SyncingInstruction mainInsert = this.instructions.get(mergables.get(0));
+        mainInsert.setCode(SyncingInstruction.Code.GROUP);
+        mainInsert.setAsProcessed();
+        mergables.remove(0);
+        // , ja lisää siihen kaikki kyseisen tyypin insertit
+        for (int i: mergables) {
+            SyncingInstruction inst = this.instructions.get(i);
+            inst.setCode(SyncingInstruction.Code.SKIP);
+            mainInsert.addDataPointer(inst.getSyncQueueItemIndex(), inst.getBatchDataIndex());
+            inst.setAsProcessed();
+        }
     }
 
     /**
@@ -86,9 +134,9 @@ class QueueOptimizer {
      * (PUT & POST), tai urlista (DELETE).
      */
     private String getDataIdentity(SyncQueueItem item, SyncingInstruction s) {
-        String id = "";
+        String id;
         // POST & PUT pyynnöissä uuid pitäisi löytyä bodystä,
-        if (!item.getRoute().getMethod().equals("DELETE")) {
+        if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
             if (!s.isPartOfBatch()) {
                 id = (String) ((Map) item.getData()).get("id");
             } else {
@@ -121,11 +169,11 @@ class QueueOptimizer {
      * ]
      */
     private List<SyncingInstruction> newInstructionList() {
-        if (this.queueSize < 1) {
+        if (this.queue.isEmpty()) {
             return null;
         }
         List<SyncingInstruction> newList = new ArrayList<>();
-        for (int i = 0; i < this.queueSize; i++) {
+        for (int i = 0; i < this.queue.size(); i++) {
             SyncQueueItem syncable = this.queue.get(i);
             //
             if (!(syncable.getData() instanceof List)) {
@@ -151,26 +199,22 @@ class QueueOptimizer {
         for (SyncingInstruction inst: this.instructions) {
             //
             SyncQueueItem existing = this.queue.get(inst.getSyncQueueItemIndex());
-            // optimize:n mielestä itemiä ei voi eliminoida -> lisää listaan
-            if (inst.getCode() == SyncingInstruction.Code.DEFAULT) {
-                if (!inst.isPartOfBatch() || inst.getBatchDataIndex() == 0) {
-                    optimized.add(existing);
-                }
-                continue;
-            }
-            // optimize:n mielestä itemin voi eliminoida -> älä lisää listaan
-            // ollenkaan, tai poista batch-datasta
-            if (inst.getCode() == SyncingInstruction.Code.SKIP) {
-                int i = optimized.indexOf(existing);
-                if (inst.isPartOfBatch() && i > -1) {
-                    // Kuuluu batchiin -> poista se sieltä
-                    List list = (List) optimized.get(i).getData();
-                    list.remove(inst.getBatchDataIndex());
-                    // Batchiin ei jäänyt dataa -> poista itemi kokonaan
-                    if (list.isEmpty()) {
-                        optimized.remove(optimized.get(i));
+            //
+            switch (inst.getCode()) {
+                case DEFAULT :
+                    if (!inst.isPartOfBatch() || inst.getBatchDataIndex() == 0) {
+                        optimized.add(existing);
                     }
-                }
+                    break;
+                case SKIP :
+                    int i = optimized.indexOf(existing);
+                    if (inst.isPartOfBatch() && i > -1) {
+                        SyncQueueUtils.removeBatchItem(inst.getBatchDataIndex(), optimized, i);
+                    }
+                    break;
+                case GROUP :
+                    optimized.add(SyncQueueUtils.clone(existing, SyncQueueUtils.makeBatch(inst.getDataPointers(), this.queue)));
+                    break;
             }
         }
         return optimized;

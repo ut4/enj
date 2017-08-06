@@ -48,7 +48,7 @@ public class SyncController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public List<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
-        List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue).optimize();
+        List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue).optimize(QueueOptimizer.ALL);
         List<Integer> idsOfSuccesfullySyncedItems = new ArrayList<>();
         for (SyncQueueItem syncable: syncQueue) {
             //
