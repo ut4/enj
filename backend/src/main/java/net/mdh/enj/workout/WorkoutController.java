@@ -59,6 +59,18 @@ public class WorkoutController {
     }
 
     /**
+     * Lisää treenit tietokantaan mikäli ne on valideja Workout-beaneja.
+     */
+    @POST
+    @Path("/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAll(@Valid @NotNull List<Workout> workouts) {
+        int insertCount = this.workoutRepository.insert(workouts);
+        return new MultiInsertResponse(insertCount, workouts);
+    }
+
+    /**
      * Palauttaa kaikki treenit tietokannasta.
      */
     @GET
