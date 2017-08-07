@@ -147,7 +147,7 @@ public class WorkoutController {
     }
 
     /**
-     * Lisää uuden setin treeniliikkeelle {workoutExerciseSet.workoutExerciseId}.
+     * Lisää uuden setin tietokantaan.
      */
     @POST
     @Path("/exercise/set")
@@ -156,6 +156,18 @@ public class WorkoutController {
     public InsertResponse insertWorkoutExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
         int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSet);
         return new InsertResponse(insertCount, workoutExerciseSet.getId());
+    }
+
+    /**
+     * Lisää inputin kaikki setit tietokantaan.
+     */
+    @POST
+    @Path("/exercise/set/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllWorkoutExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
+        int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSets);
+        return new MultiInsertResponse(insertCount, workoutExerciseSets);
     }
 
     /**

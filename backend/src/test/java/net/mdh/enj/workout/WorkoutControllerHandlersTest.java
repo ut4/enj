@@ -138,8 +138,6 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
         Assert.assertEquals(200, response.getStatus());
         //
         Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
-        input.get(0).setId(responseBody.insertIds.get(0));
-        input.get(1).setId(responseBody.insertIds.get(1));
         // Testaa että insertoitui
         List inserted = utils.selectAllWhere(
             "SELECT * FROM workout WHERE id IN (:id1, :id2) ORDER BY `start` ASC",
@@ -147,6 +145,8 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
                 .addValue("id2", responseBody.insertIds.get(1)),
             new SimpleMappers.WorkoutMapper()
         );
+        input.get(0).setId(responseBody.insertIds.get(0));
+        input.get(1).setId(responseBody.insertIds.get(1));
         Assert.assertEquals(input.get(0).toString(), inserted.get(0).toString());
         Assert.assertEquals(input.get(1).toString(), inserted.get(1).toString());
     }

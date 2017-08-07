@@ -67,6 +67,58 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
     }
 
     @Test
+    public void POSTExerciseSetAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/exercise/set/all", null);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetAllValidoiKaikkiInputinSetit() {
+        // Simuloi POST, jonka jälkimmäinen bean on virheellinen
+        List<Workout.Exercise.Set> input = this.makeCoupleOfWorkoutExerciseSets(TestData.TEST_WORKOUT_EXERCISE_ID);
+        input.get(1).setReps(0);
+        input.get(1).setWorkoutExerciseId(null);
+        Response response = this.newPostRequest("workout/exercise/set/all", input);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0[1].reps", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0[1].workoutExerciseId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetAllLisääInputinKaikkiSetitTietokantaan() {
+        // Luo ensin treeniliike, johon setti lisätään
+        Workout.Exercise we = this.insertTestWorkoutExercise();
+        // Luo testidata
+        List<Workout.Exercise.Set> sets = this.makeCoupleOfWorkoutExerciseSets(we.getId());
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("workout/exercise/set/all", sets);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Testaa että insertoitui
+        List inserted = utils.selectAllWhere(
+            "SELECT * FROM workoutExerciseSet WHERE id IN(:id1, :id2) ORDER BY weight ASC",
+            new MapSqlParameterSource().addValue("id1", responseBody.insertIds.get(0))
+                .addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.WorkoutExerciseSetMapper()
+        );
+        sets.get(0).setId(responseBody.insertIds.get(0));
+        sets.get(1).setId(responseBody.insertIds.get(1));
+        Assert.assertEquals(sets.get(0).toString(), inserted.get(0).toString());
+        Assert.assertEquals(sets.get(1).toString(), inserted.get(1).toString());
+    }
+
+    @Test
     public void PUTExerciseSetValidoiInputTaulukon() {
         // Simuloi PUT, jonka input-taulukon toinen itemi ei ole validi
         List<Workout.Exercise.Set> workoutSets = this.makeCoupleOfWorkoutExerciseSets(TestData.TEST_WORKOUT_EXERCISE_ID);
