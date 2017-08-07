@@ -11,6 +11,7 @@ import javax.validation.Payload;
 @Constraint(validatedBy = UUIDValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UUID {
+    boolean allowNull() default false;
     String message() default "{net.mdh.enj.validation.UUID.message}";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

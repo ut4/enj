@@ -8,15 +8,21 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class UUIDValidator implements ConstraintValidator<UUID, String> {
 
+    private boolean allowNull = false;
     private static final String PATTERN = "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
     @Override
     public void initialize(UUID constraint) {
-        // do nothing
+        this.allowNull = constraint.allowNull();
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && value.matches(PATTERN);
+        return (
+            // null arvot hyväksytään vain, jos allowNull = true..
+            (this.allowNull && value == null) ||
+            // Muussa tapauksessa arvo tulee olla aina non-null & validi uuid
+            (value != null && value.matches(PATTERN))
+        );
     }
 }
