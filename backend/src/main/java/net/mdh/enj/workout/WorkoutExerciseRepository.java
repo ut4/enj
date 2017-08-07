@@ -2,11 +2,8 @@ package net.mdh.enj.workout;
 
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
-import java.util.function.Function;
 import javax.inject.Inject;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class WorkoutExerciseRepository extends BasicRepository<Workout.Exercise> {
 
@@ -19,12 +16,12 @@ public class WorkoutExerciseRepository extends BasicRepository<Workout.Exercise>
 
     @Override
     public int insert(Workout.Exercise workoutExercise) {
-        return super.insert(workoutExercise, new BeanToParamMapTranformer());
+        return super.insert(workoutExercise);
     }
 
     @Override
     public int insert(List<Workout.Exercise> workoutExercises) {
-        return super.insert(workoutExercises, new BeanToParamMapTranformer());
+        return super.insert(workoutExercises);
     }
 
     /**
@@ -36,23 +33,10 @@ public class WorkoutExerciseRepository extends BasicRepository<Workout.Exercise>
         return super.updateMany(
             "UPDATE workoutExercise SET " +
                 "orderDef = :orderDef" +
-                ", exerciseId = :exercise.id" +
-                ", exerciseVariantId = :exerciseVariant.id" +
+                ", exerciseId = :exerciseId" +
+                ", exerciseVariantId = :exerciseVariantId" +
             " WHERE id = :id",
             workoutExercises
         );
-    }
-
-    private static class BeanToParamMapTranformer implements Function<Workout.Exercise, Map<String, ?>> {
-        @Override
-        public Map<String, ?> apply(Workout.Exercise workoutExercise) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("id", workoutExercise.getId());
-            data.put("orderDef", workoutExercise.getOrderDef());
-            data.put("workoutId", workoutExercise.getWorkoutId());
-            data.put("exerciseId", workoutExercise.getExercise().getId());
-            data.put("exerciseVariantId", workoutExercise.getExerciseVariant().getId());
-            return data;
-        }
     }
 }

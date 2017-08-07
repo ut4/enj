@@ -1,9 +1,8 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.api.Responses;
-import net.mdh.enj.exercise.Exercise;
-import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.TestData;
+import net.mdh.enj.resources.SimpleMappers;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import javax.ws.rs.core.GenericType;
@@ -215,8 +214,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         // Luo ensin treeniliike, johon setti lisätään
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(testWorkout.getId());
-        we.setExercise(testExercise);
-        we.setExerciseVariant(new Exercise.Variant());
+        we.setExerciseId(testExercise.getId());
         utils.insertWorkoutExercise(we);
         return we;
     }

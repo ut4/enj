@@ -159,7 +159,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         Assert.assertEquals("Pitäisi päivittää kumpikin itemi", 2, updateCount);
         // Hae päivitetty data tietokannasta & assertoi että data päivittyi
         List<SimpleExerciseEntity> updated = this.testRepo.selectAll(
-            "SELECT id, `name` FROM exercise WHERE id IN (:id1, :id2)",
+            "SELECT id, `name` FROM exercise WHERE id IN (:id1, :id2) ORDER BY `name` DESC",
             new MapSqlParameterSource().addValue("id1", data.getId()).addValue("id2", data2.getId()),
             new SimpleExerciseMapper()
         );

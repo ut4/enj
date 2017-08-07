@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.UUID;
@@ -29,15 +28,7 @@ public class DbTestUtils {
         this.insert(this.getInserter("workout"), w);
     }
     public void insertWorkoutExercise(Workout.Exercise we) {
-        this.insert(this.getInserter("workoutExercise"), we, () -> {
-            Map<String, Object> data = new HashMap<>();
-            data.put("id", we.getId());
-            data.put("orderDef", we.getOrderDef());
-            data.put("workoutId", we.getWorkoutId());
-            data.put("exerciseId", we.getExercise().getId());
-            data.put("exerciseVariantId", we.getExerciseVariant().getId());
-            return data;
-        });
+        this.insert(this.getInserter("workoutExercise"), we);
     }
     public void insertWorkoutExerciseSet(Workout.Exercise.Set wes) {
         this.insert(this.getInserter("workoutExerciseSet"), wes);
@@ -78,11 +69,5 @@ public class DbTestUtils {
             data.setId(UUID.randomUUID().toString());
         }
         inserter.execute(new BeanPropertySqlParameterSource(data));
-    }
-    public int insert(SimpleJdbcInsert inserter, DbEntity data, Supplier<Map<String, Object>> transformer) {
-        if (data.getId() == null) {
-            data.setId(UUID.randomUUID().toString());
-        }
-        return inserter.execute(transformer.get());
     }
 }
