@@ -41,7 +41,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Response response = this.newPostRequest("workout/exercise", "{}");
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = this.getValidationErrors(response);
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
         Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.exercise", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
@@ -77,6 +77,74 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Assert.assertNull(inserted.getExerciseVariant().getId());
     }
 
+    /**
+     * Testaa, että POST /api/workout/exercise/all hylkää pyynnön jos input = null
+     */
+    @Test
+    public void POSTExerciseAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/exercise/all", null);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise/all validoi inputin kaikki kentät.
+     */
+    @Test
+    public void POSTExerciseAllHylkääPyynnönJosBeanistaPuuttuuTietoja() {
+        // Simuloi POST, jonka ensimmäisestä beanista puuttuu tietoja
+        List<Workout.Exercise> input = this.makeCoupleOfWorkoutExercises();
+        input.get(1).setWorkoutId(null);
+        input.get(1).setExercise(null);
+        Response response = this.newPostRequest("workout/exercise/all", input);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0[1].exercise", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0[1].workoutId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise/all lisää kaikki treeniliikkeet
+     * tietokantaan, ja palauttaa multiInsertResponsen, jossa uudet id:t.
+     */
+    @Test
+    public void POSTExerciseAllLisääLiikkeetTreeniin() {
+        // Luo testidata
+        List<Workout.Exercise> input = this.makeCoupleOfWorkoutExercises();
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("workout/exercise/all", input);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Testaa että insertoitui, ja palautti id:n
+        List inserted = utils.selectAllWhere(
+            "SELECT * FROM workoutExercise WHERE id IN (:id, :id2) ORDER BY orderDef ASC",
+            new MapSqlParameterSource().addValue("id", responseBody.insertIds.get(0))
+                .addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.WorkoutExerciseMapper()
+        );
+        Workout.Exercise expected1 = input.get(0);
+        Workout.Exercise inserted1 = (Workout.Exercise) inserted.get(0);
+        Assert.assertEquals(expected1.getWorkoutId(), inserted1.getWorkoutId());
+        Assert.assertEquals(expected1.getOrderDef(), inserted1.getOrderDef());
+        Assert.assertEquals(expected1.getExercise().getId(), inserted1.getExercise().getId());
+        Assert.assertNull(inserted1.getExerciseVariant().getId());
+        Workout.Exercise expected2 = input.get(1);
+        Workout.Exercise inserted2 = (Workout.Exercise) inserted.get(1);
+        Assert.assertEquals(expected2.getWorkoutId(), inserted2.getWorkoutId());
+        Assert.assertEquals(expected2.getOrderDef(), inserted2.getOrderDef());
+        Assert.assertEquals(expected2.getExercise().getId(), inserted2.getExercise().getId());
+        Assert.assertNull(inserted2.getExerciseVariant().getId());
+    }
+
     @Test
     public void PUTExerciseValidoiInputTaulukon() {
         // Simuloi PUT, jonka input-taulukon toinen itemi ei ole validi
@@ -86,7 +154,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Response response = this.newPutRequest("workout/exercise", workouts);
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = this.getValidationErrors(response);
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
         Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].exercise", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
@@ -139,7 +207,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Response response = this.newDeleteRequest("workout/exercise/notvaliduuid");
         Assert.assertEquals(400, response.getStatus());
         //
-        List<ValidationError> errors = this.getValidationErrors(response);
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(1, errors.size());
         Assert.assertEquals("WorkoutController.deleteWorkoutExercise.arg0", errors.get(0).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());

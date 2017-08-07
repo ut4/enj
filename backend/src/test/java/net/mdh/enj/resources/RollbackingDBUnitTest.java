@@ -15,7 +15,7 @@ public class RollbackingDBUnitTest {
     }
 
     @AfterClass
-    public static void afterEach() throws SQLException {
+    public static void afterClass() throws SQLException {
         rollbackingDataSource.getConnection().rollback();
     }
 }

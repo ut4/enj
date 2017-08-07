@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.MultiInsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
 import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
@@ -97,6 +98,18 @@ public class WorkoutController {
     public InsertResponse insertWorkoutExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
         return new InsertResponse(insertCount, workoutExercise.getId());
+    }
+
+    /**
+     * Lisää treeniliikkeet tietokantaan mikäli ne on valideja Workout.Exercise-beaneja.
+     */
+    @POST
+    @Path("/exercise/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllWorkoutExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
+        int insertCount = this.workoutExerciseRepository.insert(workoutExercises);
+        return new MultiInsertResponse(insertCount, workoutExercises);
     }
 
     /**

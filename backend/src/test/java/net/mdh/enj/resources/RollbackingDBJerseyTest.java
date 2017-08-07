@@ -15,7 +15,7 @@ public class RollbackingDBJerseyTest extends JerseyTestCase {
     }
 
     @AfterClass
-    public static void afterEach() throws SQLException {
+    public static void afterClass() throws SQLException {
         rollbackingDataSource.getConnection().rollback();
     }
 }

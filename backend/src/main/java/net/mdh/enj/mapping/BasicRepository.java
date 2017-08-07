@@ -8,8 +8,9 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.RowMapper;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.List;
 import java.util.UUID;
@@ -36,22 +37,33 @@ public abstract class BasicRepository<T extends DbEntity> {
     }
 
     /**
-     * Lisää beanin {data} tietokantaan. HUOM - olettaa, että {data} on jo validoitu!
-     *
-     * @param data T
-     * @return Lisättyjen rivien lukumäärä
+     * Insertoi beanin {data} tietokantaan.
      */
     public int insert(T data) {
-        if (data.getId() == null) {
-            data.setId(UUID.randomUUID().toString());
-        }
+        this.ensureId(data);
         return this.inserter.execute(new BeanPropertySqlParameterSource(data));
     }
-    public int insert(T data, Supplier<Map<String, Object>> transformer) {
-        if (data.getId() == null) {
-            data.setId(UUID.randomUUID().toString());
-        }
-        return this.inserter.execute(transformer.get());
+
+    /**
+     * Insertoi beanit {items} tietokantaan.
+     */
+    public int insert(List<T> items) {
+        return IntStream.of(this.inserter.executeBatch(this.createInsertBatch(items))).sum();
+    }
+
+    /**
+     * Insertoi {transformer}:n palauttaman datan tietokantaan.
+     */
+    public int insert(T data, Function<T, Map<String, ?>> transformer) {
+        this.ensureId(data);
+        return this.inserter.execute(transformer.apply(data));
+    }
+
+    /**
+     * Insertoi {transformer}:n palauttaman datan tietokantaan.
+     */
+    public int insert(List<T> items, Function<T, Map<String, ?>> transformer) {
+        return IntStream.of(this.inserter.executeBatch(this.createInsertBatch(items, transformer))).sum();
     }
 
     /**
@@ -118,5 +130,29 @@ public abstract class BasicRepository<T extends DbEntity> {
             String.format("DELETE FROM `%s` WHERE id = :id", this.tableName),
             new MapSqlParameterSource("id", id)
         );
+    }
+
+    private void ensureId(T data) {
+        if (data.getId() == null) {
+            data.setId(UUID.randomUUID().toString());
+        }
+    }
+
+    private BeanPropertySqlParameterSource[] createInsertBatch(List<T> itemsToInsert) {
+        List<BeanPropertySqlParameterSource> out = new ArrayList<>();
+        for (T data: itemsToInsert) {
+            this.ensureId(data);
+            out.add(new BeanPropertySqlParameterSource(data));
+        }
+        return out.toArray(new BeanPropertySqlParameterSource[0]);
+    }
+
+    private Map[] createInsertBatch(List<T> itemsToInsert, Function<T, Map<String, ?>> transformer) {
+        List<Map<String, ?>> out = new ArrayList<>();
+        for (T data: itemsToInsert) {
+            this.ensureId(data);
+            out.add(transformer.apply(data));
+        }
+        return out.toArray(new Map[0]);
     }
 }
