@@ -18,7 +18,10 @@ declare module Enj {
             id: AAGUID;
             orderDef: number;
             workoutId: AAGUID;
-            exercise: ExerciseRecord;
+            exerciseId: AAGUID;
+            exerciseName: string;
+            exerciseVariantId: AAGUID;
+            exerciseVariantContent: string;
             sets: Array<WorkoutExerciseSetRecord>;
         }
         interface WorkoutExerciseSetRecord {

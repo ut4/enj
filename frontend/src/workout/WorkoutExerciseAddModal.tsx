@@ -27,7 +27,10 @@ class WorkoutExerciseAddModal extends Component<Props, {workoutExercise: Workout
      */
     public onExerciseSelect(selectedExercise, selectedVariant) {
         const workoutExercise = this.state.workoutExercise;
-        workoutExercise.exercise = selectedExercise || null;
+        workoutExercise.exerciseId = selectedExercise.id || null;
+        workoutExercise.exerciseName = selectedExercise.name || null;
+        workoutExercise.exerciseVariantId = selectedVariant.id || null;
+        workoutExercise.exerciseVariantContent = selectedVariant.content || null;
         this.setState({ workoutExercise });
     }
     /**
@@ -43,8 +46,8 @@ class WorkoutExerciseAddModal extends Component<Props, {workoutExercise: Workout
     public render() {
         return <div>
             <h3>Lisää liike treeniin</h3>
-            <ExerciseSelector onSelect={ this.onExerciseSelect.bind(this) }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exercise } autoCloseOnConfirm={ true }/>
+            <ExerciseSelector onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
+            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exerciseId } autoCloseOnConfirm={ true }/>
         </div>;
     }
 }

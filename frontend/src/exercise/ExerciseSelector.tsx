@@ -2,13 +2,13 @@ import Component from 'inferno-component';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    exerciseList?: Array<Enj.API.ExerciseRecord>,
-    onSelect: (selectedExercise: Enj.API.ExerciseRecord, selectedVariant: Enj.API.ExerciseVariantRecord) => void
+    exerciseList?: Array<Enj.API.ExerciseRecord>;
+    onSelect: (selectedExercise: Enj.API.ExerciseRecord, selectedVariant: Enj.API.ExerciseVariantRecord) => void;
 }
 interface State {
-    exercises: Array<Enj.API.ExerciseRecord>,
-    selectedExercise: Enj.API.ExerciseRecord,
-    selectedVariant: Enj.API.ExerciseVariantRecord
+    exercises: Array<Enj.API.ExerciseRecord>;
+    selectedExercise: Enj.API.ExerciseRecord;
+    selectedVariant: Enj.API.ExerciseVariantRecord;
 }
 
 /**

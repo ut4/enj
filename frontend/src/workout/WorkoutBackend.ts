@@ -67,7 +67,10 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public id: AAGUID;
     public orderDef: number;
     public workoutId: AAGUID;
-    public exercise: Enj.API.ExerciseRecord;
+    public exerciseId: AAGUID;
+    public exerciseName: string;
+    public exerciseVariantId: AAGUID;
+    public exerciseVariantContent: string;
     public sets: Array<Enj.API.WorkoutExerciseSetRecord>;
     constructor() {
         this.orderDef = 0;

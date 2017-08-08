@@ -7,7 +7,7 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
     public render() {
         return (<li>
             <div class="heading">
-                { this.props.workoutExercise.exercise.name }
+                { this.props.workoutExercise.exerciseName }
             </div>
             <div class="content">
                 { this.props.workoutExercise.sets.length

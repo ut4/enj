@@ -21,7 +21,8 @@ QUnit.module('workout/EditableWorkout', hooks => {
         testWorkout = new Workout();
         testWorkout.id = 'someuuid';
         testWorkoutExercise = new WorkoutExercise();
-        testWorkoutExercise.exercise = {id: 'someuuid2', name:'exs', variants: []};
+        testWorkoutExercise.exerciseId = 'someuuid2';
+        testWorkoutExercise.exerciseName = 'exs';
         testWorkout.exercises = [testWorkoutExercise];
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
@@ -40,13 +41,13 @@ QUnit.module('workout/EditableWorkout', hooks => {
         </div>);
         const timerStopSpy = sinon.spy(itu.findRenderedVNodeWithType(rendered, Timer).children, 'stop');
         const updateCallStub = sinon.stub(shallowWorkoutBackend, 'update').returns(Promise.resolve('fo'));
-        const expectedEndTime = Math.floor(Date.now() / 1000);
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
         endWorkoutButton.click();
         // Hyväksy lopetus
         const modalConfirmButton = utils.findButtonByContent(rendered, 'Ok');
         assert.ok(modalConfirmButton instanceof HTMLButtonElement, 'Pitäisi confirmoida treenin lopetus');
+        const expectedEndTime = Math.floor(Date.now() / 1000);
         modalConfirmButton.click();
         //
         assert.ok(updateCallStub.calledOnce, 'Pitäisi päivittää lopetusaika backendiin');
@@ -91,8 +92,8 @@ QUnit.module('workout/EditableWorkout', hooks => {
     });
     QUnit.test('"Lisää liike" luo liikkeen, postaa sen backendiin, ja renderöi sen lopuksi näkymään', assert => {
         const addExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'addExercise').returns(Promise.resolve());
-        const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll')
-            .returns(Promise.resolve([{id: 1, name: 'foo', variants: []}]));
+        const testExercises = [{id: 'someuuuid', name: 'foo', variants: []}];
+        const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testExercises));
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
             <EditableWorkout workout={ testWorkout }/>
@@ -114,11 +115,14 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 submitButton.click();
         // Assertoi että lähetti datan backendiin
                 assert.ok(addExerciseCallStub.called);
-                insertedWorkoutExercise = addExerciseCallStub.firstCall.args[0];
-                assert.equal(insertedWorkoutExercise.workoutId, testWorkout.id, 'Pitäis poimia propseista' +
-                    ' treeniliikkeen workoutId-arvo');
-                assert.equal(insertedWorkoutExercise.orderDef, testWorkout.exercises.length, 'Pitäis poimia propseista' +
-                    ' treeniliikkeen orderDef-arvo');
+                const insertedWorkoutExercise = addExerciseCallStub.firstCall.args[0];
+                assert.equal(insertedWorkoutExercise.workoutId, testWorkout.id);
+                assert.equal(insertedWorkoutExercise.orderDef, testWorkout.exercises.length);
+                assert.equal(insertedWorkoutExercise.exerciseId, testExercises[0].id);
+                assert.equal(insertedWorkoutExercise.exerciseName, testExercises[0].name);
+                assert.equal(insertedWorkoutExercise.exerciseVariantId, null);
+                assert.equal(insertedWorkoutExercise.exerciseVariantContent, null);
+                assert.deepEqual(insertedWorkoutExercise.sets, []);
                 return addExerciseCallStub.returnValue;
         // Odota resolve & assertoi että renderöi lisätyn liikkeen
             })

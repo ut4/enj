@@ -8,14 +8,13 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     let testWorkoutExercise: WorkoutExercise;
     hooks.beforeEach(() => {
         testWorkoutExercise = new WorkoutExercise();
-        testWorkoutExercise.exercise = new Exercise();
-        testWorkoutExercise.exercise.name = 'exs';
+        testWorkoutExercise.exerciseName = 'exs';
     });
     QUnit.test('renderöi treeniliikkeen nimen, ja tyhjän settilistan', assert => {
         const rendered = itu.renderIntoDocument(
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         );
-        assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exercise.name);
+        assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName);
         const setItems = getRenderedSetItems(rendered);
         assert.equal(setItems.length, 1);
         assert.equal(setItems[0].textContent, ' - ');
@@ -32,7 +31,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const rendered = itu.renderIntoDocument(
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         );
-        assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exercise.name);
+        assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName);
         const setItems = getRenderedSetItems(rendered);
         assert.equal(setItems.length, 2);
         assert.equal(setItems[0].textContent, `${set1.weight}kg x ${set1.reps}`);
