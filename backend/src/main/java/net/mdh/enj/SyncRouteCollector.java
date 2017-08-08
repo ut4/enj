@@ -28,7 +28,7 @@ public class SyncRouteCollector implements ApplicationEventListener {
 
     @Override
     public void onEvent(ApplicationEvent event) {
-        if (event.getType() != ApplicationEvent.Type.INITIALIZATION_FINISHED) {
+        if (event.getType() != ApplicationEvent.Type.INITIALIZATION_APP_FINISHED) {
             return;
         }
         // Luokat, joissa @Path-annotaatio
@@ -47,7 +47,7 @@ public class SyncRouteCollector implements ApplicationEventListener {
             SyncRoute syncRoute = new SyncRoute();
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
-            syncRoute.setPattern(resource.getPathPattern().getRegex());
+            syncRoute.setPattern(parentPath + resource.getPathPattern().getRegex());
             this.routeRegister.add(syncRoute);
         }
     }

@@ -26,17 +26,14 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class SyncController {
 
-    private final SyncRouteRegister registeredSyncRoutes;
     private final HttpClient appHttpClient;
     private final RequestContext requestContext;
 
     @Inject
     public SyncController(
-        SyncRouteRegister registeredSyncRoutes,
         HttpClient appHttpClient,
         RequestContext requestContext
     ) {
-        this.registeredSyncRoutes = registeredSyncRoutes;
         this.appHttpClient = appHttpClient;
         this.requestContext = requestContext;
     }
@@ -52,15 +49,18 @@ public class SyncController {
         ArrayList<Integer> idsOfSuccesfullySyncedItems = new ArrayList<>();
         //
         for (SyncQueueItem syncableItem: syncQueue) {
-            //
-            // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
-            SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
+            Route route = syncableItem.getRoute();
             //
             // Suorita synkkaus HTTP:lla
-            Response syncResponse = this.appHttpClient.target(routeMatch.getUrl())
+            Response syncResponse = this.appHttpClient.target(route.getUrl())
                 .request(MediaType.APPLICATION_JSON)
                 .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
-                .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
+                .method(
+                    route.getMethod(),
+                    !route.getMethod().equals("DELETE")
+                        ? Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData()))
+                        : null
+                );
             //
             // Jos vastaus oli ok, lisää itemin id vastaustaulukkoon
             if (syncResponse.getStatus() >= 200 && syncResponse.getStatus() < 300) {

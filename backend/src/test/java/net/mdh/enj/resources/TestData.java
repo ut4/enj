@@ -43,13 +43,13 @@ public class TestData {
         return data;
     }
 
-    public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData, Exercise exercise) {
+    public static Map<String,Object> getSomeWorkoutExerciseData(Object parentWorkoutData, Exercise exercise) {
         HashMap<String, Object> data = new HashMap<>();
         data.put("id", TEST_WORKOUT_EXERCISE_ID);
         data.put("orderDef", 102);
-        data.put("workoutId", parentWorkoutData.get("id"));
-        data.put("exercise", exercise);
-        data.put("exerciseVariant", new Exercise.Variant());
+        data.put("workoutId", ((Map) parentWorkoutData).get("id"));
+        data.put("exerciseId", exercise.getId());
+        data.put("exerciseVariantId", null);
         return data;
     }
     public static Map<String,Object> getSomeWorkoutExerciseData(Map<String, Object> parentWorkoutData) {
