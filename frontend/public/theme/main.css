@@ -48,6 +48,7 @@ body:after {
     border-left: 80px solid rgba(163, 175, 97, 0.65);
     box-sizing: border-box;
     transform: translate(-100px);
+    z-index: 1;
 }
 @keyframes zlide {
     from { transform: translate(-100px); }
@@ -59,6 +60,14 @@ body.loading:after {
 }
 .text-error {
     color: rgba(255, 62, 97, 0.85);
+}
+.text-small {
+    font-size: .8em;
+}
+.heading .text-small {
+    font-size: .7em;
+    font-family: "Fira sans light";
+    margin-left: 4px;
 }
 a {
     color: #8AAB33;

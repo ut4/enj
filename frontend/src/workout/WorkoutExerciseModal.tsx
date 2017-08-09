@@ -5,21 +5,21 @@ import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    params: {
-        workoutId: AAGUID,
-        orderDef: number,
-        afterInsert: Function
-    };
+    workoutExercise: Enj.API.WorkoutExerciseRecord;
+    afterInsert?: Function;
+    afterUpdate?: Function;
 }
 
-class WorkoutExerciseAddModal extends Component<Props, {workoutExercise: WorkoutExercise}> {
+/**
+ * Treeniliikkeen luonti & muokkaus-modal.
+ */
+class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExercise}> {
+    private isInsert: boolean;
     public constructor(props, context) {
         super(props, context);
         //
-        const workoutExercise = new WorkoutExercise();
-        workoutExercise.workoutId = props.workoutId;
-        workoutExercise.orderDef = parseInt(props.orderDef, 10);
-        this.state = { workoutExercise };
+        this.isInsert = this.props.hasOwnProperty('afterInsert');
+        this.state = { workoutExercise: this.props.workoutExercise };
     }
     /**
      * Asettaa valitun liikkeen luotavaan dataan. Triggeröityy ExerciseSelectorin
@@ -35,21 +35,24 @@ class WorkoutExerciseAddModal extends Component<Props, {workoutExercise: Workout
     }
     /**
      * Lähettää treeniliikkeen backendiin tallennettavaksi, ja ohjaa käyttäjän
-     * {this.returnUrl}iin mikäli tallennus onnistui.
+     * takaisin mikäli tallennus onnistui.
      */
     private confirm() {
-        iocFactories.workoutBackend().addExercise(this.state.workoutExercise).then(
-            () => this.props.afterInsert(this.state.workoutExercise),
-            () => iocFactories.notify()('Treeniliikkeen lisääminen epäonnistui', 'error')
+        iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise).then(
+            () => this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.workoutExercise),
+            () => iocFactories.notify()('Treeniliikkeen ' + (this.isInsert ? 'lisä' : 'päivit') + 'ys epäonnistui', 'error')
         );
     }
     public render() {
         return <div>
-            <h3>Lisää liike treeniin</h3>
-            <ExerciseSelector onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
+            <h3>{ this.isInsert ? 'Lisää liike treeniin' : 'Muokkaa treeniliikettä' }</h3>
+            <ExerciseSelector
+                initialExerciseId={ this.props.workoutExercise.exerciseId }
+                initialExerciseVariantId={ this.props.workoutExercise.exerciseVariantId }
+                onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exerciseId } autoCloseOnConfirm={ true }/>
         </div>;
     }
 }
 
-export default WorkoutExerciseAddModal;
+export default WorkoutExerciseModal;

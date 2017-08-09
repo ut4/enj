@@ -13,8 +13,8 @@ import utils from 'tests/utils';
 QUnit.module('workout/EditableWorkout', hooks => {
     let testWorkout: Workout;
     let testWorkoutExercise: WorkoutExercise;
-    let workoutBackendIocOverride: sinon.SinonStub;
     let shallowWorkoutBackend: WorkoutBackend;
+    let workoutBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     let exerciseBackendIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
