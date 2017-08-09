@@ -29,6 +29,7 @@ import iocFactories from 'src/ioc';
 iocFactories.notify = () => () => null;
 iocFactories.history = () => mockHistory;
 QUnit.config.autostart = false;
+QUnit.dump.maxDepth = 8; // default 5
 QUnit.moduleDone(() => {
     // itu -> Inferno test utils
     let elRenderedByItu = document.querySelector('script:last-of-type').nextElementSibling;
