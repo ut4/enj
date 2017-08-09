@@ -5,7 +5,6 @@ import StatsStrengthView         from 'src/stat/StatsStrengthView';
 import StatsOverviewView         from 'src/stat/StatsOverviewView';
 import WorkoutsView              from 'src/stat/WorkoutsView';
 import WorkoutView               from 'src/workout/WorkoutView';
-import WorkoutExerciseDeleteView from 'src/workout/WorkoutExerciseDeleteView';
 import WorkoutSetCreateView      from 'src/workout/WorkoutSetCreateView';
 import ProgramView               from 'src/program/ProgramView';
 import ProgramCreateView         from 'src/program/ProgramCreateView';
@@ -35,7 +34,6 @@ export {
     StatsOverviewView,
     WorkoutsView,
     WorkoutView,
-    WorkoutExerciseDeleteView,
     WorkoutSetCreateView,
     ProgramView,
     ProgramCreateView,

@@ -67,6 +67,12 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     public updateExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
         return this.workoutExerciseBackend.update([workoutExercise]);
     }
+    /**
+     * Sama kuin WorkoutExerciseBackend.delete.
+     */
+    public deleteExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
+        return this.workoutExerciseBackend.delete(workoutExercise);
+    }
 }
 
 class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {

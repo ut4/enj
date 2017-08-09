@@ -133,4 +133,35 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 done();
             });
     });
+    QUnit.test('Liikkeen Poista-painikkeen modal lähettää poistettavan treeniliikkeen backendiin, ja renderöi näkymän', assert => {
+        const deleteWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'deleteExercise').returns(Promise.resolve());
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkout workout={ testWorkout }/>
+        </div>);
+        const workoutExerciseToDelete = testWorkout.exercises[0];
+        const renderedWorkoutExerciseCountBefore = itu.scryRenderedVNodesWithType(rendered, EditableWorkoutExercise).length;
+        // Klikkaa Poista-painiketta
+        const deleteWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Poista');
+        deleteWorkoutExerciseButton.click();
+        // Hyväksy poisto modalista
+        const modalConfirmButton = utils.findButtonByContent(rendered, 'Ok');
+        assert.ok(modalConfirmButton instanceof HTMLButtonElement, 'Pitäisi confirmoida treeniliikkeen poisto');
+        modalConfirmButton.click();
+        //
+        assert.ok(deleteWorkoutExerciseCallStub.calledOnce, 'Pitäisi lähettää poistettava treeniliike backendiin');
+        assert.deepEqual(deleteWorkoutExerciseCallStub.firstCall.args, [
+            workoutExerciseToDelete
+        ], 'Pitäisi lähettää poistettava treeniliike backendiin');
+        //
+        const done = assert.async();
+        deleteWorkoutExerciseCallStub.firstCall.returnValue.then(() => {
+            assert.equal(
+                itu.scryRenderedVNodesWithType(rendered, EditableWorkoutExercise).length,
+                renderedWorkoutExerciseCountBefore - 1,
+                'Pitäisi renderöidä poistettu treeni pois näkymästä'
+            );
+            done();
+        });
+    });
 });

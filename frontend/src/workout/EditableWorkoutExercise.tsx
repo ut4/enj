@@ -1,15 +1,23 @@
 import Component from 'inferno-component';
 import WorkoutExerciseModal from 'src/workout/WorkoutExerciseModal';
+import WorkoutExerciseDeleteModal from 'src/workout/WorkoutExerciseDeleteModal';
 import Modal from 'src/ui/Modal';
 
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
  */
-class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord}, any> {
+class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord, onDelete: Function}, any> {
     private openEditModal() {
         Modal.open(() =>
             <WorkoutExerciseModal workoutExercise={ this.props.workoutExercise } afterUpdate={ () => {
                 this.forceUpdate();
+            } }/>
+        );
+    }
+    private openDeleteModal() {
+        Modal.open(() =>
+            <WorkoutExerciseDeleteModal workoutExercise={ this.props.workoutExercise } afterDelete={ () => {
+                this.props.onDelete();
             } }/>
         );
     }
@@ -34,7 +42,7 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
             </a>
             <div class="action-buttons">
                 <button class="icon-button edit" onClick={ () => this.openEditModal() } title="Muokkaa"></button>
-                <a class="icon-button delete" href={ '#/treeni/' + this.props.workoutExercise.workoutId + '/liike/poista/' + this.props.workoutExercise.id } title="Poista"></a>
+                <button class="icon-button delete" onClick={ () => this.openDeleteModal() } title="Poista"></button>
                 <button class="icon-button arrow up" title="Siirrä ylös"></button>
                 <button class="icon-button arrow down" title="Siirrä alas"></button>
             </div>

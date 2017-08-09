@@ -32,6 +32,11 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
                 } }/>
         );
     }
+    private removeExerciseFromList(workoutExercise) {
+        const workoutExercises = this.props.workout.exercises;
+        workoutExercises.splice(workoutExercises.indexOf(workoutExercise), 1);
+        this.forceUpdate();
+    }
     public render() {
         return (<div class="editable-workout">
             <div class="workout-timer">
@@ -43,7 +48,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
             <ul class="dark-list">
                 { this.props.workout.exercises.length
                     ? this.props.workout.exercises.map(workoutExercise =>
-                        <EditableWorkoutExercise workoutExercise={ workoutExercise }/>
+                        <EditableWorkoutExercise workoutExercise={ workoutExercise } onDelete={ () => this.removeExerciseFromList(workoutExercise) }/>
                     )
                     : <li>Ei vielä liikkeitä.</li>
                 }
