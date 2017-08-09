@@ -23,13 +23,19 @@ QUnit.module('common/OfflineHttp', hooks => {
         assert.deepEqual(getd, handler);
     });
     QUnit.test('getHandler etsii handerin regexpillä', assert => {
-        const handler1 = () => Promise.resolve('1');
-        offlineHttp.addHandler('POST', 'some/url', handler1);
-        const handler2 = () => Promise.resolve('2');
-        offlineHttp.addHandler('PUT', 'some/*', handler2);
+        const postExact = () => Promise.resolve('1');
+        offlineHttp.addHandler('POST', 'some/url', postExact);
+        const putExact = () => Promise.resolve('2');
+        offlineHttp.addHandler('PUT', 'some/url', putExact);
+        const firstRegexp = () => Promise.resolve('3');
+        offlineHttp.addHandler('PUT', 'some/*', firstRegexp);
+        const secondRegexp = () => Promise.resolve('4');
+        offlineHttp.addHandler('PUT', 'some/url/*', secondRegexp);
         //
-        const getd = offlineHttp.getHandler('PUT', 'some/string');
-        assert.deepEqual(getd, handler2);
+        assert.deepEqual(offlineHttp.getHandler('PUT', 'some/url'), putExact);
+        assert.deepEqual(offlineHttp.getHandler('POST', 'some/url'), postExact);
+        assert.deepEqual(offlineHttp.getHandler('PUT', 'some/string'), firstRegexp);
+        assert.deepEqual(offlineHttp.getHandler('PUT', 'some/url/string'), secondRegexp);
     });
     QUnit.test('logRequestToSyncQueue kirjoittaa selaintietokantaan', assert => {
         const requestToQueue = {

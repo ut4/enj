@@ -26,6 +26,9 @@ class OfflineWorkoutHandlerRegister {
         offlineHttp.addHandler('PUT', 'workout/exercise', workoutExercises =>
             this.updateExercises(workoutExercises)
         );
+        offlineHttp.addHandler('DELETE', 'workout/exercise/*', (_, url) =>
+            this.deleteExercise(url.split('/').pop())
+        );
     }
     /**
      * Handlaa POST /api/workout REST-kutsun offline-tilan aikana.
@@ -90,6 +93,18 @@ class OfflineWorkoutHandlerRegister {
         });
     }
     /**
+     * Handlaa DELETE /api/workout/exercise/:id REST-kutsun offline-tilan aikana.
+     */
+    public deleteExercise(workoutExerciseId: string) {
+        return this.updateCache(cachedWorkouts => {
+            // Poista treeniliike sille kuuluvan treenin liikelistalta
+            const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(workoutExerciseId, cachedWorkouts);
+            workoutRef.exercises.splice(exerciseIndex, 1);
+            //
+            return {deleteCount: 1};
+        });
+    }
+    /**
      * Hakee cachetetut treenit, tarjoaa ne {updater}:n modifoitavaksi, tallentaa
      * cachen päivitetyillä tiedoilla, ja lopuksi palauttaa {updater}:n palauttaman
      * feikatun backendin vastauksen.
@@ -112,6 +127,20 @@ class OfflineWorkoutHandlerRegister {
 
 function findWorkoutById(id: string, workouts: Array<Enj.API.WorkoutRecord>): Enj.API.WorkoutRecord {
     return workouts.find(workout => workout.id === id);
+}
+
+function findWorkoutByExerciseId(workoutExerciseId: string, workouts: Array<Enj.API.WorkoutRecord>): {workoutRef: Enj.API.WorkoutRecord, exerciseIndex: number} {
+    for (const workout of workouts) {
+        for (const workoutExercise of workout.exercises) {
+            if (workoutExercise.id === workoutExerciseId) {
+                return {
+                    workoutRef: workout,
+                    exerciseIndex: workout.exercises.indexOf(workoutExercise)
+                };
+            }
+        }
+    }
+    return {workoutRef: null, exerciseIndex: -1};
 }
 
 export default OfflineWorkoutHandlerRegister;

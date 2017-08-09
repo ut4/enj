@@ -82,8 +82,7 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
             assert.ok(fetchCallSpy.notCalled);
             assert.ok(handlerCallStub.calledOnce);
             assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExercise]);
-            assert.equal(res, 56, 'Pitäisi palauttaa offline-handlerin palauttama ' +
-                'arvo (RESTBackending modifioimana)');
+            assert.equal(res, 56, 'Pitäisi palauttaa offline-handlerin palauttama insertCount');
             done();
         });
     });
@@ -100,8 +99,23 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
             assert.deepEqual(handlerCallStub.firstCall.args, [[testWorkoutExercise]],
                 'Pitäisi muuntaa input-treeniliike taulukoksi (foo -> [foo])'
             );
-            assert.equal(res, 23, 'Pitäisi palauttaa offline-handlerin palauttama ' +
-                'arvo (RESTBackending modifioimana)');
+            assert.equal(res, 23, 'Pitäisi palauttaa offline-handlerin palauttama updateCount');
+            done();
+        });
+    });
+    QUnit.test('workoutBackend.deleteExercise kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const testWorkoutExercise = new WorkoutExercise();
+        testWorkoutExercise.id = 'someuuid76';
+        const fetchCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'deleteExercise').returns(Promise.resolve('{"deleteCount": 307}'));
+        //
+        const done = assert.async();
+        workoutBackend.deleteExercise(testWorkoutExercise).then(res => {
+            //
+            assert.ok(fetchCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExercise.id]);
+            assert.equal(res, 307, 'Pitäisi palauttaa offline-handlerin palauttama deleteCount');
             done();
         });
     });
