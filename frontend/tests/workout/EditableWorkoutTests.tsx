@@ -4,7 +4,7 @@ import * as itu from 'inferno-test-utils';
 import Modal from 'src/ui/Modal';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
-import WorkoutBackend, { Workout, WorkoutExercise } from 'src/workout/WorkoutBackend';
+import WorkoutBackend, { Workout, WorkoutExerciseBackend, WorkoutExercise } from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import Timer from 'src/ui/Timer';
 import iocFactories from 'src/ioc';
@@ -13,6 +13,7 @@ import utils from 'tests/utils';
 QUnit.module('workout/EditableWorkout', hooks => {
     let testWorkout: Workout;
     let testWorkoutExercise: WorkoutExercise;
+    let testWorkoutExercise2: WorkoutExercise;
     let shallowWorkoutBackend: WorkoutBackend;
     let workoutBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
@@ -21,10 +22,16 @@ QUnit.module('workout/EditableWorkout', hooks => {
         testWorkout = new Workout();
         testWorkout.id = 'someuuid';
         testWorkoutExercise = new WorkoutExercise();
+        testWorkoutExercise.orderDef = 1;
         testWorkoutExercise.exerciseId = 'someuuid2';
         testWorkoutExercise.exerciseName = 'exs';
-        testWorkout.exercises = [testWorkoutExercise];
+        testWorkoutExercise2 = new WorkoutExercise();
+        testWorkoutExercise2.orderDef = 2;
+        testWorkoutExercise2.exerciseId = 'someuuid3';
+        testWorkoutExercise2.exerciseName = 'exs2';
+        testWorkout.exercises = [testWorkoutExercise, testWorkoutExercise2];
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        shallowWorkoutBackend.workoutExerciseBackend = Object.create(WorkoutExerciseBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
@@ -160,6 +167,43 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 itu.scryRenderedVNodesWithType(rendered, EditableWorkoutExercise).length,
                 renderedWorkoutExerciseCountBefore - 1,
                 'Pitäisi renderöidä poistettu treeni pois näkymästä'
+            );
+            done();
+        });
+    });
+    QUnit.test('Liikkeen Siirrä alas-painike modal swappaa kahden treenin orderDef-arvot, ja renderöi näkymän', assert => {
+        const workoutExerciseUpdate = sinon.stub(shallowWorkoutBackend.workoutExerciseBackend, 'update').returns(Promise.resolve());
+        const originalWorkoutExerciseList = JSON.parse(JSON.stringify(testWorkout.exercises));
+        const rendered = itu.renderIntoDocument(<EditableWorkout workout={ testWorkout }/>);
+        const firstRenderedWorkoutExerciseBefore = itu.scryRenderedVNodesWithType(rendered, EditableWorkoutExercise)[0];
+        assert.ok(firstRenderedWorkoutExerciseBefore !== undefined);
+        // Klikkaa Siirrä alas-painiketta
+        const moveWorkoutExerciseDownButton = utils.findButtonByAttribute(rendered, 'title', 'Siirrä alas');
+        moveWorkoutExerciseDownButton.click();
+        //
+        assert.ok(workoutExerciseUpdate.calledOnce, 'Pitäisi lähettää uudet orderDef-arvot backendiin');
+        const expectedPUTJSON = JSON.stringify([
+            Object.assign(originalWorkoutExerciseList[1], {orderDef: 1}),
+            Object.assign(originalWorkoutExerciseList[0], {orderDef: 2})
+        ]);
+        assert.deepEqual(JSON.stringify(workoutExerciseUpdate.firstCall.args), `[${expectedPUTJSON}]`,
+            'Pitäisi lähettää treeniliikkeet päivitetyillä orderDef-arvoilla backendiin'
+        );
+        assert.equal(JSON.stringify(testWorkout.exercises), JSON.stringify(originalWorkoutExerciseList),
+            'Ei pitäisi mutatoida props.workout.exercises-listaa ennen toiminnon resolvaamista'
+        );
+        //
+        const done = assert.async();
+        workoutExerciseUpdate.firstCall.returnValue.then(() => {
+            assert.notDeepEqual(
+                itu.scryRenderedVNodesWithType(rendered, EditableWorkoutExercise)[0],
+                firstRenderedWorkoutExerciseBefore,
+                'Pitäisi renderöidä näkymän treeniliikkeet swapattuna'
+            );
+            assert.equal(
+                JSON.stringify(testWorkout.exercises),
+                expectedPUTJSON,
+                'Pitäisi mutatoida props.workout.exercises backend-kutsun jälkeen'
             );
             done();
         });

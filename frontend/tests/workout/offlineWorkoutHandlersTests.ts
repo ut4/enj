@@ -45,7 +45,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
         // Tee jotain muutoksia
-        const workoutsToUpdate = [cacheWorkoutsCopy2[1], cacheWorkoutsCopy2[2]];
+        const workoutsToUpdate = [cacheWorkoutsCopy2[2], cacheWorkoutsCopy2[1]];
         workoutsToUpdate[0].start += 1;
         workoutsToUpdate[1].end = 41;
         // Päivitä kumpikin
@@ -54,7 +54,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
                 'workout',
-                [mockCachedWorkouts[0]].concat(workoutsToUpdate)
+                [mockCachedWorkouts[0], workoutsToUpdate[1], workoutsToUpdate[0]]
             ], 'Pitäisi päivittää treenit treenicacheen');
             assert.equal(result, JSON.stringify({updateCount: 2}), 'Pitäisi palauttaa updateCount');
             done();
@@ -99,7 +99,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         });
     });
     QUnit.test('updateExercises päivittää liikeet treenicacheen, ja palauttaa updateCount:n', assert => {
-        // Lisää pari treeniliikettä
+        // Lisää 1. treenille yksi, ja 2. treenille kaksi treeniliikettä
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         const workoutExercise = new WorkoutExercise();
         workoutExercise.id = 'someuuid10';
@@ -109,8 +109,13 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         workoutExercise2.id = 'someuuid11';
         workoutExercise2.workoutId = cachedWorkoutsCopy[2].id;
         workoutExercise2.exerciseId = 'someuuid21';
+        const workoutExercise3 = new WorkoutExercise();
+        workoutExercise3.id = 'someuuid12';
+        workoutExercise3.workoutId = cachedWorkoutsCopy[2].id;
+        workoutExercise3.exerciseId = 'someuuid22';
         cachedWorkoutsCopy[1].exercises.push(workoutExercise);
         cachedWorkoutsCopy[2].exercises.push(workoutExercise2);
+        cachedWorkoutsCopy[2].exercises.push(workoutExercise3);
         //
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -119,22 +124,31 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         updated1.exerciseId = 'someuuid22';
         updated1.exerciseVariantId = 'someuuid30';
         const updated2 = JSON.parse(JSON.stringify(workoutExercise2));
-        updated2.exerciseId = 'someuuid23';
-        const updatedExercises = [updated1, updated2];
+        updated2.orderDef = 3;
+        const updated3 = JSON.parse(JSON.stringify(workoutExercise3));
+        updated3.orderDef = 2;
+        const updatedExercises = [updated2, updated3, updated1];
         //
         const done = assert.async();
         workoutHandlerRegister.updateExercises(updatedExercises).then(result => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.equal(cacheUpdate.firstCall.args[0], 'workout');
-            assert.equal(JSON.stringify(cacheUpdate.firstCall.args[1]),
-                // Ei pitäisi muuttaa [0], koska eri treeni (id != newWorkoutExercise.workoutId)
-                JSON.stringify([mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
-                    exercises: [updated1]
-                }), Object.assign(mockCachedWorkouts[2], {
-                    exercises: [updated2]
-                })])
-            , 'Pitäisi päivittää tiedot oikeiden treenicache-itemien liikelistoihin');
-            assert.equal(result, JSON.stringify({updateCount: 2}), 'Pitäisi palauttaa updateCount');
+            assert.equal(
+                JSON.stringify(cacheUpdate.firstCall.args[1][0]),
+                JSON.stringify(mockCachedWorkouts[0]),
+                '1. treenin pitäisi pysyä muuttumattomana'
+            );
+            assert.equal(
+                JSON.stringify(cacheUpdate.firstCall.args[1][1]),
+                JSON.stringify(Object.assign(mockCachedWorkouts[1],{exercises:[updated1]})),
+                'Pitäisi päivittää liike siihen kuuluvan treenin listaan'
+            );
+            assert.equal(
+                JSON.stringify(cacheUpdate.firstCall.args[1][2]),
+                JSON.stringify(Object.assign(mockCachedWorkouts[2],{exercises:[updated2, updated3]})),
+                'Pitäisi päivittää liike siihen kuuluvan treenin listaan'
+            );
+            assert.equal(result, JSON.stringify({updateCount: 3}), 'Pitäisi palauttaa updateCount');
             done();
         });
     });

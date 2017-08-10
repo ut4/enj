@@ -6,7 +6,7 @@ import Modal from 'src/ui/Modal';
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
  */
-class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord, onDelete: Function}, any> {
+class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord, onDelete: Function, moveExercise: Function}, any> {
     private openEditModal() {
         Modal.open(() =>
             <WorkoutExerciseModal workoutExercise={ this.props.workoutExercise } afterUpdate={ () => {
@@ -43,8 +43,8 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
             <div class="action-buttons">
                 <button class="icon-button edit" onClick={ () => this.openEditModal() } title="Muokkaa"></button>
                 <button class="icon-button delete" onClick={ () => this.openDeleteModal() } title="Poista"></button>
-                <button class="icon-button arrow up" title="Siirrä ylös"></button>
-                <button class="icon-button arrow down" title="Siirrä alas"></button>
+                <button class="icon-button arrow up" onClick={ () => this.props.moveExercise('up') } title="Siirrä ylös"></button>
+                <button class="icon-button arrow down" onClick={ () => this.props.moveExercise('down') } title="Siirrä alas"></button>
             </div>
         </li>);
     }

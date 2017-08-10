@@ -1,5 +1,6 @@
 import RESTBackend  from 'src/common/RESTBackend';
 import UserState from 'src/user/UserState';
+import { arrayUtils } from 'src/common/utils';
 
 class Workout implements Enj.API.WorkoutRecord {
     public id: AAGUID;
@@ -17,8 +18,8 @@ class Workout implements Enj.API.WorkoutRecord {
  * Vastaa /api/workout -REST-pyynnöistä.
  */
 class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
-    private workoutExerciseBackend: WorkoutExerciseBackend;
     private userState: UserState;
+    public workoutExerciseBackend: WorkoutExerciseBackend;
     constructor(http, urlNamespace, userState: UserState) {
         super(http, urlNamespace);
         this.workoutExerciseBackend = new WorkoutExerciseBackend(http, 'workout/exercise');
@@ -64,8 +65,14 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     /**
      * Sama kuin WorkoutExerciseBackend.update.
      */
-    public updateExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
-        return this.workoutExerciseBackend.update([workoutExercise]);
+    public updateExercise(workoutExercise: Array<Enj.API.WorkoutExerciseRecord>|Enj.API.WorkoutExerciseRecord) {
+        return this.workoutExerciseBackend.update(Array.isArray(workoutExercise) ? workoutExercise : [workoutExercise]);
+    }
+    /**
+     * Sama kuin WorkoutExerciseBackend.swapExercises.
+     */
+    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
+        return this.workoutExerciseBackend.swapExercises(direction, index, list);
     }
     /**
      * Sama kuin WorkoutExerciseBackend.delete.
@@ -99,7 +106,23 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
 /**
  * Vastaa /api/workout/exercise -REST-pyynnöistä.
  */
-class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {}
+class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {
+    /**
+     * Päivittää treeniliikkeiden swapatut orderDef-arvot backendiin, sekä swappaa
+     * itemit keskenään taulukossa {list}.
+     */
+    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
+        const workoutExercise = list[index];
+        if (arrayUtils.swap(list, direction, index)) {
+            const swappedOrderDef = list[index].orderDef;
+            list[index].orderDef = workoutExercise.orderDef;
+            workoutExercise.orderDef = swappedOrderDef;
+            return this.update([list[index], workoutExercise]);
+        } else {
+            throw new Error('Array swap failed.');
+        }
+    }
+}
 
 export default WorkoutBackend;
-export { Workout, WorkoutExercise, WorkoutExerciseSet };
+export { Workout, WorkoutExerciseBackend, WorkoutExercise, WorkoutExerciseSet };

@@ -87,7 +87,7 @@ class OfflineWorkoutHandlerRegister {
             // Päivitä liikkeet niille kuuluvien treenien liikelistoihin
             workoutExercises.forEach(we => {
                 const workoutExerciseListRef = findWorkoutById(we.workoutId, cachedWorkouts).exercises;
-                Object.assign(workoutExerciseListRef.find(we2 => we.id === we.id), we);
+                Object.assign(workoutExerciseListRef.find(we2 => we2.id === we.id), we);
             });
             return {updateCount: workoutExercises.length};
         });
