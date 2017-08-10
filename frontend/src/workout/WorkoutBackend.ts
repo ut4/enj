@@ -20,9 +20,11 @@ class Workout implements Enj.API.WorkoutRecord {
 class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     private userState: UserState;
     public workoutExerciseBackend: WorkoutExerciseBackend;
+    public workoutExerciseSetBackend: WorkoutExerciseSetBackend;
     constructor(http, urlNamespace, userState: UserState) {
         super(http, urlNamespace);
         this.workoutExerciseBackend = new WorkoutExerciseBackend(http, 'workout/exercise');
+        this.workoutExerciseSetBackend = new WorkoutExerciseSetBackend(http, 'workout/exercise/set');
         this.userState = userState;
     }
     /**
@@ -80,6 +82,12 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     public deleteExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
         return this.workoutExerciseBackend.delete(workoutExercise);
     }
+    /**
+     * Sama kuin WorkoutExerciseSetBackend.insert.
+     */
+    public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
+        return this.workoutExerciseSetBackend.insert(set);
+    }
 }
 
 class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
@@ -123,6 +131,11 @@ class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> 
         }
     }
 }
+
+/**
+ * Vastaa /api/workout/exercise/set -REST-pyynnöistä.
+ */
+class WorkoutExerciseSetBackend extends RESTBackend<Enj.API.WorkoutExerciseSetRecord> {}
 
 export default WorkoutBackend;
 export { Workout, WorkoutExerciseBackend, WorkoutExercise, WorkoutExerciseSet };

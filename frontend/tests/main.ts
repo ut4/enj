@@ -22,6 +22,7 @@ import 'tests/workout/EditableWorkoutTests';
 import 'tests/workout/OfflineHandlerRegisterationTests';
 import 'tests/workout/offlineWorkoutHandlersTests';
 import 'tests/workout/WorkoutBackendTests';
+import 'tests/workout/WorkoutExerciseSetCreateModalTests';
 import 'tests/workout/WorkoutViewTests';
 import { mockHistory } from 'tests/mocks';
 import iocFactories from 'src/ioc';

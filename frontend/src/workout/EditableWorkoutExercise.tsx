@@ -1,6 +1,7 @@
 import Component from 'inferno-component';
 import WorkoutExerciseModal from 'src/workout/WorkoutExerciseModal';
 import WorkoutExerciseDeleteModal from 'src/workout/WorkoutExerciseDeleteModal';
+import WorkoutExerciseSetCreateModal from 'src/workout/WorkoutExerciseSetCreateModal';
 import Modal from 'src/ui/Modal';
 
 /**
@@ -21,6 +22,14 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
             } }/>
         );
     }
+    private openSetAddModal() {
+        Modal.open(() =>
+            <WorkoutExerciseSetCreateModal workoutExerciseSet={ {weight: 8, reps: 6, workoutExerciseId: this.props.workoutExercise.id} } afterInsert={ insertedWorkoutExerciseSet => {
+                this.props.workoutExercise.sets.push(insertedWorkoutExerciseSet);
+                this.forceUpdate();
+            } }/>
+        );
+    }
     public render() {
         return (<li>
             <div class="heading">
@@ -37,9 +46,9 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
                     : <div> - </div>
                 }
             </div>
-            <a class="nice-button icon-button add with-text" href={ '#/treeni/' + this.props.workoutExercise.workoutId + '/sarja/lisaa/' + this.props.workoutExercise.id }>
+            <button class="nice-button icon-button add with-text" onClick={ () => this.openSetAddModal() }>
                 Uusi sarja
-            </a>
+            </button>
             <div class="action-buttons">
                 <button class="icon-button edit" onClick={ () => this.openEditModal() } title="Muokkaa"></button>
                 <button class="icon-button delete" onClick={ () => this.openDeleteModal() } title="Poista"></button>

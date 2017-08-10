@@ -64,8 +64,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName);
         const setItems = getRenderedSetItems(rendered);
         assert.equal(setItems.length, 2);
-        assert.equal(setItems[0].textContent, `${set1.weight}kg x ${set1.reps}`);
-        assert.equal(setItems[1].textContent, `${set2.weight}kg x ${set2.reps}`);
+        assert.equal(setItems[0].textContent, getExpectedSetContent(set1));
+        assert.equal(setItems[1].textContent, getExpectedSetContent(set2));
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
         const updateWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'updateExercise').returns(Promise.resolve());
@@ -110,10 +110,51 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             done();
         });
     });
+    QUnit.test('Uusi sarja -painikkeen modal lähettää uuden setin backediin, ja lopuksi renderöi näkymän', assert => {
+        const setInsertCallStub = sinon.stub(shallowWorkoutBackend, 'insertSet').returns(Promise.resolve());
+        testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2}];
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
+        </div>);
+        const renderedSetCountBefore = getRenderedSetItems(rendered).length;
+        // Klikkaa "Uusi sarja" -painiketta
+        const addSetButton = utils.findButtonByContent(rendered, 'Uusi sarja');
+        addSetButton.click();
+        // Hyväksy modal
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        // Assertoi että lähetti datan backendiin
+        assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi treeniliikesetti backediin');
+        const expectedNewSet = {weight: 8, reps: 6, workoutExerciseId: testWorkoutExercise.id};
+        assert.deepEqual(
+            setInsertCallStub.firstCall.args,
+            [expectedNewSet],
+            'Pitäisi lähettää tämä treeniliikesetti'
+        );
+        const done = assert.async();
+        setInsertCallStub.firstCall.returnValue.then(() => {
+            const renderedSetsAfter = getRenderedSetItems(rendered);
+            assert.equal(
+                renderedSetsAfter.length,
+                renderedSetCountBefore + 1,
+                'Pitäisi lisätä setti listaan'
+            );
+            assert.equal(
+                getRenderedSetItems(rendered)[1].textContent,
+                getExpectedSetContent(expectedNewSet as any),
+                'Pitäisi pushata lisätty setti listaan'
+            );
+            done();
+        });
+    });
     function getRenderedExerciseName(rendered): string {
         return itu.findRenderedDOMElementWithClass(rendered, 'heading').textContent;
     }
     function getRenderedSetItems(rendered): HTMLCollection {
         return itu.findRenderedDOMElementWithClass(rendered, 'content').children;
+    }
+    function getExpectedSetContent(data: Enj.API.WorkoutExerciseSetRecord) {
+        return `${data.weight}kg x ${data.reps}`;
     }
 });
