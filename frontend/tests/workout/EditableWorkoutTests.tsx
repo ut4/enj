@@ -41,7 +41,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
         exerciseBackendIocOverride.restore();
     });
     QUnit.test('"Valmis!" päivittää treenin lopetusajan backendiin, ja uudelleenrenderöi komponentin', assert => {
-        testWorkoutExercise.sets = [{id: 'someuuid3', weight: 10, reps: 5}];
+        testWorkoutExercise.sets = [{id: 'someuuid3', weight: 10, reps: 5, workoutExerciseId: testWorkoutExercise.id}];
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
             <EditableWorkout workout={ testWorkout } onDelete={ () => null }/>

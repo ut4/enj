@@ -41,6 +41,7 @@ declare module Enj {
             id: AAGUID;
             weight: number;
             reps: number;
+            workoutExerciseId: AAGUID;
         }
         interface ExerciseVariantRecord {
             id: AAGUID;

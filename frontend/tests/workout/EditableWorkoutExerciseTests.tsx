@@ -112,7 +112,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     });
     QUnit.test('Uusi sarja -painikkeen modal lähettää uuden setin backediin, ja lopuksi renderöi näkymän', assert => {
         const setInsertCallStub = sinon.stub(shallowWorkoutBackend, 'insertSet').returns(Promise.resolve());
-        testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2}];
+        testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2, workoutExerciseId: 'asd'}];
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>

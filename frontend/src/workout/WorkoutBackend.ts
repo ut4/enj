@@ -109,6 +109,7 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
     public id: AAGUID;
     public weight: number;
     public reps: number;
+    public workoutExerciseId: AAGUID;
 }
 
 /**

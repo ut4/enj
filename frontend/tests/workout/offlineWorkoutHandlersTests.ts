@@ -1,7 +1,7 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Offline from 'src/offline/Offline';
-import WorkoutBackend, { Workout, WorkoutExercise } from 'src/workout/WorkoutBackend';
+import WorkoutBackend, { Workout, WorkoutExercise, WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 
 QUnit.module('workout/offlineWorkoutHandlers', hooks => {
@@ -173,6 +173,44 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                 ]
             ], 'Pitäisi poistaa treeni treenicachesta');
             assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteCount');
+            done();
+        });
+    });
+    QUnit.test('isertSet lisää uuden setin treenicacheen, ja palauttaa insertCount:n', assert => {
+        const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
+        // Lisää 2 liikettä keskimmäiseen treeniin
+        const workoutExercise = new WorkoutExercise();
+        workoutExercise.id = 'someuuid10';
+        workoutExercise.workoutId = cachedWorkoutsCopy[1].id;
+        const workoutExercise2 = new WorkoutExercise();
+        workoutExercise2.id = 'someuuid11';
+        workoutExercise2.workoutId = cachedWorkoutsCopy[1].id;
+        cachedWorkoutsCopy[1].exercises.push(workoutExercise);
+        cachedWorkoutsCopy[1].exercises.push(workoutExercise2);
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        // Luo setti & lisää se keskimmäisen treenin toiseen liikkeeseen
+        const newWorkoutExerciseSet = new WorkoutExerciseSet();
+        newWorkoutExerciseSet.weight = 40;
+        newWorkoutExerciseSet.reps = 20;
+        newWorkoutExerciseSet.workoutExerciseId = workoutExercise2.id;
+        const done = assert.async();
+        workoutHandlerRegister.insertSet(newWorkoutExerciseSet).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'workout',
+                // Ei pitäisi muuttaa [0] & [2], koska eri treeni
+                [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
+                    exercises: [
+                        workoutExercise, // Ei pitäisi muuttaa ensimmäistä liikettä
+                        Object.assign(workoutExercise2, {
+                            sets: [newWorkoutExerciseSet]
+                        })
+                    ]
+                }), mockCachedWorkouts[2]]
+            ], 'Pitäisi pushata uusi liike treenicachen oikean treenin oikean liikkeen liikelistaan');
+            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(newWorkoutExerciseSet.id, mockNewUuid, 'Pitäisi luoda setille id');
             done();
         });
     });

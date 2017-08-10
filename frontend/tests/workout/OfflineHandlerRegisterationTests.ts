@@ -4,7 +4,7 @@ import UserState from 'src/user/UserState';
 import Http from 'src/common/Http';
 import OfflineHttp from 'src/common/OfflineHttp';
 import Offline from 'src/offline/Offline';
-import WorkoutBackend, { Workout, WorkoutExercise } from 'src/workout/WorkoutBackend';
+import WorkoutBackend, { Workout, WorkoutExercise, WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 import iocFactories from 'src/ioc';
 
@@ -116,6 +116,21 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
             assert.ok(handlerCallStub.calledOnce);
             assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExercise.id]);
             assert.equal(res, 307, 'Pitäisi palauttaa offline-handlerin palauttama deleteCount');
+            done();
+        });
+    });
+    QUnit.test('workoutBackend.insertSet kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const testWorkoutExerciseSet = new WorkoutExerciseSet();
+        const fetchCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'insertSet').returns(Promise.resolve('{"insertCount": 985}'));
+        //
+        const done = assert.async();
+        workoutBackend.insertSet(testWorkoutExerciseSet).then(res => {
+            //
+            assert.ok(fetchCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExerciseSet]);
+            assert.equal(res, 985, 'Pitäisi palauttaa offline-handlerin palauttama insertCount');
             done();
         });
     });
