@@ -1,11 +1,11 @@
-import ValidatingForm, { messages } from 'src/ui/ValidatingForm';
+import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 
 interface State {
     username: string;
     password: string;
 }
 
-class LoginForm extends ValidatingForm<any, State> {
+class LoginForm extends ValidatingComponent<any, State> {
     public constructor(props, context) {
         props.setEvaluatorValiditiesOnMount = false;
         super(props, context);
@@ -23,12 +23,12 @@ class LoginForm extends ValidatingForm<any, State> {
             <label class="input-set">
                 <span>Käyttäjätunnus</span>
                 <input type="text" name="username" value={ this.state.username } onInput={ e => this.receiveInputValue(e) }/>
-                { this.evaluators.username[0].validity === false && <span class="text-error">Käyttäjätunnus { messages.lengthBetween(2, 42) }</span> }
+                { validationMessage(this.evaluators.username[0], templates => templates.lengthBetween('Käyttäjätunnus', 2, 42)) }
             </label>
             <label class="input-set">
                 <span>Salasana</span>
                 <input type="password" name="password" value={ this.state.password } onInput={ e => this.receiveInputValue(e) }/>
-                { this.evaluators.password[0].validity === false && <span class="text-error">Salasana { messages.minLength(3) }</span> }
+                { validationMessage(this.evaluators.password[0], templates => templates.minLength('Salasana', 3)) }
             </label>
         </div>);
     }

@@ -1,10 +1,10 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
-import ValidatingForm from 'src/ui/ValidatingForm';
+import ValidatingComponent from 'src/ui/ValidatingComponent';
 import itu from 'inferno-test-utils';
 import utils from 'tests/utils';
 
-class SomeForm extends ValidatingForm<any, {somekey: string, another: string}> {
+class SomeComponent extends ValidatingComponent<any, {somekey: string, another: string}> {
     constructor(props, context) {
         super(props, context);
         this.evaluators = {
@@ -29,15 +29,15 @@ class SomeForm extends ValidatingForm<any, {somekey: string, another: string}> {
     }
 }
 
-QUnit.module('ui/ValidatingForm', hooks => {
+QUnit.module('ui/ValidatingComponent', hooks => {
     let validityChangeCallbackSpy = sinon.spy();
     let rendered: any;
-    let someFormInstance: SomeForm;
+    let someFormInstance: SomeComponent;
     let someFormEvaluators: any;
     const render = (setInitials?) => {
         rendered = itu.renderIntoDocument(setInitials === undefined
-            ? <SomeForm onValidityChange={ validityChangeCallbackSpy }/>
-            : <SomeForm onValidityChange={ validityChangeCallbackSpy } setEvaluatorValiditiesOnMount={ setInitials }/>
+            ? <SomeComponent onValidityChange={ validityChangeCallbackSpy }/>
+            : <SomeComponent onValidityChange={ validityChangeCallbackSpy } setEvaluatorValiditiesOnMount={ setInitials }/>
         );
         someFormInstance = rendered.props.children.children;
         someFormEvaluators = someFormInstance.getEvaluators();
