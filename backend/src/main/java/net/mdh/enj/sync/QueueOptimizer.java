@@ -114,7 +114,9 @@ class QueueOptimizer {
         // , ja lisää siihen kaikki kyseisen tyypin insertit
         for (int i: mergables) {
             SyncingInstruction inst = this.instructions.get(i);
-            inst.setCode(SyncingInstruction.Code.SKIP);
+            inst.setCode(inst.getSyncQueueItemIndex() != mainInsert.getSyncQueueItemIndex()
+                ? SyncingInstruction.Code.SKIP
+                : SyncingInstruction.Code.IGNORE);
             mainInsert.addDataPointer(inst.getSyncQueueItemIndex(), inst.getBatchDataIndex());
             inst.setAsProcessed();
         }
@@ -214,6 +216,9 @@ class QueueOptimizer {
                     break;
                 case GROUP :
                     optimized.add(SyncQueueUtils.clone(existing, SyncQueueUtils.makeBatch(inst.getDataPointers(), this.queue)));
+                    break;
+                case IGNORE :
+                    // Do nothing
                     break;
             }
         }

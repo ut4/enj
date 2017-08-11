@@ -57,12 +57,12 @@ class SyncingInstruction {
         @Override
         public String toString() {
             return "SyncingInstruction.Pointer{" +
-                ", syncQueueItemIndex=" + syncQueueItemIndex +
-                ", batchDataIndex=" + (batchDataIndex != null ? batchDataIndex : "null") +
+                "syncQueueItemIndex=" + syncQueueItemIndex +
+                ", batchDataIndex=" + batchDataIndex +
             "}";
         }
     }
     enum Code {
-        SKIP, GROUP, DEFAULT
+        SKIP, GROUP, IGNORE, DEFAULT
     }
 }

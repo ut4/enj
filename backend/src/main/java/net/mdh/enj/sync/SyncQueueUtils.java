@@ -24,7 +24,6 @@ class SyncQueueUtils {
             }
         }
         return list;
-
     }
 
     static void removeBatchItem(int batchIndex, List<SyncQueueItem> from, int itemIndex) {
