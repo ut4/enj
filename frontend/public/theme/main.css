@@ -218,15 +218,22 @@ a.icon-button.with-text:hover {
 }
 .icon-button.edit {
     background-image: url("icon-sprite.svg#edit");
+    background-position: 8px 7px;
 }
-.icon-button.delete {
+.icon-button.delete, .icon-button.delete-black {
     background-image: url("icon-sprite.svg#delete");
-    background-position: 4px 4px;
+    background-position: 5px 5px;
 }
-.icon-button.arrow {
+.icon-button.delete-black {
+    background-image: url("icon-sprite.svg#delete-black");
+}
+.icon-button.arrow, .icon-button.arrow-black {
     transition: transform .1s ease-out;
     background-image: url("icon-sprite.svg#arrow");
     background-size: 20px auto;
+}
+.icon-button.arrow-black {
+    background-image: url("icon-sprite.svg#arrow-black");
 }
 .icon-button.arrow.up {
     transform: rotate(180deg);
@@ -236,6 +243,12 @@ a.icon-button.with-text:hover {
 }
 .icon-button.arrow.left {
     transform: rotate(90deg);
+}
+li:first-of-type .up {
+    display: none;
+}
+li:last-of-type .down {
+    display: none;
 }
 
 /* -- Listat ---------- */
@@ -287,16 +300,39 @@ a.icon-button.with-text:hover {
 }
 .action-buttons .icon-button.edit {
     position: absolute;
-    background-position: 8px 7px;
     left: -5px;
-}
-.action-buttons .icon-button.delete {
-    background-position: 5px 5px;
 }
 .action-buttons .icon-button.arrow.down {
     position: absolute;
     bottom: 8px;
     right: 0;
+}
+li:first-of-type .action-buttons .arrow.down {
+    position: static;
+}
+
+/* -- Taulukot ---------- */
+table {
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    border-spacing: 0;
+    max-width: 100%;
+    width: 100%;
+}
+table th {
+    padding-right: 10px;
+    text-align: left;
+}
+table tr:nth-of-type(2n), .striped:nth-of-type(2n) {
+    background-color: #ECECEC;
+}
+table td {
+    padding: 6px 10px 6px 0;
+    text-align: left;
+    vertical-align: top;
+}
+table td:first-child {
+    padding-left: 4px;
 }
 
 /* -- Notifier ---------- */
@@ -393,6 +429,20 @@ input[type="date"] {
 .form-buttons .nice-button {
     min-width: 60px;
     width: 20%;
+}
+table .input-set {
+    max-width: 48%;
+    margin: 0 2% 0 0;
+}
+table .input-set > span:first-of-type {
+    display: none;
+}
+table .input-set input {
+    margin: 0 0 0 2px;
+}
+table .input-set .text-error {
+    font-size: 12px;
+    position: absolute;
 }
 
 /* -- Modal ---------- */
@@ -597,6 +647,12 @@ footer a {
 .workout-timer { float: left; margin-bottom: 10px; }
 .workout-timer + button { float: right; margin-top: -7px; }
 .editable-workout > ul:first-of-type { clear: both;}
+
+.workout-exercise-modal table { width: auto }
+.workout-exercise-modal table .icon-button { opacity: .25 }
+.workout-exercise-modal table tr:last-of-type .arrow-black {
+    transform: rotate(180deg);
+}
 
 /* ==== Media queries ====
 ==============================================================================*/

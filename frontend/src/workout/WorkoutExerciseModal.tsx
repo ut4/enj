@@ -1,5 +1,6 @@
 import Component from 'inferno-component';
 import { WorkoutExercise } from 'src/workout/WorkoutBackend';
+import EditableWorkoutExerciseSetList from 'src/workout/EditableWorkoutExerciseSetList';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
 import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
@@ -44,12 +45,15 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         );
     }
     public render() {
-        return <div>
+        return <div class="workout-exercise-modal">
             <h3>{ this.isInsert ? 'Lisää liike treeniin' : 'Muokkaa treeniliikettä' }</h3>
             <ExerciseSelector
-                initialExerciseId={ this.props.workoutExercise.exerciseId }
-                initialExerciseVariantId={ this.props.workoutExercise.exerciseVariantId }
+                initialExerciseId={ this.state.workoutExercise.exerciseId }
+                initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
                 onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
+            { this.state.workoutExercise.sets.length &&
+                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } }/>
+            }
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exerciseId } autoCloseOnConfirm={ true }/>
         </div>;
     }
