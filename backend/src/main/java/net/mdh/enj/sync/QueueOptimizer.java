@@ -8,9 +8,9 @@ import javax.ws.rs.HttpMethod;
 
 class QueueOptimizer {
 
-    static final int DELETIONS     = 2;
-    static final int GROUP_INSERTS = 4;
-    static final int ALL           = 6;
+    static final int REMOVE_NONEXISTING = 2;
+    static final int GROUP_INSERTS      = 4;
+    static final int ALL                = 6;
 
     private final List<SyncQueueItem> queue;
     private final List<SyncingInstruction> instructions;
@@ -23,18 +23,18 @@ class QueueOptimizer {
     /**
      * Palauttaa optimoidun SyncQueueItem-listan {optimizations} optimisaatioilla.
      *
-     * optimize(QueueOptimizer.DELETIONS)     - Poistaa CRUD-operaatiot, joiden data poistetaan myöhemmin
-     * optimize(QueueOptimizer.GROUP_INSERTS) - Ryhmittelee samantyyppiset CREATE-operaatiot
-     * optimize(QueueOptimizer.ALL)           - Kaikki optimisaatiot
+     * optimize(QueueOptimizer.REMOVE_NONEXISTING) - Poistaa CRUD-operaatiot, joiden data poistetaan myöhemmin
+     * optimize(QueueOptimizer.GROUP_INSERTS)      - Ryhmittelee samantyyppiset CREATE-operaatiot
+     * optimize(QueueOptimizer.ALL)                - Kaikki optimisaatiot
      */
     List<SyncQueueItem> optimize(int optimizations) {
         if (this.instructions == null) {
             return this.queue;
         }
-        if ((optimizations & DELETIONS) > 0) {
+        if ((optimizations & REMOVE_NONEXISTING) > 0) {
             this.traverse((item, s) -> {
-                if (// Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
-                    !item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
+                // Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
+                if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
                     this.removeFutureDeletedOccurences(getDataIdentity(item, s), this.instructions.indexOf(s));
                 }
             });
@@ -64,7 +64,7 @@ class QueueOptimizer {
      * lisätä tai päivittää turhaan, jos data kuitenkin lopuksi poistetaan?).
      */
     private void removeFutureDeletedOccurences(String dataUUID, int indexToProcess) {
-        List<Integer> skippables = new ArrayList<>();
+        List<Integer> removables = new ArrayList<>();
         boolean hasLaterDeletion = false;
         //
         // Käänteisessä järjestyksessä prosessoitavaan indeksiin asti.
@@ -74,16 +74,16 @@ class QueueOptimizer {
                 // Löytyikö DELETE-${uuid} operaatio?
                 if (operation.equals(HttpMethod.DELETE + "-" + dataUUID)) {
                     hasLaterDeletion = true;
-                    skippables.add(i);
-                    // Itemillä oli DELETE-${uuid} operaatio, merkkaa kaikki skipattavaksi
+                    removables.add(i);
+                // Itemillä oli DELETE-${uuid} operaatio, merkkaa kaikki poistettavaksi
                 } else if (hasLaterDeletion && operation.endsWith(dataUUID)) {
-                    skippables.add(i);
+                    removables.add(i);
                 }
             }
         }
-        for (int i: skippables) {
+        for (int i: removables) {
             SyncingInstruction inst = this.instructions.get(i);
-            inst.setCode(SyncingInstruction.Code.SKIP);
+            inst.setCode(SyncingInstruction.Code.REMOVE);
             inst.setAsProcessed();
         }
     }
@@ -115,7 +115,7 @@ class QueueOptimizer {
         for (int i: mergables) {
             SyncingInstruction inst = this.instructions.get(i);
             inst.setCode(inst.getSyncQueueItemIndex() != mainInsert.getSyncQueueItemIndex()
-                ? SyncingInstruction.Code.SKIP
+                ? SyncingInstruction.Code.REMOVE
                 : SyncingInstruction.Code.IGNORE);
             mainInsert.addDataPointer(inst.getSyncQueueItemIndex(), inst.getBatchDataIndex());
             inst.setAsProcessed();
@@ -208,7 +208,7 @@ class QueueOptimizer {
                         optimized.add(existing);
                     }
                     break;
-                case SKIP :
+                case REMOVE :
                     int i = optimized.indexOf(existing);
                     if (inst.isPartOfBatch() && i > -1) {
                         SyncQueueUtils.removeBatchItem(inst.getBatchDataIndex(), optimized, i);

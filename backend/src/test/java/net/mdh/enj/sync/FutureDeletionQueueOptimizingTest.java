@@ -23,7 +23,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (3)
         expected.add(ordered.get(4));
         Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun itemin kaikki esiintymät",
-            expected.toString(), new QueueOptimizer(ordered).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(ordered).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
     @Test
@@ -43,7 +43,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(unordered.get(4));
         Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun itemin kaikki " +
             "esiintymät, vaikkei ne olisi järjestyksessä",
-            expected.toString(), new QueueOptimizer(unordered).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(unordered).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
     @Test
@@ -64,7 +64,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi poistaa arvo batch-datasta, eikä sync-itemiä itsessään," +
             " koska batch-datan toista arvoa ei poisteta",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
     @Test
@@ -88,7 +88,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (4)
         // Pitäisi poistaa (5)
         Assert.assertEquals("Pitäisi batch-data-itemi kokonaan",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
     @Test
@@ -107,7 +107,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(3));
         expected.add(input.get(4));
         Assert.assertEquals("Ei pitäisi poistaa itemeitä, joiden data on jo tietokannassa",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
     @Test
@@ -120,7 +120,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(0));
         expected.add(input.get(1));
         Assert.assertEquals("Ei pitäisi poistaa itemeitä, joiden data on jo tietokannassa2",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.DELETIONS).toString()
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
 }

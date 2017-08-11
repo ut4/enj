@@ -63,6 +63,6 @@ class SyncingInstruction {
         }
     }
     enum Code {
-        SKIP, GROUP, IGNORE, DEFAULT
+        REMOVE, GROUP, IGNORE, DEFAULT
     }
 }
