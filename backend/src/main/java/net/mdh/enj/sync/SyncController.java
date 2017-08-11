@@ -26,17 +26,14 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class SyncController {
 
-    private final SyncRouteRegister registeredSyncRoutes;
     private final HttpClient appHttpClient;
     private final RequestContext requestContext;
 
     @Inject
     public SyncController(
-        SyncRouteRegister registeredSyncRoutes,
         HttpClient appHttpClient,
         RequestContext requestContext
     ) {
-        this.registeredSyncRoutes = registeredSyncRoutes;
         this.appHttpClient = appHttpClient;
         this.requestContext = requestContext;
     }
@@ -56,16 +53,17 @@ public class SyncController {
                 idsOfSuccesfullySyncedItems.add(syncable.getId());
                 continue;
             }
+            // Suorita synkkaus HTTP:lla
             Response syncResponse = this.callSyncableResource(syncable);
-            // Vastaus ok, lisää itemin id paluuarvoon
+            // Jos vastaus oli ok, lisää itemin id vastaustaulukkoon
             if (syncResponse.getStatus() >= 200 && syncResponse.getStatus() < 300) {
                 idsOfSuccesfullySyncedItems.add(syncable.getId());
-                // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
-                // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
+            // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
+            // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
             } else if (idsOfSuccesfullySyncedItems.size() > 0) {
                 syncResponse.close();
                 break;
-                // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
+            // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
             } else {
                 throw new ClientErrorException(syncResponse);
             }
@@ -77,14 +75,15 @@ public class SyncController {
      * Lähettää HTTP-pyynnön {syncableItem}:in routen määrittelemään urliin.
      */
     private Response callSyncableResource(SyncQueueItem syncableItem) throws JsonProcessingException {
-        //
-        // Note - match pitäisi löytyä aina, koska arvo jo validoitu SyncQueueItem-beanissa.
-        SyncRoute routeMatch = this.registeredSyncRoutes.find(syncableItem.getRoute());
-        // Suorita synkkaus HTTP:lla
-        System.out.println(routeMatch.getUrl());
-        return this.appHttpClient.target(routeMatch.getUrl())
+        Route route = syncableItem.getRoute();
+        return this.appHttpClient.target(route.getUrl())
             .request(MediaType.APPLICATION_JSON)
             .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
-            .method(routeMatch.getMethod(), Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData())));
+            .method(
+                route.getMethod(),
+                !route.getMethod().equals("DELETE")
+                    ? Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData()))
+                    : null
+            );
     }
 }

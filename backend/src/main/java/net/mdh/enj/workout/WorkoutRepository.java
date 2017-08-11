@@ -1,13 +1,12 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.db.DataSourceFactory;
-import net.mdh.enj.exercise.ExerciseRepository;
+import net.mdh.enj.mapping.SubCollector;
 import net.mdh.enj.mapping.BasicRepository;
 import net.mdh.enj.mapping.NoDupeRowMapper;
-import net.mdh.enj.mapping.SubCollector;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import javax.inject.Inject;
 import java.sql.SQLException;
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -92,14 +91,10 @@ public class WorkoutRepository extends BasicRepository<Workout> {
 
             private static final String ID_COL = "workoutExerciseId";
             private final SubCollector<Workout.Exercise.Set> setCollector;
-            private final ExerciseRepository.ExerciseMapper exerciseMapper;
-            private final ExerciseRepository.ExerciseMapper.ExerciseVariantMapper exerciseVariantMapper;
 
             private WorkoutExerciseMapper() {
                 super(ID_COL);
                 this.setCollector = new SubCollector<>(new SetMapper(), ID_COL);
-                this.exerciseMapper = new ExerciseRepository.ExerciseMapper();
-                this.exerciseVariantMapper = new ExerciseRepository.ExerciseMapper.ExerciseVariantMapper();
             }
 
             @Override
@@ -108,9 +103,11 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                 workoutExercise.setId(rs.getString(ID_COL));
                 workoutExercise.setOrderDef(rs.getInt("workoutExerciseOrderDef"));
                 workoutExercise.setWorkoutId(rs.getString("workoutExerciseWorkoutId"));
+                workoutExercise.setExerciseId(rs.getString("exerciseId"));
+                workoutExercise.setExerciseName(rs.getString("exerciseName"));
+                workoutExercise.setExerciseVariantId(rs.getString("exerciseVariantId"));
+                workoutExercise.setExerciseVariantContent(rs.getString("exerciseVariantContent"));
                 workoutExercise.setSets(this.setCollector.collect(rs, rowNum, workoutExercise.getId()));
-                workoutExercise.setExercise(this.exerciseMapper.doMapRow(rs, rowNum));
-                workoutExercise.setExerciseVariant(this.exerciseVariantMapper.doMapRow(rs, rowNum));
                 return workoutExercise;
             }
 

@@ -49,8 +49,8 @@ public class TestData {
         data.put("id", TEST_WORKOUT_EXERCISE_ID);
         data.put("orderDef", 102);
         data.put("workoutId", ((Map) parentWorkoutData).get("id"));
-        data.put("exercise", exercise);
-        data.put("exerciseVariant", new Exercise.Variant());
+        data.put("exerciseId", exercise.getId());
+        data.put("exerciseVariantId", null);
         return data;
     }
 

@@ -22,7 +22,6 @@ import org.junit.Test;
 public class SyncingTest extends RollbackingDBJerseyTest {
 
     private static DbTestUtils utils;
-    private static SyncRouteRegister syncRouteRegister;
     private static Exercise testExercise;
 
     @BeforeClass
@@ -31,14 +30,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         testExercise = new Exercise();
         testExercise.setName("exs");
         utils.insertExercise(testExercise);
-        // Täytä SyncRouteRegister manuaalisesti, jonka net.mdh.enj.SyncRouteCollector
-        // normaalisti suorittaa
-        syncRouteRegister = SyncingTestUtils.getManuallyPopulateSyncRouteRegister();
     }
 
     @Override
     public ResourceConfig configure() {
-        return SyncingTestUtils.getResourceConfig(rollbackingDSFactory, syncRouteRegister, SyncingTest.this);
+        return SyncTestUtils.configure(rollbackingDSFactory, SyncingTest.this);
     }
 
     @Test
@@ -69,7 +65,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienTempIdt() {
+    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienIdt() {
         // Luo testidata
         List<SyncQueueItem> testSyncQueue = this.makeTestSyncQueue();
         Map testWorkoutSyncData = (Map) testSyncQueue.get(0).getData();
@@ -114,18 +110,17 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     @Test
     public void syncAllSisällyttääPyynnönAuhtorizationHeaderinSynkkauspyyntöön() {
-        SyncRoute testRoute = new SyncRoute("test", "PUT");
-        syncRouteRegister.add(testRoute);
         List<SyncQueueItem> testQueue = new ArrayList<>();
         SyncQueueItem testItem = new SyncQueueItem();
         testItem.setId(3);
         testItem.setData(TestData.getSomeJunkData());
-        testItem.setRoute(testRoute);
+        testItem.setRoute(new Route("test", "PUT"));
         testQueue.add(testItem);
         //
         Response response = this.newPostRequest("sync", testQueue, requestBuilder ->
             requestBuilder.header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER)
         );
+        Assert.assertEquals(200, response.getStatus());
         //
         Assert.assertEquals("Pitäisi sisällyttää Authorization-header synkkauspyyntöihin",
             TestData.MOCK_AUTH_HEADER, TestController.receivedAuthHeaderValue
