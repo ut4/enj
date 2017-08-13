@@ -15,14 +15,6 @@ class QueueOptimizingTestCase {
     List<SyncQueueItem> jsonToSyncQueue(String json) throws IOException {
         return this.objectMapper.readValue(json, new TypeReference<List<SyncQueueItem>>() {});
     }
-    SyncQueueItem getItemWithExpectedBatch(SyncQueueItem item, int... batchIndexes) {
-        List originalBatch = (List) item.getData();
-        List<Object> reducedBatch = new ArrayList<>();
-        for (int i: batchIndexes) {
-            reducedBatch.add(originalBatch.get(i));
-        }
-        return SyncQueueUtils.clone(item, reducedBatch);
-    }
     List<Object> makeBatch(Object... batchItems) {
         List<Object> list = new ArrayList<>();
         list.addAll(Arrays.asList(batchItems));

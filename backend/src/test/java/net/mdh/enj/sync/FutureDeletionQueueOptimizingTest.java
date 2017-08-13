@@ -60,7 +60,9 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
         // Pitäisi poistaa (1)
-        expected.add(this.getItemWithExpectedBatch(input.get(2), 0));
+        expected.add(SyncQueueUtils.clone(input.get(2), this.makeBatch(
+            ((List)input.get(2).getData()).get(0)
+        )));
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi poistaa arvo batch-datasta, eikä sync-itemiä itsessään," +
             " koska batch-datan toista arvoa ei poisteta",

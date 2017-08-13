@@ -37,7 +37,7 @@ class QueueOptimizer {
             this.traverse((item, s) -> {
                 // Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
                 if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-                    this.removeFutureDeletedOccurences(item, s);
+                    this.optimizeFutureDeletedOperations(item, s);
                 }
             });
         }
@@ -47,7 +47,7 @@ class QueueOptimizer {
                 if (!s.getIsProcessed() &&
                     (method.equals(HttpMethod.POST) ||
                     method.equals(HttpMethod.PUT))) {
-                    this.removeFutureUpdatedOccurences(item, s);
+                    this.optimizeFutureUpdatedOperations(item, s);
                 }
             });
         }
@@ -55,7 +55,7 @@ class QueueOptimizer {
             this.traverse((item, s) -> {
                 if (!s.getIsProcessed() &&
                     item.getRoute().getMethod().equals(HttpMethod.POST)) {
-                    this.groupInsertOccurences(item, this.instructions.indexOf(s));
+                    this.groupInsertOperations(item, this.instructions.indexOf(s));
                 }
             });
         }
@@ -72,11 +72,12 @@ class QueueOptimizer {
     }
 
     /**
-     * Poistaa itemin kaikki esiintymät, jos se poistetaan jonossa myöhemmin (miksi
-     * lisätä tai päivittää turhaan, jos data kuitenkin lopuksi poistetaan?).
+     * Merkkaa itemin CRUD-operaatiot skipattavaksi, jos sen data poistetaan
+     * jonossa myöhemmin (miksi lisätä tai päivittää turhaan, jos data kuitenkin
+     * lopuksi poistetaan?).
      */
-    private void removeFutureDeletedOccurences(SyncQueueItem item, SyncingInstruction s) {
-        List<Integer> removables = this.getOutdatedOccurences(item, s, HttpMethod.DELETE);
+    private void optimizeFutureDeletedOperations(SyncQueueItem item, SyncingInstruction s) {
+        List<Integer> removables = this.getOutdatedOperations(item, s, HttpMethod.DELETE);
         for (int i: removables) {
             SyncingInstruction inst = this.instructions.get(i);
             inst.setCode(SyncingInstruction.Code.IGNORE);
@@ -85,11 +86,12 @@ class QueueOptimizer {
     }
 
     /**
-     * Poistaa itemin kaikki esiintymät, jos se päivitetään jonossa myöhemmin (miksi
-     * lisätä tai päivittää turhaan, jos data ylikirjoitetaan myöhemmin?).
+     * Merkkaa itemin CRUD-operaatiot skipattavaksi, jos sen data päivitetään
+     * jonossa myöhemmin (miksi lisätä tai päivittää turhaan, jos data kuitenkin
+     * ylikirjoitetaan myöhemmin?).
      */
-    private void removeFutureUpdatedOccurences(SyncQueueItem item, SyncingInstruction s) {
-        List<Integer> removables = this.getOutdatedOccurences(item, s, HttpMethod.PUT);
+    private void optimizeFutureUpdatedOperations(SyncQueueItem item, SyncingInstruction s) {
+        List<Integer> removables = this.getOutdatedOperations(item, s, HttpMethod.PUT);
         if (removables.size() < 2) {
             return;
         }
@@ -112,7 +114,7 @@ class QueueOptimizer {
      * Palauttaa kaikki {item}in CRUD-operaatiot, jotka poistetaan / ylikirjoitetaan
      * jonossa myöhemmin.
      */
-    private List<Integer> getOutdatedOccurences(SyncQueueItem item, SyncingInstruction s, String method) {
+    private List<Integer> getOutdatedOperations(SyncQueueItem item, SyncingInstruction s, String operationMethod) {
         String dataUUID = getDataId(item, s);
         int startingIndex = this.instructions.indexOf(s);
         List<Integer> outdated = new ArrayList<>();
@@ -123,7 +125,7 @@ class QueueOptimizer {
             if (!si.getIsProcessed()) {
                 String operation = getOpIdentity(si);
                 // Löytyikö PUT|DELETE-${uuid} operaatio?
-                if (operation.equals(method + "-" + dataUUID)) {
+                if (operation.equals(operationMethod + "-" + dataUUID)) {
                     hasNewerData = true;
                     outdated.add(i);
                 // Itemillä oli PUT|DELETE-${uuid} operaatio, lisää listaan
@@ -136,10 +138,10 @@ class QueueOptimizer {
     }
 
     /**
-     * Ryhmittelee samantyppiset POST-operaatiot yhteen (miksi suorittaa useita
-     * POST-pyyntöjä jos ne voi tehdä kerralla?).
+     * Merkkaa samantyppiset POST-operaatiot ryhmiteltäväksi yhteen (miksi suorittaa
+     * useita POST-pyyntöjä jos ne voi tehdä kerralla?).
      */
-    private void groupInsertOccurences(SyncQueueItem insertItem, int indexToProcess) {
+    private void groupInsertOperations(SyncQueueItem insertItem, int indexToProcess) {
         List<Integer> mergables = new ArrayList<>();
         // Prosessoitavasta indeksista loppuun
         for (int i = indexToProcess; i < this.instructions.size(); i++) {
@@ -168,7 +170,7 @@ class QueueOptimizer {
 
     /**
      * Palauttaa merkkijonon, jolla voidaan identifioida synkattavan itemin CRUD-
-     * operaatio, ja siihen liittyvä data/uuid. Esim. DELETE-${uuid}, POST-${uuid}
+     * operaatio, ja siihen liittyvä data.
      */
     private String getOpIdentity(SyncingInstruction s) {
         SyncQueueItem item = this.queue.get(s.getSyncQueueItemIndex());
@@ -200,7 +202,7 @@ class QueueOptimizer {
     }
 
     /**
-     * Palauttaa {pointers}:n viittaamaan datan syncQueue:sta.
+     * Palauttaa {pointers}:n viittaaman datan syncQueue:sta.
      */
     private Object getData(List<SyncingInstruction.Pointer> pointers) {
         SyncingInstruction.Pointer pointer = pointers.get(0);
