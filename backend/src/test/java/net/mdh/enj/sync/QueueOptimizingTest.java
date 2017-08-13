@@ -24,16 +24,16 @@ public class QueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
-        expected.add(input.get(1));
-        expected.add(input.get(2));
+        expected.add(SyncQueueUtils.clone(input.get(1),
+            input.get(2).getData()
+        ));
+        // Pitäisi poistaa (2)
         // Pitäisi poistaa (3)
         expected.add(SyncQueueUtils.clone(input.get(4), this.makeBatch(
             input.get(4).getData(),
             input.get(5).getData()
         )));
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
-        Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen vaikkei ne olisi järjestyksessä",
-            expected.toString(), i.toString()
-        );
+        Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expected.toString(), i.toString());
     }
 }

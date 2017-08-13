@@ -2,14 +2,17 @@ package net.mdh.enj.sync;
 
 import java.util.ArrayList;
 import java.util.List;
+
 class SyncingInstruction {
     private Code code;
+    private Pointer originalDataPointer;
     private List<Pointer> dataPointers;
     private boolean isProcessed;
+    public boolean replaced = false;
     SyncingInstruction(Code code, int syncQueueItemIndex, Integer batchDataIndex) {
         this.code = code;
+        this.originalDataPointer = new Pointer(syncQueueItemIndex, batchDataIndex);
         this.dataPointers = new ArrayList<>();
-        this.addDataPointer(syncQueueItemIndex, batchDataIndex);
         this.isProcessed = false;
     }
     void setCode(Code code) {
@@ -19,16 +22,19 @@ class SyncingInstruction {
         return this.code;
     }
     int getSyncQueueItemIndex() {
-        return this.dataPointers.get(0).syncQueueItemIndex;
+        return this.originalDataPointer.syncQueueItemIndex;
     }
     Integer getBatchDataIndex() {
-        return this.dataPointers.get(0).batchDataIndex;
+        return this.originalDataPointer.batchDataIndex;
     }
     void addDataPointer(int syncQueueItemIndex, Integer batchDataIndex) {
         this.dataPointers.add(new Pointer(syncQueueItemIndex, batchDataIndex));
     }
     List<Pointer> getDataPointers() {
         return this.dataPointers;
+    }
+    Pointer getOriginalDataPointer() {
+        return this.originalDataPointer;
     }
     boolean isPartOfBatch() {
         return this.getBatchDataIndex() != null;
@@ -43,6 +49,7 @@ class SyncingInstruction {
     public String toString() {
         return "SyncingInstruction{" +
             "code=" + code.name() +
+            ", originalDataPointer=" + this.originalDataPointer +
             ", dataPointers=" + this.getDataPointers() +
             ", isProcessed=" + (isProcessed ? "true" : "false") +
         "}";
@@ -63,6 +70,6 @@ class SyncingInstruction {
         }
     }
     enum Code {
-        REMOVE, GROUP, IGNORE, DEFAULT
+        IGNORE, REPLACE, GROUP, DEFAULT
     }
 }

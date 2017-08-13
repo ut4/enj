@@ -25,14 +25,9 @@ class SyncQueueUtils {
         }
         return list;
     }
-
-    static void removeBatchItem(int batchIndex, List<SyncQueueItem> from, int itemIndex) {
-        // Kuuluu batchiin -> poista se sieltä
-        List list = (List) from.get(itemIndex).getData();
-        list.remove(batchIndex);
-        // Batchiin ei jäänyt dataa -> poista itemi kokonaan
-        if (list.isEmpty()) {
-            from.remove(from.get(itemIndex));
-        }
+    static Object makeBatch(SyncingInstruction.Pointer pointer, List<SyncQueueItem> queue) {
+        List<SyncingInstruction.Pointer> pointers = new ArrayList<>();
+        pointers.add(pointer);
+        return makeBatch(pointers, queue);
     }
 }
