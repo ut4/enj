@@ -35,6 +35,9 @@ class OfflineWorkoutHandlerRegister {
         offlineHttp.addHandler('POST', 'workout/exercise/set', workoutExerciseSet =>
             this.insertSet(workoutExerciseSet)
         );
+        offlineHttp.addHandler('PUT', 'workout/exercise/set', workoutExerciseSets =>
+            this.updateSets(workoutExerciseSets)
+        );
         offlineHttp.addHandler('DELETE', 'workout/exercise/set/*', workoutExerciseSet =>
             this.deleteSet(workoutExerciseSet)
         );
@@ -124,6 +127,19 @@ class OfflineWorkoutHandlerRegister {
             workoutRef.exercises[exerciseIndex].sets.push(set);
             //
             return {insertCount: 1};
+        });
+    }
+    /**
+     * Handlaa PUT /api/workout/exercise/set REST-kutsun offline-tilan aikana.
+     */
+    public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>) {
+        return this.updateCache(cachedWorkouts => {
+            // Päivitä setit niille kuuluvien treeniliikeiden settilistoihin
+            workoutExerciseSets.forEach(wes => {
+                const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(wes.workoutExerciseId, cachedWorkouts);
+                Object.assign(workoutRef.exercises[exerciseIndex].sets.find(wes2 => wes2.id === wes.id), wes);
+            });
+            return {updateCount: workoutExerciseSets.length};
         });
     }
     /**
