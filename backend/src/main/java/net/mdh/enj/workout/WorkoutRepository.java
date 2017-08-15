@@ -101,7 +101,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
             public Workout.Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Workout.Exercise workoutExercise = new Workout.Exercise();
                 workoutExercise.setId(rs.getString(ID_COL));
-                workoutExercise.setOrderDef(rs.getInt("workoutExerciseOrderDef"));
+                workoutExercise.setOrdinal(rs.getInt("workoutExerciseOrdinal"));
                 workoutExercise.setWorkoutId(rs.getString("workoutExerciseWorkoutId"));
                 workoutExercise.setExerciseId(rs.getString("exerciseId"));
                 workoutExercise.setExerciseName(rs.getString("exerciseName"));

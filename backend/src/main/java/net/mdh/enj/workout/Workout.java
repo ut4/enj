@@ -73,7 +73,7 @@ public class Workout extends DbEntity {
      */
     @Produces(MediaType.APPLICATION_JSON)
     public static class Exercise extends DbEntity {
-        private int orderDef;
+        private int ordinal;
         @UUID
         private String workoutId;
         @UUID
@@ -84,11 +84,11 @@ public class Workout extends DbEntity {
         private String exerciseVariantId;
         private String exerciseVariantContent;
 
-        public int getOrderDef() {
-            return this.orderDef;
+        public int getOrdinal() {
+            return this.ordinal;
         }
-        public void setOrderDef(int orderDef) {
-            this.orderDef = orderDef;
+        public void setOrdinal(int ordinal) {
+            this.ordinal = ordinal;
         }
 
         public String getWorkoutId() {
@@ -137,7 +137,7 @@ public class Workout extends DbEntity {
         public String toString() {
             return "Workout.Exercise{" +
                 "id=" + this.getId() +
-                ", orderDef=" + this.getOrderDef() +
+                ", ordinal=" + this.getOrdinal() +
                 ", workoutId=" + this.getWorkoutId() +
                 ", exerciseId=" + this.getExerciseId() +
                 ", exerciseName=" + this.getExerciseName() +

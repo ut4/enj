@@ -94,17 +94,17 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         );
         //
         Workout.Exercise syncedWorkoutExercise = (Workout.Exercise) utils.selectOneWhere(
-            "SELECT orderDef FROM workoutExercise WHERE id = :id",
+            "SELECT ordinal FROM workoutExercise WHERE id = :id",
             new MapSqlParameterSource().addValue("id", testWorkoutExerciseSyncData.get("id")),
             (rs, i) -> {
                 Workout.Exercise we = new Workout.Exercise();
-                we.setOrderDef(rs.getInt("orderDef"));
+                we.setOrdinal(rs.getInt("ordinal"));
                 return we;
             }
         );
         Assert.assertNotNull("Synkattava data pitäisi insertoitua tietokantaan", syncedWorkoutExercise);
         Assert.assertEquals("Tietokantaan synkattu treeniliike pitäisi sisältää sama data kuin inputissa",
-            testWorkoutExerciseSyncData.get("orderDef"), syncedWorkoutExercise.getOrderDef()
+            testWorkoutExerciseSyncData.get("ordinal"), syncedWorkoutExercise.getOrdinal()
         );
     }
 

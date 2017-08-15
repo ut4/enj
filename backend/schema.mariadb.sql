@@ -66,7 +66,7 @@ CREATE TABLE workout (
 
 CREATE TABLE workoutExercise (
     id CHAR(36) NOT NULL,
-    orderDef TINYINT UNSIGNED NOT NULL,
+    ordinal TINYINT UNSIGNED NOT NULL,
     workoutId CHAR(36) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     exerciseVariantId CHAR(36) DEFAULT NULL,
@@ -125,7 +125,7 @@ CREATE VIEW workoutView AS
 CREATE VIEW workoutExerciseView AS
     SELECT
         we.id         AS workoutExerciseId,
-        we.orderDef   AS workoutExerciseOrderDef,
+        we.ordinal    AS workoutExerciseOrdinal,
         we.workoutId  AS workoutExerciseWorkoutId,
         e.id          AS exerciseId,
         e.`name`      AS exerciseName,
