@@ -2,8 +2,8 @@ package net.mdh.enj.sync;
 
 public class Route {
 
-    private String url;
-    private String method;
+    protected String url;
+    protected String method;
 
     Route() {}
     public Route(String url, String method) {

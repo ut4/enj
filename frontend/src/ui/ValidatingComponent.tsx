@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 
 interface Props {
-    onValidityChange: (newValidity: boolean) => void;
+    onValidityChange?: (newValidity: boolean) => void;
     setEvaluatorValiditiesOnMount?: boolean;
 }
 
@@ -15,7 +15,7 @@ interface evaluator {
     validity?: boolean;
 }
 
-abstract class ValidatingForm<P, S> extends Component<P & Props, S & State> {
+abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State> {
     /**
      * key = input-elementin name-attribuutti, value = taulukko evaluaattoreita
      */
@@ -60,7 +60,7 @@ abstract class ValidatingForm<P, S> extends Component<P & Props, S & State> {
             this.evaluators[inputName].some(ev => ev.validity !== true)
         );
         if (newValidity !== this.state.validity) {
-            this.props.onValidityChange(newValidity);
+            this.props.onValidityChange && this.props.onValidityChange(newValidity);
             newState.validity = newValidity;
         }
         this.setState(newState);
@@ -71,10 +71,20 @@ abstract class ValidatingForm<P, S> extends Component<P & Props, S & State> {
     public abstract render(): string;
 }
 
-const messages = {
-    minLength: (min) => `pitäisi olla vähintään ${min} merkkiä pitkä`,
-    lengthBetween: (min, max) => `pitäisi olla ${min} - ${max} merkkiä pitkä`
+const templates = {
+    minLength: (field, min) => `${field} tulisi olla vähintään ${min} merkkiä pitkä`,
+    lengthBetween: (field, min, max) => `${field} tulisi olla ${min} - ${max} merkkiä pitkä`,
+    between: (field, min, max) => `${field} tulisi olla arvo väliltä ${min} - ${max}`,
+    number: (field) => `${field} tulisi olla numero`
 };
 
-export default ValidatingForm;
-export { messages };
+/**
+ * Funktionaalinen komponentti, joka renderöi messageFn:n palauttaman virheviestin,
+ * jos evaluator.validity = false.
+ */
+const validationMessage = (evaluator: evaluator, messageFn: Function) => evaluator.validity === false && <span class="text-error">
+    { messageFn(templates) }
+</span>;
+
+export default ValidatingComponent;
+export { validationMessage, templates };

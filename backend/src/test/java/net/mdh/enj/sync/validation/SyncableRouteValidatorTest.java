@@ -18,14 +18,23 @@ public class SyncableRouteValidatorTest extends SyncRouteRegisterTest{
 
     @Test
     public void isValidPalauttaaTrueJosReittiOnRekisteröity() {
+        // Non-regexp
         Assert.assertFalse("Pitäisi palauttaa false, jos urlia ei rekisteröity",
             this.syncableRouteValidator.isValid(new Route("foo", "POST"), null)
         );
         Assert.assertFalse("Pitäisi palauttaa false, jos metodia ei rekisteröity",
-            this.syncableRouteValidator.isValid(new Route(this.someRegisteredRoute.getUrl(), "PUT"), null)
+            this.syncableRouteValidator.isValid(new Route(this.nonRegexpRoute.getUrl(), "PUT"), null)
         );
-        Assert.assertTrue("Pitäisi palauttaa true, jos url & metodi täsmää",
-            this.syncableRouteValidator.isValid(this.someRegisteredRoute, null)
+        Assert.assertTrue("Pitäisi palauttaa true, jos non-regexp-url & metodi täsmää",
+            this.syncableRouteValidator.isValid(this.nonRegexpRoute, null)
+        );
+        // Regexp
+        String urlThatShouldMatch = this.regexpRoute.getUrl().replace("{id}", "bar");
+        Assert.assertFalse("Pitäisi palauttaa false, jos metodi ei täsmää",
+            this.syncableRouteValidator.isValid(new Route(urlThatShouldMatch, "DELETE"), null)
+        );
+        Assert.assertTrue("Pitäisi palauttaa true, jos regexp & metodi täsmää",
+            this.syncableRouteValidator.isValid(new Route(urlThatShouldMatch, this.regexpRoute.getMethod()), null)
         );
     }
 }

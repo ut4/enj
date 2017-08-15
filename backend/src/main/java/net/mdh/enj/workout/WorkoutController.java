@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.MultiInsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
 import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
@@ -58,6 +59,18 @@ public class WorkoutController {
     }
 
     /**
+     * Lisää treenit tietokantaan mikäli ne on valideja Workout-beaneja.
+     */
+    @POST
+    @Path("/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAll(@Valid @NotNull List<Workout> workouts) {
+        int insertCount = this.workoutRepository.insert(workouts);
+        return new MultiInsertResponse(insertCount, workouts);
+    }
+
+    /**
      * Palauttaa kaikki treenit tietokannasta.
      */
     @GET
@@ -100,6 +113,18 @@ public class WorkoutController {
     }
 
     /**
+     * Lisää treeniliikkeet tietokantaan mikäli ne on valideja Workout.Exercise-beaneja.
+     */
+    @POST
+    @Path("/exercise/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllWorkoutExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
+        int insertCount = this.workoutExerciseRepository.insert(workoutExercises);
+        return new MultiInsertResponse(insertCount, workoutExercises);
+    }
+
+    /**
      * Päivittää kaikki treeniliikkeet {workoutExercises}:n tiedoilla.
      */
     @PUT
@@ -122,7 +147,7 @@ public class WorkoutController {
     }
 
     /**
-     * Lisää uuden setin treeniliikkeelle {workoutExerciseSet.workoutExerciseId}.
+     * Lisää uuden setin tietokantaan.
      */
     @POST
     @Path("/exercise/set")
@@ -131,6 +156,18 @@ public class WorkoutController {
     public InsertResponse insertWorkoutExerciseSet(@Valid @NotNull Workout.Exercise.Set workoutExerciseSet) {
         int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSet);
         return new InsertResponse(insertCount, workoutExerciseSet.getId());
+    }
+
+    /**
+     * Lisää inputin kaikki setit tietokantaan.
+     */
+    @POST
+    @Path("/exercise/set/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllWorkoutExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
+        int insertCount = this.workoutExerciseSetRepository.insert(workoutExerciseSets);
+        return new MultiInsertResponse(insertCount, workoutExerciseSets);
     }
 
     /**

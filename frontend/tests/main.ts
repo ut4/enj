@@ -17,11 +17,13 @@ import 'tests/ui/TimerTests';
 import 'tests/ui/UserMenuTests';
 import 'tests/ui/ValidatingFormTests';
 import 'tests/user/UserStateTests';
+import 'tests/workout/EditableWorkoutExerciseSetListTests';
 import 'tests/workout/EditableWorkoutExerciseTests';
 import 'tests/workout/EditableWorkoutTests';
 import 'tests/workout/OfflineHandlerRegisterationTests';
 import 'tests/workout/offlineWorkoutHandlersTests';
 import 'tests/workout/WorkoutBackendTests';
+import 'tests/workout/WorkoutExerciseSetCreateModalTests';
 import 'tests/workout/WorkoutViewTests';
 import { mockHistory } from 'tests/mocks';
 import iocFactories from 'src/ioc';
@@ -29,6 +31,7 @@ import iocFactories from 'src/ioc';
 iocFactories.notify = () => () => null;
 iocFactories.history = () => mockHistory;
 QUnit.config.autostart = false;
+QUnit.dump.maxDepth = 8; // default 5
 QUnit.moduleDone(() => {
     // itu -> Inferno test utils
     let elRenderedByItu = document.querySelector('script:last-of-type').nextElementSibling;

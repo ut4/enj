@@ -106,7 +106,7 @@ function makeOffline404(method, url): Response {
 }
 
 function patternToRegexp(pattern: string): RegExp {
-    return RegExp(pattern.replace('*', '.+'));
+    return RegExp('^' + pattern.replace('*', '[^/]+') + '$'); // every character except /, 1+ times
 }
 
 export default OfflineHttp;

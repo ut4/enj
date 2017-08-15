@@ -75,11 +75,12 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
      */
     @Test
     public void POSTLisääTreeninJaPalauttaaInsertResponsenJossaTreeninUusiId() {
-        // Luo testidata
+        //
         Workout data = new Workout();
         data.setStart(WorkoutControllerHandlersTest.testWorkout.getStart() + 1);
         data.setNotes("foo");
         data.setUserId(TestData.TEST_USER_ID);
+        //
         Response response = this.newPostRequest("workout", data);
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
@@ -87,6 +88,67 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
         Workout workout = this.selectWorkout(responseBody.insertId);
         data.setId(responseBody.insertId);
         Assert.assertEquals(data.toString(), workout.toString());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/all palauttaa virheen, jos inputin arvo
+     * evaluoituu null.
+     */
+    @Test
+    public void POSTAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/all", null);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertAll.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/all validoi input-taulukon kaikki beanit.
+     */
+    @Test
+    public void POSTAllValidoiKaikkiInputinTreenit() {
+        // Simuloi POST, jonka ensimmäinen bean on virheellinen
+        List<Workout> input = this.makeCoupleOfWorkouts();
+        input.get(0).setStart(0);
+        input.get(0).setUserId(null);
+        Response response = this.newPostRequest("workout/all", input);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.insertAll.arg0[0].start", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAll.arg0[0].userId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/all lisää kaikki inputin treenit tietokantaan,
+     * ja palauttaa multiInsertResponsen, jossa luotujen treenin id:t.
+     */
+    @Test
+    public void POSTAllLisääTreeninJaPalauttaaMultiInsertResponsenJossaTreeninUudetIdt() {
+        //
+        List<Workout> input = this.makeCoupleOfWorkouts();
+        Response response = this.newPostRequest("workout/all", input);
+        Assert.assertEquals(200, response.getStatus());
+        //
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Testaa että insertoitui
+        List inserted = utils.selectAllWhere(
+            "SELECT * FROM workout WHERE id IN (:id1, :id2) ORDER BY `start` ASC",
+            new MapSqlParameterSource().addValue("id1", responseBody.insertIds.get(0))
+                .addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.WorkoutMapper()
+        );
+        input.get(0).setId(responseBody.insertIds.get(0));
+        input.get(1).setId(responseBody.insertIds.get(1));
+        Assert.assertEquals(input.get(0).toString(), inserted.get(0).toString());
+        Assert.assertEquals(input.get(1).toString(), inserted.get(1).toString());
     }
 
     /**

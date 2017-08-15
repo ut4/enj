@@ -219,44 +219,48 @@ QUnit.module('common/Http', hooks => {
         });
     });
     QUnit.test('post lähettää POST HTTP-pyynnön', assert => {
-        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const fetchCallStub = sinon.stub(fetchContainer, 'fetch').returns(new Response('42'));
         const url = 'foo';
         const data = {foo: 'bar'};
         //
         const done = assert.async();
-        http.post(url, data).then(() => {
-            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
-            assert.deepEqual(request.firstCall.args, [
-                url, 'POST', data, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
-            ], 'Pitäisi lähettää nämä tiedot');
-            done();
+        http.post(url, data, true).then(() => {
+            const request = fetchCallStub.firstCall.args[0];
+            assert.equal(request.method, 'POST', 'Pitäisi lähettää HTTP-pyyntö');
+            request.text().then(body => {
+                assert.equal(body, JSON.stringify(data), 'Pitäisi lähettää dataa');
+                done();
+            });
         });
     });
     QUnit.test('put lähettää PUT HTTP-pyynnön', assert => {
-        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const fetchCallStub = sinon.stub(fetchContainer, 'fetch').returns(new Response('42'));
         const url = 'foo';
         const data = {foo: 'bar'};
         //
         const done = assert.async();
-        http.put(url, data).then(() => {
-            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
-            assert.deepEqual(request.firstCall.args, [
-                url, 'PUT', data, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
-            ], 'Pitäisi lähettää nämä tiedot');
-            done();
+        http.put(url, data, true).then(() => {
+            const request = fetchCallStub.firstCall.args[0];
+            assert.equal(request.method, 'PUT', 'Pitäisi lähettää HTTP-pyyntö');
+            request.text().then(body => {
+                assert.equal(body, JSON.stringify(data), 'Pitäisi lähettää dataa');
+                done();
+            });
         });
     });
     QUnit.test('delete lähettää DELETE HTTP-pyynnön ilman bodyä', assert => {
-        const request = sinon.stub(http, 'sendRequest').returns(Promise.resolve('fo'));
+        const fetchCallStub = sinon.stub(fetchContainer, 'fetch').returns(new Response('42'));
         const url = 'foo';
+        const data = {foo: 'bar'};
         //
         const done = assert.async();
-        http.delete(url).then(() => {
-            assert.ok(request.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
-            assert.deepEqual(request.firstCall.args, [
-                url, 'DELETE', null, undefined // 0 = url, 1 = method, 2 = data, 3 = forceRequest/skipOfflineCheck
-            ], 'Pitäisi lähettää nämä tiedot');
-            done();
+        http.delete(url, data, true).then(() => {
+            const request = fetchCallStub.firstCall.args[0];
+            assert.equal(request.method, 'DELETE', 'Pitäisi lähettää HTTP-pyyntö');
+            request.text().then(body => {
+                assert.equal(body, '', 'Ei pitäisi lähettää dataa');
+                done();
+            });
         });
     });
 });

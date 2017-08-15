@@ -5,9 +5,18 @@ package net.mdh.enj.sync;
  */
 public class SyncRoute extends Route {
 
+    private String pattern;
+
     public SyncRoute() {}
     public SyncRoute(String url, String method) {
         super(url, method);
+    }
+
+    public String getPattern() {
+        return this.url.indexOf('{') < 0 ? null : this.pattern;
+    }
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
     }
 
     @Override
@@ -15,6 +24,7 @@ public class SyncRoute extends Route {
         return "SyncRoute{" +
             ", url=" + this.getUrl() +
             ", method=" + this.getMethod() +
+            ", pattern=" + this.getPattern() +
         "}";
     }
 }

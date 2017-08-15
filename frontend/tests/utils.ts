@@ -23,10 +23,17 @@ const utils = {
         el.dispatchEvent(event);
     },
     findButtonByContent: (rendered, content: string): HTMLButtonElement => {
-        const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, 'button');
-        return Array.from(allButtons).find(el => el.textContent === content) as HTMLButtonElement;
+        return findButton(rendered, btn => btn.textContent === content);
+    },
+    findButtonByAttribute: (rendered, attribute: string, content: string): HTMLButtonElement => {
+        return findButton(rendered, btn => btn.getAttribute(attribute) === content);
     },
     getValidToken: (): string => '<header>.eyJzdWIiOjF9.<sig>'//btoa(JSON.stringify({sub: 1}));
 };
+
+function findButton(rendered, predicate: Function): HTMLButtonElement {
+    const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, 'button');
+    return Array.from(allButtons).find(el => predicate(el)) as HTMLButtonElement;
+}
 
 export default utils;

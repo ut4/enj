@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.List;
 
 public class BasicRepositoryTest extends RollbackingDBUnitTest {
@@ -37,6 +38,33 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         //
         Assert.assertEquals("Pitäisi palauttaa insertoitujen rivien lukumäärän", 1, insertCount);
         Assert.assertNotNull("Pitäisi luoda primääriavain", data.getId());
+        Assert.assertTrue("Pitäisi luoda primääriavaineksi validi uuidv4",
+            new UUIDValidator().isValid(data.getId(), null)
+        );
+    }
+
+    /**
+     * Testaa, että insert() lisää kaikki beanit tietokantaan, asettaa puuttuvat
+     * primääriavaimet, ja lopuksi palauttaa insertoitujen rivien lukumäärän.
+     */
+    @Test
+    public void insertInsertoiListanBeanejaJaPalauttaaInsertoitujenRivienLukumäärän() {
+        //
+        List<SimpleExerciseEntity> items = new ArrayList<>();
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        String setUuid = UUID.randomUUID().toString();
+        data.setId(setUuid);
+        data.setName("foo");
+        SimpleExerciseEntity data2 = new SimpleExerciseEntity();
+        data2.setName("bar");
+        items.add(data);
+        items.add(data2);
+        //
+        int insertCount = this.testRepo.insert(items);
+        //
+        Assert.assertEquals("Pitäisi palauttaa insertoitujen rivien lukumäärän", 2, insertCount);
+        Assert.assertEquals("Ei pitäisi asettaa primääriavainta, jos se on jo määritelty", setUuid, data.getId());
+        Assert.assertNotNull("Pitäisi luoda primääriavain, jos se puuttuu", data2.getId());
         Assert.assertTrue("Pitäisi luoda primääriavaineksi validi uuidv4",
             new UUIDValidator().isValid(data.getId(), null)
         );
@@ -131,7 +159,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         Assert.assertEquals("Pitäisi päivittää kumpikin itemi", 2, updateCount);
         // Hae päivitetty data tietokannasta & assertoi että data päivittyi
         List<SimpleExerciseEntity> updated = this.testRepo.selectAll(
-            "SELECT id, `name` FROM exercise WHERE id IN (:id1, :id2)",
+            "SELECT id, `name` FROM exercise WHERE id IN (:id1, :id2) ORDER BY `name` DESC",
             new MapSqlParameterSource().addValue("id1", data.getId()).addValue("id2", data2.getId()),
             new SimpleExerciseMapper()
         );

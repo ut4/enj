@@ -13,8 +13,11 @@ public class SyncRouteRegister extends HashSet<SyncRoute> {
      */
     public SyncRoute find(Route route) {
         for (SyncRoute registered: this) {
-            if (registered.getUrl().equals(route.getUrl()) &&
-                registered.getMethod().equals(route.getMethod())) {
+            String pattern = registered.getPattern();
+            if (registered.getMethod().equals(route.getMethod()) && (
+                    pattern == null && route.getUrl().equals(registered.getUrl()) ||
+                    pattern != null && route.getUrl().matches(pattern)
+                )) {
                 return registered;
             }
         }

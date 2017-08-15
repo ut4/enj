@@ -1,23 +1,14 @@
 package net.mdh.enj.sync;
 
-import net.mdh.enj.HttpClient;
-import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.auth.AuthenticationFilter;
+import net.mdh.enj.workout.Workout;
 import net.mdh.enj.exercise.Exercise;
-import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.TestController;
+import net.mdh.enj.auth.AuthenticationFilter;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
-import net.mdh.enj.workout.Workout;
-import net.mdh.enj.workout.WorkoutController;
-import net.mdh.enj.workout.WorkoutRepository;
-import net.mdh.enj.workout.WorkoutExerciseRepository;
-import net.mdh.enj.workout.WorkoutExerciseSetRepository;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.glassfish.jersey.server.validation.ValidationError;
-import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
@@ -31,7 +22,6 @@ import org.junit.Test;
 public class SyncingTest extends RollbackingDBJerseyTest {
 
     private static DbTestUtils utils;
-    private static SyncRouteRegister syncRouteRegister;
     private static Exercise testExercise;
 
     @BeforeClass
@@ -40,33 +30,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         testExercise = new Exercise();
         testExercise.setName("exs");
         utils.insertExercise(testExercise);
-        // Täytä SyncRouteRegister manuaalisesti, jonka net.mdh.enj.SyncRouteCollector
-        // normaalisti suorittaa
-        manuallyPopulateSyncRouteRegister();
     }
 
     @Override
     public ResourceConfig configure() {
-        return new ResourceConfig()
-            .register(SyncController.class)
-            .register(TestController.class)
-            // Kontrollerit, joiden dataa synkataan testeissä.
-            .register(WorkoutController.class)
-            // tänne lisää...
-            .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
-            .register(new AbstractBinder() {
-                @Override
-                protected void configure() {
-                    bind(rollbackingDSFactory).to(DataSourceFactory.class);
-                    bind(syncRouteRegister).to(SyncRouteRegister.class);
-                    bind(SyncingTest.this).to(HttpClient.class);
-                    bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
-                    // WorkoutController riippuvuudet
-                    bind(WorkoutRepository.class).to(WorkoutRepository.class);
-                    bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
-                    bind(WorkoutExerciseSetRepository.class).to(WorkoutExerciseSetRepository.class);
-                }
-            });
+        return SyncTestUtils.configure(rollbackingDSFactory, SyncingTest.this);
     }
 
     @Test
@@ -97,11 +65,11 @@ public class SyncingTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienTempIdt() {
+    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienIdt() {
         // Luo testidata
         List<SyncQueueItem> testSyncQueue = this.makeTestSyncQueue();
-        Map<String, Object> testWorkoutSyncData = testSyncQueue.get(0).getData();
-        Map<String, Object> testWorkoutExerciseSyncData = testSyncQueue.get(1).getData();
+        Map testWorkoutSyncData = (Map) testSyncQueue.get(0).getData();
+        Map testWorkoutExerciseSyncData = (Map) testSyncQueue.get(1).getData();
         //
         Response response = this.newPostRequest("sync", testSyncQueue);
         // Testaa että synkkasi jokaisen itemin
@@ -142,18 +110,17 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     @Test
     public void syncAllSisällyttääPyynnönAuhtorizationHeaderinSynkkauspyyntöön() {
-        SyncRoute testRoute = new SyncRoute("test", "PUT");
-        syncRouteRegister.add(testRoute);
         List<SyncQueueItem> testQueue = new ArrayList<>();
         SyncQueueItem testItem = new SyncQueueItem();
         testItem.setId(3);
         testItem.setData(TestData.getSomeJunkData());
-        testItem.setRoute(testRoute);
+        testItem.setRoute(new Route("test", "PUT"));
         testQueue.add(testItem);
         //
         Response response = this.newPostRequest("sync", testQueue, requestBuilder ->
             requestBuilder.header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER)
         );
+        Assert.assertEquals(200, response.getStatus());
         //
         Assert.assertEquals("Pitäisi sisällyttää Authorization-header synkkauspyyntöihin",
             TestData.MOCK_AUTH_HEADER, TestController.receivedAuthHeaderValue
@@ -202,17 +169,5 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         List<SyncQueueItem> queue = new ArrayList<>();
         queue.add(workoutSyncItemWithBogusData);
         return queue;
-    }
-
-    private static void manuallyPopulateSyncRouteRegister() {
-        SyncRoute registeredWorkoutInsertRoute = new SyncRoute();
-        registeredWorkoutInsertRoute.setUrl(TestData.workoutInsertRoute.getUrl());
-        registeredWorkoutInsertRoute.setMethod(TestData.workoutInsertRoute.getMethod());
-        SyncRoute registeredWorkoutExerciseAddRoute = new SyncRoute();
-        registeredWorkoutExerciseAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl());
-        registeredWorkoutExerciseAddRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
-        syncRouteRegister = new SyncRouteRegister();
-        syncRouteRegister.add(registeredWorkoutInsertRoute);
-        syncRouteRegister.add(registeredWorkoutExerciseAddRoute);
     }
 }

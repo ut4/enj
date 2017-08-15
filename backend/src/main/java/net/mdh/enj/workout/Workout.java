@@ -1,13 +1,10 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.Utils;
-import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
 import net.mdh.enj.validation.AuthenticatedUserId;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Produces;
 import java.util.List;
@@ -79,11 +76,13 @@ public class Workout extends DbEntity {
         private int orderDef;
         @UUID
         private String workoutId;
-        @Valid
-        @NotNull
-        private net.mdh.enj.exercise.Exercise exercise;
+        @UUID
+        private String exerciseId;
+        private String exerciseName;
         private List<Set> sets;
-        private net.mdh.enj.exercise.Exercise.Variant exerciseVariant;
+        @UUID(allowNull = true)
+        private String exerciseVariantId;
+        private String exerciseVariantContent;
 
         public int getOrderDef() {
             return this.orderDef;
@@ -99,18 +98,32 @@ public class Workout extends DbEntity {
             this.workoutId = workoutId;
         }
 
-        public net.mdh.enj.exercise.Exercise getExercise() {
-            return this.exercise;
+        public String getExerciseId() {
+            return this.exerciseId;
         }
-        public void setExercise(net.mdh.enj.exercise.Exercise exercise) {
-            this.exercise = exercise;
+        public void setExerciseId(String exerciseId) {
+            this.exerciseId = exerciseId;
         }
 
-        public net.mdh.enj.exercise.Exercise.Variant getExerciseVariant() {
-            return this.exerciseVariant;
+        public String getExerciseName() {
+            return this.exerciseName;
         }
-        public void setExerciseVariant(net.mdh.enj.exercise.Exercise.Variant variant) {
-            this.exerciseVariant = variant;
+        public void setExerciseName(String exerciseName) {
+            this.exerciseName = exerciseName;
+        }
+
+        public String getExerciseVariantId() {
+            return this.exerciseVariantId;
+        }
+        public void setExerciseVariantId(String exerciseVariantId) {
+            this.exerciseVariantId = exerciseVariantId;
+        }
+
+        public String getExerciseVariantContent() {
+            return this.exerciseVariantContent;
+        }
+        public void setExerciseVariantContent(String exerciseVariantContent) {
+            this.exerciseVariantContent = exerciseVariantContent;
         }
 
         public List<Set> getSets() {
@@ -126,8 +139,10 @@ public class Workout extends DbEntity {
                 "id=" + this.getId() +
                 ", orderDef=" + this.getOrderDef() +
                 ", workoutId=" + this.getWorkoutId() +
-                ", exercise=" + this.getExercise() +
-                ", exerciseVariant=" + this.getExerciseVariant() +
+                ", exerciseId=" + this.getExerciseId() +
+                ", exerciseName=" + this.getExerciseName() +
+                ", exerciseVariantId=" + this.getExerciseVariantId() +
+                ", exerciseVariantContent=" + this.getExerciseVariantContent() +
                 ", sets=" + Utils.stringifyAll(this.getSets()) +
             "}";
         }

@@ -23,12 +23,12 @@ class FormButtons extends Component<Props, any> {
         this.props.isModal !== false ? Modal.close() : iocFactories.history().goBack();
     }
     private confirm(e) {
-        this.props.autoCloseOnConfirm === true && this.close();
         this.props.onConfirm(e);
+        this.props.autoCloseOnConfirm === true && this.close();
     }
     private cancel(e) {
-        this.close();
         this.props.onCancel && this.props.onCancel(e);
+        this.close();
     }
     public render() {
         return <div class="form-buttons">

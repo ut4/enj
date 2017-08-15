@@ -1,9 +1,8 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.api.Responses;
-import net.mdh.enj.exercise.Exercise;
-import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.TestData;
+import net.mdh.enj.resources.SimpleMappers;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import javax.ws.rs.core.GenericType;
@@ -64,6 +63,58 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Assert.assertEquals("Pitäisi insertoida POST-datalla", workoutExerciseSet.toString(),
             inserted.toString()
         );
+    }
+
+    @Test
+    public void POSTExerciseSetAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/exercise/set/all", null);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetAllValidoiKaikkiInputinSetit() {
+        // Simuloi POST, jonka jälkimmäinen bean on virheellinen
+        List<Workout.Exercise.Set> input = this.makeCoupleOfWorkoutExerciseSets(TestData.TEST_WORKOUT_EXERCISE_ID);
+        input.get(1).setReps(0);
+        input.get(1).setWorkoutExerciseId(null);
+        Response response = this.newPostRequest("workout/exercise/set/all", input);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0[1].reps", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0[1].workoutExerciseId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseSetAllLisääInputinKaikkiSetitTietokantaan() {
+        // Luo ensin treeniliike, johon setti lisätään
+        Workout.Exercise we = this.insertTestWorkoutExercise();
+        // Luo testidata
+        List<Workout.Exercise.Set> sets = this.makeCoupleOfWorkoutExerciseSets(we.getId());
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("workout/exercise/set/all", sets);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Testaa että insertoitui
+        List inserted = utils.selectAllWhere(
+            "SELECT * FROM workoutExerciseSet WHERE id IN(:id1, :id2) ORDER BY weight ASC",
+            new MapSqlParameterSource().addValue("id1", responseBody.insertIds.get(0))
+                .addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.WorkoutExerciseSetMapper()
+        );
+        sets.get(0).setId(responseBody.insertIds.get(0));
+        sets.get(1).setId(responseBody.insertIds.get(1));
+        Assert.assertEquals(sets.get(0).toString(), inserted.get(0).toString());
+        Assert.assertEquals(sets.get(1).toString(), inserted.get(1).toString());
     }
 
     @Test
@@ -163,8 +214,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         // Luo ensin treeniliike, johon setti lisätään
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(testWorkout.getId());
-        we.setExercise(testExercise);
-        we.setExerciseVariant(new Exercise.Variant());
+        we.setExerciseId(testExercise.getId());
         utils.insertWorkoutExercise(we);
         return we;
     }

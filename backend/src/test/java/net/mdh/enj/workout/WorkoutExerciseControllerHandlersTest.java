@@ -38,15 +38,17 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
     @Test
     public void POSTExerciseHylkääPyynnönJosTietojaPuuttuu() {
         // Simuloi POST, jonka datassa puuttuu tietoja
-        Response response = this.newPostRequest("workout/exercise", "{}");
+        Response response = this.newPostRequest("workout/exercise", "{\"exerciseVariantId\":\"fo\"}");
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = this.getValidationErrors(response);
-        Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.exercise", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.workoutId", errors.get(1).getPath());
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.exerciseId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.exerciseVariantId", errors.get(1).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0.workoutId", errors.get(2).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
     }
 
     /**
@@ -59,8 +61,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Workout.Exercise workoutExercise = new Workout.Exercise();
         workoutExercise.setWorkoutId(testWorkout.getId());
         workoutExercise.setOrderDef(2);
-        workoutExercise.setExercise(testExercise);
-        workoutExercise.setExerciseVariant(new Exercise.Variant());
+        workoutExercise.setExerciseId(testExercise.getId());
         // Lähetä pyyntö
         Response response = this.newPostRequest("workout/exercise", workoutExercise);
         Assert.assertEquals(200, response.getStatus());
@@ -73,8 +74,80 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         );
         Assert.assertEquals(workoutExercise.getWorkoutId(), inserted.getWorkoutId());
         Assert.assertEquals(workoutExercise.getOrderDef(), inserted.getOrderDef());
-        Assert.assertEquals(workoutExercise.getExercise().getId(), inserted.getExercise().getId());
-        Assert.assertNull(inserted.getExerciseVariant().getId());
+        Assert.assertEquals(workoutExercise.getExerciseId(), inserted.getExerciseId());
+        Assert.assertNull(inserted.getExerciseVariantId());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise/all hylkää pyynnön jos input = null
+     */
+    @Test
+    public void POSTExerciseAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        // Simuloi POST, jossa ei dataa ollenkaan
+        Response response = this.newPostRequest("workout/exercise/all", null);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise/all validoi inputin kaikki kentät.
+     */
+    @Test
+    public void POSTExerciseAllHylkääPyynnönJosBeanistaPuuttuuTietoja() {
+        // Simuloi POST, jonka ensimmäinen beani on virheellinen, ja jälkimmäisestä
+        // beanista puuttuu tietoja
+        List<Workout.Exercise> input = this.makeCoupleOfWorkoutExercises();
+        input.get(0).setExerciseVariantId("fo");
+        input.get(1).setWorkoutId(null);
+        input.get(1).setExerciseId(null);
+        Response response = this.newPostRequest("workout/exercise/all", input);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0[0].exerciseVariantId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0[1].exerciseId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0[1].workoutId", errors.get(2).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
+    }
+
+    /**
+     * Testaa, että POST /api/workout/exercise/all lisää kaikki treeniliikkeet
+     * tietokantaan, ja palauttaa multiInsertResponsen, jossa uudet id:t.
+     */
+    @Test
+    public void POSTExerciseAllLisääLiikkeetTreeniin() {
+        // Luo testidata
+        List<Workout.Exercise> input = this.makeCoupleOfWorkoutExercises();
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("workout/exercise/all", input);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Testaa että insertoitui, ja palautti id:n
+        List inserted = utils.selectAllWhere(
+            "SELECT * FROM workoutExercise WHERE id IN (:id, :id2) ORDER BY orderDef ASC",
+            new MapSqlParameterSource().addValue("id", responseBody.insertIds.get(0))
+                .addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.WorkoutExerciseMapper()
+        );
+        Workout.Exercise expected1 = input.get(0);
+        Workout.Exercise inserted1 = (Workout.Exercise) inserted.get(0);
+        Assert.assertEquals(expected1.getWorkoutId(), inserted1.getWorkoutId());
+        Assert.assertEquals(expected1.getOrderDef(), inserted1.getOrderDef());
+        Assert.assertEquals(expected1.getExerciseId(), inserted1.getExerciseId());
+        Assert.assertNull(inserted1.getExerciseVariantId());
+        Workout.Exercise expected2 = input.get(1);
+        Workout.Exercise inserted2 = (Workout.Exercise) inserted.get(1);
+        Assert.assertEquals(expected2.getWorkoutId(), inserted2.getWorkoutId());
+        Assert.assertEquals(expected2.getOrderDef(), inserted2.getOrderDef());
+        Assert.assertEquals(expected2.getExerciseId(), inserted2.getExerciseId());
+        Assert.assertNull(inserted2.getExerciseVariantId());
     }
 
     @Test
@@ -82,16 +155,19 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         // Simuloi PUT, jonka input-taulukon toinen itemi ei ole validi
         List<Workout.Exercise> workouts = this.makeCoupleOfWorkoutExercises();
         workouts.get(1).setWorkoutId("not-valid-uuid");
-        workouts.get(1).setExercise(null);
+        workouts.get(1).setExerciseId(null);
+        workouts.get(1).setExerciseVariantId("asd");
         Response response = this.newPutRequest("workout/exercise", workouts);
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = this.getValidationErrors(response);
-        Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].exercise", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].workoutId", errors.get(1).getPath());
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].exerciseId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].exerciseVariantId", errors.get(1).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("WorkoutController.updateAllExercises.arg0[1].workoutId", errors.get(2).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
     }
 
     @Test
@@ -109,7 +185,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         utils.insertWorkoutExercise(second);
         // Päivitä niiden tietoja
         first.setOrderDef(4);
-        first.setExerciseVariant(variant);
+        first.setExerciseVariantId(variant.getId());
         second.setOrderDef(5);
         // Suorita PUT-pyyntö päivitetyillä tiedoilla
         Response response = this.newPutRequest("workout/exercise", array);
@@ -126,11 +202,11 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Workout.Exercise updated1 = (Workout.Exercise)updated.get(0);
         Workout.Exercise updated2 = (Workout.Exercise)updated.get(1);
         Assert.assertEquals(4, updated1.getOrderDef());
-        Assert.assertEquals(first.getExercise().getId(), updated1.getExercise().getId());
-        Assert.assertEquals(first.getExerciseVariant().getId(), updated1.getExerciseVariant().getId());
+        Assert.assertEquals(first.getExerciseId(), updated1.getExerciseId());
+        Assert.assertEquals(first.getExerciseVariantId(), updated1.getExerciseVariantId());
         Assert.assertEquals(5, updated2.getOrderDef());
-        Assert.assertEquals(second.getExercise().getId(), updated2.getExercise().getId());
-        Assert.assertNull(updated2.getExerciseVariant().getId());
+        Assert.assertEquals(second.getExerciseId(), updated2.getExerciseId());
+        Assert.assertNull(updated2.getExerciseVariantId());
     }
 
     @Test
@@ -139,7 +215,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Response response = this.newDeleteRequest("workout/exercise/notvaliduuid");
         Assert.assertEquals(400, response.getStatus());
         //
-        List<ValidationError> errors = this.getValidationErrors(response);
+        List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(1, errors.size());
         Assert.assertEquals("WorkoutController.deleteWorkoutExercise.arg0", errors.get(0).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
@@ -174,13 +250,11 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Workout.Exercise data = new Workout.Exercise();
         data.setOrderDef(1);
         data.setWorkoutId(testWorkout.getId());
-        data.setExercise(testExercise);
-        data.setExerciseVariant(new Exercise.Variant());
+        data.setExerciseId(testExercise.getId());
         Workout.Exercise data2 = new Workout.Exercise();
         data2.setOrderDef(2);
         data2.setWorkoutId(testWorkout.getId());
-        data2.setExercise(testExercise);
-        data2.setExerciseVariant(new Exercise.Variant());
+        data2.setExerciseId(testExercise.getId());
         //
         List<Workout.Exercise> array = new ArrayList<>();
         array.add(data);

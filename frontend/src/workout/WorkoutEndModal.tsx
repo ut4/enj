@@ -5,7 +5,7 @@ import FormButtons from 'src/ui/FormButtons';
 import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
-class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord}, any> {
+class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEnd: Function}, any> {
     private hasValidSets: boolean;
     private workoutBackend: WorkoutBackend;
     private notify: notify;
