@@ -154,6 +154,7 @@ public class Workout extends DbEntity {
             private double weight;
             @Min(value = 1)
             private int reps;
+            private int ordinal;
             @UUID
             private String workoutExerciseId;
 
@@ -171,6 +172,13 @@ public class Workout extends DbEntity {
                 this.reps = reps;
             }
 
+            public int getOrdinal() {
+                return this.ordinal;
+            }
+            public void setOrdinal(int ordinal) {
+                this.ordinal = ordinal;
+            }
+
             public String getWorkoutExerciseId() {
                 return this.workoutExerciseId;
             }
@@ -184,6 +192,7 @@ public class Workout extends DbEntity {
                     "id=" + this.getId() +
                     ", weight=" + this.getWeight() +
                     ", reps=" + this.getReps() +
+                    ", ordinal=" + this.getOrdinal() +
                     ", workoutExerciseId=" + this.getWorkoutExerciseId() +
                 "}";
             }

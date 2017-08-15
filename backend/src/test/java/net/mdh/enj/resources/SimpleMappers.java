@@ -37,6 +37,7 @@ public class SimpleMappers {
             set.setId(rs.getString("id"));
             set.setWeight(rs.getDouble("weight"));
             set.setReps(rs.getInt("reps"));
+            set.setOrdinal(rs.getInt("ordinal"));
             set.setWorkoutExerciseId(rs.getString("workoutExerciseId"));
             return set;
         }

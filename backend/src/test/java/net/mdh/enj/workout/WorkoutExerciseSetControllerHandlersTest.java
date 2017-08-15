@@ -48,6 +48,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         workoutExerciseSet.setWorkoutExerciseId(we.getId());
         workoutExerciseSet.setWeight(12.5);
         workoutExerciseSet.setReps(10);
+        workoutExerciseSet.setOrdinal(1);
         // Lähetä pyyntö
         Response response = this.newPostRequest("workout/exercise/set", workoutExerciseSet);
         Assert.assertEquals(200, response.getStatus());
@@ -149,6 +150,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         first.setReps(9);
         second.setWeight(80.45);
         second.setReps(2);
+        second.setOrdinal(0);
         // Suorita PUT-pyyntö päivitetyillä tiedoilla
         Response response = this.newPutRequest("workout/exercise/set", array);
         Assert.assertEquals(200, response.getStatus());
@@ -198,10 +200,12 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Workout.Exercise.Set data = new Workout.Exercise.Set();
         data.setWeight(100);
         data.setReps(8);
+        data.setOrdinal(1);
         data.setWorkoutExerciseId(workoutExerciseId);
         Workout.Exercise.Set data2 = new Workout.Exercise.Set();
         data2.setWeight(102.25);
         data2.setReps(6);
+        data2.setOrdinal(3);
         data2.setWorkoutExerciseId(workoutExerciseId);
         //
         List<Workout.Exercise.Set> array = new ArrayList<>();

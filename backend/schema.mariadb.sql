@@ -80,6 +80,7 @@ CREATE TABLE workoutExerciseSet (
     id CHAR(36) NOT NULL,
     weight FLOAT NOT NULL,
     reps SMALLINT UNSIGNED NOT NULL,
+    ordinal TINYINT UNSIGNED NOT NULL,
     workoutExerciseId CHAR(36) NOT NULL,
     FOREIGN KEY (workoutExerciseId) REFERENCES workoutExercise(id),
     PRIMARY KEY (id)
@@ -134,6 +135,7 @@ CREATE VIEW workoutExerciseView AS
         s.id          AS workoutExerciseSetId,
         s.weight      AS workoutExerciseSetWeight,
         s.reps        AS workoutExerciseSetReps,
+        s.ordinal     AS workoutExerciseSetOrdinal,
         s.workoutExerciseId AS workoutExerciseSetWorkoutExerciseId
     FROM workoutExercise we
     JOIN exercise e ON (e.id = we.exerciseId)

@@ -16,7 +16,7 @@ public class WorkoutExerciseSetRepository extends BasicRepository<Workout.Exerci
 
     int updateMany(List<Workout.Exercise.Set> workoutExerciseSets) {
         return super.updateMany(
-            "UPDATE workoutExerciseSet SET weight = :weight, reps = :reps WHERE id = :id",
+            "UPDATE workoutExerciseSet SET weight = :weight, reps = :reps, ordinal = :ordinal WHERE id = :id",
             workoutExerciseSets
         );
     }

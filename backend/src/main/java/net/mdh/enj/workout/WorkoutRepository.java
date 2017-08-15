@@ -126,6 +126,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                     set.setId(rs.getString("workoutExerciseSetId"));
                     set.setWeight(rs.getDouble("workoutExerciseSetWeight"));
                     set.setReps(rs.getInt("workoutExerciseSetReps"));
+                    set.setOrdinal(rs.getInt("workoutExerciseSetOrdinal"));
                     set.setWorkoutExerciseId(rs.getString("workoutExerciseSetWorkoutExerciseId"));
                     return set;
                 }
