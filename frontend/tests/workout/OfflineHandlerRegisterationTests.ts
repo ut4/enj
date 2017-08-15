@@ -134,4 +134,19 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('workoutBackend.deleteSet kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const testWorkoutExerciseSet = new WorkoutExerciseSet();
+        const fetchCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'deleteSet').returns(Promise.resolve('{"deleteCount": 25}'));
+        //
+        const done = assert.async();
+        workoutBackend.deleteSet(testWorkoutExerciseSet).then(res => {
+            //
+            assert.ok(fetchCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testWorkoutExerciseSet]);
+            assert.equal(res, 25, 'Pitäisi palauttaa offline-handlerin palauttama deleteCount');
+            done();
+        });
+    });
 });

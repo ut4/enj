@@ -16,9 +16,16 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         shallowWorkoutBackend.utils = {uuidv4: () => mockNewUuid};
         workoutHandlerRegister = new OfflineWorkoutHandlerRegister(shallowOffline, shallowWorkoutBackend);
         mockCachedWorkouts = [
-            {id: 'someuuid1', start: 2, exercises: [], userId: 'someuuid2'},
-            {id: 'someuuid3', start: 3, exercises: [], userId: 'someuuid4'},
-            {id: 'someuuid5', start: 4, exercises: [], userId: 'someuuid6'}
+            {id: 'someuuid1', start: 2, exercises: [], userId: 'someuuid100'},
+            {id: 'someuuid2', start: 3, exercises: [
+                {id: 'someuuid10', workoutId: 'someuuid2', exerciseId: 'someuuid20', sets: []} as any
+            ], userId: 'someuuid101'},
+            {id: 'someuuid3', start: 4, exercises: [
+                {id: 'someuuid11', workoutId: 'someuuid3', exerciseId: 'someuuid21', sets: [
+                    {id: 'someuuid30', workoutExerciseId: 'someuuid11', weight: 10, reps: 5}
+                ]} as any,
+                {id: 'someuuid12', workoutId: 'someuuid3', exerciseId: 'someuuid22', sets: []} as any
+            ], userId: 'someuuid102'}
         ];
     });
     QUnit.test('insert lisää uuden treenin cacheen, ja palauttaa insertCount:n', assert => {
@@ -90,7 +97,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                 'workout',
                 // Ei pitäisi muuttaa [0] & [2], koska eri treeni (id != newWorkoutExercise.workoutId)
                 [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
-                    exercises: [newWorkoutExercise]
+                    exercises: mockCachedWorkouts[1].exercises.concat([newWorkoutExercise])
                 }), mockCachedWorkouts[2]]
             ], 'Pitäisi lisätä uusi liike treenicachen oikeaan treeniin');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
@@ -101,21 +108,9 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     QUnit.test('updateExercises päivittää liikeet treenicacheen, ja palauttaa updateCount:n', assert => {
         // Lisää 1. treenille yksi, ja 2. treenille kaksi treeniliikettä
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        const workoutExercise = new WorkoutExercise();
-        workoutExercise.id = 'someuuid10';
-        workoutExercise.workoutId = cachedWorkoutsCopy[1].id;
-        workoutExercise.exerciseId = 'someuuid20';
-        const workoutExercise2 = new WorkoutExercise();
-        workoutExercise2.id = 'someuuid11';
-        workoutExercise2.workoutId = cachedWorkoutsCopy[2].id;
-        workoutExercise2.exerciseId = 'someuuid21';
-        const workoutExercise3 = new WorkoutExercise();
-        workoutExercise3.id = 'someuuid12';
-        workoutExercise3.workoutId = cachedWorkoutsCopy[2].id;
-        workoutExercise3.exerciseId = 'someuuid22';
-        cachedWorkoutsCopy[1].exercises.push(workoutExercise);
-        cachedWorkoutsCopy[2].exercises.push(workoutExercise2);
-        cachedWorkoutsCopy[2].exercises.push(workoutExercise3);
+        const workoutExercise = cachedWorkoutsCopy[1].exercises[0];
+        const workoutExercise2 = cachedWorkoutsCopy[2].exercises[0];
+        const workoutExercise3 = cachedWorkoutsCopy[2].exercises[1];
         //
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -176,20 +171,13 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             done();
         });
     });
-    QUnit.test('isertSet lisää uuden setin treenicacheen, ja palauttaa insertCount:n', assert => {
+    QUnit.test('insertSet lisää uuden setin treenicacheen, ja palauttaa insertCount:n', assert => {
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
-        // Lisää 2 liikettä keskimmäiseen treeniin
-        const workoutExercise = new WorkoutExercise();
-        workoutExercise.id = 'someuuid10';
-        workoutExercise.workoutId = cachedWorkoutsCopy[1].id;
-        const workoutExercise2 = new WorkoutExercise();
-        workoutExercise2.id = 'someuuid11';
-        workoutExercise2.workoutId = cachedWorkoutsCopy[1].id;
-        cachedWorkoutsCopy[1].exercises.push(workoutExercise);
-        cachedWorkoutsCopy[1].exercises.push(workoutExercise2);
+        const workoutExercise = cachedWorkoutsCopy[2].exercises[0];
+        const workoutExercise2 = cachedWorkoutsCopy[2].exercises[1];
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        // Luo setti & lisää se keskimmäisen treenin toiseen liikkeeseen
+        // Luo setti & lisää viimeisen treenin toiseen liikkeeseen
         const newWorkoutExerciseSet = new WorkoutExerciseSet();
         newWorkoutExerciseSet.weight = 40;
         newWorkoutExerciseSet.reps = 20;
@@ -199,18 +187,44 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
             assert.deepEqual(cacheUpdate.firstCall.args, [
                 'workout',
-                // Ei pitäisi muuttaa [0] & [2], koska eri treeni
-                [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
+                // Ei pitäisi muuttaa [0] & [1], koska eri treeni
+                [mockCachedWorkouts[0], mockCachedWorkouts[1], Object.assign(mockCachedWorkouts[2], {
                     exercises: [
                         workoutExercise, // Ei pitäisi muuttaa ensimmäistä liikettä
                         Object.assign(workoutExercise2, {
                             sets: [newWorkoutExerciseSet]
                         })
                     ]
-                }), mockCachedWorkouts[2]]
+                })]
             ], 'Pitäisi pushata uusi liike treenicachen oikean treenin oikean liikkeen liikelistaan');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkoutExerciseSet.id, mockNewUuid, 'Pitäisi luoda setille id');
+            done();
+        });
+    });
+    QUnit.test('deleteSet poistaa setin treenicachesta, ja palauttaa deleteCount:n', assert => {
+        const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        // Poista setti viimeisen treenin ensimmäisen liikkeen liikelistasta
+        const setsParent = mockCachedWorkouts[2].exercises[0];
+        const setToDelete = setsParent.sets[0];
+        const done = assert.async();
+        workoutHandlerRegister.deleteSet(setToDelete).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'workout',
+                // Ei pitäisi muuttaa [0] & [1]
+                [mockCachedWorkouts[0], mockCachedWorkouts[1], Object.assign(mockCachedWorkouts[2], {
+                    exercises: [
+                        Object.assign(setsParent, {
+                            sets: []
+                        }),
+                        mockCachedWorkouts[2].exercises[1]
+                    ]
+                })]
+            ], 'Pitäisi poistaa liike treenicachen oikean treenin oikean liikkeen liikelistasta');
+            assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteCount');
             done();
         });
     });

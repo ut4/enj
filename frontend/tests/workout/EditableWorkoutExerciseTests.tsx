@@ -26,7 +26,6 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         testWorkoutExercise.exerciseId =  testDropdownExercises[1].id;
         testWorkoutExercise.exerciseName = testDropdownExercises[1].name;
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
-        shallowWorkoutBackend.workoutExerciseSetBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
@@ -71,8 +70,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
         const updateWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'updateExercise').returns(Promise.resolve());
-        const setUpdateSpy = sinon.spy(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
-        const setDeleteSpy = sinon.spy(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
+        const setUpdateSpy = sinon.spy(shallowWorkoutBackend, 'updateSet');
+        const setDeleteSpy = sinon.spy(shallowWorkoutBackend, 'deleteSet');
         const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
@@ -120,8 +119,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet setit, ja lopuksi renderöi näkymän', assert => {
         sinon.stub(shallowWorkoutBackend, 'updateExercise');
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
-        const setUpdateStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
-        const setDeleteStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
+        const setUpdateStub = sinon.stub(shallowWorkoutBackend, 'updateSet');
+        const setDeleteStub = sinon.stub(shallowWorkoutBackend, 'deleteSet');
         testWorkoutExercise.sets = workoutTestUtils.getSomeSets();
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
@@ -156,8 +155,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet ja poistetut setit, ja lopuksi renderöi näkymän', assert => {
         sinon.stub(shallowWorkoutBackend, 'updateExercise');
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
-        const setUpdateStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
-        const setDeleteStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
+        const setUpdateStub = sinon.stub(shallowWorkoutBackend, 'updateSet');
+        const setDeleteStub = sinon.stub(shallowWorkoutBackend, 'deleteSet');
         testWorkoutExercise.sets = workoutTestUtils.getSomeSets();
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>

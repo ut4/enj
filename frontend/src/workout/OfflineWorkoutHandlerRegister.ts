@@ -20,7 +20,7 @@ class OfflineWorkoutHandlerRegister {
         //
         offlineHttp.addHandler('POST', 'workout', workout => this.insert(workout));
         offlineHttp.addHandler('PUT', 'workout', workouts => this.updateAll(workouts));
-        offlineHttp.addHandler('DELETE', 'workout/*', (_, url) => this.delete(url.split('/').pop()));
+        offlineHttp.addHandler('DELETE', 'workout/*', workout => this.delete(workout.id));
         //
         offlineHttp.addHandler('POST', 'workout/exercise', workoutExercise =>
             this.addExercise(workoutExercise)
@@ -28,12 +28,15 @@ class OfflineWorkoutHandlerRegister {
         offlineHttp.addHandler('PUT', 'workout/exercise', workoutExercises =>
             this.updateExercises(workoutExercises)
         );
-        offlineHttp.addHandler('DELETE', 'workout/exercise/*', (_, url) =>
-            this.deleteExercise(url.split('/').pop())
+        offlineHttp.addHandler('DELETE', 'workout/exercise/*', workoutExercise =>
+            this.deleteExercise(workoutExercise.id)
         );
         //
-        offlineHttp.addHandler('POST', 'workout/exercise/set', set =>
-            this.insertSet(set)
+        offlineHttp.addHandler('POST', 'workout/exercise/set', workoutExerciseSet =>
+            this.insertSet(workoutExerciseSet)
+        );
+        offlineHttp.addHandler('DELETE', 'workout/exercise/set/*', workoutExerciseSet =>
+            this.deleteSet(workoutExerciseSet)
         );
     }
     /**
@@ -63,10 +66,10 @@ class OfflineWorkoutHandlerRegister {
     /**
      * Handlaa DELETE /api/workout/:id REST-kutsun offline-tilan aikana.
      */
-    public delete(id: string) {
+    public delete(workoutId: AAGUID) {
         return this.updateCache(cachedWorkouts => {
             // Poista treeni cachetaulukosta
-            const ref = findWorkoutById(id, cachedWorkouts);
+            const ref = findWorkoutById(workoutId, cachedWorkouts);
             cachedWorkouts.splice(cachedWorkouts.indexOf(ref), 1);
             //
             return {deleteCount: 1};
@@ -101,7 +104,7 @@ class OfflineWorkoutHandlerRegister {
     /**
      * Handlaa DELETE /api/workout/exercise/:id REST-kutsun offline-tilan aikana.
      */
-    public deleteExercise(workoutExerciseId: string) {
+    public deleteExercise(workoutExerciseId: AAGUID) {
         return this.updateCache(cachedWorkouts => {
             // Poista treeniliike sille kuuluvan treenin liikelistalta
             const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(workoutExerciseId, cachedWorkouts);
@@ -121,6 +124,22 @@ class OfflineWorkoutHandlerRegister {
             workoutRef.exercises[exerciseIndex].sets.push(set);
             //
             return {insertCount: 1};
+        });
+    }
+    /**
+     * Handlaa DELETE /api/workout/exercise/set/:id REST-kutsun offline-tilan aikana.
+     */
+    public deleteSet(workoutExerciseSet: Enj.API.WorkoutExerciseSetRecord) {
+        return this.updateCache(cachedWorkouts => {
+            // Poista setti sille kuuluvan treeniliikkeen settilistasta
+            const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(
+                workoutExerciseSet.workoutExerciseId,
+                cachedWorkouts
+            );
+            const setsRef = workoutRef.exercises[exerciseIndex].sets;
+            setsRef.splice(setsRef.indexOf(setsRef.find(set => set.id === workoutExerciseSet.id)), 1);
+            //
+            return {deleteCount: 1};
         });
     }
     /**

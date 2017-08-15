@@ -66,7 +66,7 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     private saveModifiedSets() {
         const modified = this.workoutExerciseSetList.getModifiedSets();
         if (modified.length) {
-            return iocFactories.workoutBackend().workoutExerciseSetBackend.update(modified);
+            return iocFactories.workoutBackend().updateSet(modified);
         }
     }
     /**
@@ -75,8 +75,8 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     private deleteDeletedSets() {
         const deleted = this.workoutExerciseSetList.getDeletedSets();
         if (deleted.length) {
-            const setBackend = iocFactories.workoutBackend().workoutExerciseSetBackend;
-            return Promise.all(deleted.map(deletedSet => setBackend.delete(deletedSet)));
+            const workoutBackend = iocFactories.workoutBackend();
+            return Promise.all(deleted.map(deletedSet => workoutBackend.deleteSet(deletedSet)));
         }
     }
     public render() {

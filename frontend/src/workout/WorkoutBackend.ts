@@ -88,6 +88,18 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
         return this.workoutExerciseSetBackend.insert(set);
     }
+    /**
+     * Sama kuin WorkoutExerciseSetBackend.update.
+     */
+    public updateSet(set: Array<Enj.API.WorkoutExerciseSetRecord>|Enj.API.WorkoutExerciseSetRecord) {
+        return this.workoutExerciseSetBackend.update(Array.isArray(set) ? set : [set]);
+    }
+    /**
+     * Sama kuin WorkoutExerciseSetBackend.delete.
+     */
+    public deleteSet(set: Enj.API.WorkoutExerciseSetRecord) {
+        return this.workoutExerciseSetBackend.delete(set);
+    }
 }
 
 class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
