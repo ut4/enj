@@ -17,6 +17,7 @@ import 'tests/ui/TimerTests';
 import 'tests/ui/UserMenuTests';
 import 'tests/ui/ValidatingFormTests';
 import 'tests/user/UserStateTests';
+import 'tests/workout/EditableWorkoutExerciseSetListTests';
 import 'tests/workout/EditableWorkoutExerciseTests';
 import 'tests/workout/EditableWorkoutTests';
 import 'tests/workout/OfflineHandlerRegisterationTests';

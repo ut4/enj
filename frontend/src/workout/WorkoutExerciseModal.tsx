@@ -16,6 +16,7 @@ interface Props {
  */
 class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExercise}> {
     private isInsert: boolean;
+    private workoutExerciseSetList: EditableWorkoutExerciseSetList;
     public constructor(props, context) {
         super(props, context);
         //
@@ -35,14 +36,48 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         this.setState({ workoutExercise });
     }
     /**
-     * Lähettää treeniliikkeen backendiin tallennettavaksi, ja ohjaa käyttäjän
-     * takaisin mikäli tallennus onnistui.
+     * Lähettää lomakkeeseen tapahtuneet muutokset backendiin tallennettavaksi,
+     * ja ohjaa käyttäjän takaisin mikäli tallennus onnistui.
      */
     private confirm() {
-        iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise).then(
-            () => this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.workoutExercise),
+        const newSets = this.workoutExerciseSetList ? this.workoutExerciseSetList.state.sets : null;
+        // note. suorittaa HTTP-pyynnöt vain silloin, jos tietoja on muuttunut
+        return Promise.all([
+            this.saveWorkoutExercise(),
+            this.workoutExerciseSetList && this.saveModifiedSets(),
+            this.workoutExerciseSetList && this.deleteDeletedSets()
+        ]).then(
+            () => {
+                if (newSets) { this.state.workoutExercise.sets = newSets; }
+                this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.workoutExercise);
+            },
             () => iocFactories.notify()('Treeniliikkeen ' + (this.isInsert ? 'lisä' : 'päivit') + 'ys epäonnistui', 'error')
         );
+    }
+    /**
+     * Lähettää treeniliikkeen backendiin tallennettavaksi.
+     */
+    private saveWorkoutExercise() {
+        return iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise);
+    }
+    /**
+     * Lähettää päivitetyt setit backendiin tallennettavaksi.
+     */
+    private saveModifiedSets() {
+        const modified = this.workoutExerciseSetList.getModifiedSets();
+        if (modified.length) {
+            return iocFactories.workoutBackend().workoutExerciseSetBackend.update(modified);
+        }
+    }
+    /**
+     * Lähettää poistetut setit backendiin poistettavaksi.
+     */
+    private deleteDeletedSets() {
+        const deleted = this.workoutExerciseSetList.getDeletedSets();
+        if (deleted.length) {
+            const setBackend = iocFactories.workoutBackend().workoutExerciseSetBackend;
+            return Promise.all(deleted.map(deletedSet => setBackend.delete(deletedSet)));
+        }
     }
     public render() {
         return <div class="workout-exercise-modal">
@@ -51,8 +86,8 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
                 initialExerciseId={ this.state.workoutExercise.exerciseId }
                 initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
                 onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
-            { this.state.workoutExercise.sets.length &&
-                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } }/>
+            { this.state.workoutExercise.sets.length > 0 &&
+                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
             }
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exerciseId } autoCloseOnConfirm={ true }/>
         </div>;

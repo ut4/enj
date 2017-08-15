@@ -6,6 +6,7 @@ import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutBackend, { WorkoutExercise, WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import { Exercise } from 'src/exercise/ExerciseBackend';
+import workoutTestUtils from 'tests/workout/utils';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
@@ -25,6 +26,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         testWorkoutExercise.exerciseId =  testDropdownExercises[1].id;
         testWorkoutExercise.exerciseName = testDropdownExercises[1].name;
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        shallowWorkoutBackend.workoutExerciseSetBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
@@ -69,6 +71,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
         const updateWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'updateExercise').returns(Promise.resolve());
+        const setUpdateSpy = sinon.spy(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
+        const setDeleteSpy = sinon.spy(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
         const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
@@ -93,6 +97,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             variantSelectEl.options[1].selected = true;
             utils.triggerEvent('change', variantSelectEl);
         // Hyväksy modal
+            const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
             const submitButton = utils.findButtonByContent(rendered, 'Ok');
             submitButton.click();
         // Assertoi että lähetti datan backendiin
@@ -100,12 +105,96 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             const updateData = updateWorkoutExerciseCallStub.firstCall.args[0];
             assert.equal(updateData.exerciseId, newSelectedExercise.id);
             assert.equal(updateData.exerciseVariantId, newSelectedVariant.id);
-            return updateWorkoutExerciseCallStub.firstCall.returnValue;
+            return confirmSpy.firstCall.returnValue;
         // Odota fake backend-kutsun resolve
         }).then(() => {
             assert.equal(getRenderedExerciseName(rendered),
                 testDropdownExercises[0].name + '(' + testDropdownExercises[0].variants[0].content + ')',
                 'Pitäisi lopuksi uudelleenrenderöidä päivitetyillä tiedoilla'
+            );
+            assert.ok(setUpdateSpy.notCalled, 'Ei pitäisi yrittää päivittää settejä');
+            assert.ok(setDeleteSpy.notCalled, 'Ei pitäisi yrittää poistaa settejä');
+            done();
+        });
+    });
+    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet setit, ja lopuksi renderöi näkymän', assert => {
+        sinon.stub(shallowWorkoutBackend, 'updateExercise');
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
+        const setUpdateStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
+        const setDeleteStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
+        testWorkoutExercise.sets = workoutTestUtils.getSomeSets();
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
+        </div>);
+        // Klikkaa Muokkaa-painiketta
+        const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
+        editWorkoutExerciseButton.click();
+        const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
+        const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
+        // Päivitä yhden setin tietoja modalissa
+        const secondSetWeightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[2];
+        (secondSetWeightInput as any).value = testWorkoutExercise.sets[1].weight + 5;
+        utils.triggerEvent('input', secondSetWeightInput);
+        // Hyväksy lomake
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        assert.deepEqual(setUpdateStub.firstCall.args, [[setListInstance.state.sets[1]]],
+            'Pitäisi päivittää modifioidut setit'
+        );
+        assert.ok(setDeleteStub.notCalled, 'Ei pitäisi yrittää poistaa settejä');
+        // Assertoi, että päivitti näkymän modalin sulkemisen jälkeen
+        const done = assert.async();
+        confirmSpy.firstCall.returnValue.then(() => {
+            const renderedSets = getRenderedSetItems(rendered);
+            assert.equal(renderedSets[1].textContent, getExpectedSetContent(setListInstance.state.sets[1]),
+                'Pitäisi renderöidä päivitetty setti'
+            );
+            done();
+        });
+    });
+    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet ja poistetut setit, ja lopuksi renderöi näkymän', assert => {
+        sinon.stub(shallowWorkoutBackend, 'updateExercise');
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
+        const setUpdateStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'update');
+        const setDeleteStub = sinon.stub(shallowWorkoutBackend.workoutExerciseSetBackend, 'delete');
+        testWorkoutExercise.sets = workoutTestUtils.getSomeSets();
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
+        </div>);
+        // Klikkaa Muokkaa-painiketta
+        const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
+        editWorkoutExerciseButton.click();
+        const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
+        const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
+        // Päivitä yhden setin tietoja modalissa
+        const firstSetRepsInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1];
+        (firstSetRepsInput as any).value = 90;
+        const modifiedSet = setListInstance.state.sets[0];
+        utils.triggerEvent('input', firstSetRepsInput);
+        // Poista yksi setti listalta
+        const deletedSet = setListInstance.state.sets[1];
+        const secondSetDeleteButton = workoutTestUtils.getSetListDeleteButtons(rendered)[1];
+        secondSetDeleteButton.click();
+        // Hyväksy lomake
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        assert.ok(setUpdateStub.calledOnce, 'Pitäisi päivittää modifioidut setit');
+        assert.deepEqual(setDeleteStub.firstCall.args, [deletedSet],
+            'Pitäisi tallentaa poistetut setit'
+        );
+        // Assertoi, että päivitti näkymän modalin sulkemisen jälkeen
+        const done = assert.async();
+        confirmSpy.firstCall.returnValue.then(() => {
+            const renderedSets = getRenderedSetItems(rendered);
+            const deletedSetContent = getExpectedSetContent(deletedSet);
+            assert.notOk(
+                Array.from(renderedSets).some(rs => rs.textContent === deletedSetContent),
+                'Ei pitäisi renderöidä poistettua settiä'
+            );
+            assert.equal(renderedSets[0].textContent, getExpectedSetContent(modifiedSet),
+                'Pitäisi renderöidä päivitetty setti'
             );
             done();
         });

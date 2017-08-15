@@ -8,6 +8,7 @@ import WorkoutBackend, { Workout, WorkoutExerciseBackend, WorkoutExercise } from
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import Timer from 'src/ui/Timer';
 import iocFactories from 'src/ioc';
+import workoutTestUtils from 'tests/workout/utils';
 import utils from 'tests/utils';
 
 QUnit.module('workout/EditableWorkout', hooks => {
@@ -118,6 +119,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 exerciseSelectEl.options[1].selected = true;
                 utils.triggerEvent('change', exerciseSelectEl);
         // Hyväksy modal
+                const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
                 const submitButton = utils.findButtonByContent(rendered, 'Ok');
                 submitButton.click();
         // Assertoi että lähetti datan backendiin
@@ -130,7 +132,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 assert.equal(insertedWorkoutExercise.exerciseVariantId, null);
                 assert.equal(insertedWorkoutExercise.exerciseVariantContent, null);
                 assert.deepEqual(insertedWorkoutExercise.sets, []);
-                return addExerciseCallStub.returnValue;
+                return confirmSpy.firstCall.returnValue;
         // Odota resolve & assertoi että renderöi lisätyn liikkeen
             })
             .then(() => {
