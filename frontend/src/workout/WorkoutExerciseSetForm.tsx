@@ -11,7 +11,7 @@ interface Props {
 /**
  * Itsevalidoituva treeniliikesettilomake.
  */
-class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: number, reps: number}> {
+class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: any, reps: any}> {
     public constructor(props, context) {
         super(props, context);
         this.evaluators = {
@@ -30,8 +30,10 @@ class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: number,
             reps: props.workoutExerciseSet.reps
         });
     }
-    public getValues(): {weight: number, reps: number} {
-        return {weight: this.state.weight, reps: this.state.reps};
+    protected receiveInputValue(e) {
+        super.receiveInputValue(e);
+        this.props.workoutExerciseSet.weight = parseFloat(this.state.weight);
+        this.props.workoutExerciseSet.reps = parseFloat(this.state.reps);
     }
     public render() {
         return <div>

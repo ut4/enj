@@ -19,9 +19,6 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
      * takaisin mikäli tallennus onnistui.
      */
     private confirm() {
-        const values = this.workoutExerciseSetForm.getValues();
-        this.props.workoutExerciseSet.weight = values.weight;
-        this.props.workoutExerciseSet.reps = values.reps;
         iocFactories.workoutBackend().insertSet(this.props.workoutExerciseSet).then(
             () => this.props.afterInsert(this.props.workoutExerciseSet),
             () => iocFactories.notify()('Setin lisäys epäonnistui', 'error')
