@@ -30,8 +30,10 @@ QUnit.module('workout/EditableWorkoutExerciseSetList', hooks => {
         assert.deepEqual(setListInstance.getModifiedSets(), [testSets[2], testSets[1]],
             'getModifiedSets pitäisi palauttaa tähän mennessä muutetut itemit'
         );
-        assert.deepEqual(setListInstance.props.workoutExerciseSets, originalSets,
-            'Ei pitäisi mutatoida propseja ennen lomakkeen hyväksymistä'
+        assert.equal(
+            setListInstance.props.workoutExerciseSets.map(s => s.id).join(),
+            originalSets.map(s => s.id).join(),
+            'Ei pitäisi mutatoida propsin järjestystä ennen lomakkeen hyväksymistä'
         );
         assert.ok(onChangeSpy.calledOnce, 'Pitäisi triggeröidä props.onChange');
     });

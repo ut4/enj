@@ -6,12 +6,13 @@ import { arrayUtils } from 'src/common/utils';
  * Treenin settilista.
  */
 class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>}, {sets: Array<Enj.API.WorkoutExerciseSetRecord>}> {
-    private initialValues: Array<{weight: number, reps: number}>;
+    private initialValues: Array<{weight: number, reps: number, ordinal: number}>;
     public componentWillMount() {
         this.state = {sets: this.props.workoutExerciseSets.slice(0)};
         this.initialValues = this.state.sets.map(set => ({
             weight: set.weight,
-            reps: set.reps
+            reps: set.reps,
+            ordinal: set.ordinal
         }));
     }
     /**
@@ -19,10 +20,11 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
      */
     public getModifiedSets(): Array<Enj.API.WorkoutExerciseSetRecord> {
         return this.state.sets.filter(set => {
-            const original = this.props.workoutExerciseSets.find(o => o.id === set.id);
-            const initialValues = this.initialValues[this.props.workoutExerciseSets.indexOf(original)];
-            return (set.weight !== initialValues.weight ||
-                    set.reps !== initialValues.reps) === true;
+            const originalItem = this.props.workoutExerciseSets.find(o => o.id === set.id);
+            const initialValues = this.initialValues[this.props.workoutExerciseSets.indexOf(originalItem)];
+            return set.weight !== initialValues.weight ||
+                    set.reps !== initialValues.reps ||
+                    set.ordinal !== initialValues.ordinal;
         });
     }
     /**
@@ -35,7 +37,14 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
     }
     private swapSets(direction, index) {
         const sets = this.state.sets;
-        arrayUtils.swap(sets, direction, index);
+        const set = sets[index];
+        if (arrayUtils.swap(sets, direction, index)) {
+            const swappedOrdinal = sets[index].ordinal;
+            sets[index].ordinal = set.ordinal;
+            set.ordinal = swappedOrdinal;
+        } else {
+            return;
+        }
         this.setState({sets});
         this.props.onChange(this.state.sets);
     }

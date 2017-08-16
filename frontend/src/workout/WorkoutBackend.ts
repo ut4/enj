@@ -139,9 +139,9 @@ class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> 
     public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
         const workoutExercise = list[index];
         if (arrayUtils.swap(list, direction, index)) {
-            const swappedOrderDef = list[index].ordinal;
+            const swappedOrdinal = list[index].ordinal;
             list[index].ordinal = workoutExercise.ordinal;
-            workoutExercise.ordinal = swappedOrderDef;
+            workoutExercise.ordinal = swappedOrdinal;
             return this.update([list[index], workoutExercise]);
         } else {
             throw new Error('Array swap failed.');
