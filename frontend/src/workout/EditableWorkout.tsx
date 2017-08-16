@@ -2,6 +2,7 @@ import Component from 'inferno-component';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutEndModal from 'src/workout/WorkoutEndModal';
 import WorkoutExerciseModal from 'src/workout/WorkoutExerciseModal';
+import { arrayUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 import Timer from 'src/ui/Timer';
 import Modal from 'src/ui/Modal';
@@ -31,7 +32,11 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
     private openExerciseAddModal() {
         Modal.open(() =>
             <WorkoutExerciseModal
-                workoutExercise={ ({workoutId: this.props.workout.id, ordinal: this.props.workout.exercises.length, sets: []}) }
+                workoutExercise={ {
+                    workoutId: this.props.workout.id,
+                    ordinal: arrayUtils.max(this.props.workout.exercises, 'ordinal') + 1,
+                    sets: []
+                } }
                 afterInsert={ workoutExercise => {
                     this.props.workout.exercises.push(workoutExercise);
                     this.forceUpdate();

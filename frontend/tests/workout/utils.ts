@@ -17,9 +17,9 @@ const utils = {
     },
     getSomeSets() {
         return [
-            {id: 'someuuid20', weight: 10, reps: 10, workoutExerciseId: 'someuuid10'},
-            {id: 'someuuid21', weight: 11, reps: 12, workoutExerciseId: 'someuuid10'},
-            {id: 'someuuid22', weight: 12, reps: 14, workoutExerciseId: 'someuuid10'}
+            {id: 'someuuid20', weight: 10, reps: 10, ordinal: 0, workoutExerciseId: 'someuuid10'},
+            {id: 'someuuid21', weight: 11, reps: 12, ordinal: 1, workoutExerciseId: 'someuuid10'},
+            {id: 'someuuid22', weight: 12, reps: 14, ordinal: 2, workoutExerciseId: 'someuuid10'}
         ];
     }
 };

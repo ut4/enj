@@ -8,10 +8,6 @@ declare module Enj {
         up: 1;
         down: 1;
     };
-    interface Utils {
-        revealLoadingIndicator: () => any;
-        hideLoadingIndicator: () => any;
-    }
     /**
      * Määrittelee API-resurssien rajapinnat.
      */
@@ -41,6 +37,7 @@ declare module Enj {
             id: AAGUID;
             weight: number;
             reps: number;
+            ordinal: number;
             workoutExerciseId: AAGUID;
         }
         interface ExerciseVariantRecord {

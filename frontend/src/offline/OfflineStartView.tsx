@@ -1,5 +1,6 @@
 import Component from 'inferno-component';
 import Offline from 'src/offline/Offline';
+import { domUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 
 /**
@@ -19,17 +20,16 @@ class OfflineStartView extends Component<any, any> {
      * selaintietokantaan).
      */
     public confirm() {
-        const utils = iocFactories.utils();
-        utils.revealLoadingIndicator();
+        domUtils.revealLoadingIndicator();
         return this.offline.enable()
             .then(() => {
                 // TODO userService.setMaybeIsAuthenticated(false);
                 iocFactories.notify()('Offline-tila asetettu, voit nyt sulkea internet-yhteyden', 'success');
-                utils.hideLoadingIndicator();
+                domUtils.hideLoadingIndicator();
                 this.close();
             }, () => {
                 iocFactories.notify()('Offline-tilaan asettaminen epäonnistui', 'error');
-                utils.hideLoadingIndicator();
+                domUtils.hideLoadingIndicator();
             });
     }
     public close() {

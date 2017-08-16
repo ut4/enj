@@ -8,7 +8,7 @@ class Workout implements Enj.API.WorkoutRecord {
     public end: number;
     public exercises: Array<Enj.API.WorkoutExerciseRecord>;
     public userId: AAGUID;
-    constructor() {
+    public constructor() {
         this.end = 0;
         this.exercises = [];
     }
@@ -111,7 +111,7 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public exerciseVariantId: AAGUID;
     public exerciseVariantContent: string;
     public sets: Array<Enj.API.WorkoutExerciseSetRecord>;
-    constructor() {
+    public constructor() {
         this.ordinal = 0;
         this.sets = [];
     }
@@ -121,7 +121,11 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
     public id: AAGUID;
     public weight: number;
     public reps: number;
+    public ordinal: number;
     public workoutExerciseId: AAGUID;
+    public constructor() {
+        this.ordinal = 0;
+    }
 }
 
 /**

@@ -2,12 +2,17 @@ import Component from 'inferno-component';
 import WorkoutExerciseModal from 'src/workout/WorkoutExerciseModal';
 import WorkoutExerciseDeleteModal from 'src/workout/WorkoutExerciseDeleteModal';
 import WorkoutExerciseSetCreateModal from 'src/workout/WorkoutExerciseSetCreateModal';
+import { arrayUtils }  from 'src/common/utils';
 import Modal from 'src/ui/Modal';
-
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
  */
 class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord, onDelete: Function, moveExercise: Function}, any> {
+    public componentWillMount() {
+        this.props.workoutExercise.sets.sort((wes, wes2) =>
+            wes.ordinal < wes2.ordinal ? -1 : 1
+        );
+    }
     private openEditModal() {
         Modal.open(() =>
             <WorkoutExerciseModal workoutExercise={ this.props.workoutExercise } afterUpdate={ () => {
@@ -24,7 +29,12 @@ class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.Workou
     }
     private openSetAddModal() {
         Modal.open(() =>
-            <WorkoutExerciseSetCreateModal workoutExerciseSet={ {weight: 8, reps: 6, workoutExerciseId: this.props.workoutExercise.id} } afterInsert={ insertedWorkoutExerciseSet => {
+            <WorkoutExerciseSetCreateModal workoutExerciseSet={ {
+                weight: 8,
+                reps: 6,
+                ordinal: arrayUtils.max(this.props.workoutExercise.sets, 'ordinal') + 1,
+                workoutExerciseId: this.props.workoutExercise.id
+            } } afterInsert={ insertedWorkoutExerciseSet => {
                 this.props.workoutExercise.sets.push(insertedWorkoutExerciseSet);
                 this.forceUpdate();
             } }/>

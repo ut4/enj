@@ -50,13 +50,15 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         );
         assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName + '(somevariant)');
     });
-    QUnit.test('renderöi treeniliikkeen nimen, ja settilistan', assert => {
+    QUnit.test('renderöi treeniliikkeen nimen, ja settilistan järjestyksessä', assert => {
         const set1 = new WorkoutExerciseSet();
         set1.weight = 60.0;
         set1.reps = 6;
+        set1.ordinal = 1;
         const set2 = new WorkoutExerciseSet();
         set2.weight = -10.25;
         set2.reps = 4;
+        set1.ordinal = 0;
         testWorkoutExercise.sets = [set1, set2];
         //
         const rendered = itu.renderIntoDocument(
@@ -65,8 +67,12 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName);
         const setItems = getRenderedSetItems(rendered);
         assert.equal(setItems.length, 2);
-        assert.equal(setItems[0].textContent, getExpectedSetContent(set1));
-        assert.equal(setItems[1].textContent, getExpectedSetContent(set2));
+        assert.equal(setItems[0].textContent, getExpectedSetContent(set2),
+            'Pitäisi renderöidä pienemmällä ordinal-arvolla varustettu setti ensin'
+        );
+        assert.equal(setItems[1].textContent, getExpectedSetContent(set1),
+            'Pitäisi renderöidä suuremmalla ordinal-arvolla varustettu setti jälkeen'
+        );
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
         const updateWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'updateExercise').returns(Promise.resolve());
@@ -200,7 +206,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     });
     QUnit.test('Uusi sarja -painikkeen modal lähettää uuden setin backediin, ja lopuksi renderöi näkymän', assert => {
         const setInsertCallStub = sinon.stub(shallowWorkoutBackend, 'insertSet').returns(Promise.resolve());
-        testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2, workoutExerciseId: 'asd'}];
+        testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2, ordinal: 0, workoutExerciseId: 'asd'}];
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
@@ -214,7 +220,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         submitButton.click();
         // Assertoi että lähetti datan backendiin
         assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi treeniliikesetti backediin');
-        const expectedNewSet = {weight: 8, reps: 6, workoutExerciseId: testWorkoutExercise.id};
+        const expectedNewSet = {weight: 8, reps: 6, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
         assert.deepEqual(
             setInsertCallStub.firstCall.args,
             [expectedNewSet],
