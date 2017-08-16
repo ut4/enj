@@ -4,6 +4,7 @@ import WorkoutExerciseDeleteModal from 'src/workout/WorkoutExerciseDeleteModal';
 import WorkoutExerciseSetCreateModal from 'src/workout/WorkoutExerciseSetCreateModal';
 import { arrayUtils }  from 'src/common/utils';
 import Modal from 'src/ui/Modal';
+
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
  */

@@ -16,11 +16,16 @@ interface Props {
  */
 class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExercise}> {
     private isInsert: boolean;
+    private initialValues: {exerciseId: string, exerciseVariantId: string};
     private workoutExerciseSetList: EditableWorkoutExerciseSetList;
     public constructor(props, context) {
         super(props, context);
         //
         this.isInsert = this.props.hasOwnProperty('afterInsert');
+        this.initialValues = {
+            exerciseId: this.props.workoutExercise.exerciseId,
+            exerciseVariantId: this.props.workoutExercise.exerciseVariantId
+        };
         this.state = { workoutExercise: this.props.workoutExercise };
     }
     /**
@@ -58,6 +63,11 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
      * Lähettää treeniliikkeen backendiin tallennettavaksi.
      */
     private saveWorkoutExercise() {
+        if (!this.isInsert &&
+            this.state.workoutExercise.exerciseId === this.initialValues.exerciseId &&
+            this.state.workoutExercise.exerciseVariantId === this.initialValues.exerciseVariantId) {
+            return;
+        }
         return iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise);
     }
     /**

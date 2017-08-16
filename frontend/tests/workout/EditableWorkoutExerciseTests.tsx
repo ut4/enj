@@ -84,7 +84,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         </div>);
         assert.equal(getRenderedExerciseName(rendered), testDropdownExercises[1].name);
-        // Klikkaa Muokkaa-painiketta
+        // Avaa modal klikkaamalla Muokkaa-painiketta
         const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
         editWorkoutExerciseButton.click();
         const done = assert.async();
@@ -132,7 +132,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             <Modal/>
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         </div>);
-        // Klikkaa Muokkaa-painiketta
+        // Avaa modal klikkaamalla Muokkaa-painiketta
         const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
         editWorkoutExerciseButton.click();
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
@@ -168,7 +168,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             <Modal/>
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         </div>);
-        // Klikkaa Muokkaa-painiketta
+        // Avaa modal klikkaamalla Muokkaa-painiketta
         const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
         editWorkoutExerciseButton.click();
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
@@ -200,6 +200,35 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             );
             assert.equal(renderedSets[0].textContent, getExpectedSetContent(modifiedSet),
                 'Pitäisi renderöidä päivitetty setti'
+            );
+            done();
+        });
+    });
+    QUnit.test('Muokkaa-painikkeen modal ei tallenna mitään, jos tietoja ei muutu', assert => {
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
+        const workoutExerciseUpdateSpy = sinon.spy(shallowWorkoutBackend, 'updateExercise');
+        const setUpdateSpy = sinon.spy(shallowWorkoutBackend, 'updateSet');
+        const setDeleteSpy = sinon.spy(shallowWorkoutBackend, 'deleteSet');
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
+        </div>);
+        const renderedContentBefore = itu.findRenderedDOMElementWithTag(rendered, 'li').textContent;
+        // Avaa modal klikkaamalla Muokkaa-painiketta
+        const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
+        editWorkoutExerciseButton.click();
+        const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
+        // Hyväksy lomake & assertoi, ettei lähettänyt mitään backendiin
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        assert.ok(workoutExerciseUpdateSpy.notCalled, 'Ei pitäisi päivittää treeniliikettä');
+        assert.ok(setUpdateSpy.notCalled, 'Ei pitäisi päivittää settejä');
+        assert.ok(setDeleteSpy.notCalled, 'Ei pitäisi poistaa settejä');
+        // Assertoi, ettei näkymä myöskään muuttunut
+        const done = assert.async();
+        confirmSpy.firstCall.returnValue.then(() => {
+            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'li').textContent,
+                renderedContentBefore, 'Ei pitäisi uudelleenrenderöidä mitään'
             );
             done();
         });
