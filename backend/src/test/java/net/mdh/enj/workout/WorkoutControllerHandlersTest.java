@@ -1,8 +1,8 @@
 package net.mdh.enj.workout;
 
 import net.mdh.enj.api.Responses;
-import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.TestData;
+import net.mdh.enj.resources.SimpleMappers;
 import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import javax.ws.rs.core.GenericType;
@@ -248,19 +248,30 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
     }
 
+    /**
+     * Testaa samalla, että workoutDeleteTrg (ks. @/backend/schema.mariadb.sql)
+     * poistaa treeniin kuuluvat treeniliikkeet.
+     */
     @Test
     public void DELETEPoistaaTreeninJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
         // Lisää treeni
         Workout workout = this.makeCoupleOfWorkouts().get(0);
         utils.insertWorkout(workout);
-        Assert.assertNotNull(this.selectWorkout(workout.getId()));
+        // Lisää treenille yksi liike
+        Workout.Exercise we = new Workout.Exercise();
+        we.setWorkoutId(workout.getId());
+        we.setExerciseId(testExercise.getId());
+        utils.insertWorkoutExercise(we);
+        Assert.assertEquals("Treeni, ja treeniliike pitäisi olla insertoituneena tietokantaan",
+            (Integer)2, this.selectDataCount(workout.getId()));
         // Suorita DELETE-pyyntö
         Response response = this.newDeleteRequest("workout/" + workout.getId());
         Assert.assertEquals(200, response.getStatus());
         Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
         Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
         // Testaa, että poistui
-        Assert.assertNull(this.selectWorkout(workout.getId()));
+        Assert.assertEquals("Pitäisi poistaa treeni, ja treeniliike tietokannasta", (Integer)0,
+            this.selectDataCount(workout.getId()));
     }
 
     private List<Workout> makeCoupleOfWorkouts() {
@@ -285,5 +296,21 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
             new MapSqlParameterSource().addValue("id", id),
             new SimpleMappers.WorkoutMapper()
         );
+    }
+
+    /*
+     * Palauttaa treenin, ja sille kuuluvien treeniliikkeiden yhteislukumäärän.
+     */
+    private Integer selectDataCount(String workouId) {
+        Integer count = (Integer) utils.selectOneWhere(
+            "SELECT COUNT(id) as count FROM (" +
+                "SELECT id FROM workout WHERE id = :id" +
+                " UNION ALL" +
+                " SELECT id FROM workoutExercise WHERE workoutId = :id" +
+            ") as fo",
+            new MapSqlParameterSource().addValue("id", workouId),
+            (rs, i) -> rs.getInt("count")
+        );
+        return count != null ? count : 0;
     }
 }

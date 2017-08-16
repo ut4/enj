@@ -6,11 +6,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SyncableRouteValidatorTest extends SyncRouteRegisterTest{
+public class SyncableRouteValidatorTest extends SyncRouteRegisterTest {
 
     private SyncableRouteValidator syncableRouteValidator;
 
     @Before
+    @Override
     public void beforeEach() {
         super.beforeEach();
         this.syncableRouteValidator = new SyncableRouteValidator(this.testRouteRegister);

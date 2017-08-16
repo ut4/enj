@@ -22,7 +22,7 @@ public class SyncRoute extends Route {
     @Override
     public String toString() {
         return "SyncRoute{" +
-            ", url=" + this.getUrl() +
+            "url=" + this.getUrl() +
             ", method=" + this.getMethod() +
             ", pattern=" + this.getPattern() +
         "}";

@@ -1,14 +1,14 @@
 package net.mdh.enj.workout;
 
+import net.mdh.enj.exercise.Exercise;
+import net.mdh.enj.resources.TestData;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.db.DataSourceFactory;
-import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
-import net.mdh.enj.resources.TestData;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.BeforeClass;
 
 public class WorkoutControllerTestCase extends RollbackingDBJerseyTest {

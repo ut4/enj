@@ -222,9 +222,8 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
     }
 
     /*
-     * Testaa, että DELETE /api/workout/exercise/{workoutExerciseId} poistaa treeniliikkeen,
-     * ja samalla kaikki sille kuuluvat setit (ks. workoutExerciseDeleteTrg
-     * @/backend/schema.mariadb.sql).
+     * Testaa samalla, että workoutExerciseDeleteTrg (ks. @/backend/schema.mariadb.sql)
+     * poistaa treeniliikkeelle kuuluvat setit.
      */
     @Test
     public void DELETEExercisePoistaaTreeniliikkeenJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
