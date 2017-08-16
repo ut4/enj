@@ -23,11 +23,11 @@ QUnit.module('workout/EditableWorkout', hooks => {
         testWorkout = new Workout();
         testWorkout.id = 'someuuid';
         testWorkoutExercise = new WorkoutExercise();
-        testWorkoutExercise.orderDef = 1;
+        testWorkoutExercise.ordinal = 1;
         testWorkoutExercise.exerciseId = 'someuuid2';
         testWorkoutExercise.exerciseName = 'exs';
         testWorkoutExercise2 = new WorkoutExercise();
-        testWorkoutExercise2.orderDef = 2;
+        testWorkoutExercise2.ordinal = 2;
         testWorkoutExercise2.exerciseId = 'someuuid3';
         testWorkoutExercise2.exerciseName = 'exs2';
         testWorkout.exercises = [testWorkoutExercise, testWorkoutExercise2];
@@ -126,7 +126,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
                 assert.ok(addExerciseCallStub.called);
                 const insertedWorkoutExercise = addExerciseCallStub.firstCall.args[0];
                 assert.equal(insertedWorkoutExercise.workoutId, testWorkout.id);
-                assert.equal(insertedWorkoutExercise.orderDef, testWorkout.exercises.length);
+                assert.equal(insertedWorkoutExercise.ordinal, testWorkout.exercises.length);
                 assert.equal(insertedWorkoutExercise.exerciseId, testExercises[0].id);
                 assert.equal(insertedWorkoutExercise.exerciseName, testExercises[0].name);
                 assert.equal(insertedWorkoutExercise.exerciseVariantId, null);
@@ -173,7 +173,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             done();
         });
     });
-    QUnit.test('Liikkeen Siirrä alas-painike modal swappaa kahden treenin orderDef-arvot, ja renderöi näkymän', assert => {
+    QUnit.test('Liikkeen Siirrä alas-painike modal swappaa kahden treenin ordinal-arvot, ja renderöi näkymän', assert => {
         const workoutExerciseUpdate = sinon.stub(shallowWorkoutBackend.workoutExerciseBackend, 'update').returns(Promise.resolve());
         const originalWorkoutExerciseList = JSON.parse(JSON.stringify(testWorkout.exercises));
         const rendered = itu.renderIntoDocument(<EditableWorkout workout={ testWorkout }/>);
@@ -183,13 +183,13 @@ QUnit.module('workout/EditableWorkout', hooks => {
         const moveWorkoutExerciseDownButton = utils.findButtonByAttribute(rendered, 'title', 'Siirrä alas');
         moveWorkoutExerciseDownButton.click();
         //
-        assert.ok(workoutExerciseUpdate.calledOnce, 'Pitäisi lähettää uudet orderDef-arvot backendiin');
+        assert.ok(workoutExerciseUpdate.calledOnce, 'Pitäisi lähettää uudet ordinal-arvot backendiin');
         const expectedPUTJSON = JSON.stringify([
-            Object.assign(originalWorkoutExerciseList[1], {orderDef: 1}),
-            Object.assign(originalWorkoutExerciseList[0], {orderDef: 2})
+            Object.assign(originalWorkoutExerciseList[1], {ordinal: 1}),
+            Object.assign(originalWorkoutExerciseList[0], {ordinal: 2})
         ]);
         assert.deepEqual(JSON.stringify(workoutExerciseUpdate.firstCall.args), `[${expectedPUTJSON}]`,
-            'Pitäisi lähettää treeniliikkeet päivitetyillä orderDef-arvoilla backendiin'
+            'Pitäisi lähettää treeniliikkeet päivitetyillä ordinal-arvoilla backendiin'
         );
         assert.equal(JSON.stringify(testWorkout.exercises), JSON.stringify(originalWorkoutExerciseList),
             'Ei pitäisi mutatoida props.workout.exercises-listaa ennen toiminnon resolvaamista'

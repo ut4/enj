@@ -29,7 +29,7 @@ declare module Enj {
         }
         interface WorkoutExerciseRecord {
             id: AAGUID;
-            orderDef: number;
+            ordinal: number;
             workoutId: AAGUID;
             exerciseId: AAGUID;
             exerciseName: string;

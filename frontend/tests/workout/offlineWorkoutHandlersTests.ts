@@ -120,9 +120,9 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
         updated1.exerciseId = 'someuuid22';
         updated1.exerciseVariantId = 'someuuid30';
         const updated2 = JSON.parse(JSON.stringify(workoutExercise2));
-        updated2.orderDef = 3;
+        updated2.ordinal = 3;
         const updated3 = JSON.parse(JSON.stringify(workoutExercise3));
-        updated3.orderDef = 2;
+        updated3.ordinal = 2;
         const updatedExercises = [updated2, updated3, updated1];
         //
         const done = assert.async();

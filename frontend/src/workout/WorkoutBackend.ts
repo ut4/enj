@@ -104,7 +104,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
 
 class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public id: AAGUID;
-    public orderDef: number;
+    public ordinal: number;
     public workoutId: AAGUID;
     public exerciseId: AAGUID;
     public exerciseName: string;
@@ -112,7 +112,7 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public exerciseVariantContent: string;
     public sets: Array<Enj.API.WorkoutExerciseSetRecord>;
     constructor() {
-        this.orderDef = 0;
+        this.ordinal = 0;
         this.sets = [];
     }
 }
@@ -129,15 +129,15 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
  */
 class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {
     /**
-     * Päivittää treeniliikkeiden swapatut orderDef-arvot backendiin, sekä swappaa
+     * Päivittää treeniliikkeiden swapatut ordinal-arvot backendiin, sekä swappaa
      * itemit keskenään taulukossa {list}.
      */
     public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
         const workoutExercise = list[index];
         if (arrayUtils.swap(list, direction, index)) {
-            const swappedOrderDef = list[index].orderDef;
-            list[index].orderDef = workoutExercise.orderDef;
-            workoutExercise.orderDef = swappedOrderDef;
+            const swappedOrderDef = list[index].ordinal;
+            list[index].ordinal = workoutExercise.ordinal;
+            workoutExercise.ordinal = swappedOrderDef;
             return this.update([list[index], workoutExercise]);
         } else {
             throw new Error('Array swap failed.');

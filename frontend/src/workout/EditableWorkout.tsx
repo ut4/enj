@@ -13,7 +13,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
     private timer?: Timer;
     public componentWillMount() {
         this.props.workout.exercises.sort((we, we2) =>
-            we.orderDef < we2.orderDef ? -1 : 1
+            we.ordinal < we2.ordinal ? -1 : 1
         );
     }
     private openWorkoutEndModal() {
@@ -31,7 +31,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
     private openExerciseAddModal() {
         Modal.open(() =>
             <WorkoutExerciseModal
-                workoutExercise={ ({workoutId: this.props.workout.id, orderDef: this.props.workout.exercises.length, sets: []}) }
+                workoutExercise={ ({workoutId: this.props.workout.id, ordinal: this.props.workout.exercises.length, sets: []}) }
                 afterInsert={ workoutExercise => {
                     this.props.workout.exercises.push(workoutExercise);
                     this.forceUpdate();
