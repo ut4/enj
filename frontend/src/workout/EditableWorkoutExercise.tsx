@@ -5,10 +5,16 @@ import WorkoutExerciseSetCreateModal from 'src/workout/WorkoutExerciseSetCreateM
 import { arrayUtils }  from 'src/common/utils';
 import Modal from 'src/ui/Modal';
 
+interface Props {
+    workoutExercise: Enj.API.WorkoutExerciseRecord;
+    onDelete: Function;
+    moveExercise: Function;
+}
+
 /**
  * Yhden #/treeni/:id-treenin liikelistan yksi itemi.
  */
-class EditableWorkoutExercise extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord, onDelete: Function, moveExercise: Function}, any> {
+class EditableWorkoutExercise extends Component<Props, any> {
     public componentWillMount() {
         this.props.workoutExercise.sets.sort((wes, wes2) =>
             wes.ordinal < wes2.ordinal ? -1 : 1

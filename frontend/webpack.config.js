@@ -16,6 +16,7 @@ module.exports = {
         'inferno-router': 'Inferno.Router',
         history: 'History',
         dexie: 'Dexie',
+        pikaday: 'Pikaday',
         sw: 'SWManager',
         // -- Testiriippuvuudet -----------------
         'inferno-test-utils': 'Inferno.TestUtils',

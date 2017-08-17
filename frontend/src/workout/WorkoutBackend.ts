@@ -42,8 +42,8 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
      * Palauttaa tämän päivän treenien hakuun tarvittavat url-parametrit. esim.
      * '?startFrom=<unixTimeStamp>&startTo=<unixTimeStamp>'
      */
-    public makeTimestampRangeUrlParams(): string {
-        const startOfDay = new Date();
+    public makeTimestampRangeUrlParams(date?: Date): string {
+        const startOfDay = date || new Date();
         startOfDay.setHours(0);
         startOfDay.setMinutes(0);
         startOfDay.setSeconds(0);
@@ -53,10 +53,10 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
                 '&startTo=' + (startOfDayTimestamp + 86399); // 24h sekunteina - 1
     }
     /**
-     * Hakee vain tämän päivän treenit backendistä.
+     * Hakee vain päivän {date} treenit backendistä.
      */
-    public getTodaysWorkouts() {
-        return this.getAll(this.makeTimestampRangeUrlParams());
+    public getDaysWorkouts(date?: Date) {
+        return this.getAll(this.makeTimestampRangeUrlParams(date));
     }
     /**
      * Sama kuin WorkoutExerciseBackend.insert.

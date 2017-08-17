@@ -643,10 +643,16 @@ footer a {
 }
 
 /* -- Treeninäkymät ---------- */
+.workout-view h2 .arrow-black { margin: 0 -5px -7px 2px; top: -7px; position: relative; opacity: 0.7; }
+.workout-view .datepicker { position: absolute; transform: translate(-85%, 45px); z-index: 1; }
 .workout-view > div { margin-top: -10px; }
 .workout-timer { float: left; margin-bottom: 10px; }
 .workout-timer + button { float: right; margin-top: -7px; }
 .editable-workout > ul:first-of-type { clear: both;}
+.workout-view.not-current > .nice-button,
+.workout-view.not-current .editable-workout > .nice-button:last-of-type,
+.workout-view.not-current .dark-list button { display: none; }
+.workout-view.not-current .content { margin: 0; }
 
 .workout-exercise-modal table { width: auto }
 .workout-exercise-modal table .icon-button { opacity: .25 }
@@ -698,6 +704,9 @@ footer a {
         font-weight: bold;
         position: absolute;
         left: -50%;
+    }
+    #view {
+        padding: 10px 5px;
     }
 }
 /* -- ja viewin ---------- */

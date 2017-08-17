@@ -14,21 +14,30 @@ QUnit.module('workout/WorkoutBackend', hooks => {
         shallowUserState = Object.create(UserState.prototype);
         workoutBackend = new WorkoutBackend(shallowHttp, 'workout', shallowUserState);
     });
-    QUnit.test('getTodaysWorkouts hakee treenit timestamp rangella', assert => {
+    QUnit.test('getDaysWorkouts hakee treenit timestamp rangella', assert => {
         const httpCallStub = sinon.stub(shallowHttp, 'get').returns('foo');
         //
-        workoutBackend.getTodaysWorkouts();
+        workoutBackend.getDaysWorkouts();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        workoutBackend.getDaysWorkouts(yesterday);
         //
-        assert.ok(httpCallStub.called);
+        assert.ok(httpCallStub.calledTwice);
         const expectedFromTimestamp = getDayStartTimestamp();
         const expectedToTimestamp = expectedFromTimestamp + SECONDS_IN_DAY - 1;
         assert.deepEqual(
             httpCallStub.firstCall.args[0].split('?')[1],
             `startFrom=${expectedFromTimestamp}&startTo=${expectedToTimestamp}`
         );
+        const expectedFromTimestamp2 = getDayStartTimestamp(yesterday);
+        const expectedToTimestamp2 = expectedFromTimestamp2 + SECONDS_IN_DAY - 1;
+        assert.deepEqual(
+            httpCallStub.secondCall.args[0].split('?')[1],
+            `startFrom=${expectedFromTimestamp2}&startTo=${expectedToTimestamp2}`
+        );
     });
-    function getDayStartTimestamp() {
-        const d = new Date();
+    function getDayStartTimestamp(date?: Date): number {
+        const d = date || new Date();
         const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 1);
         return Math.floor(dayStart.getTime() / 1000);
     }

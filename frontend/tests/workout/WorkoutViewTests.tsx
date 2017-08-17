@@ -5,37 +5,41 @@ import utils from 'tests/utils';
 import WorkoutBackend, { Workout } from 'src/workout/WorkoutBackend';
 import WorkoutView from 'src/workout/WorkoutView';
 import EditableWorkout from 'src/workout/EditableWorkout';
+import Datepicker from 'src/ui/Datepicker';
 import iocFactories from 'src/ioc';
 const emptyMessageRegExp: RegExp = /Ei treenejä/;
 const someUserId = 'uuid56';
 
 QUnit.module('workout/WorkoutView', hooks => {
-    let someTestWorkout: Enj.API.WorkoutRecord;
+    let someTestWorkouts: Array<Enj.API.WorkoutRecord>;
     let workoutBackendIocOverride: sinon.SinonStub;
     let shallowWorkoutBackend: WorkoutBackend;
     hooks.beforeEach(() => {
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
-        someTestWorkout = {id:'uuid', start: 2, exercises: [], userId: 'uuid2'};
+        someTestWorkouts = [
+            {id:'uuid1', start: 1, exercises: [], userId: 'uuid2'},
+            {id:'uuid2', start: 2, exercises: [], userId: 'uuid2'}
+        ];
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
-            .returns(Promise.resolve([someTestWorkout]));
+        const todaysWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve(someTestWorkouts));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
         //
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+        todaysWorkoutsFetch.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
-            assert.equal(currentWorkoutListItems.length, 1);
+            assert.equal(currentWorkoutListItems.length, 2);
             done();
         });
     });
     QUnit.test('mount näyttää viestin mikäli current-treenejä ei löydy', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.resolve([]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -50,7 +54,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount handlaa epäonnistuneen current-treenien haun', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts')
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.reject({err: 'fo'}));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView/>);
@@ -66,8 +70,41 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
+    QUnit.test('Datepickerin valinta hakee valitun päivän treenit, ja renderöi ne näkymään', assert => {
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts');
+        currentWorkoutsFetch.onFirstCall().returns(Promise.resolve([someTestWorkouts[1]]));
+        currentWorkoutsFetch.onSecondCall().returns(Promise.resolve([someTestWorkouts[0]]));
+        //
+        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        let renderedWorkoutBefore;
+        // Odota, että initial-treeni latautuu
+        const done = assert.async();
+        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+            renderedWorkoutBefore = getRenderedWorkoutItems(rendered)[0];
+            // Avaa datepicker
+            const datePickerOpenButton = utils.findButtonByAttribute(rendered, 'title', 'Valitse päivä');
+            datePickerOpenButton.click();
+            // Simuloi datepickerin klikkaus (datePicker.props.onSelect(...))
+            const expectedDate = new Date();
+            expectedDate.setDate(new Date().getDate() !== 1 ? expectedDate.getDate() - 1 : expectedDate.getDate() + 1);
+            const datePicker = itu.findRenderedVNodeWithType(rendered, Datepicker).children;
+            (datePicker as any).props.onSelect(expectedDate);
+            //
+            assert.ok(currentWorkoutsFetch.calledTwice, 'Pitäisi hakea uudet treenit');
+            assert.ok(currentWorkoutsFetch.secondCall.args, [expectedDate],
+                'Pitäisi hakea uudet treenit valitulta päivältä'
+            );
+            return currentWorkoutsFetch.secondCall.returnValue;
+        // Odota, että toinen treeni latautuu
+        }).then(() => {
+            assert.notDeepEqual(getRenderedWorkoutItems(rendered)[0],
+                renderedWorkoutBefore, 'Pitäisi renderöidä uusi treeni'
+            );
+            done();
+        });
+    });
     QUnit.test('"Aloita uusi"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
-        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getTodaysWorkouts').returns(Promise.resolve([someTestWorkout]));
+        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([someTestWorkouts[0]]));
         const workoutFromService = new Workout();
         workoutFromService.userId = someUserId;
         const newWorkoutStub = sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
@@ -92,7 +129,7 @@ QUnit.module('workout/WorkoutView', hooks => {
                 const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
                 assert.equal(renderedWorkoutsAfter.length, workoutCountBefore + 1, 'Pitäisi renderöidä uusi treeni');
                 assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listan alkuun');
-                assert.deepEqual(renderedWorkoutsAfter[1].props.workout, someTestWorkout, 'Initial treeni pitäisi olla nyt listan 2.');
+                assert.deepEqual(renderedWorkoutsAfter[1].props.workout, someTestWorkouts[0], '1. initial treeni pitäisi olla nyt listan 2.');
                 done();
             });
         });
