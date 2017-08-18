@@ -1,6 +1,7 @@
 package net.mdh.enj;
 
 import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.stat.StatRepository;
 import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.auth.TokenService;
@@ -26,10 +27,11 @@ class InjectionBinder extends AbstractBinder {
         // Sync
         bind(new SyncRouteRegister()).to(SyncRouteRegister.class);
         bind(new AppResourceHttpClient()).to(HttpClient.class);
-        // Workout
+        // Workout & stat
         bind(WorkoutRepository.class).to(WorkoutRepository.class);
         bind(WorkoutExerciseRepository.class).to(WorkoutExerciseRepository.class);
         bind(WorkoutExerciseSetRepository.class).to(WorkoutExerciseSetRepository.class);
+        bind(StatRepository.class).to(StatRepository.class);
         // Exercise
         bind(ExerciseRepository.class).to(ExerciseRepository.class);
         // Program

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class WorkoutExerciseSetRepository extends BasicRepository<Workout.Exercise.Set> {
 
-    public final static String TABLE_NAME = "workoutExerciseSet";
+    private final static String TABLE_NAME = "workoutExerciseSet";
 
     @Inject
     WorkoutExerciseSetRepository(DataSourceFactory dSFactory) {
