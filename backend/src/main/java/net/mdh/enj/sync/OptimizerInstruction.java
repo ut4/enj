@@ -35,6 +35,9 @@ class OptimizerInstruction {
     void addDataPointer(int syncQueueItemIndex, Integer batchDataIndex) {
         this.dataPointers.add(new Pointer(syncQueueItemIndex, batchDataIndex));
     }
+    void addDataPointer(Pointer pointer) {
+        this.dataPointers.add(pointer);
+    }
     List<Pointer> getDataPointers() {
         return this.dataPointers;
     }
@@ -65,6 +68,13 @@ class OptimizerInstruction {
         Pointer(int syncQueueItemIndex, Integer batchDataIndex) {
             this.syncQueueItemIndex = syncQueueItemIndex;
             this.batchDataIndex = batchDataIndex;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null && obj instanceof Pointer &&
+                ((Pointer) obj).syncQueueItemIndex == this.syncQueueItemIndex &&
+                (((Pointer) obj).batchDataIndex == null && this.batchDataIndex == null ||
+                 ((Pointer) obj).batchDataIndex.equals(this.batchDataIndex));
         }
         @Override
         public String toString() {

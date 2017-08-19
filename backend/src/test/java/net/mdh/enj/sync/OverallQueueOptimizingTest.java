@@ -23,11 +23,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':6,'route':{'url':'workout','method':'POST'},'data':{'id':'uid4','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        // Pitäisi siirtää (1) 2. batchiin
-        expected.add(SyncQueueUtils.clone(input.get(1),
+        // Pitäisi poistaa (0)
+        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
             input.get(2).getData()
-        ));
-        // Pitäisi siirtää (1) 2. batchiin
+        )));
+        // Pitäisi poistaa (2)
         // Pitäisi poistaa (3)
         expected.add(SyncQueueUtils.clone(input.get(4), this.makeBatch(
             input.get(4).getData(),
@@ -35,6 +35,69 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expected.toString(), i.toString());
+    }
+    @Test
+    public void ryhmitteleeMyösOptimoidutItemit() throws IOException {
+        List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid2','start':3}}" +
+        "]");
+        List<SyncQueueItem> expected = new ArrayList<>();
+        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+            input.get(0).getData(),
+            input.get(2).getData()
+        )));
+        // Pitäisi poistaa (1)
+        // Pitäisi poistaa (2)
+        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
+            expected.toString(), i.toString()
+        );
+    }
+    @Test
+    public void ryhmitteleeMyösOptimoidutItemit2() throws IOException {
+        List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}," +
+            "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':3}}" +
+        "]");
+        List<SyncQueueItem> expected = new ArrayList<>();
+        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+            input.get(2).getData(),
+            input.get(3).getData()
+        )));
+        // Pitäisi poistaa (1)
+        // Pitäisi siirtää (2) 1[0]
+        // Pitäisi siirtää (3) 1[1]
+        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
+            expected.toString(), i.toString()
+        );
+    }
+    @Test
+    public void ryhmitteleeMyösOptimoidutItemit3() throws IOException {
+        List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
+            "]}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}," +
+            "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':4}}" +
+        "]");
+        List<SyncQueueItem> expected = new ArrayList<>();
+        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+            input.get(1).getData(),
+            ((List)input.get(0).getData()).get(1),
+            input.get(2).getData()
+        )));
+        // Pitäisi siirtää (1) 0[0]
+        // Pitäisi siirtää (2) 0[2]
+        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
+            expected.toString(), i.toString()
+        );
     }
     @Test
     public void optimisaatiotToimiiYhdessäComplex() throws IOException {
@@ -62,7 +125,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':21,'route':{'url':'workout','method':'PUT'},'data':[{'id':'uid1','start':1,'end':2}]}" +
         "]"));
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), ((List)input.get(20).getData()).get(0)));
+        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch((List)input.get(20).getData()).get(0)));
         expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
             input.get(1).getData(),
             input.get(6).getData(),

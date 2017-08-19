@@ -53,9 +53,10 @@ class QueueOptimizer {
         }
         if ((optimizations & GROUP_INSERTS) > 0) {
             this.traverse((item, inst) -> {
-                if (!inst.getIsProcessed() &&
+                boolean hasReplacementOpt = inst.getCode() == OptimizerInstruction.Code.REPLACE;
+                if ((!inst.getIsProcessed() || hasReplacementOpt) &&
                     item.getRoute().getMethod().equals(HttpMethod.POST)) {
-                    this.groupInsertOperations(item, this.instructions.indexOf(inst));
+                    this.groupInsertOperations(item.getRoute().getUrl(), hasReplacementOpt, this.instructions.indexOf(inst));
                 }
             });
         }
@@ -140,13 +141,16 @@ class QueueOptimizer {
      * Merkkaa samantyppiset POST-operaatiot ryhmiteltäväksi yhteen (miksi suorittaa
      * useita POST-pyyntöjä jos ne voi tehdä kerralla?).
      */
-    private void groupInsertOperations(SyncQueueItem insertItem, int indexToProcess) {
+    private void groupInsertOperations(String url, boolean isReplaced, int indexToProcess) {
         List<Integer> mergables = new ArrayList<>();
         // Prosessoitavasta indeksista loppuun
         for (int i = indexToProcess; i < this.instructions.size(); i++) {
-            if (insertItem.getRoute().equals(
-                this.queue.get(this.instructions.get(i).getSyncQueueItemIndex()).getRoute()
-            )) mergables.add(i);
+            Route r = this.queue.get(this.instructions.get(i).getSyncQueueItemIndex()).getRoute();
+            if (r.getUrl().equals(url) &&
+                (r.getMethod().equals(HttpMethod.POST) ||
+                (r.getMethod().equals(HttpMethod.PUT) && isReplaced))) {
+                mergables.add(i);
+            }
         }
         //
         if (mergables.size() < 2) {
@@ -154,16 +158,30 @@ class QueueOptimizer {
         }
         // Tee ensimmäisestä insertistä GROUP ..
         OptimizerInstruction mainInsert = this.instructions.get(mergables.get(0));
+        this.addGroupPointer(mainInsert, mainInsert);
         mainInsert.setCode(OptimizerInstruction.Code.GROUP);
         mainInsert.setAsProcessed();
-        mainInsert.addDataPointer(mainInsert.getSyncQueueItemIndex(), mainInsert.getBatchDataIndex());
         mergables.remove(0);
         // , ja lisää siihen kaikki kyseisen tyypin insertit
         for (int i: mergables) {
             OptimizerInstruction inst = this.instructions.get(i);
+            this.addGroupPointer(mainInsert, inst);
             inst.setCode(OptimizerInstruction.Code.IGNORE);
-            mainInsert.addDataPointer(inst.getSyncQueueItemIndex(), inst.getBatchDataIndex());
             inst.setAsProcessed();
+        }
+    }
+
+    private void addGroupPointer(OptimizerInstruction to, OptimizerInstruction pointer) {
+        if (pointer.getCode() == OptimizerInstruction.Code.IGNORE) {
+            return;
+        }
+        if (pointer.getCode() != OptimizerInstruction.Code.REPLACE) {
+            to.addDataPointer(pointer.getSyncQueueItemIndex(), pointer.getBatchDataIndex());
+        } else {
+            if (to.getCode() != OptimizerInstruction.Code.REPLACE)
+                to.addDataPointer(pointer.getDataPointers().get(0));
+            else
+                to.getDataPointers().set(0, pointer.getDataPointers().get(0));
         }
     }
 
