@@ -21,27 +21,30 @@ QUnit.module('offline/SyncBackend', hooks => {
     });
     QUnit.test('syncAll postaa synkattavat itemit backendiin, ja siivoaa onnistuneesti synkatut itemit selaintietokannasta', assert => {
         sinon.stub(shallowOfflineHttp, 'getRequestSyncQueue').returns(Promise.resolve(someSyncableItems));
-        const mockSuccesfullySyncIds = [6, 7];
-        const httpCallStub = sinon.stub(shallowHttp, 'post').returns(Promise.resolve(mockSuccesfullySyncIds));
+        const mockSuccesfullySyncIds = someSyncableItems.map(item => item.id);
+        const httpCallStub = sinon.stub(shallowHttp, 'post');
+        httpCallStub.onFirstCall().returns(Promise.resolve(mockSuccesfullySyncIds));
+        httpCallStub.onSecondCall().returns(Promise.resolve([mockSuccesfullySyncIds[0]]));
         const cleanUpCallStub = sinon.stub(shallowOfflineHttp, 'removeRequestsFromQueue').returns(Promise.resolve(678));
         const done = assert.async();
-        syncBackend.syncAll().then(results => {
+        // Kutsu 1 -------------------------------------------------------------
+        syncBackend.syncAll().then(result => {
             assert.ok(httpCallStub.calledOnce, 'Pitäisi lähettää HTTP-pyyntö');
-            assert.deepEqual(
-                httpCallStub.firstCall.args, // 0 = url, 1 = data, 2 = forceRequest/skipOfflineCheck
-                ['sync', someSyncableItems, undefined],
-                'Pitäisi POSTata syncQueue backendiin'
+            assert.ok(cleanUpCallStub.calledAfter(httpCallStub), 'Pitäisi siivota HTTP:n jälkeen');
+            assert.deepEqual(httpCallStub.firstCall.args, // 0 = url, 1 = data, 2 = forceRequest/skipOfflineCheck
+                ['sync', someSyncableItems, undefined], 'Pitäisi POSTata syncQueue backendiin'
             );
-            assert.ok(cleanUpCallStub.calledAfter(httpCallStub));
-            assert.deepEqual(
-                cleanUpCallStub.firstCall.args,
-                [mockSuccesfullySyncIds],
-                'Pitäisi siivota onnistuneesti synkatut itemit selaintietokannasta'
+            assert.deepEqual(cleanUpCallStub.firstCall.args, [mockSuccesfullySyncIds],
+                'Pitäisi siivota onnistuneesti synkatut itemit (kaikki) selaintietokannasta'
             );
-            assert.equal(
-                results,
-                678,
+            assert.equal(result, 678,
                 'Pitäisi palauttaa onnistuneesti synkattujen&siivottujen itemeiden lukumäärä'
+            );
+        // Kutsu 2 -------------------------------------------------------------
+            return syncBackend.syncAll();
+        }).then(null, () => { // note reject
+            assert.deepEqual(cleanUpCallStub.secondCall.args, [[mockSuccesfullySyncIds[0]]],
+                'Pitäisi siivota onnistuneesti synkatut itemit (yhden) selaintietokannasta'
             );
             done();
         });

@@ -32,7 +32,7 @@ public class WorkoutExerciseRepository extends BasicRepository<Workout.Exercise>
     int updateMany(List<Workout.Exercise> workoutExercises) {
         return super.updateMany(
             "UPDATE workoutExercise SET " +
-                "orderDef = :orderDef" +
+                "ordinal = :ordinal" +
                 ", exerciseId = :exerciseId" +
                 ", exerciseVariantId = :exerciseVariantId" +
             " WHERE id = :id",

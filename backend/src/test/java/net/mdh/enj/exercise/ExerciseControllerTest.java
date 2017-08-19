@@ -11,7 +11,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;

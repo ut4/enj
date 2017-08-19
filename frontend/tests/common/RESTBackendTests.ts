@@ -76,7 +76,7 @@ QUnit.module('common/RESTBackend', hooks => {
         const httpPost = sinon.mock(shallowUserState);
         const data = {id: 'someuuid', foo: 'bar'};
         httpPost.expects('delete').once()
-            .withExactArgs(testUrlNamespace + '/' + data.id)
+            .withExactArgs(testUrlNamespace + '/' + data.id, data)
             .returns(Promise.resolve({deleteCount: 1} as Enj.API.DeleteResponse));
         //
         const resultPromise = RESTBackend.delete(data);

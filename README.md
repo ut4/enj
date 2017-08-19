@@ -1,6 +1,6 @@
 # Enj: Treeni + ravintopäiväkirja
 
-UBERPWA: Inferno + TSX, serviceWorker, Jersey
+Inferno + TSX, serviceWorker, Jersey
 
 ## Riippuvuudet
 

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class WorkoutExerciseSetRepository extends BasicRepository<Workout.Exercise.Set> {
 
-    public final static String TABLE_NAME = "workoutExerciseSet";
+    private final static String TABLE_NAME = "workoutExerciseSet";
 
     @Inject
     WorkoutExerciseSetRepository(DataSourceFactory dSFactory) {
@@ -16,7 +16,7 @@ public class WorkoutExerciseSetRepository extends BasicRepository<Workout.Exerci
 
     int updateMany(List<Workout.Exercise.Set> workoutExerciseSets) {
         return super.updateMany(
-            "UPDATE workoutExerciseSet SET weight = :weight, reps = :reps WHERE id = :id",
+            "UPDATE workoutExerciseSet SET weight = :weight, reps = :reps, ordinal = :ordinal WHERE id = :id",
             workoutExerciseSets
         );
     }

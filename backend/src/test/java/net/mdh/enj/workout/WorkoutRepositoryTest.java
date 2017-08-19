@@ -46,24 +46,37 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         SearchFilters searchFilters = new SearchFilters();
         searchFilters.setUserId(TestData.TEST_USER_ID);
         List<Workout> results = this.workoutRepository.selectAll(searchFilters);
+        Assert.assertEquals(3, results.size());
+        Workout actualW1 = results.get(2);
+        Workout actualW2 = results.get(1);
+        Workout actualW3 = results.get(0);
         //
-        Assert.assertEquals(w3.toString(), results.get(0).toString());
-        Assert.assertEquals(0, results.get(0).getExercises().size());
+        Assert.assertEquals(w3.toString(), actualW3.toString());
+        Assert.assertEquals(0, actualW3.getExercises().size());
         //
-        Assert.assertEquals(w2.toString(), results.get(1).toString());
-        Assert.assertEquals(1, results.get(1).getExercises().size());
-        Assert.assertEquals(0, results.get(1).getExercises().get(0).getSets().size());
+        Assert.assertEquals(w2.toString(), actualW2.toString());
+        Assert.assertEquals(1, actualW2.getExercises().size());
+        Assert.assertEquals(w2.getExercises().get(0).toString(),
+            actualW2.getExercises().get(0).toString()
+        );
+        Assert.assertEquals(0, actualW2.getExercises().get(0).getSets().size());
         //
-        Assert.assertEquals(w1.toString(), results.get(2).toString());
-        Assert.assertEquals(1, results.get(2).getExercises().size());
-        Assert.assertEquals(1, results.get(2).getExercises().get(0).getSets().size());
+        Assert.assertEquals(w1.toString(), actualW1.toString());
+        Assert.assertEquals(1, actualW1.getExercises().size());
+        Assert.assertEquals(w1.getExercises().get(0).toString(),
+            actualW1.getExercises().get(0).toString()
+        );
+        Assert.assertEquals(1, actualW1.getExercises().get(0).getSets().size());
+        Assert.assertEquals(w1.getExercises().get(0).getSets().get(0).toString(),
+            actualW1.getExercises().get(0).getSets().get(0).toString()
+        );
     }
 
     private Workout insertWorkoutWithExerciseAndSet() {
         // Treeni
         Workout workout = this.insertWorkout(this.newTimestamp());
         // Treenille 1 liike
-        Workout.Exercise we = this.insertWorkoutExercise(workout.getId());
+        Workout.Exercise we = this.insertWorkoutExercise(workout.getId(), 0);
         this.addExercisesToWorkout(workout, we);
         // Liikkeeelle yksi setti
         Workout.Exercise.Set wes = this.insertWorkoutExercseSet(we.getId());
@@ -75,7 +88,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         // Treeni
         Workout workout = this.insertWorkout(timestamp);
         // Treenille 1 liike
-        Workout.Exercise we = this.insertWorkoutExercise(workout.getId());
+        Workout.Exercise we = this.insertWorkoutExercise(workout.getId(), 1);
         this.addExercisesToWorkout(workout, we);
         return workout;
     }
@@ -92,9 +105,9 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         return workout;
     }
 
-    private Workout.Exercise insertWorkoutExercise(String workoutId) {
+    private Workout.Exercise insertWorkoutExercise(String workoutId, int ordinal) {
         Workout.Exercise we = new Workout.Exercise();
-        we.setOrderDef(1);
+        we.setOrdinal(ordinal);
         we.setWorkoutId(workoutId);
         we.setExerciseId(WorkoutRepositoryTest.testExercise.getId());
         we.setExerciseName(WorkoutRepositoryTest.testExercise.getName());
@@ -112,6 +125,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         Workout.Exercise.Set wes = new Workout.Exercise.Set();
         wes.setWeight(100);
         wes.setReps(6);
+        wes.setOrdinal(2);
         wes.setWorkoutExerciseId(workoutExerciseId);
         this.utils.insertWorkoutExerciseSet(wes);
         return  wes;

@@ -23,7 +23,7 @@ public class SimpleMappers {
         public Workout.Exercise mapRow(ResultSet rs, int i) throws SQLException {
             Workout.Exercise we = new Workout.Exercise();
             we.setId(rs.getString("id"));
-            we.setOrderDef(rs.getInt("orderDef"));
+            we.setOrdinal(rs.getInt("ordinal"));
             we.setWorkoutId(rs.getString("workoutId"));
             we.setExerciseId(rs.getString("exerciseId"));
             we.setExerciseVariantId(rs.getString("exerciseVariantId"));
@@ -37,6 +37,7 @@ public class SimpleMappers {
             set.setId(rs.getString("id"));
             set.setWeight(rs.getDouble("weight"));
             set.setReps(rs.getInt("reps"));
+            set.setOrdinal(rs.getInt("ordinal"));
             set.setWorkoutExerciseId(rs.getString("workoutExerciseId"));
             return set;
         }

@@ -87,21 +87,21 @@ public class WorkoutRepository extends BasicRepository<Workout> {
         /**
          * Luo Workout.Exercise-beaneja resultSet-rivin tiedoilla.
          */
-        private final class WorkoutExerciseMapper extends NoDupeRowMapper<Workout.Exercise> {
+        private static final class WorkoutExerciseMapper extends NoDupeRowMapper<Workout.Exercise> {
 
             private static final String ID_COL = "workoutExerciseId";
             private final SubCollector<Workout.Exercise.Set> setCollector;
 
             private WorkoutExerciseMapper() {
                 super(ID_COL);
-                this.setCollector = new SubCollector<>(new SetMapper(), ID_COL);
+                this.setCollector = new SubCollector<>(new NoDupeSetMapper(), ID_COL);
             }
 
             @Override
             public Workout.Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
                 Workout.Exercise workoutExercise = new Workout.Exercise();
                 workoutExercise.setId(rs.getString(ID_COL));
-                workoutExercise.setOrderDef(rs.getInt("workoutExerciseOrderDef"));
+                workoutExercise.setOrdinal(rs.getInt("workoutExerciseOrdinal"));
                 workoutExercise.setWorkoutId(rs.getString("workoutExerciseWorkoutId"));
                 workoutExercise.setExerciseId(rs.getString("exerciseId"));
                 workoutExercise.setExerciseName(rs.getString("exerciseName"));
@@ -114,9 +114,9 @@ public class WorkoutRepository extends BasicRepository<Workout> {
             /**
              * Luo Workout.Exercise.Set-beaneja resultSet-rivin tiedoilla.
              */
-            private final class SetMapper extends NoDupeRowMapper<Workout.Exercise.Set> {
+            private static final class NoDupeSetMapper extends NoDupeRowMapper<Workout.Exercise.Set> {
 
-                SetMapper() {
+                NoDupeSetMapper() {
                     super("workoutExerciseSetId");
                 }
 
@@ -126,6 +126,7 @@ public class WorkoutRepository extends BasicRepository<Workout> {
                     set.setId(rs.getString("workoutExerciseSetId"));
                     set.setWeight(rs.getDouble("workoutExerciseSetWeight"));
                     set.setReps(rs.getInt("workoutExerciseSetReps"));
+                    set.setOrdinal(rs.getInt("workoutExerciseSetOrdinal"));
                     set.setWorkoutExerciseId(rs.getString("workoutExerciseSetWorkoutExerciseId"));
                     return set;
                 }

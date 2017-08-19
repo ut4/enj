@@ -1,5 +1,9 @@
 declare var Inferno: any;
+declare var Pikaday: any;
 
+declare module "pikaday" {
+    export default Pikaday;
+}
 declare module "history" {
     var createHashHistory: Function;
     export { createHashHistory };

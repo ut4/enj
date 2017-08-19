@@ -1,4 +1,13 @@
 declare module Enj {
+    //
+    type appSettings = {
+        baseUrl: string;
+        baseApiNamespace: string;
+    };
+    type direction = {
+        up: 1;
+        down: 1;
+    };
     /**
      * Määrittelee API-resurssien rajapinnat.
      */
@@ -16,15 +25,20 @@ declare module Enj {
         }
         interface WorkoutExerciseRecord {
             id: AAGUID;
-            orderDef: number;
+            ordinal: number;
             workoutId: AAGUID;
-            exercise: ExerciseRecord;
+            exerciseId: AAGUID;
+            exerciseName: string;
+            exerciseVariantId: AAGUID;
+            exerciseVariantContent: string;
             sets: Array<WorkoutExerciseSetRecord>;
         }
         interface WorkoutExerciseSetRecord {
             id: AAGUID;
             weight: number;
             reps: number;
+            ordinal: number;
+            workoutExerciseId: AAGUID;
         }
         interface ExerciseVariantRecord {
             id: AAGUID;
@@ -64,7 +78,7 @@ declare module Enj {
             data: {[key: string]: any};
         }
     }
-
+    // Http & offline stuff
     type httpMethod = {POST: 1; PUT: 1; DELETE: 1};
     interface SyncRoute {
         method: keyof httpMethod;
@@ -72,15 +86,5 @@ declare module Enj {
     }
     interface offlineHandler {
         (data: any, ...any): Promise<string>;
-    }
-
-    type appSettings = {
-        baseUrl: string;
-        baseApiNamespace: string;
-    };
-
-    interface Utils {
-        revealLoadingIndicator: () => any;
-        hideLoadingIndicator: () => any;
     }
 }

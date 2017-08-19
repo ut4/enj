@@ -32,12 +32,6 @@ class IocFactories extends IocContainer {
     public history(): any {
         return routerHistory;
     }
-    public utils(): Enj.Utils {
-        return this.memoize('utils', () => ({
-            revealLoadingIndicator: () => document.body.classList.add('loading'),
-            hideLoadingIndicator: () => document.body.classList.remove('loading')
-        } as Enj.Utils));
-    }
 
     // == Stat =================================================================
     public statBackend(): any {

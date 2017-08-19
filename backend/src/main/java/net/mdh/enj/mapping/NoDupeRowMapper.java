@@ -28,6 +28,7 @@ public abstract class NoDupeRowMapper<T> implements RowMapper<T> {
      * Palauttaa (doMapRow):in mappaaman beanin, tai arvon null, mikäli bean on
      * jo kerätty, tai kerättävän rivin pääavaimen arvo on null/0.
      */
+    @Override
     public T mapRow(ResultSet rs, int rowNum) throws SQLException {
         String id = rs.getString(this.primaryKeyColumn);
         if (id == null || this.isAlreadyCollected(id)) {

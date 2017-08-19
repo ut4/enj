@@ -70,17 +70,18 @@ class Http {
     }
     /**
      * @param {string} url
+     * @param {Object} data
      * @param {boolean=} skipOfflineCheck true, jos halutaan suorittaa HTTP-pyyntö käyttäjän offline-statuksesta huolimatta
      * @return {Promise} -> ({any} response muodossa T, {ResponseError|SyntaxError|any} rejectedValue)
      */
-    public delete<T>(url: string, skipOfflineCheck?: boolean): Promise<T> {
-        return this.sendRequest<T>(url, 'DELETE', null, skipOfflineCheck);
+    public delete<T>(url: string, data: Object, skipOfflineCheck?: boolean): Promise<T> {
+        return this.sendRequest<T>(url, 'DELETE', data, skipOfflineCheck);
     }
     /**
      * Lähettää POST|PUT|DELETE -pyynnön backendiin, tai ohjaa sen offline-handerille,
      * jos käyttäjä on offline-tilassa (ja skipOfflineCheck ei ole true).
      */
-    private sendRequest<T>(url: string, method: keyof Enj.httpMethod, data?: Object, skipOfflineCheck?: boolean): Promise<T> {
+    private sendRequest<T>(url: string, method: keyof Enj.httpMethod, data: Object, skipOfflineCheck?: boolean): Promise<T> {
         Http.pendingRequestCount++;
         return (skipOfflineCheck !== true ? this.userState.isOffline() : Promise.resolve(false))
             .then(isUserOffline =>
@@ -92,7 +93,7 @@ class Http {
                             'Content-Type': 'application/json',
                             Accept: 'application/json'
                         },
-                        body: data ? JSON.stringify(data) : null
+                        body: method !== 'DELETE' ? JSON.stringify(data) : null
                     }))
                     // Käyttäjä offline: ohjaa pyyntö offlineHttp:lle
                     : this.offlineHttp.handle(url, {method, data})

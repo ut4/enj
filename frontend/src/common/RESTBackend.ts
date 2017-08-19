@@ -54,7 +54,7 @@ class RESTBackend<T extends {id?: AAGUID}> {
      * @returns Promise -> ({number} deleteCount, {any} error)
      */
     public delete(data: T, url?: string): Promise<number> {
-        return this.http.delete<Enj.API.DeleteResponse>(this.completeUrl((url || '') + '/' + data.id)).then(response =>
+        return this.http.delete<Enj.API.DeleteResponse>(this.completeUrl('/' + data.id) + (url || ''), data).then(response =>
             response.deleteCount
         );
     }

@@ -20,6 +20,7 @@ class SyncBackend extends RESTBackend<any> {
      */
     public syncAll(): Promise<number> {
         let syncQueue;
+        let succesfulSyncs = [];
         return (
             // 1. Hae synkattavat itemit selaintietokannasta
             this.offlineHttp.getRequestSyncQueue()
@@ -34,9 +35,18 @@ class SyncBackend extends RESTBackend<any> {
                 if (syncQueue.length === 0) {
                     return 0;
                 }
-                return this.offlineHttp.removeRequestsFromQueue(
-                    idsOfSuccesfullySyncedItems
-                );
+                succesfulSyncs = idsOfSuccesfullySyncedItems;
+                return this.offlineHttp.removeRequestsFromQueue(succesfulSyncs);
+            })
+            // 4. Palauta succefulSyncCount, tai heitä poikkeus jos jokin meni pieleen
+            .then(offlineDbCleanupResult => {
+                if (syncQueue.length > 0 && !offlineDbCleanupResult) {
+                    throw new Error('Selaintietokannan tyhjennys epäonnistui. Yritä uudelleen, kiitos.');
+                }
+                if (syncQueue.length > 0 && succesfulSyncs.length !== syncQueue.length) {
+                    throw new Error(`Tallennettiin ${succesfulSyncs.length}/${syncQueue.length} toimintoa. Yritä uudelleen, kiitos.`);
+                }
+                return offlineDbCleanupResult;
             })
         );
     }
