@@ -10,9 +10,9 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeInsertOperaatiot() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\",\"start\":3}}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -29,10 +29,10 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeEpäjärjestyksessäOlevatInsertOperaatiot() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"foo\":1}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout/exercise\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid2\",\"foo\":2}}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\",\"start\":2}}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','foo':1}}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid2','foo':2}}," +
+            "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':2}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -49,11 +49,11 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeInsertOperaatiotJoissaEnsimmäinessäBatchDataa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":1}," +
-                "{\"id\":\"uid2\",\"start\":2}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\",\"start\":3}}" +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -69,10 +69,10 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeInsertOperaatiotJoissaMyöhemminBatchDataa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":[" +
-                "{\"id\":\"uid2\",\"start\":2}," +
-                "{\"id\":\"uid3\",\"start\":3}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid2','start':2}," +
+                "{'id':'uid3','start':3}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -89,13 +89,13 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeUseitaBatchDataInsertOperaatiota() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":1}," +
-                "{\"id\":\"uid2\",\"start\":2}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":[" +
-                "{\"id\":\"uid3\",\"start\":3}," +
-                "{\"id\":\"uid4\",\"start\":4}" +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid3','start':3}," +
+                "{'id':'uid4','start':4}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -113,14 +113,14 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeInsertOperaatiotComplex() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\"}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[{\"id\":\"uid2\"}]}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\"}}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/exercise/set\",\"method\":\"POST\"},\"data\":[{\"id\":\"uid4\"}]}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout/exercise/set\",\"method\":\"POST\"},\"data\":{\"id\":\"uid5\"}}," +
-            "{\"id\":6,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid6\"}}," +
-            "{\"id\":7,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid7\"}}," +
-            "{\"id\":8,\"route\":{\"url\":\"workout/exercise/set\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid8\"}}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1'}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[{'id':'uid2'}]}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3'}}," +
+            "{'id':4,'route':{'url':'workout/exercise/set','method':'POST'},'data':[{'id':'uid4'}]}," +
+            "{'id':5,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid5'}}," +
+            "{'id':6,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid6'}}," +
+            "{'id':7,'route':{'url':'workout','method':'POST'},'data':{'id':'uid7'}}," +
+            "{'id':8,'route':{'url':'workout/exercise/set','method':'PUT'},'data':{'id':'uid8'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch( // 0

@@ -10,9 +10,9 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaUpdateIteminYlikirjoitetutEsiintymät() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":3}}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), input.get(2).getData()));
@@ -26,11 +26,11 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaBatchDatanYlikirjoitetunItemin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":1}," +
-                "{\"id\":\"uid2\",\"start\":2}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":3}}" +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -46,11 +46,11 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaBatchDatanYlikirjoitetunItemin2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid2\",\"start\":2}," +
-                "{\"id\":\"uid1\",\"start\":1}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid2','start':2}," +
+                "{'id':'uid1','start':1}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":3}}" +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -66,10 +66,10 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRekisteröiBatchDatassYlikirjoitetutTiedot() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":2}," +
-                "{\"id\":\"uid2\",\"start\":3}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':2}," +
+                "{'id':'uid2','start':3}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -86,11 +86,11 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRekisteröiBatchDatassaYlikirjoitetutTiedot2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":2}," +
-                "{\"id\":\"uid2\",\"start\":3}," +
-                "{\"id\":\"uid3\",\"start\":4}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':2}," +
+                "{'id':'uid2','start':3}," +
+                "{'id':'uid3','start':4}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -108,13 +108,13 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaBatchDatassaYlikirjoitetutTiedotToisestaBatchDatasta() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":1}," +
-                "{\"id\":\"uid2\",\"start\":2}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":3}," +
-                "{\"id\":\"uid3\",\"start\":4}" +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':3}," +
+                "{'id':'uid3','start':4}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -133,13 +133,13 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaBatchDatassaYlikirjoitetutTiedotToisestaBatchDatasta2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":1}," +
-                "{\"id\":\"uid2\",\"start\":2}" +
+            "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}" +
             "]}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid2\",\"start\":4}," +
-                "{\"id\":\"uid1\",\"start\":3}" +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid2','start':4}," +
+                "{'id':'uid1','start':3}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -156,17 +156,17 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaYlikirjoitetunDatanComplex() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\"}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\"}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\"}}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/exercise\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid3\",\"orderDef\":2}," +
-                "{\"id\":\"uid2\",\"orderDef\":1}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1'}}," +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2'}}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3'}}," +
+            "{'id':4,'route':{'url':'workout/exercise','method':'PUT'},'data':[" +
+                "{'id':'uid3','orderDef':2}," +
+                "{'id':'uid2','orderDef':1}" +
             "]}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout/exercise\",\"method\":\"POST\"},\"data\":{\"id\":\"uid4\"}}," +
-            "{\"id\":6,\"route\":{\"url\":\"workout/exercise\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid3\",\"orderDef\":3}," +
-                "{\"id\":\"uid4\",\"orderDef\":2}" +
+            "{'id':5,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid4'}}," +
+            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':[" +
+                "{'id':'uid3','orderDef':3}," +
+                "{'id':'uid4','orderDef':2}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();

@@ -10,11 +10,11 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaIteminKaikkiEsiintymätJosSePoistetaanMyöhemmin() throws IOException {
         List<SyncQueueItem> ordered = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":5}}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/uid1\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":3}}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':5}}," +
+            "{'id':4,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
+            "{'id':5,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
@@ -29,11 +29,11 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaIteminKaikkiEpäjärjestyksessäOlevatEsiintymätJosSePoistetaanMyöhemmin() throws IOException {
         List<SyncQueueItem> unordered = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":{\"id\":\"uid1\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":3}}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/uid1\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":3}}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':3}}," +
+            "{'id':4,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
+            "{'id':5,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
@@ -49,13 +49,13 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaIteminBatchDatastaEsiintymätJosSePoistetaanMyöhemmin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":3}," +
-                "{\"id\":\"uid2\",\"start\":4}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':3}," +
+                "{'id':'uid2','start':4}" +
             "]}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/uid2\",\"method\":\"DELETE\"},\"data\":null}" +
+            "{'id':4,'route':{'url':'workout/uid2','method':'DELETE'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
@@ -72,15 +72,15 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizePoistaaBachDataIteminKokonaanJosSenKaikkiItemitPoistetaanMyöhemmin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid1\",\"start\":1}}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\",\"start\":2}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout\",\"method\":\"PUT\"},\"data\":[" +
-                "{\"id\":\"uid1\",\"start\":3}," +
-                "{\"id\":\"uid2\",\"start\":4}" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':2}}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid1','start':3}," +
+                "{'id':'uid2','start':4}" +
             "]}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid3\",\"start\":5}}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout/uid1\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":6,\"route\":{\"url\":\"workout/uid2\",\"method\":\"DELETE\"},\"data\":null}" +
+            "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':5}}," +
+            "{'id':5,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
+            "{'id':6,'route':{'url':'workout/uid2','method':'DELETE'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
@@ -96,11 +96,11 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeEiPoistaDeleteEsiintymääJosDataOnJoTietokannassa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout/uid1\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout\",\"method\":\"POST\"},\"data\":{\"id\":\"uid2\"}}," +
-            "{\"id\":3,\"route\":{\"url\":\"workout/uid2\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":4,\"route\":{\"url\":\"workout/uid3\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":5,\"route\":{\"url\":\"workout/uid4\",\"method\":\"DELETE\"},\"data\":null}" +
+            "{'id':1,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
+            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2'}}," +
+            "{'id':3,'route':{'url':'workout/uid2','method':'DELETE'},'data':null}," +
+            "{'id':4,'route':{'url':'workout/uid3','method':'DELETE'},'data':null}," +
+            "{'id':5,'route':{'url':'workout/uid4','method':'DELETE'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
@@ -115,8 +115,8 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeEiPoistaDeleteEsiintymääJosDataOnJoTietokannassa2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{\"id\":1,\"route\":{\"url\":\"workout/uid1\",\"method\":\"DELETE\"},\"data\":null}," +
-            "{\"id\":2,\"route\":{\"url\":\"workout/uid2\",\"method\":\"DELETE\"},\"data\":null}" +
+            "{'id':1,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
+            "{'id':2,'route':{'url':'workout/uid2','method':'DELETE'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));

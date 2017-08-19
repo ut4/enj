@@ -14,7 +14,7 @@ class QueueOptimizer {
     static final int ALL                = 7;
 
     private final List<SyncQueueItem> queue;
-    private final List<SyncingInstruction> instructions;
+    private final List<OptimizerInstruction> instructions;
 
     QueueOptimizer(List<SyncQueueItem> queue) {
         this.queue = queue;
@@ -34,28 +34,28 @@ class QueueOptimizer {
             return this.queue;
         }
         if ((optimizations & REMOVE_NONEXISTING) > 0) {
-            this.traverse((item, s) -> {
+            this.traverse((item, inst) -> {
                 // Ei tarvitse optimointia, jos prosessoitava itemi poistettu jo heti alkujaan.
                 if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-                    this.optimizeFutureDeletedOperations(item, s);
+                    this.optimizeFutureDeletedOperations(getDataId(item, inst), this.instructions.indexOf(inst));
                 }
             });
         }
         if ((optimizations & REMOVE_OUTDATED) > 0) {
-            this.traverse((item, s) -> {
+            this.traverse((item, inst) -> {
                 String method = item.getRoute().getMethod();
-                if (!s.getIsProcessed() &&
+                if (!inst.getIsProcessed() &&
                     (method.equals(HttpMethod.POST) ||
                     method.equals(HttpMethod.PUT))) {
-                    this.optimizeFutureUpdatedOperations(item, s);
+                    this.optimizeFutureUpdatedOperations(getDataId(item, inst), this.instructions.indexOf(inst));
                 }
             });
         }
         if ((optimizations & GROUP_INSERTS) > 0) {
-            this.traverse((item, s) -> {
-                if (!s.getIsProcessed() &&
+            this.traverse((item, inst) -> {
+                if (!inst.getIsProcessed() &&
                     item.getRoute().getMethod().equals(HttpMethod.POST)) {
-                    this.groupInsertOperations(item, this.instructions.indexOf(s));
+                    this.groupInsertOperations(item, this.instructions.indexOf(inst));
                 }
             });
         }
@@ -64,10 +64,10 @@ class QueueOptimizer {
 
     /**
      */
-    private void traverse(BiConsumer<SyncQueueItem, SyncingInstruction> processor) {
-        for (SyncingInstruction s: this.instructions) {
-            SyncQueueItem item = this.queue.get(s.getSyncQueueItemIndex());
-            processor.accept(item, s);
+    private void traverse(BiConsumer<SyncQueueItem, OptimizerInstruction> processor) {
+        for (OptimizerInstruction inst: this.instructions) {
+            SyncQueueItem item = this.queue.get(inst.getSyncQueueItemIndex());
+            processor.accept(item, inst);
         }
     }
 
@@ -76,34 +76,34 @@ class QueueOptimizer {
      * jonossa myöhemmin (miksi lisätä tai päivittää turhaan, jos data kuitenkin
      * lopuksi poistetaan?).
      */
-    private void optimizeFutureDeletedOperations(SyncQueueItem item, SyncingInstruction s) {
-        List<Integer> removables = this.getOutdatedOperations(item, s, HttpMethod.DELETE);
+    private void optimizeFutureDeletedOperations(String dataUUID, int index) {
+        List<Integer> removables = this.getOutdatedOperations(dataUUID, index, HttpMethod.DELETE);
         for (int i: removables) {
-            SyncingInstruction inst = this.instructions.get(i);
-            inst.setCode(SyncingInstruction.Code.IGNORE);
+            OptimizerInstruction inst = this.instructions.get(i);
+            inst.setCode(OptimizerInstruction.Code.IGNORE);
             inst.setAsProcessed();
         }
     }
 
     /**
      * Merkkaa itemin CRUD-operaatiot skipattavaksi, jos sen data päivitetään
-     * jonossa myöhemmin (miksi lisätä tai päivittää turhaan, jos data kuitenkin
-     * ylikirjoitetaan myöhemmin?).
+     * jonossa myöhemmin (miksi lisätä tai päivittää useita kertoja turhaan, jos
+     * data kuitenkin päätyy tilaan x?).
      */
-    private void optimizeFutureUpdatedOperations(SyncQueueItem item, SyncingInstruction s) {
-        List<Integer> removables = this.getOutdatedOperations(item, s, HttpMethod.PUT);
+    private void optimizeFutureUpdatedOperations(String dataUUID, int index) {
+        List<Integer> removables = this.getOutdatedOperations(dataUUID, index, HttpMethod.PUT);
         if (removables.size() < 2) {
             return;
         }
         // Merkkaa ensimmäinen esiintymä korvattavaksi viimeisellä & loput poistettavaksi
         int lastIndex = removables.get(removables.size() - 1);
         for (int i: removables) {
-            SyncingInstruction inst = this.instructions.get(i);
+            OptimizerInstruction inst = this.instructions.get(i);
             if (i != lastIndex) {
-                inst.setCode(SyncingInstruction.Code.IGNORE);
+                inst.setCode(OptimizerInstruction.Code.IGNORE);
             } else {
-                inst.setCode(SyncingInstruction.Code.REPLACE);
-                SyncingInstruction o = this.instructions.get(removables.get(0));
+                inst.setCode(OptimizerInstruction.Code.REPLACE);
+                OptimizerInstruction o = this.instructions.get(removables.get(0));
                 inst.addDataPointer(o.getSyncQueueItemIndex(), o.getBatchDataIndex());
             }
             inst.setAsProcessed();
@@ -111,19 +111,18 @@ class QueueOptimizer {
     }
 
     /**
-     * Palauttaa kaikki {item}in CRUD-operaatiot, jotka poistetaan / ylikirjoitetaan
-     * jonossa myöhemmin.
+     * Palauttaa kaikki {dataUUID}:hen liittyvät CRUD-operaatiot, jotka poistetaan
+     * / ylikirjoitetaan jonossa myöhemmin. {index} määrittelee itemin position
+     * jonossa.
      */
-    private List<Integer> getOutdatedOperations(SyncQueueItem item, SyncingInstruction s, String operationMethod) {
-        String dataUUID = getDataId(item, s);
-        int startingIndex = this.instructions.indexOf(s);
+    private List<Integer> getOutdatedOperations(String dataUUID, int index, String operationMethod) {
         List<Integer> outdated = new ArrayList<>();
         boolean hasNewerData = false;
         // Käänteisessä järjestyksessä prosessoitavaan indeksiin asti.
-        for (int i = this.instructions.size() - 1; i >= startingIndex; i--) {
-            SyncingInstruction si = this.instructions.get(i);
-            if (!si.getIsProcessed()) {
-                String operation = getOpIdentity(si);
+        for (int i = this.instructions.size() - 1; i >= index; i--) {
+            OptimizerInstruction inst = this.instructions.get(i);
+            if (!inst.getIsProcessed()) {
+                String operation = getOpIdentity(inst);
                 // Löytyikö PUT|DELETE-${uuid} operaatio?
                 if (operation.equals(operationMethod + "-" + dataUUID)) {
                     hasNewerData = true;
@@ -154,15 +153,15 @@ class QueueOptimizer {
             return;
         }
         // Tee ensimmäisestä insertistä GROUP ..
-        SyncingInstruction mainInsert = this.instructions.get(mergables.get(0));
-        mainInsert.setCode(SyncingInstruction.Code.GROUP);
+        OptimizerInstruction mainInsert = this.instructions.get(mergables.get(0));
+        mainInsert.setCode(OptimizerInstruction.Code.GROUP);
         mainInsert.setAsProcessed();
         mainInsert.addDataPointer(mainInsert.getSyncQueueItemIndex(), mainInsert.getBatchDataIndex());
         mergables.remove(0);
         // , ja lisää siihen kaikki kyseisen tyypin insertit
         for (int i: mergables) {
-            SyncingInstruction inst = this.instructions.get(i);
-            inst.setCode(SyncingInstruction.Code.IGNORE);
+            OptimizerInstruction inst = this.instructions.get(i);
+            inst.setCode(OptimizerInstruction.Code.IGNORE);
             mainInsert.addDataPointer(inst.getSyncQueueItemIndex(), inst.getBatchDataIndex());
             inst.setAsProcessed();
         }
@@ -172,23 +171,23 @@ class QueueOptimizer {
      * Palauttaa merkkijonon, jolla voidaan identifioida synkattavan itemin CRUD-
      * operaatio, ja siihen liittyvä data.
      */
-    private String getOpIdentity(SyncingInstruction s) {
-        SyncQueueItem item = this.queue.get(s.getSyncQueueItemIndex());
-        return item.getRoute().getMethod() + "-" + this.getDataId(item, s);
+    private String getOpIdentity(OptimizerInstruction inst) {
+        SyncQueueItem item = this.queue.get(inst.getSyncQueueItemIndex());
+        return item.getRoute().getMethod() + "-" + this.getDataId(item, inst);
     }
 
     /**
      * Palauttaa optimoitavan itemin CRUD-datan tunnisteen joko pyynnön bodysta
      * (PUT & POST), tai urlista (DELETE).
      */
-    private String getDataId(SyncQueueItem item, SyncingInstruction s) {
+    private String getDataId(SyncQueueItem item, OptimizerInstruction inst) {
         String id;
         // POST & PUT pyynnöissä uuid pitäisi löytyä bodystä,
         if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-            if (!s.isPartOfBatch()) {
+            if (!inst.isPartOfBatch()) {
                 id = (String) ((Map) item.getData()).get("id");
             } else {
-                id = (String) ((Map)((List)item.getData()).get(s.getBatchDataIndex())).get("id");
+                id = (String) ((Map)((List)item.getData()).get(inst.getBatchDataIndex())).get("id");
             }
         // mutta DELETE:ssä se löytyy aina urlista
         } else {
@@ -204,8 +203,8 @@ class QueueOptimizer {
     /**
      * Palauttaa {pointers}:n viittaaman datan syncQueue:sta.
      */
-    private Object getData(List<SyncingInstruction.Pointer> pointers) {
-        SyncingInstruction.Pointer pointer = pointers.get(0);
+    private Object getData(List<OptimizerInstruction.Pointer> pointers) {
+        OptimizerInstruction.Pointer pointer = pointers.get(0);
         return pointer.batchDataIndex == null
             ? this.queue.get(pointer.syncQueueItemIndex).getData()
             : ((List)this.queue.get(pointer.syncQueueItemIndex).getData()).get(pointer.batchDataIndex);
@@ -218,7 +217,7 @@ class QueueOptimizer {
      *     {data: [{"foo"}, {"bar"}], route: ...},
      *     {data: "baz", route: ...}
      * ],
-     * niin palauttaa List<SyncingInstruction>
+     * niin palauttaa List<OptimizerInstruction>
      * [
      *     {syncQueueItemIndex: 0, batchDataIndex: null, ...},
      *     {syncQueueItemIndex: 1, batchDataIndex: 0,    ...},
@@ -226,21 +225,21 @@ class QueueOptimizer {
      *     {syncQueueItemIndex: 2, batchDataIndex: null, ...}
      * ]
      */
-    private List<SyncingInstruction> newInstructionList() {
+    private List<OptimizerInstruction> newInstructionList() {
         if (this.queue.isEmpty()) {
             return null;
         }
-        List<SyncingInstruction> newList = new ArrayList<>();
+        List<OptimizerInstruction> newList = new ArrayList<>();
         for (int i = 0; i < this.queue.size(); i++) {
             SyncQueueItem syncable = this.queue.get(i);
             //
             if (!(syncable.getData() instanceof List)) {
-                newList.add(new SyncingInstruction(SyncingInstruction.Code.DEFAULT, i, null));
+                newList.add(new OptimizerInstruction(OptimizerInstruction.Code.DEFAULT, i, null));
             //
             } else {
                 List batch = (List) syncable.getData();
                 for (int i2 = 0; i2 < batch.size(); i2++) {
-                    newList.add(new SyncingInstruction(SyncingInstruction.Code.DEFAULT, i, i2));
+                    newList.add(new OptimizerInstruction(OptimizerInstruction.Code.DEFAULT, i, i2));
                 }
             }
         }
@@ -254,7 +253,7 @@ class QueueOptimizer {
     private List<SyncQueueItem> getOutput() {
         List<SyncQueueItem> optimized = new ArrayList<>();
         //
-        for (SyncingInstruction inst: this.instructions) {
+        for (OptimizerInstruction inst: this.instructions) {
             //
             SyncQueueItem item = this.queue.get(inst.getSyncQueueItemIndex());
             Integer batchTargetIndex = !inst.isPartOfBatch() ? null : optimized.indexOf(item);

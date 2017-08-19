@@ -13,7 +13,10 @@ class QueueOptimizingTestCase {
         this.objectMapper = new ObjectMapper();
     }
     List<SyncQueueItem> jsonToSyncQueue(String json) throws IOException {
-        return this.objectMapper.readValue(json, new TypeReference<List<SyncQueueItem>>() {});
+        return this.objectMapper.readValue(
+            json.replaceAll("'", "\\\""),
+            new TypeReference<List<SyncQueueItem>>() {}
+        );
     }
     List<Object> makeBatch(Object... batchItems) {
         List<Object> list = new ArrayList<>();

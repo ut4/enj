@@ -3,13 +3,18 @@ package net.mdh.enj.sync;
 import java.util.ArrayList;
 import java.util.List;
 
-class SyncingInstruction {
+/**
+ * Luokka, jonka QueueOptimizer luo jokaisesta synkkaysjonon itemistä (voi olla myös
+ * useita, jos itemillä on batch-data/taulukko-input), ja mihin se .optimize():ssa
+ * tallentaa itemiin suoritettavan optimoinnin tiedot, ja joiden avulla se lopuksi
+ * generoi optimoidun jonon .getOutput()-metodissa.
+ */
+class OptimizerInstruction {
     private Code code;
     private Pointer originalDataPointer;
     private List<Pointer> dataPointers;
     private boolean isProcessed;
-    public boolean replaced = false;
-    SyncingInstruction(Code code, int syncQueueItemIndex, Integer batchDataIndex) {
+    OptimizerInstruction(Code code, int syncQueueItemIndex, Integer batchDataIndex) {
         this.code = code;
         this.originalDataPointer = new Pointer(syncQueueItemIndex, batchDataIndex);
         this.dataPointers = new ArrayList<>();
@@ -47,11 +52,11 @@ class SyncingInstruction {
     }
     @Override
     public String toString() {
-        return "SyncingInstruction{" +
+        return "OptimizerInstruction{" +
             "code=" + code.name() +
             ", originalDataPointer=" + this.originalDataPointer +
             ", dataPointers=" + this.getDataPointers() +
-            ", isProcessed=" + (isProcessed ? "true" : "false") +
+            ", isProcessed=" + this.getIsProcessed() +
         "}";
     }
     static class Pointer {
@@ -63,7 +68,7 @@ class SyncingInstruction {
         }
         @Override
         public String toString() {
-            return "SyncingInstruction.Pointer{" +
+            return "OptimizerInstruction.Pointer{" +
                 "syncQueueItemIndex=" + syncQueueItemIndex +
                 ", batchDataIndex=" + batchDataIndex +
             "}";
