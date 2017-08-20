@@ -15,11 +15,13 @@ class QueueOptimizer {
 
     private final List<SyncQueueItem> queue;
     private final FutureDeleteOptimizer futureDeleteOptimizer;
+    private final FutureUpdateOptimizer futureUpdateOptimizer;
     private List<Pointer> pointerList;
 
     QueueOptimizer(List<SyncQueueItem> queue) {
         this.queue = new ArrayList<>(queue);
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
+        this.futureUpdateOptimizer = new FutureUpdateOptimizer();
     }
 
     /**
@@ -38,14 +40,7 @@ class QueueOptimizer {
             this.futureDeleteOptimizer.optimize(this.queue, this.newPointerList());
         }
         if ((optimizations & REMOVE_OUTDATED) > 0 && this.queue.size() > 1) {
-            this.pointerList = this.newPointerList();
-            this.traverse((item, p) -> {
-                String method = item.getRoute().getMethod();
-                if ((method.equals(HttpMethod.POST) ||
-                    method.equals(HttpMethod.PUT))) {
-                    this.optimizeFutureUpdatedOperations(getDataId(item, p), this.pointerList.indexOf(p));
-                }
-            });
+            this.futureUpdateOptimizer.optimize(this.queue, this.newPointerList());
         }
         if ((optimizations & GROUP_INSERTS) > 0 && this.queue.size() > 1) {
             this.traverse((item, p) -> {
@@ -63,31 +58,6 @@ class QueueOptimizer {
         for (Pointer p: this.pointerList) {
             SyncQueueItem item = this.queue.get(p.syncQueueItemIndex);
             processor.accept(item, p);
-        }
-    }
-
-    /**
-     * Merkkaa itemin CRUD-operaatiot skipattavaksi, jos sen data päivitetään
-     * jonossa myöhemmin (miksi lisätä tai päivittää useita kertoja turhaan, jos
-     * data kuitenkin päätyy tilaan x?).
-     */
-    private void optimizeFutureUpdatedOperations(String dataUUID, int index) {
-        List<Integer> removables = this.getOutdatedOperations(dataUUID, index, HttpMethod.PUT);
-        if (removables.size() < 2) {
-            return;
-        }
-        // Merkkaa ensimmäinen esiintymä korvattavaksi viimeisellä & loput poistettavaksi
-        int lastIndex = removables.get(removables.size() - 1);
-        for (int i: removables) {
-            Pointer inst = this.pointerList.get(i);
-            if (i != lastIndex) {
-                //inst.setCode(OptimizerInstruction.Code.IGNORE);
-            } else {
-                //inst.setCode(OptimizerInstruction.Code.REPLACE);
-                //OptimizerInstruction o = this.instructions.get(removables.get(0));
-                //inst.addDataPointer(o.getSyncQueueItemIndex(), o.getBatchDataIndex());
-            }
-            //inst.setAsProcessed();
         }
     }
 
@@ -193,16 +163,6 @@ class QueueOptimizer {
             throw new RuntimeException("Optimoitavalla itemillä tulisi olla uuid");
         }
         return id;
-    }
-
-    /**
-     * Palauttaa {pointers}:n viittaaman datan syncQueue:sta.
-     */
-    private Object getData(List<OptimizerInstruction.Pointer> pointers) {
-        OptimizerInstruction.Pointer pointer = pointers.get(0);
-        return pointer.batchDataIndex == null
-            ? this.queue.get(pointer.syncQueueItemIndex).getData()
-            : ((List)this.queue.get(pointer.syncQueueItemIndex).getData()).get(pointer.batchDataIndex);
     }
 
     /**

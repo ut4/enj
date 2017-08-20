@@ -8,9 +8,11 @@ package net.mdh.enj.sync;
 public class Pointer {
     final int syncQueueItemIndex;
     final int batchDataIndex;
+    boolean isProcessed;
     Pointer(int syncQueueItemIndex, Integer batchDataIndex) {
         this.syncQueueItemIndex = syncQueueItemIndex;
         this.batchDataIndex = batchDataIndex != null ? batchDataIndex : -1;
+        this.isProcessed = false;
     }
     @Override
     public boolean equals(Object obj) {
