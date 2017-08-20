@@ -6,10 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-abstract class FutureOperationOptimizer implements Optimizer {
+abstract class AbstractOptimizer {
 
     List<SyncQueueItem> queue;
     List<Pointer> pointerList;
+
+    /**
+     * Suorittaa optimaation x synkkausjonoon {queue}. {queue} on vapaasti
+     * mutatoitavissa.
+     */
+    abstract void optimize(List<SyncQueueItem> queue, List<Pointer> pointerList);
 
     /**
      * Palauttaa kaikki {dataUUID}:hen liittyvät CRUD-operaatiot, jotka poistetaan
@@ -80,9 +86,9 @@ abstract class FutureOperationOptimizer implements Optimizer {
      */
     void nullifyOperation(Pointer p) {
         if (p.batchDataIndex < 0) {
-            queue.set(p.syncQueueItemIndex, null);
+            this.queue.set(p.syncQueueItemIndex, null);
         } else {
-            ((List)queue.get(p.syncQueueItemIndex).getData()).set(p.batchDataIndex, null);
+            ((List)this.queue.get(p.syncQueueItemIndex).getData()).set(p.batchDataIndex, null);
         }
         p.isProcessed = true;
     }

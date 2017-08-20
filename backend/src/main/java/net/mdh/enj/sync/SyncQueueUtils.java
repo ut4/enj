@@ -13,10 +13,10 @@ class SyncQueueUtils {
         return clone;
     }
 
-    static Object makeBatch(List<OptimizerInstruction.Pointer> pointers, List<SyncQueueItem> queue) {
+    static Object makeBatch(List<Pointer> pointers, List<SyncQueueItem> queue) {
         List<Object> list = new ArrayList<>();
-        for (OptimizerInstruction.Pointer pointer: pointers) {
-            if (pointer.batchDataIndex == null) {
+        for (Pointer pointer: pointers) {
+            if (pointer.batchDataIndex < 0) {
                 list.add(queue.get(pointer.syncQueueItemIndex).getData());
             } else {
                 List batch = (List) queue.get(pointer.syncQueueItemIndex).getData();
@@ -24,10 +24,5 @@ class SyncQueueUtils {
             }
         }
         return list;
-    }
-    static Object makeBatch(OptimizerInstruction.Pointer pointer, List<SyncQueueItem> queue) {
-        List<OptimizerInstruction.Pointer> pointers = new ArrayList<>();
-        pointers.add(pointer);
-        return makeBatch(pointers, queue);
     }
 }

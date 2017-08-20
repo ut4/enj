@@ -5,7 +5,7 @@ package net.mdh.enj.sync;
  * itemin data-taulukon yhteen itemiin. Jos data-property ei ollut taulukko,
  * batchDataIndeksin arvoksi määrittyy -1.
  */
-public class Pointer {
+class Pointer {
     final int syncQueueItemIndex;
     final int batchDataIndex;
     boolean isProcessed;
@@ -25,6 +25,7 @@ public class Pointer {
         return "Pointer{" +
             "syncQueueItemIndex=" + syncQueueItemIndex +
             ", batchDataIndex=" + batchDataIndex +
+            ", isProcessed=" + isProcessed +
         "}";
     }
 }

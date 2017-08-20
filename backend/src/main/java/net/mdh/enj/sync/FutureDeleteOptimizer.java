@@ -3,7 +3,7 @@ package net.mdh.enj.sync;
 import javax.ws.rs.HttpMethod;
 import java.util.List;
 
-class FutureDeleteOptimizer extends FutureOperationOptimizer {
+class FutureDeleteOptimizer extends AbstractOptimizer {
     /**
      * Poistaa jonosta CRUD-operaatiot, joiden datalle suoritetaan DELETE-operaatio
      * myöhemmin jonossa (miksi lisätä tai päivittää turhaan, jos data kuitenkin

@@ -3,7 +3,7 @@ package net.mdh.enj.sync;
 import javax.ws.rs.HttpMethod;
 import java.util.List;
 
-class FutureUpdateOptimizer extends FutureOperationOptimizer {
+class FutureUpdateOptimizer extends AbstractOptimizer {
     /**
      * Poistaa, tai korvaa uudemmalla jonon kaikki CRUD-operaatiot, joiden data
      * päivitetään myöhemmin jonossa (miksi lisätä tai päivittää useita kertoja
