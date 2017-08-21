@@ -10,6 +10,7 @@ import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import AuthBackend     from 'src/auth/AuthBackend';
 import AuthService     from 'src/auth/AuthService';
+import UserBackend     from 'src/user/UserBackend';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
 import settings        from 'src/config/settings';
@@ -72,8 +73,8 @@ class IocFactories extends IocContainer {
     public authService(): AuthService {
         return this.memoize('authService', () => new AuthService(this.authBackend(), this.userState()));
     }
-    public userBackend(): any {
-        return null;
+    public userBackend(): UserBackend {
+        return this.memoize('userBackend', () => new UserBackend(this.http(), this.userState()));
     }
 
     // == Offline ==============================================================

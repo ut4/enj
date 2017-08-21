@@ -112,6 +112,9 @@ ul {
     padding: 0;
     text-align: left;
 }
+.end {
+    margin-bottom: 15px;
+}
 .appendix-text {
     font-size: 13px;
     margin-left: 4px;
@@ -324,7 +327,7 @@ table th {
     padding-right: 10px;
     text-align: left;
 }
-table tr:nth-of-type(2n), .striped:nth-of-type(2n) {
+table.striped tr:nth-of-type(2n), .striped:nth-of-type(2n) {
     background-color: #ECECEC;
 }
 table td {
@@ -423,6 +426,10 @@ input[type="date"] {
 .input-set input, .input-set textarea, .input-set select {
     box-sizing: border-box;
     width: 100%;
+}
+.input-set.inline input {
+    width: auto;
+    margin: 0 6px 6px 0;
 }
 .form-buttons {
     text-align: left;
@@ -667,6 +674,9 @@ footer a {
 /* -- Statistiikkanäkymät ---------- */
 .stats-view .sub-nav .text-button { padding: 8px 20px; }
 .stats-view .score { font: 60px "Fira sans heavy"; margin: -30px 0px 5px; }
+.stats-view table { width: auto; margin: 0 auto; }
+.stats-view td { padding: 2px 10px 2px 0 }
+.stats-view .inline-form { background-color: #ECECEC; padding: 20px;}
 
 /* ==== Media queries ====
 ==============================================================================*/

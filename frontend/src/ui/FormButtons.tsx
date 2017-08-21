@@ -5,6 +5,7 @@ import Modal from 'src/ui/Modal';
 interface Props {
     onConfirm: (e: Event) => any;
     onCancel?: (e: Event) => any;
+    close?: Function;
     shouldConfirmButtonBeDisabled?: () => boolean;
     autoCloseOnConfirm?: boolean;
     isModal?: false;
@@ -20,6 +21,10 @@ class FormButtons extends Component<Props, any> {
         }
     }
     protected close() {
+        if (this.props.close) {
+            this.props.close();
+            return;
+        }
         this.props.isModal !== false ? Modal.close() : iocFactories.history().goBack();
     }
     private confirm(e) {

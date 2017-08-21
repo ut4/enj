@@ -1,5 +1,8 @@
 import Component from 'inferno-component';
+import SettingsForm from 'src/stat/SettingsForm';
 import { formulae } from 'src/stat/StatBackend';
+import UserBackend from 'src/user/UserBackend';
+import iocFactories from 'src/ioc';
 
 type powerLiftSets = {
     squat: Enj.API.BestSet;
@@ -7,24 +10,36 @@ type powerLiftSets = {
     deadlift: Enj.API.BestSet;
 };
 
+interface State {
+    scores: Scores;
+    userData: Enj.API.UserRecord;
+    configMode: boolean;
+}
+
 /**
  * Komponentti #/statistiikka/voima alinäkymälle. Laskee käyttäjän kokonais-, ja
  * wilks- voimanostopisteet sekä selväkielisen voimanostotason, mikäli käyttäjältä
  * löytyy tehtyjä sarjoja vaadittavista voimanostoliikkeistä.
  */
-class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, any> {
+class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, State> {
     private powerLiftSets: powerLiftSets;
-    private scores: Scores;
+    private userDataFetch: Promise<Enj.API.UserRecord>;
     public constructor(props, context) {
         super(props, context);
-        this.updateScores(props.bestSets || []);
+        this.state = {configMode: false, scores: this.makeScores(props.bestSets || [], null), userData: null};
+    }
+    public componentWillMount() {
+        this.userDataFetch = iocFactories.userBackend().get();
     }
     public componentWillReceiveProps(props) {
-        this.updateScores(props.bestSets);
+        return this.userDataFetch.then(userData => {
+            this.state.userData = userData;
+            this.setState({scores: this.makeScores(props.bestSets, userData)});
+        });
     }
-    private updateScores(bestSets: Array<Enj.API.BestSet>) {
+    private makeScores(bestSets: Array<Enj.API.BestSet>, userData: Enj.API.UserRecord) {
         this.powerLiftSets = this.collectPowerLiftSets(bestSets);
-        this.scores = new Scores(this.powerLiftSets);
+        return new Scores(this.powerLiftSets, userData);
     }
     /**
      * Filtteröi parhaista seteistä penkki-, kyykky-, ja mave -setit.
@@ -37,11 +52,14 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, an
             deadlift: p && bestSets.find(set => set.exerciseName === 'Maastaveto')
         };
     }
+    private applyNewUserData() {
+        this.setState({scores: this.makeScores(this.props.bestSets, this.state.userData), configMode: false});
+    }
     public render() {
         return <div>
             <h2>Yhteispisteet</h2>
-            <div class="score">{ this.scores.total || '-' }</div>
-            { this.scores.total > 0 && <table><tbody>
+            <div class="score">{ this.state.scores.total || '-' }</div>
+            { this.state.scores.total > 0 && <table><tbody>
                 <tr>
                     <td>Jalkakyykky</td>
                     { this.makeBestLiftDetailEls('squat') }
@@ -57,22 +75,25 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, an
             </tbody></table> }
 
             <h2>Wilks-pisteet</h2>
-            { this.scores.total ?
+            { this.state.scores.total ?
                 [
-                    <div class="score">{ Math.round(this.scores.wilksCoefficient * this.scores.total) }</div>,
-                    <div>Wilks coefficient { this.scores.wilksCoefficient }</div>
+                    <div class="score">{ Math.round(this.state.scores.wilksCoefficient * this.state.scores.total) }</div>,
+                    <div class="end">Wilks coefficient { this.state.scores.wilksCoefficient }</div>,
+                    !this.state.configMode
+                        ? <button title="Muokkaa parametreja" class="nice-button edit" onClick={ () => this.setState({configMode: !this.state.configMode}) }>Asetukset</button>
+                        : <SettingsForm user={ this.state.userData } onDone={ () => this.applyNewUserData() }/>
                 ] :
                 <div class="score">-</div>
             }
 
             <h2>Tasosi on</h2>
-            <div class="score">{ this.scores.level }</div>
+            <div class="score">{ this.state.scores.level }</div>
             <button title="Näytä taulukko" class="arrow-button" onClick={ () => {} }>&gt;</button>
         </div>;
     }
     private makeBestLiftDetailEls(lift: keyof powerLiftSets) {
-        return this.scores.oneRepMaxes[lift] ? [
-            <td>{ this.scores.oneRepMaxes[lift] }</td>,
+        return this.state.scores.oneRepMaxes[lift] ? [
+            <td>{ this.state.scores.oneRepMaxes[lift] }</td>,
             <td>({ this.powerLiftSets[lift].bestWeight + ' x ' + this.powerLiftSets[lift].bestWeightReps })</td>
         ] : [
             <td>-</td>,
@@ -86,6 +107,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, an
  * -pisteet, ja selväkielisen voimatason.
  */
 class Scores {
+    private userData: Enj.API.UserRecord;
     public oneRepMaxes: {
         squat: number;
         bench: number;
@@ -95,7 +117,8 @@ class Scores {
     public total: number;
     public wilksCoefficient: number;
     public level: string;
-    constructor(powerLiftSets: powerLiftSets) {
+    constructor(powerLiftSets: powerLiftSets, userData: Enj.API.UserRecord) {
+        this.userData = userData || {weight: 0, isMale: true};
         this.oneRepMaxes = this.getOneRepMaxes(powerLiftSets);
         this.hasAllData = (
             this.oneRepMaxes.squat > 0 &&
@@ -139,16 +162,13 @@ class Scores {
      * Palauttaa wilks-kertoimen, tai 0, jos tarvittavaa dataa ei ole.
      */
     private getWilksCoefficient(): number {
-        const bodyWeight = 0;
-        const isMale = true;
-        return formulae.wilksCoefficient(bodyWeight, isMale);
+        return formulae.wilksCoefficient(this.userData.weight, this.userData.isMale);
     }
     /**
      * Palauttaa käyttäjän tason selväkielisenä, tai '-', jos tarvittavaa dataa ei ole.
      */
     private getLevel(): string {
-        const bodyWeight = 0;
-        return formulae.strengthLevel(this.total, bodyWeight);
+        return formulae.strengthLevel(this.total, this.userData.weight);
     }
 }
 
