@@ -181,6 +181,7 @@ ul {
     font: 0.8em "Fira sans light";
     color: #676269;
     padding: 5px 20px 5px 10px;
+    text-decoration: none;
 }
 .text-button.current {
     border-bottom: 1px solid;
@@ -608,6 +609,9 @@ header nav a {
 #user-menu a {
     padding: 0px;
 }
+.sub-nav {
+    margin-bottom: 30px;
+}
 
 /* -- footer ---------- */
 footer {
@@ -659,6 +663,10 @@ footer a {
 .workout-exercise-modal table tr:last-of-type .arrow-black {
     transform: rotate(180deg);
 }
+
+/* -- Statistiikkanäkymät ---------- */
+.stats-view .sub-nav .text-button { padding: 8px 20px; }
+.stats-view .score { font: 60px "Fira sans heavy"; margin: -30px 0px 5px; }
 
 /* ==== Media queries ====
 ==============================================================================*/

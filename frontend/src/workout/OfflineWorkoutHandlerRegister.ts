@@ -134,7 +134,7 @@ class OfflineWorkoutHandlerRegister {
      */
     public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>) {
         return this.updateCache(cachedWorkouts => {
-            // Päivitä setit niille kuuluvien treeniliikeiden settilistoihin
+            // Päivitä setit niille kuuluvien treeniliikkeiden settilistoihin
             workoutExerciseSets.forEach(wes => {
                 const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(wes.workoutExerciseId, cachedWorkouts);
                 Object.assign(workoutRef.exercises[exerciseIndex].sets.find(wes2 => wes2.id === wes.id), wes);

@@ -1,5 +1,5 @@
 import { render } from 'inferno';
-import { Router, Route } from 'inferno-router';
+import { Router, Redirect, Route } from 'inferno-router';
 import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
 import iocFactories from 'src/ioc';
@@ -14,6 +14,7 @@ asyncBoot.then(() => render(
                 <Route path="/voima" component={ views.StatsStrengthView }/>
                 <Route path="/yleista" component={ views.StatsOverviewView }/>
             </Route>
+            <Redirect from="/statistiikka" to="/statistiikka/voima"/>
             <Route path="treenit" component={ views.WorkoutsView }/>
             <Route path="treeni/:id" component={ views.WorkoutView }/>
             <Route path="ohjelmat" component={ views.ProgramView }/>

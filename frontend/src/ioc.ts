@@ -4,6 +4,7 @@ import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
 import { createHashHistory } from 'history';
+import StatBackend     from 'src/stat/StatBackend';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
@@ -34,8 +35,8 @@ class IocFactories extends IocContainer {
     }
 
     // == Stat =================================================================
-    public statBackend(): any {
-        return null;
+    public statBackend(): StatBackend {
+        return this.memoize('statBackend', () => new StatBackend(this.http()));
     }
 
     // == Workout ==============================================================

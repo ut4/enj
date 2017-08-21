@@ -40,6 +40,13 @@ declare module Enj {
             ordinal: number;
             workoutExerciseId: AAGUID;
         }
+        interface BestSet {
+            startWeight: number;
+            bestWeight: number;
+            bestWeightReps: number;
+            timesImproved: number;
+            exerciseName: string;
+        }
         interface ExerciseVariantRecord {
             id: AAGUID;
             content: string;
