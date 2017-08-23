@@ -78,7 +78,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         // Treenille 1 liike
         Workout.Exercise we = this.insertWorkoutExercise(workout.getId(), 0);
         this.addExercisesToWorkout(workout, we);
-        // Liikkeeelle yksi setti
+        // Liikkeeelle yksi sarja
         Workout.Exercise.Set wes = this.insertWorkoutExercseSet(we.getId());
         this.addSetsToWorkoutExercise(we, wes);
         return workout;

@@ -227,7 +227,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
      */
     @Test
     public void DELETEExercisePoistaaTreeniliikkeenJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
-        // Lisää ensin treeniliike & sille yksi setti
+        // Lisää ensin treeniliike & sille yksi sarja
         Workout.Exercise workoutExercise = this.makeCoupleOfWorkoutExercises().get(0);
         utils.insertWorkoutExercise(workoutExercise);
         Workout.Exercise.Set workoutExerciseSet = new Workout.Exercise.Set();
@@ -241,7 +241,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Assert.assertEquals(200, response.getStatus());
         Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
         Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
-        // Testaa, että treeniliike JA setti poistui
+        // Testaa, että treeniliike JA sarja poistui
         Assert.assertEquals((Integer)0, this.selectDataCount(workoutExercise.getId()));
     }
 

@@ -21,6 +21,8 @@ CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     passwordHash VARCHAR(255) NOT NULL,
+    bodyWeight FLOAT UNSIGNED DEFAULT NULL,
+    isMale TINYINT(1) DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 

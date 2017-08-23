@@ -41,7 +41,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void POSTExerciseSetLisääTreeniliikkeelleSetin() {
-        // Luo ensin treeniliike, johon setti lisätään
+        // Luo ensin treeniliike, johon sarja lisätään
         Workout.Exercise we = this.insertTestWorkoutExercise();
         // Luo testidata
         Workout.Exercise.Set workoutExerciseSet = new Workout.Exercise.Set();
@@ -60,7 +60,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
             new MapSqlParameterSource().addValue("id", workoutExerciseSet.getId()),
             new SimpleMappers.WorkoutExerciseSetMapper()
         );
-        Assert.assertNotNull("Pitäisi insertoida liikkelle setti", inserted);
+        Assert.assertNotNull("Pitäisi insertoida liikkelle sarja", inserted);
         Assert.assertEquals("Pitäisi insertoida POST-datalla", workoutExerciseSet.toString(),
             inserted.toString()
         );
@@ -97,7 +97,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void POSTExerciseSetAllLisääInputinKaikkiSetitTietokantaan() {
-        // Luo ensin treeniliike, johon setti lisätään
+        // Luo ensin treeniliike, johon sarja lisätään
         Workout.Exercise we = this.insertTestWorkoutExercise();
         // Luo testidata
         List<Workout.Exercise.Set> sets = this.makeCoupleOfWorkoutExerciseSets(we.getId());
@@ -137,7 +137,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void PUTExerciseSetPäivittääSetitJaPalauttaaUpdateResponsenJossaPäivitettyjenRivienLukumäärä() {
-        // Luo ensin treeniliike, johon setti lisätään
+        // Luo ensin treeniliike, johon sarja lisätään
         Workout.Exercise we = this.insertTestWorkoutExercise();
         // Luo lisää sille pari settiä
         List<Workout.Exercise.Set> array = this.makeCoupleOfWorkoutExerciseSets(we.getId());
@@ -181,7 +181,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void DELETEExerciseSetPoistaaTreeniliikesetinJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
-        // Luo ensin treeniliike, johon setti lisätään, josta se sitten voidaan poistaa :D
+        // Luo ensin treeniliike, johon sarja lisätään, josta se sitten voidaan poistaa :D
         Workout.Exercise we = this.insertTestWorkoutExercise();
         // Lisää treeniliikesetti
         Workout.Exercise.Set workoutExerciseSet = this.makeCoupleOfWorkoutExerciseSets(we.getId()).get(0);
@@ -215,7 +215,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
     }
 
     private Workout.Exercise insertTestWorkoutExercise() {
-        // Luo ensin treeniliike, johon setti lisätään
+        // Luo ensin treeniliike, johon sarja lisätään
         Workout.Exercise we = new Workout.Exercise();
         we.setWorkoutId(testWorkout.getId());
         we.setExerciseId(testExercise.getId());
