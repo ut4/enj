@@ -172,13 +172,13 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             done();
         });
     });
-    QUnit.test('insertSet lisää uuden setin treenicacheen, ja palauttaa insertCount:n', assert => {
+    QUnit.test('insertSet lisää uuden sarjan treenicacheen, ja palauttaa insertCount:n', assert => {
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         const workoutExercise = cachedWorkoutsCopy[2].exercises[0];
         const workoutExercise2 = cachedWorkoutsCopy[2].exercises[1];
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        // Luo setti & lisää viimeisen treenin toiseen liikkeeseen
+        // Luo sarja & lisää viimeisen treenin toiseen liikkeeseen
         const newWorkoutExerciseSet = new WorkoutExerciseSet();
         newWorkoutExerciseSet.weight = 40;
         newWorkoutExerciseSet.reps = 20;
@@ -199,15 +199,15 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                 })]
             ], 'Pitäisi pushata uusi liike treenicachen oikean treenin oikean liikkeen liikelistaan');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
-            assert.equal(newWorkoutExerciseSet.id, mockNewUuid, 'Pitäisi luoda setille id');
+            assert.equal(newWorkoutExerciseSet.id, mockNewUuid, 'Pitäisi luoda sarjalle id');
             done();
         });
     });
-    QUnit.test('updateSet päivittää setit treenicachesta, ja palauttaa deleteCount:n', assert => {
+    QUnit.test('updateSet päivittää sarjat treenicachesta, ja palauttaa deleteCount:n', assert => {
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        // Päivitä viimeisen treenin ensimmäisen liikkeen kummankin setin arvoja
+        // Päivitä viimeisen treenin ensimmäisen liikkeen kummankin sarjan arvoja
         const setsParent = mockCachedWorkouts[2].exercises[0];
         const setsToUpdate = [
             Object.assign({}, setsParent.sets[0], {weight: 1}),
@@ -227,16 +227,16 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                         mockCachedWorkouts[2].exercises[1]
                     ]
                 })]
-            ], 'Pitäisi päivittää kumpikin setti treenicachen oikean treenin oikean liikkeen settilistasta');
+            ], 'Pitäisi päivittää kumpikin sarja treenicachen oikean treenin oikean liikkeen sarjalistasta');
             assert.equal(result, JSON.stringify({updateCount: 2}), 'Pitäisi palauttaa updateCount');
             done();
         });
     });
-    QUnit.test('deleteSet poistaa setin treenicachesta, ja palauttaa deleteCount:n', assert => {
+    QUnit.test('deleteSet poistaa sarjan treenicachesta, ja palauttaa deleteCount:n', assert => {
         const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
         sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        // Poista setti viimeisen treenin ensimmäisen liikkeen settilistasta
+        // Poista sarja viimeisen treenin ensimmäisen liikkeen sarjalistasta
         const setsParent = mockCachedWorkouts[2].exercises[0];
         const setToDelete = setsParent.sets[0];
         const done = assert.async();
@@ -253,7 +253,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                         mockCachedWorkouts[2].exercises[1]
                     ]
                 })]
-            ], 'Pitäisi poistaa setti treenicachen oikean treenin oikean liikkeen settilistasta');
+            ], 'Pitäisi poistaa sarja treenicachen oikean treenin oikean liikkeen sarjalistasta');
             assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteCount');
             done();
         });

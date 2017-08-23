@@ -17,7 +17,7 @@ class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEn
     }
     /**
      * Päivittää treenille lopetusajan backendiin, tai poistaa treenin kokonaan,
-     * jos sillä ei ollut yhtään tehtyä settiä.
+     * jos sillä ei ollut yhtään tehtyä sarjaa.
      */
     private confirm() {
         this.props.workout.end = Math.floor(Date.now() / 1000);

@@ -15,13 +15,13 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
         this.state = {validity: true};
     }
     /**
-     * Lähettää treeniliikesetin backendiin tallennettavaksi, ja ohjaa käyttäjän
-     * takaisin mikäli tallennus onnistui.
+     * Lähettää sarjan backendiin tallennettavaksi, ja ohjaa käyttäjän takaisin
+     * mikäli tallennus onnistui.
      */
     private confirm() {
         iocFactories.workoutBackend().insertSet(this.props.workoutExerciseSet).then(
             () => this.props.afterInsert(this.props.workoutExerciseSet),
-            () => iocFactories.notify()('Setin lisäys epäonnistui', 'error')
+            () => iocFactories.notify()('Sarjan lisäys epäonnistui', 'error')
         );
     }
     public render() {

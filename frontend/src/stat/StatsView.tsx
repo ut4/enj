@@ -28,7 +28,7 @@ class StatsView extends Component<any, any> {
             });
     }
     /**
-     * Hakee parhaat setit backendistä.
+     * Hakee parhaat sarjat backendistä.
      */
     private fetchBestSets(): Promise<Array<Enj.API.BestSet>> {
         return (this.bestSets

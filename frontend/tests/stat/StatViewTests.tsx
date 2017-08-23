@@ -36,33 +36,33 @@ QUnit.module('stat/StatView', hooks => {
         const rendered = itu.renderIntoDocument(<C children={ mockSubView }/>);
         return [rendered, loadHook];
     }
-    QUnit.test('lataa parhaat setit StatProgressView alinäkymälle', assert => {
+    QUnit.test('lataa parhaat sarjat StatProgressView alinäkymälle', assert => {
         sinon.stub(shallowStatBackend, 'getBestSets').returns(Promise.resolve('fo'));
         //
         const [rendered, loadHook] = render('/statistiikka/kehitys');
         const done = assert.async();
         loadHook.firstCall.returnValue.then(() => {
             assert.deepEqual(mockSubView.props.bestSets, 'fo', 'Pitäisi passata ' +
-                'alinäkymälle parhaat setit');
+                'alinäkymälle parhaat sarjat');
             done();
         });
         //
         assertNthLinkHasCurrentClass(assert, rendered, 0);
     });
-    QUnit.test('lataa parhaat setit StatStrengthView alinäkymälle', assert => {
+    QUnit.test('lataa parhaat sarjat StatStrengthView alinäkymälle', assert => {
         sinon.stub(shallowStatBackend, 'getBestSets').returns(Promise.resolve('fo'));
         const [rendered, loadHook] = render('/statistiikka/voima');
         //
         const done = assert.async();
         loadHook.firstCall.returnValue.then(() => {
             assert.deepEqual(mockSubView.props.bestSets, 'fo', 'Pitäisi passata ' +
-                'alinäkymälle parhaat setit');
+                'alinäkymälle parhaat sarjat');
             done();
         });
         //
         assertNthLinkHasCurrentClass(assert, rendered, 1);
     });
-    QUnit.test('lataa parhaat setit StatOverviewView alinäkymälle', assert => {
+    QUnit.test('lataa parhaat sarjat StatOverviewView alinäkymälle', assert => {
         //
         assert.strictEqual('todo', 'foo');
     });

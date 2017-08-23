@@ -121,7 +121,7 @@ class OfflineWorkoutHandlerRegister {
      */
     public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
         return this.updateCache(cachedWorkouts => {
-            // Lisää uusi setti sille kuuluvan treeniliikkeen settilistaan
+            // Lisää uusi sarja sille kuuluvan treeniliikkeen sarjalistaan
             const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(set.workoutExerciseId, cachedWorkouts);
             set.id = this.workoutBackend.utils.uuidv4();
             workoutRef.exercises[exerciseIndex].sets.push(set);
@@ -134,7 +134,7 @@ class OfflineWorkoutHandlerRegister {
      */
     public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>) {
         return this.updateCache(cachedWorkouts => {
-            // Päivitä setit niille kuuluvien treeniliikkeiden settilistoihin
+            // Päivitä sarjat niille kuuluvien treeniliikkeiden sarjalistoihin
             workoutExerciseSets.forEach(wes => {
                 const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(wes.workoutExerciseId, cachedWorkouts);
                 Object.assign(workoutRef.exercises[exerciseIndex].sets.find(wes2 => wes2.id === wes.id), wes);
@@ -147,7 +147,7 @@ class OfflineWorkoutHandlerRegister {
      */
     public deleteSet(workoutExerciseSet: Enj.API.WorkoutExerciseSetRecord) {
         return this.updateCache(cachedWorkouts => {
-            // Poista setti sille kuuluvan treeniliikkeen settilistasta
+            // Poista sarja sille kuuluvan treeniliikkeen sarjalistasta
             const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(
                 workoutExerciseSet.workoutExerciseId,
                 cachedWorkouts

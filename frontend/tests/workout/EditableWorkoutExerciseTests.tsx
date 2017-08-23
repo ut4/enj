@@ -34,7 +34,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         workoutBackendIocOverride.restore();
         exerciseBackendIocOverride.restore();
     });
-    QUnit.test('renderöi treeniliikkeen nimen, ja tyhjän settilistan', assert => {
+    QUnit.test('renderöi treeniliikkeen nimen, ja tyhjän sarjalistan', assert => {
         const rendered = itu.renderIntoDocument(
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         );
@@ -50,7 +50,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         );
         assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName + '(somevariant)');
     });
-    QUnit.test('renderöi treeniliikkeen nimen, ja settilistan järjestyksessä', assert => {
+    QUnit.test('renderöi treeniliikkeen nimen, ja sarjalistan järjestyksessä', assert => {
         const set1 = new WorkoutExerciseSet();
         set1.weight = 60.0;
         set1.reps = 6;
@@ -68,10 +68,10 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const setItems = getRenderedSetItems(rendered);
         assert.equal(setItems.length, 2);
         assert.equal(setItems[0].textContent, getExpectedSetContent(set2),
-            'Pitäisi renderöidä pienemmällä ordinal-arvolla varustettu setti ensin'
+            'Pitäisi renderöidä pienemmällä ordinal-arvolla varustettu sarja ensin'
         );
         assert.equal(setItems[1].textContent, getExpectedSetContent(set1),
-            'Pitäisi renderöidä suuremmalla ordinal-arvolla varustettu setti jälkeen'
+            'Pitäisi renderöidä suuremmalla ordinal-arvolla varustettu sarja seuraavaksi'
         );
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
@@ -122,7 +122,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             done();
         });
     });
-    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet setit, ja lopuksi renderöi näkymän', assert => {
+    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet sarjat, ja lopuksi renderöi näkymän', assert => {
         sinon.stub(shallowWorkoutBackend, 'updateExercise');
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
         const setUpdateStub = sinon.stub(shallowWorkoutBackend, 'updateSet');
@@ -137,7 +137,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         editWorkoutExerciseButton.click();
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
-        // Päivitä yhden setin tietoja modalissa
+        // Päivitä yhden sarjan tietoja modalissa
         const secondSetWeightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[2];
         (secondSetWeightInput as any).value = testWorkoutExercise.sets[1].weight + 5;
         utils.triggerEvent('input', secondSetWeightInput);
@@ -145,7 +145,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         assert.deepEqual(setUpdateStub.firstCall.args, [[setListInstance.state.sets[1]]],
-            'Pitäisi päivittää modifioidut setit'
+            'Pitäisi päivittää modifioidut sarjat'
         );
         assert.ok(setDeleteStub.notCalled, 'Ei pitäisi yrittää poistaa settejä');
         // Assertoi, että päivitti näkymän modalin sulkemisen jälkeen
@@ -153,12 +153,12 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         confirmSpy.firstCall.returnValue.then(() => {
             const renderedSets = getRenderedSetItems(rendered);
             assert.equal(renderedSets[1].textContent, getExpectedSetContent(setListInstance.state.sets[1]),
-                'Pitäisi renderöidä päivitetty setti'
+                'Pitäisi renderöidä päivitetty sarja'
             );
             done();
         });
     });
-    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet ja poistetut setit, ja lopuksi renderöi näkymän', assert => {
+    QUnit.test('Muokkaa-painikkeen modal tallentaa muuttuneet ja poistetut sarjat, ja lopuksi renderöi näkymän', assert => {
         sinon.stub(shallowWorkoutBackend, 'updateExercise');
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
         const setUpdateStub = sinon.stub(shallowWorkoutBackend, 'updateSet');
@@ -173,21 +173,21 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         editWorkoutExerciseButton.click();
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
-        // Päivitä yhden setin tietoja modalissa
+        // Päivitä yhden sarjan tietoja modalissa
         const firstSetRepsInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1];
         (firstSetRepsInput as any).value = 90;
         const modifiedSet = setListInstance.state.sets[0];
         utils.triggerEvent('input', firstSetRepsInput);
-        // Poista yksi setti listalta
+        // Poista yksi sarja listalta
         const deletedSet = setListInstance.state.sets[1];
         const secondSetDeleteButton = workoutTestUtils.getSetListDeleteButtons(rendered)[1];
         secondSetDeleteButton.click();
         // Hyväksy lomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
-        assert.ok(setUpdateStub.calledOnce, 'Pitäisi päivittää modifioidut setit');
+        assert.ok(setUpdateStub.calledOnce, 'Pitäisi päivittää modifioidut sarjat');
         assert.deepEqual(setDeleteStub.firstCall.args, [deletedSet],
-            'Pitäisi tallentaa poistetut setit'
+            'Pitäisi tallentaa poistetut sarjat'
         );
         // Assertoi, että päivitti näkymän modalin sulkemisen jälkeen
         const done = assert.async();
@@ -196,10 +196,10 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             const deletedSetContent = getExpectedSetContent(deletedSet);
             assert.notOk(
                 Array.from(renderedSets).some(rs => rs.textContent === deletedSetContent),
-                'Ei pitäisi renderöidä poistettua settiä'
+                'Ei pitäisi renderöidä poistettua sarjaa'
             );
             assert.equal(renderedSets[0].textContent, getExpectedSetContent(modifiedSet),
-                'Pitäisi renderöidä päivitetty setti'
+                'Pitäisi renderöidä päivitetty sarja'
             );
             done();
         });
@@ -233,7 +233,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             done();
         });
     });
-    QUnit.test('Uusi sarja -painikkeen modal lähettää uuden setin backediin, ja lopuksi renderöi näkymän', assert => {
+    QUnit.test('Uusi sarja -painikkeen modal lähettää uuden sarjan backediin, ja lopuksi renderöi näkymän', assert => {
         const setInsertCallStub = sinon.stub(shallowWorkoutBackend, 'insertSet').returns(Promise.resolve());
         testWorkoutExercise.sets = [{id: 'foo', weight: 45, reps: 2, ordinal: 0, workoutExerciseId: 'asd'}];
         const rendered = itu.renderIntoDocument(<div>
@@ -248,12 +248,12 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Assertoi että lähetti datan backendiin
-        assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi treeniliikesetti backediin');
+        assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi sarja backediin');
         const expectedNewSet = {weight: 8, reps: 6, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
         assert.deepEqual(
             setInsertCallStub.firstCall.args,
             [expectedNewSet],
-            'Pitäisi lähettää tämä treeniliikesetti'
+            'Pitäisi lähettää tämä sarja'
         );
         const done = assert.async();
         setInsertCallStub.firstCall.returnValue.then(() => {
@@ -261,12 +261,12 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             assert.equal(
                 renderedSetsAfter.length,
                 renderedSetCountBefore + 1,
-                'Pitäisi lisätä setti listaan'
+                'Pitäisi lisätä sarja listaan'
             );
             assert.equal(
                 getRenderedSetItems(rendered)[1].textContent,
                 getExpectedSetContent(expectedNewSet as any),
-                'Pitäisi pushata lisätty setti listaan'
+                'Pitäisi pushata lisätty sarja listaan'
             );
             done();
         });

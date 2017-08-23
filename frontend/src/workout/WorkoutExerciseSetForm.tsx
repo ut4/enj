@@ -9,7 +9,7 @@ interface Props {
 }
 
 /**
- * Itsevalidoituva treeniliikesettilomake.
+ * Itsevalidoituva treeniliikesarjalomake.
  */
 class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: any, reps: any}> {
     public constructor(props, context) {

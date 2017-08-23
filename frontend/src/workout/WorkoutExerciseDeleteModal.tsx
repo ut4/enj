@@ -4,7 +4,7 @@ import iocFactories from 'src/ioc';
 
 class WorkoutExerciseDeleteModal extends Component<{workoutExercise: Enj.API.WorkoutExerciseRecord}, any> {
     /**
-     * Poistaa treeniliikkeen, ja kaikki siihen liittyvät setit tietokannasta.
+     * Poistaa treeniliikkeen, ja kaikki siihen liittyvät sarjat tietokannasta.
      */
     private confirm() {
         return iocFactories.workoutBackend().deleteExercise(this.props.workoutExercise).then(

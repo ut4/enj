@@ -42,7 +42,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
         return new Scores(this.powerLiftSets, userData);
     }
     /**
-     * Filtteröi parhaista seteistä penkki-, kyykky-, ja mave -setit.
+     * Filtteröi parhaista sarjoista penkki-, kyykky-, ja mave -sarjat.
      */
     private collectPowerLiftSets(bestSets: Array<Enj.API.BestSet>): powerLiftSets {
         const p = bestSets && bestSets.length;

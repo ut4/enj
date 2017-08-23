@@ -71,7 +71,7 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         return iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise);
     }
     /**
-     * Lähettää päivitetyt setit backendiin tallennettavaksi.
+     * Lähettää päivitetyt sarjat backendiin tallennettavaksi.
      */
     private saveModifiedSets() {
         const modified = this.workoutExerciseSetList.getModifiedSets();
@@ -80,7 +80,7 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         }
     }
     /**
-     * Lähettää poistetut setit backendiin poistettavaksi.
+     * Lähettää poistetut sarjat backendiin poistettavaksi.
      */
     private deleteDeletedSets() {
         const deleted = this.workoutExerciseSetList.getDeletedSets();
