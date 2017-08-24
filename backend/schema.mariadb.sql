@@ -38,6 +38,8 @@ CREATE VIEW userView AS
 CREATE TABLE exercise (
     id CHAR(36) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
+    userId CHAR(36) DEFAULT NULL, -- NULL = Globaali liike, !NULL = Käyttäjäkohtainen liike
+    FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -45,7 +47,9 @@ CREATE TABLE exerciseVariant (
     id CHAR(36) NOT NULL,
     content VARCHAR(32) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
+    userId CHAR(36) DEFAULT NULL, -- NULL = Globaali liike, !NULL = Käyttäjäkohtainen liike
     FOREIGN KEY (exerciseId) REFERENCES exercise(id),
+    FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -53,8 +57,10 @@ CREATE VIEW exerciseView AS
     SELECT
         e.id       AS exerciseId,
         e.`name`   AS exerciseName,
+        e.userId   AS exerciseUserId,
         ev.id      AS exerciseVariantId,
-        ev.content AS exerciseVariantContent
+        ev.content AS exerciseVariantContent,
+        ev.userId  AS exerciseVariantUserId
     FROM exercise e
     LEFT JOIN exerciseVariant ev ON (ev.exerciseId = e.id);
 

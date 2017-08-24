@@ -1,12 +1,14 @@
 package net.mdh.enj.exercise;
 
 import net.mdh.enj.mapping.DbEntity;
-import net.mdh.enj.Utils;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Exercise extends DbEntity {
+    @Size(min = 2, max = 64)
     private String name;
+    private String userId;
     private List<Variant> variants = new ArrayList<>();
 
     public String getName() {
@@ -14,6 +16,13 @@ public class Exercise extends DbEntity {
     }
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserId() {
+        return this.userId;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public List<Variant> getVariants() {
@@ -28,13 +37,15 @@ public class Exercise extends DbEntity {
         return "Exercise{" +
             "id=" + this.getId() +
             ", name=" + this.getName() +
-            ", variants=[" + Utils.stringifyAll(this.getVariants()) +
-        "]}";
+            ", userId=" + this.getUserId() +
+            ", variants=" + this.getVariants() +
+        "}";
     }
 
     public static class Variant extends DbEntity {
         private String content;
         private String exerciseId;
+        private String userId;
 
         public String getContent() {
             return this.content;
@@ -50,11 +61,19 @@ public class Exercise extends DbEntity {
             this.exerciseId = exerciseId;
         }
 
+        public String getUserId() {
+            return this.userId;
+        }
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
         @Override
         public String toString() {
             return "Exercise.Variant{" +
                 "id=" + this.getId() +
                 ", content=" + this.getContent() +
+                ", userId=" + this.getUserId() +
                 ", exerciseId=" + this.getExerciseId() +
             "}";
         }
