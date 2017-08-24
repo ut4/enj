@@ -35,7 +35,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
     /**
      * Testaa, että selectAll hakee treenit tietokannasta relaatioineen (mappaa
      * treeniin myös siihen kuuluvat liikkeet (jos niitä on), ja liikkeisiin niihin
-     * kuuluvat setit (jos niitä on)).
+     * kuuluvat sarjat (jos niitä on)).
      */
     @Test
     public void selectAllSisältääLiikkeetJaSetit() {

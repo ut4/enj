@@ -127,9 +127,14 @@ FOR EACH ROW BEGIN
 END;//
 
 -- Treeniliikkeen poiston yhteydessä ajautuva triggeri, joka poistaa kaikki sille
--- kuuluvat setit ennen varsinaista poistoa
+-- kuuluvat sarjat + ennätykset ennen varsinaista poistoa
 CREATE TRIGGER workoutExerciseDeleteTrg BEFORE DELETE ON workoutExercise
 FOR EACH ROW BEGIN
+    -- bestSet, täytyy ajaa ennen & erikseen ettei constraint-failaa
+    DELETE bestSet FROM bestSet
+    JOIN workoutExerciseSet ws ON ws.id = bestSet.workoutExerciseSetId
+    WHERE ws.workoutExerciseId = OLD.id;
+    -- workoutExerciseSet
     DELETE FROM workoutExerciseSet WHERE workoutExerciseId = OLD.id;
 END;//
 
@@ -144,7 +149,10 @@ FOR EACH ROW BEGIN
     IF (NOT EXISTS(
         SELECT * FROM bestSet bs
         JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
-        WHERE wes.weight >= NEW.weight AND bs.exerciseId = @exerciseId
+        -- https://en.wikipedia.org/wiki/One-repetition_maximum#O.27Conner_et_al.
+        WHERE bs.exerciseId = @exerciseId AND
+            IF(wes.reps > 1, wes.weight*(wes.reps+1/40), wes.weight) >=
+            IF(NEW.reps > 1, NEW.weight*(NEW.reps+1/40), NEW.weight)
     )) THEN
         INSERT INTO bestSet (workoutExerciseSetId, exerciseId)
             VALUES (NEW.id, @exerciseId);

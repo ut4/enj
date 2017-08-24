@@ -23,14 +23,7 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
      */
     @Test
     public void POSTHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout", null);
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insert.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout", "WorkoutController.insert");
     }
 
     /**

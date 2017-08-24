@@ -19,12 +19,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void POSTExerciseSetHylkääPyynnönJosDataPuuttuuKokonaan() {
-        Response response = this.newPostRequest("workout/exercise/set", null);
-        Assert.assertEquals(400, response.getStatus());
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insertWorkoutExerciseSet.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout/exercise/set", "WorkoutController.insertWorkoutExerciseSet");
     }
 
     @Test
@@ -68,14 +63,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
 
     @Test
     public void POSTExerciseSetAllHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout/exercise/set/all", null);
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insertAllWorkoutExerciseSets.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout/exercise/set/all", "WorkoutController.insertAllWorkoutExerciseSets");
     }
 
     @Test
@@ -180,7 +168,7 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
     }
 
     @Test
-    public void DELETEExerciseSetPoistaaTreeniliikesetinJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
+    public void DELETEExerciseSetPoistaaTreeniliikesarjanJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
         // Luo ensin treeniliike, johon sarja lisätään, josta se sitten voidaan poistaa :D
         Workout.Exercise we = this.insertTestWorkoutExercise();
         // Lisää treeniliikesetti
