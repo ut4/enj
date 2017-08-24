@@ -45,6 +45,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         //
         SearchFilters searchFilters = new SearchFilters();
         searchFilters.setUserId(TestData.TEST_USER_ID);
+        searchFilters.setStartFrom(w1.getStart());
         List<Workout> results = this.workoutRepository.selectAll(searchFilters);
         Assert.assertEquals(3, results.size());
         Workout actualW1 = results.get(2);
@@ -101,6 +102,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         Workout workout = new Workout();
         workout.setUserId(TestData.TEST_USER_ID);
         workout.setStart(timestamp);
+        workout.setExercises(new ArrayList<>());
         this.utils.insertWorkout(workout);
         return workout;
     }
@@ -111,6 +113,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         we.setWorkoutId(workoutId);
         we.setExerciseId(WorkoutRepositoryTest.testExercise.getId());
         we.setExerciseName(WorkoutRepositoryTest.testExercise.getName());
+        we.setSets(new ArrayList<>());
         this.utils.insertWorkoutExercise(we);
         return we;
     }

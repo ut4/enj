@@ -40,6 +40,7 @@ public class SearchFilters implements SelectQueryFilters {
      * Palauttaa aina true, koska userId on pakollinen arvo kaikissa treenien
      * SELECT-kyselyissä.
      */
+    @Override
     public boolean hasRules() {
         return true;
     }
@@ -48,6 +49,7 @@ public class SearchFilters implements SelectQueryFilters {
      * Palauttaa tietokantakyselyn osaksi kelpaavan merkkijonon, esim.
      * "`start` >= :startFrom AND `start` <= :startTo".
      */
+    @Override
     public String toSql() {
         ArrayList<String> out = new ArrayList<>();
         out.add("workoutUserId = :userId");
