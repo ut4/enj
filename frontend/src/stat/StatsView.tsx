@@ -33,14 +33,13 @@ class StatsView extends Component<any, any> {
     private fetchBestSets(): Promise<Array<Enj.API.BestSet>> {
         return (this.bestSets
             ? Promise.resolve(this.bestSets)
-            : iocFactories.statBackend().getBestSets().then(
+            : iocFactories.statBackend().getBestSets()).then(
                 bestSets => bestSets,
                 () => {
                     iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
                     return [];
                 }
-            )
-        );
+            );
     }
     private fetchMiscStats(): Promise<any> {
         return Promise.resolve(null);

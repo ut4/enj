@@ -12,7 +12,6 @@ type powerLiftSets = {
 
 interface State {
     scores: Scores;
-    userData: Enj.API.UserRecord;
     configMode: boolean;
 }
 
@@ -24,20 +23,21 @@ interface State {
 class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, State> {
     private powerLiftSets: powerLiftSets;
     private userDataFetch: Promise<Enj.API.UserRecord>;
+    private userData: Enj.API.UserRecord = null;
     public constructor(props, context) {
         super(props, context);
-        this.state = {configMode: false, scores: this.makeScores(props.bestSets || [], null), userData: null};
+        this.state = {configMode: false, scores: this.makeScores(props.bestSets || [], null)};
     }
     public componentWillMount() {
         this.userDataFetch = iocFactories.userBackend().get();
     }
     public componentWillReceiveProps(props) {
         return this.userDataFetch.then(userData => {
-            this.state.userData = userData;
+            this.userData = userData;
             this.setState({scores: this.makeScores(props.bestSets, userData)});
         });
     }
-    private makeScores(bestSets: Array<Enj.API.BestSet>, userData: Enj.API.UserRecord) {
+    private makeScores(bestSets: Array<Enj.API.BestSet>, userData: Enj.API.UserRecord): Scores {
         this.powerLiftSets = this.collectPowerLiftSets(bestSets);
         return new Scores(this.powerLiftSets, userData);
     }
@@ -52,8 +52,16 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             deadlift: p && bestSets.find(set => set.exerciseName === 'Maastaveto')
         };
     }
-    private applyNewUserData() {
-        this.setState({scores: this.makeScores(this.props.bestSets, this.state.userData), configMode: false});
+    /**
+     * Vastaanottaa päivitetyn käyttäjädatan {newUser} Asetukset-lomakkeelta.
+     */
+    private applyNewUserData(newUser?: Enj.API.UserRecord) {
+        const newState = {configMode: false} as any;
+        if (newUser) {
+            this.userData = newUser;
+            newState.scores = this.makeScores(this.props.bestSets, this.userData);
+        }
+        this.setState(newState);
     }
     public render() {
         return <div>
@@ -81,7 +89,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
                     <div class="end">Wilks coefficient { this.state.scores.wilksCoefficient }</div>,
                     !this.state.configMode
                         ? <button title="Muokkaa parametreja" class="nice-button edit" onClick={ () => this.setState({configMode: !this.state.configMode}) }>Asetukset</button>
-                        : <SettingsForm user={ this.state.userData } onDone={ () => this.applyNewUserData() }/>
+                        : <SettingsForm user={ this.userData } onDone={ userData => this.applyNewUserData(userData) }/>
                 ] :
                 <div class="score">-</div>
             }
@@ -118,7 +126,7 @@ class Scores {
     public wilksCoefficient: number;
     public level: string;
     constructor(powerLiftSets: powerLiftSets, userData: Enj.API.UserRecord) {
-        this.userData = userData || {weight: 0, isMale: true};
+        this.userData = userData || {id: null, bodyWeight: 0, isMale: true};
         this.oneRepMaxes = this.getOneRepMaxes(powerLiftSets);
         this.hasAllData = (
             this.oneRepMaxes.squat > 0 &&
@@ -162,13 +170,13 @@ class Scores {
      * Palauttaa wilks-kertoimen, tai 0, jos tarvittavaa dataa ei ole.
      */
     private getWilksCoefficient(): number {
-        return formulae.wilksCoefficient(this.userData.weight, this.userData.isMale);
+        return formulae.wilksCoefficient(this.userData.bodyWeight, this.userData.isMale);
     }
     /**
      * Palauttaa käyttäjän tason selväkielisenä, tai '-', jos tarvittavaa dataa ei ole.
      */
     private getLevel(): string {
-        return formulae.strengthLevel(this.total, this.userData.weight);
+        return formulae.strengthLevel(this.total, this.userData.bodyWeight);
     }
 }
 

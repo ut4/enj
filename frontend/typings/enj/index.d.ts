@@ -57,7 +57,8 @@ declare module Enj {
             variants: Array<ExerciseVariantRecord>;
         }
         interface UserRecord {
-            weight: number;
+            id: AAGUID;
+            bodyWeight: number;
             isMale: boolean;
         }
         // REST-vastauswrapperit

@@ -74,7 +74,7 @@ class IocFactories extends IocContainer {
         return this.memoize('authService', () => new AuthService(this.authBackend(), this.userState()));
     }
     public userBackend(): UserBackend {
-        return this.memoize('userBackend', () => new UserBackend(this.http(), this.userState()));
+        return this.memoize('userBackend', () => new UserBackend(this.http(), 'user'));
     }
 
     // == Offline ==============================================================
