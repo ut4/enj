@@ -12,6 +12,7 @@ import net.mdh.enj.db.SimpleDataSourceFactory;
 import net.mdh.enj.exercise.ExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
+import net.mdh.enj.exercise.ExerciseVariantRepository;
 import net.mdh.enj.workout.WorkoutExerciseSetRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -34,6 +35,7 @@ class InjectionBinder extends AbstractBinder {
         bind(StatRepository.class).to(StatRepository.class);
         // Exercise
         bind(ExerciseRepository.class).to(ExerciseRepository.class);
+        bind(ExerciseVariantRepository.class).to(ExerciseVariantRepository.class);
         // Program
         // ...
         // User

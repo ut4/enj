@@ -16,9 +16,7 @@ import org.glassfish.jersey.server.validation.ValidationError;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.client.Entity;
 import java.util.List;
 
 public class AuthControllerTest extends RollbackingDBJerseyTest {
@@ -58,23 +56,17 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
 
     @Test
     public void POSTloginValidoiInputDatan() {
-        Response responseForNullInput;
-        List<ValidationError> errorsForNullInput;
         Response responseForEmptyInput;
         List<ValidationError> errorsForEmptyInput;
         Response responseForBadInput;
         List<ValidationError> errorsForBadInput;
 
         // Tyhjä/null request data
-        responseForNullInput = newLoginRequest(null);
-        Assert.assertEquals(400, responseForNullInput.getStatus());
-        errorsForNullInput = responseForNullInput.readEntity(new GenericType<List<ValidationError>>() {});
-        Assert.assertEquals("AuthController.login.arg0", errorsForNullInput.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errorsForNullInput.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("auth/login", "AuthController.login");
 
         // Bean-validaatio, null
         LoginCredentials emptyData = new LoginCredentials();
-        responseForEmptyInput = newLoginRequest(emptyData);
+        responseForEmptyInput = this.newPostRequest("auth/login", emptyData);
         Assert.assertEquals(400, responseForEmptyInput.getStatus());
         errorsForEmptyInput = this.getValidationErrors(responseForEmptyInput);
         Assert.assertEquals("AuthController.login.arg0.password", errorsForEmptyInput.get(0).getPath());
@@ -86,7 +78,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         LoginCredentials badData = new LoginCredentials();
         badData.setUsername("f");
         badData.setPassword(new char[]{'f', 'o', 'o'});
-        responseForBadInput = newLoginRequest(badData);
+        responseForBadInput = this.newPostRequest("auth/login", badData);
         Assert.assertEquals(400, responseForBadInput.getStatus());
         errorsForBadInput = this.getValidationErrors(responseForBadInput);
         Assert.assertEquals("AuthController.login.arg0.password", errorsForBadInput.get(0).getPath());
@@ -103,7 +95,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         dataWithWrongUsername.setUsername("doo");
         dataWithWrongUsername.setPassword(correctPassword);
         // Tee pyyntö, ja assertoi ettei edennyt edes salasanan tarkistusvaiheeseen
-        responseForWrongUsername = newLoginRequest(dataWithWrongUsername);
+        responseForWrongUsername = this.newPostRequest("auth/login", dataWithWrongUsername);
         Assert.assertEquals(401, responseForWrongUsername.getStatus());
         Mockito.verify(mockHasherSpy, Mockito.times(0)).verify(Mockito.any(), Mockito.any(String.class));
     }
@@ -117,7 +109,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         dataWithWrongPassword.setUsername(correctUsername);
         dataWithWrongPassword.setPassword(wrongPassword);
         // Tee pyyntö, ja assertoi että tsekkasi salasanan
-        responseForWrongPassword = newLoginRequest(dataWithWrongPassword);
+        responseForWrongPassword = this.newPostRequest("auth/login", dataWithWrongPassword);
         Assert.assertEquals(401, responseForWrongPassword.getStatus());
         Mockito.verify(mockHasherSpy, Mockito.times(1)).verify(wrongPassword, testUser.getPasswordHash());
     }
@@ -127,15 +119,9 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         LoginCredentials correctData = new LoginCredentials();
         correctData.setUsername(correctUsername);
         correctData.setPassword(correctPassword);
-        Response response = newLoginRequest(correctData);
+        Response response = this.newPostRequest("auth/login", correctData);
         Assert.assertEquals(200, response.getStatus());
         LoginResponse loginResponse = response.readEntity(new GenericType<LoginResponse>() {});
         Assert.assertTrue(AuthControllerTest.tokenService.isValid(loginResponse.getToken()));
-    }
-
-    private Response newLoginRequest(LoginCredentials input) {
-        return target("auth/login")
-            .request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(input));
     }
 }
