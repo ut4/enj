@@ -6,6 +6,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
+import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.inject.Inject;
 
@@ -23,6 +24,19 @@ public class UserController {
     public UserController(UserRepository userRepository, RequestContext requestContext) {
         this.userRepository = userRepository;
         this.requestContext = requestContext;
+    }
+
+    /**
+     * Palauttaa kirjautuneen käyttäjän tiedot.
+     */
+    @GET
+    @Path("/me")
+    public User get() {
+        SelectFilters filters = new SelectFilters();
+        filters.setId(this.requestContext.getUserId());
+        User user = this.userRepository.selectOne(filters);
+        if (user != null) user.setPasswordHash(null);
+        return user;
     }
 
     /**

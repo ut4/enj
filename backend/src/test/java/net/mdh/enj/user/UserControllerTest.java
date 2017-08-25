@@ -41,6 +41,15 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
             });
     }
 
+    @Test
+    public void GETUserMePalauttaaKirjautuneenKäyttäjänTiedot() {
+        Response response = this.newGetRequest("user/me");
+        User user = response.readEntity(new GenericType<User>() {});
+        Assert.assertNotNull("Pitäisi palauttaa käyttäjä", user);
+        Assert.assertEquals(TestData.TEST_USER_ID, user.getId());
+        Assert.assertNull("Pitäisi asettaa passwordHash-arvoksi null", user.getPasswordHash());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void PUTUserMeHylkääPyynnönJosDataPuuttuuKokonaan() {
         this.newPutRequest("user/me", null);
