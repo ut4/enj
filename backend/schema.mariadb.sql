@@ -45,7 +45,7 @@ CREATE TABLE exercise (
 
 CREATE TABLE exerciseVariant (
     id CHAR(36) NOT NULL,
-    content VARCHAR(32) NOT NULL,
+    content VARCHAR(64) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     userId CHAR(36) DEFAULT NULL, -- NULL = Globaali liike, !NULL = Käyttäjäkohtainen liike
     FOREIGN KEY (exerciseId) REFERENCES exercise(id),

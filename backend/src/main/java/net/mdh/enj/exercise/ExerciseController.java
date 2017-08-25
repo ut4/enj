@@ -22,18 +22,22 @@ import java.util.List;
 public class ExerciseController {
 
     private final ExerciseRepository exerciseRepository;
+    private final ExerciseVariantRepository exerciseVariantRepository;
     private final RequestContext requestContext;
 
     @Inject
-    public ExerciseController(ExerciseRepository exerciseRepository, RequestContext requestContext) {
+    public ExerciseController(
+        ExerciseRepository exerciseRepository,
+        ExerciseVariantRepository exerciseVariantRepository,
+        RequestContext requestContext
+    ) {
         this.exerciseRepository = exerciseRepository;
+        this.exerciseVariantRepository = exerciseVariantRepository;
         this.requestContext = requestContext;
     }
 
     /**
      * Lisää uuden treeniliikkeen tietokantaan kirjautuneelle käyttäjälle.
-     *
-     * @return InsertResponse
      */
     @POST
     @Syncable
@@ -42,6 +46,19 @@ public class ExerciseController {
         exercise.setUserId(this.requestContext.getUserId());
         int insertCount = this.exerciseRepository.insert(exercise);
         return new InsertResponse(insertCount, exercise.getId());
+    }
+
+    /**
+     * Lisää uuden treeniliikevariantin tietokantaan kirjautuneelle käyttäjälle.
+     */
+    @POST
+    @Path("/variant")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public InsertResponse insertVariant(@Valid @NotNull Exercise.Variant exerciseVariant) {
+        exerciseVariant.setUserId(this.requestContext.getUserId());
+        int insertCount = this.exerciseVariantRepository.insert(exerciseVariant);
+        return new InsertResponse(insertCount, exerciseVariant.getId());
     }
 
     /**

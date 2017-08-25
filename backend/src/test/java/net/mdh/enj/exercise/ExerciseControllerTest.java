@@ -43,6 +43,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(ExerciseRepository.class).to(ExerciseRepository.class);
+                    bind(ExerciseVariantRepository.class).to(ExerciseVariantRepository.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                 }
@@ -55,8 +56,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void POSTValidoiInputin() {
-        // Simuloi POST, jossa tyhjä workout
+    public void POSTExerciseValidoiInputin() {
         Exercise invalidData = new Exercise();
         invalidData.setName("f");
         Response response = this.newPostRequest("exercise", invalidData);
@@ -69,8 +69,8 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void POSTExerciseInsertoiUudenLiikkeeTietokantaanKirjautuneelleKäyttäjälle() {
-        // Luo testiliike. NOTE - userId:tä ei määritelty
+    public void POSTExerciseInsertoiUudenLiikkeenTietokantaanKirjautuneelleKäyttäjälle() {
+        // Luo testiliike. NOTE - ei userId:tä
         Exercise exercise = new Exercise();
         exercise.setName("test");
         //
@@ -97,8 +97,9 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     public void GETPalauttaaLiikelistanSisältäenVariantit() {
         // 1. liike, jossa variantteja
         List<Exercise.Variant> variants = new ArrayList<>();
-        variants.add(insertTestVariant("var1", testExercise.getId()));
-        variants.add(insertTestVariant("var2", testExercise.getId()));
+        variants.add(insertTestVariant("var1", testExercise.getId(), null));
+        variants.add(insertTestVariant("var2", testExercise.getId(), TestData.TEST_USER_ID));
+        insertTestVariant("var3", testExercise.getId(), TestData.TEST_USER_ID2);
         testExercise.setVariants(variants);
         // 2. liike ilma variantteja
         Exercise anotherWithoutVariants = insertTestExercise("bar", null);
@@ -112,9 +113,52 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
             e.getName().equals("foo") || e.getName().equals("bar") || e.getName().equals("baz")
         ).collect(Collectors.toList());
         exercises.sort(Comparator.comparing(Exercise::getName));
+        testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
         Assert.assertEquals(2, exercises.size());
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
+        Assert.assertEquals(2, exercises.get(1).getVariants().size());
         Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
+    }
+
+    @Test
+    public void POSTExerciseVariantHylkääNullInputin() {
+        this.assertRequestFailsOnNullInput("exercise/variant", "ExerciseController.insertVariant");
+    }
+
+    @Test
+    public void POSTExerciseVariantValidoiInputin() {
+        Exercise.Variant invalidVariant = new Exercise.Variant();
+        invalidVariant.setContent("b");
+        Response response = this.newPostRequest("exercise/variant", invalidVariant);
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("ExerciseController.insertVariant.arg0.content", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ExerciseController.insertVariant.arg0.exerciseId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTExerciseVariantInsertoiUudenVariantinTietokantaanKirjautuneelleKäyttäjälle() {
+        // NOTE - ei userId:tä
+        Exercise.Variant variant = new Exercise.Variant();
+        variant.setContent("fus");
+        variant.setExerciseId(testExercise.getId());
+        //
+        Response response = this.newPostRequest("exercise/variant", variant);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
+        //
+        Exercise.Variant actualVariant = (Exercise.Variant) utils.selectOneWhere(
+            "SELECT * FROM exerciseVariant WHERE id = :id",
+            new MapSqlParameterSource("id", responseBody.insertId),
+            new SimpleMappers.ExerciseVariantMapper()
+        );
+        variant.setId(responseBody.insertId);
+        variant.setUserId(TestData.TEST_USER_ID);
+        Assert.assertEquals(variant.toString(), actualVariant.toString());
     }
 
     private static Exercise insertTestExercise(String name, String userId) {
@@ -125,10 +169,11 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         return e;
     }
 
-    private static Exercise.Variant insertTestVariant(String content, String exerciseId) {
+    private static Exercise.Variant insertTestVariant(String content, String exerciseId, String userId) {
         Exercise.Variant v = new Exercise.Variant();
         v.setContent(content);
         v.setExerciseId(exerciseId);
+        v.setUserId(userId);
         utils.insertExerciseVariant(v);
         return v;
     }

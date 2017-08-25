@@ -54,6 +54,17 @@ public class SimpleMappers {
             return exercise;
         }
     }
+    public static class ExerciseVariantMapper implements RowMapper<Exercise.Variant> {
+        @Override
+        public Exercise.Variant mapRow(ResultSet resultSet, int i) throws SQLException {
+            Exercise.Variant variant = new Exercise.Variant();
+            variant.setId(resultSet.getString("id"));
+            variant.setContent(resultSet.getString("content"));
+            variant.setExerciseId(resultSet.getString("exerciseId"));
+            variant.setUserId(resultSet.getString("userId"));
+            return variant;
+        }
+    }
     public static class UserMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int i) throws SQLException {

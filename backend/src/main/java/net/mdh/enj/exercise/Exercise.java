@@ -1,6 +1,7 @@
 package net.mdh.enj.exercise;
 
 import net.mdh.enj.mapping.DbEntity;
+import net.mdh.enj.validation.UUID;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,9 @@ public class Exercise extends DbEntity {
     }
 
     public static class Variant extends DbEntity {
+        @Size(min = 2, max = 64)
         private String content;
+        @UUID
         private String exerciseId;
         private String userId;
 

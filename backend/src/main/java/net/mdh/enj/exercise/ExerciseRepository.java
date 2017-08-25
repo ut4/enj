@@ -24,8 +24,10 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
      */
     List<Exercise> selectAll(String userId) {
         return super.selectAll(
-            String.format("SELECT * FROM %sView WHERE exerciseUserId IS NULL OR " +
-                "exerciseUserId = :userId", TABLE_NAME),
+            String.format("SELECT * FROM %sView WHERE (" +
+                "(exerciseUserId IS NULL OR exerciseUserId = :userId) AND " +
+                "(exerciseVariantUserId IS NULL OR exerciseVariantUserId = :userId)" +
+            ")", TABLE_NAME),
             new MapSqlParameterSource("userId", userId),
             new ExerciseMapper()
         );
@@ -34,12 +36,12 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     /**
      * Luo Exercise-beaneja resultSet-rivin tiedoilla.
      */
-    public static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
+    private static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
 
         private static final String ID_COL = "exerciseId";
         private final SubCollector<Exercise.Variant> variantCollector;
 
-        public ExerciseMapper() {
+        ExerciseMapper() {
             super(ID_COL);
             this.variantCollector = new SubCollector<>(new ExerciseVariantMapper(), ID_COL);
         }
@@ -72,9 +74,11 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
                 if (id != null) {
                     variant.setContent(rs.getString("exerciseVariantContent"));
                     variant.setExerciseId(rs.getString("exerciseId"));
+                    variant.setUserId(rs.getString("exerciseVariantUserId"));
                 } else {
                     variant.setContent(null);
                     variant.setExerciseId(null);
+                    variant.setUserId(null);
                 }
                 return variant;
             }
