@@ -50,11 +50,12 @@ class InsertGroupingOptimizer extends AbstractOptimizer {
         this.queue.get(mainOp.syncQueueItemIndex).setData(
             SyncQueueUtils.makeBatch(groupables, this.queue)
         );
-        mainOp.isProcessed = true;
         // Ja merkkaa ryhmään lisätyt itemit poistettavaksi
         for (Pointer p : groupables) {
             if (p.syncQueueItemIndex != mainOp.syncQueueItemIndex) {
                 this.nullifyOperation(p);
+            } else {
+                p.isProcessed = true;
             }
         }
     }

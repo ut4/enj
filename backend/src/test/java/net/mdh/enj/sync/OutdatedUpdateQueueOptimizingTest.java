@@ -24,7 +24,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         );
     }
     @Test
-    public void optimizeKorvaaBatchDatanYlikirjoitetunItemin() throws IOException {
+    public void optimizeKorvaaBatchDatanYlikirjoitetunIteminPositiosta0() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
                 "{'id':'uid1','start':1}," +
@@ -44,13 +44,14 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         );
     }
     @Test
-    public void optimizeKorvaaBatchDatanYlikirjoitetunItemin2() throws IOException {
+    public void optimizeKorvaaBatchDatanYlikirjoitetunIteminPositiosta1() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'PUT'},'data':[" +
                 "{'id':'uid2','start':2}," +
-                "{'id':'uid1','start':1}" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid3','start':3}" +
             "]}," +
-            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':4}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
@@ -123,7 +124,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(0).getData()).get(1)
         )));
         expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
-            // Siitynyt kohtaan 1[0]
+            // Siirtynyt kohtaan 1[0]
             ((List)input.get(1).getData()).get(1)
         )));
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",

@@ -100,6 +100,31 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         );
     }
     @Test
+    public void optimizeKorvaaYlikirjoitetunBatchIteminKaksiKertaa() throws IOException {
+        List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+                "{'id':'uid1','start':1}," +
+                "{'id':'uid2','start':2}," +
+                "{'id':'uid3','start':3}" +
+            "]}," +
+            "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +
+                "{'id':'uid3','start':5}," +
+                "{'id':'uid2','start':4}" +
+            "]}," +
+            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid3','start':6}}" +
+        "]");
+        List<SyncQueueItem> expected = new ArrayList<>();
+        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+            ((List)input.get(0).getData()).get(0),
+            ((List)input.get(1).getData()).get(1),
+            input.get(2).getData()
+        )));
+        // Pitäisi poistaa (1)
+        Assert.assertEquals("Pitäisi korvata insertin batch item uudemmalla batch-itemillä",
+            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+        );
+    }
+    @Test
     public void optimizeKorvaaYlikirjoitetunInsertinYlikirjoitetunIteminBatchDatasta2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid1'}}," +

@@ -52,7 +52,7 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void syncAllEiKirjoitaTietokantaanOptimoitujaItemeitä() {
+    public void syncAllEiKirjoitaTietokantaanOptimoinnissaPoistettujaItemeitä() {
         Mockito.when(this.syncExecutionSpy.target("workout"))
             .thenReturn(OptimizedSyncingTest.this.target("workout"));
         // Simuloi POST, josta optimizer eliminoi osan itemeistä
