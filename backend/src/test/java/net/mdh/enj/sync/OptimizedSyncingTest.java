@@ -70,7 +70,7 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
         // Pitäisi synkata keskimmäinen itemi
         Mockito.verify(this.syncExecutionSpy, Mockito.times(1)).target(Mockito.any(String.class));
         Assert.assertEquals(
-            "Pitäisi palauttaa synkattavien itemeiden id:t",
+            "Pitäisi palauttaa synkattujen itemeiden id:t",
             Arrays.toString(new int[]{1, 2, 3}),
             Arrays.toString(response.readEntity(int[].class))
         );

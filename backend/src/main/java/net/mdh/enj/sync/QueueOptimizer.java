@@ -18,20 +18,12 @@ class QueueOptimizer {
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
     private final InsertGroupingOptimizer insertGroupingOptimizer;
-    private final HashMap<String, Integer> operationPriorities;
 
     QueueOptimizer(List<SyncQueueItem> queue) {
         this.queue = new ArrayList<>(queue);
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
         this.futureUpdateOptimizer = new FutureUpdateOptimizer();
         this.insertGroupingOptimizer = new InsertGroupingOptimizer();
-        // Järjestys, jossa operaatiot tulee suorittaa, key = url, value = priority.
-        this.operationPriorities = new HashMap<>();
-        this.operationPriorities.put("exercise",         0);
-        this.operationPriorities.put("exercise/variant", 1);
-        this.operationPriorities.put("workout",          2);
-        this.operationPriorities.put("workout/exercise", 3);
-        this.operationPriorities.put("workout/exercise/set", 4);
     }
 
     /**
@@ -54,9 +46,6 @@ class QueueOptimizer {
         }
         if ((optimizations & GROUP_INSERTS) > 0 && this.queue.size() > 1) {
             this.insertGroupingOptimizer.optimize(this.queue, this.newPointerList());
-        }
-        if (optimizations == ALL) {
-            this.sortQueue();
         }
         return this.queue;
     }
@@ -95,15 +84,5 @@ class QueueOptimizer {
             }
         }
         return newList;
-    }
-
-    private void sortQueue() {
-        this.queue.sort(Comparator.comparingInt(a -> {
-            if (!a.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-                return this.operationPriorities.get(a.getRoute().getUrl());
-            }
-            String[] parts = a.getRoute().getUrl().split("/");
-            return this.operationPriorities.get(String.join("/", Arrays.copyOf(parts, parts.length - 1)));
-        }));
     }
 }

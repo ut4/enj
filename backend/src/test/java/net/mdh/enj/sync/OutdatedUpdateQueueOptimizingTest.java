@@ -56,7 +56,8 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
-            input.get(1).getData()
+            input.get(1).getData(),
+            ((List)input.get(0).getData()).get(2)
         )));
         // Pitäisi poistaa (1)
         List<SyncQueueItem> o = new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED);
@@ -65,7 +66,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         );
     }
     @Test
-    public void optimizeRekisteröiBatchDatassYlikirjoitetutTiedot() throws IOException {
+    public void optimizeRekisteröiBatchDatassaYlikirjoitetutTiedot() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':1}}," +
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[" +

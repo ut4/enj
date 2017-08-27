@@ -27,7 +27,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         );
     }
     @Test
-    public void optimizeRyhmitteleeEpäjärjestyksessäOlevatInsertOperaatiot() throws IOException {
+    public void optimizeRyhmitteleeInsertOperaatiot2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
             "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','foo':1}}," +
