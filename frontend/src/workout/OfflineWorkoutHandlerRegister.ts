@@ -9,7 +9,7 @@ import WorkoutBackend from 'src/workout/WorkoutBackend';
 class OfflineWorkoutHandlerRegister {
     private offline: Offline;
     private workoutBackend: WorkoutBackend;
-    constructor(offline: Offline, workoutBackend: WorkoutBackend) {
+    public constructor(offline: Offline, workoutBackend: WorkoutBackend) {
         this.offline = offline;
         this.workoutBackend = workoutBackend;
     }

@@ -6,7 +6,7 @@ import OfflineHttp from 'src/common/OfflineHttp';
  */
 class SyncBackend extends RESTBackend<any> {
     private offlineHttp: OfflineHttp;
-    constructor(http, urlNamespace: string, offlineHttp: OfflineHttp) {
+    public constructor(http, urlNamespace: string, offlineHttp: OfflineHttp) {
         super(http, urlNamespace);
         this.offlineHttp = offlineHttp;
     }

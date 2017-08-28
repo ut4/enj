@@ -4,11 +4,11 @@ interface contentFactory {(): Component<any, any>;}
 
 class Modal extends Component<any, {content?: contentFactory}> {
     static instance: Modal;
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.state = {};
     }
-    componentDidMount() {
+    public componentDidMount() {
         Modal.instance = this;
     }
     public open(content: contentFactory) {
@@ -17,10 +17,10 @@ class Modal extends Component<any, {content?: contentFactory}> {
     public close() {
         this.setState({content: null});
     }
-    static open(content: contentFactory) {
+    public static open(content: contentFactory) {
         Modal.instance.open(content);
     }
-    static close() {
+    public static close() {
         Modal.instance.close();
     }
     public render() {

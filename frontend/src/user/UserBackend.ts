@@ -6,7 +6,7 @@ import UserState from 'src/user/UserState';
  * Vastaa /api/user REST-pyynnöistä.
  */
 class UserBackend extends RESTBackend<Enj.API.UserRecord> {
-    constructor(http, urlNamespace) {
+    public constructor(http, urlNamespace) {
         super(http, urlNamespace);
     }
     /**

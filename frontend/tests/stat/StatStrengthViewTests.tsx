@@ -19,10 +19,10 @@ QUnit.module('stat/StatStrengthView', hooks => {
     }
     hooks.beforeEach(() => {
         testBestSets = [
-            {startWeight: 5.0, bestWeight: 10.0, bestWeightReps: 6, exerciseName: 'Penkkipunnerrus', timesImproved: 1},
-            {startWeight: 6.0, bestWeight: 11.0, bestWeightReps: 7, exerciseName: 'Jalkakyykky', timesImproved: 2},
-            {startWeight: 7.0, bestWeight: 12.0, bestWeightReps: 8, exerciseName: 'foo', timesImproved: 3},
-            {startWeight: 8.0, bestWeight: 13.0, bestWeightReps: 9, exerciseName: 'Maastaveto', timesImproved: 4}
+            {startWeight: 5.0, bestWeight: 60.0, bestWeightReps: 6, exerciseName: 'Penkkipunnerrus', timesImproved: 1},
+            {startWeight: 6.0, bestWeight: 71.0, bestWeightReps: 7, exerciseName: 'Jalkakyykky', timesImproved: 2},
+            {startWeight: 7.0, bestWeight: 82.0, bestWeightReps: 8, exerciseName: 'foo', timesImproved: 3},
+            {startWeight: 8.0, bestWeight: 93.0, bestWeightReps: 9, exerciseName: 'Maastaveto', timesImproved: 4}
         ];
         shallowUserBackend = Object.create(UserBackend.prototype);
         userBackendIocOverride = sinon.stub(iocFactories, 'userBackend').returns(shallowUserBackend);
@@ -43,9 +43,12 @@ QUnit.module('stat/StatStrengthView', hooks => {
             const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
             assert.equal(totalScores.length, 3, 'Pitäisi renderöidä 3 kokonaistulosta');
             const [total, wilks, level] = totalScores;
-            assert.equal(total.textContent, getExpectedTotal(), 'Yhteistulos pitäisi olla tämä');
+            const expectedTotal = getExpectedTotal();
+            assert.equal(total.textContent, expectedTotal, 'Yhteistulos pitäisi olla tämä');
             assert.equal(wilks.textContent, getExpectedWilks(testBodyWeight, false), 'Wilks pitäisi olla tämä');
-            assert.equal(level.textContent, getExpectedStrengthLevel(), 'Level pitäisi olla tämä');
+            assert.equal(level.textContent, getExpectedStrengthLevel(expectedTotal, testBodyWeight),
+                'Level pitäisi olla tämä'
+            );
             //
             const powerLiftDetails = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(powerLiftDetails[0].textContent, getExpectedPowerLiftDetails(testBestSets[1]));
@@ -66,7 +69,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
             const [total, wilks, level] = totalScores;
             assert.equal(total.textContent, getExpectedTotal([0]), 'Yhteistulos pitäisi olla tämä');
             assert.equal(wilks.textContent, getExpectedWilks(0, false, [0]), 'Wilks pitäisi olla tämä');
-            assert.equal(level.textContent, getExpectedStrengthLevel(), 'Level pitäisi olla tämä');
+            assert.equal(level.textContent, getExpectedStrengthLevel(0, 0), 'Level pitäisi olla tämä');
             //
             const [squatDetails, benchDetails, deadliftDetails] = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(squatDetails.textContent, testBestSets[1].exerciseName+'--');
@@ -76,15 +79,17 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Laskee tulokset uudelleen Asetukset-lomakkeen arvoilla', assert => {
-        const userData = {bodyWeight: 20, isMale: 1};
+        const userData = {bodyWeight: 50, isMale: 1};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(userData));
         const userDataUpdateSpy = sinon.spy(shallowUserBackend, 'update');
         //
         const [rendered, componentInstance] = renderComponent();
         const done = assert.async();
         const newBodyWeight = 60;
+        let levelBefore;
         componentInstance.props.bestSets = testBestSets;
         componentInstance.componentWillReceiveProps({bestSets: testBestSets}).then(() => {
+            levelBefore = itu.scryRenderedDOMElementsWithClass(rendered, 'score')[2].textContent;
             // Avaa lomake & muuta jotain
             utils.findButtonByContent(rendered, 'Asetukset').click();
             const weightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[0] as HTMLInputElement;
@@ -99,7 +104,9 @@ QUnit.module('stat/StatStrengthView', hooks => {
             // Assertoi, että lomake sulkeutui, ja arvot laskettiin uudestaan
             assert.ok(userDataUpdateSpy.notCalled, 'Ei pitäisi tallentaa arvoja,' +
                 ' jos checkboxia ei valittuna');
-            assertNewScores(assert, rendered, newBodyWeight, true);
+            assertNewScores(assert, rendered, newBodyWeight, true, level => {
+                assert.notEqual(level, levelBefore);
+            });
             done();
         });
     });
@@ -135,14 +142,16 @@ QUnit.module('stat/StatStrengthView', hooks => {
             done();
         });
     });
-    function assertNewScores(assert, rendered, bodyWeight: number, isMale: boolean) {
+    function assertNewScores(assert, rendered, bodyWeight: number, isMale: boolean, and?: Function) {
         assert.deepEqual(itu.findRenderedDOMElementWithClass(rendered, 'inline-form'),
             undefined, 'Pitäisi sulkea asetuslomake');
         const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
         const [wilks, level] = [totalScores[1], totalScores[2]];
         assert.equal(wilks.textContent, getExpectedWilks(bodyWeight, isMale), 'Wilks pitäisi olla tämä');
-        // TODO - assertoi että muuttuu
-        assert.equal(level.textContent, getExpectedStrengthLevel(), 'Level pitäisi olla tämä');
+        assert.equal(level.textContent, getExpectedStrengthLevel(getExpectedTotal(), bodyWeight),
+            'Level pitäisi olla tämä'
+        );
+        and && and(level.textContent);
     }
     function getExpectedTotal(includedTestSets: Array<number> = [1, 0, 3]) {
         let total = 0;
@@ -154,8 +163,8 @@ QUnit.module('stat/StatStrengthView', hooks => {
     function getExpectedWilks(bodyWeight: number, isMale: boolean, includedTestSets?: Array<number>): number {
         return Math.round(formulae.wilksCoefficient(bodyWeight, isMale) * getExpectedTotal(includedTestSets));
     }
-    function getExpectedStrengthLevel(): string {
-        return (formulae as any).strengthLevel();
+    function getExpectedStrengthLevel(totalScore: number, bodyWeigth: number): string {
+        return formulae.strengthLevel(totalScore, bodyWeigth);
     }
     function getExpectedPowerLiftDetails(set: Enj.API.BestSet): string {
         // esim Penkkipunnerrus 12 (10 x 6)

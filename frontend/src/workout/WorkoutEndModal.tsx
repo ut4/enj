@@ -9,7 +9,7 @@ class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEn
     private hasValidSets: boolean;
     private workoutBackend: WorkoutBackend;
     private notify: notify;
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.workoutBackend = iocFactories.workoutBackend();
         this.notify = iocFactories.notify();

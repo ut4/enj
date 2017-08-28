@@ -238,6 +238,7 @@ a.icon-button.with-text:hover {
 }
 .icon-button.arrow-black {
     background-image: url("icon-sprite.svg#arrow-black");
+    opacity: 0.65;
 }
 .icon-button.arrow.up {
     transform: rotate(180deg);
@@ -327,7 +328,7 @@ table th {
     padding-right: 10px;
     text-align: left;
 }
-table.striped tr:nth-of-type(2n), .striped:nth-of-type(2n) {
+table.striped tr:nth-of-type(2n) td, .striped:nth-of-type(2n) {
     background-color: #ECECEC;
 }
 table td {
@@ -654,7 +655,7 @@ footer a {
 }
 
 /* -- Treeninäkymät ---------- */
-.workout-view h2 .arrow-black { margin: 0 -5px -7px 2px; top: -7px; position: relative; opacity: 0.7; }
+.workout-view h2 .arrow-black { margin: 0 -5px -7px 2px; top: -7px; position: relative; }
 .workout-view .datepicker { position: absolute; transform: translate(-85%, 45px); z-index: 1; }
 .workout-view > div { margin-top: -10px; }
 .workout-timer { float: left; margin-bottom: 10px; }
@@ -674,9 +675,10 @@ footer a {
 /* -- Statistiikkanäkymät ---------- */
 .stats-view .sub-nav .text-button { padding: 8px 20px; }
 .stats-view .score { font: 60px "Fira sans heavy"; margin: -30px 0px 5px; }
-.stats-view table { width: auto; margin: 0 auto; }
+.stats-view .score + table { width: auto; margin: 0 auto; }
 .stats-view td { padding: 2px 10px 2px 0 }
 .stats-view .inline-form { background-color: #ECECEC; padding: 20px;}
+@media (max-width:530px) { #score-lookup-table { font-size: 13px } }
 
 /* ==== Media queries ====
 ==============================================================================*/
@@ -697,35 +699,40 @@ footer a {
 }
 /* -- sama taulukoiden osalta ---------- */
 @media (max-width:480px) {
+    table.respond {
+        max-width: 260px;
+        margin: 0 auto;
+    }
     table.respond th {
         display: none;
     }
     table.respond td {
         display: block;
-        padding: 0;
-        margin-left: 35%;
+        padding: 0 15px;
         position: relative;
-        text-align: left;
+        text-align: right;
     }
     table.respond tbody tr:first-child td:first-child {
         padding-top: 0;
     }
     table.respond td:first-child {
-        padding: 10px 0 0 0;
+        padding: 10px 15px 0;
     }
     table.respond td:last-child {
-        margin-bottom: 15px;
+        padding-bottom: 10px;
+        margin-bottom: 5px;
     }
     table.respond td:before {
         content: attr(data-th);
         display: inline-block;
         font-weight: bold;
         position: absolute;
-        left: -50%;
+        left: 15px;
     }
     #view {
         padding: 10px 5px;
     }
+    #score-lookup-table { font-size: initial }
 }
 /* -- ja viewin ---------- */
 @media (max-width:660px) {

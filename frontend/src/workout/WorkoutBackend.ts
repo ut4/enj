@@ -21,7 +21,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     private userState: UserState;
     public workoutExerciseBackend: WorkoutExerciseBackend;
     public workoutExerciseSetBackend: WorkoutExerciseSetBackend;
-    constructor(http, urlNamespace, userState: UserState) {
+    public constructor(http, urlNamespace, userState: UserState) {
         super(http, urlNamespace);
         this.workoutExerciseBackend = new WorkoutExerciseBackend(http, 'workout/exercise');
         this.workoutExerciseSetBackend = new WorkoutExerciseSetBackend(http, 'workout/exercise/set');

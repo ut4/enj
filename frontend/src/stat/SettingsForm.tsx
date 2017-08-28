@@ -6,6 +6,7 @@ import iocFactories from 'src/ioc';
 interface Props {
     user: Enj.API.UserRecord;
     onDone: (newUser?: Enj.API.UserRecord) => any;
+    onCancel: () => any;
 }
 
 /**
@@ -13,7 +14,7 @@ interface Props {
  * (paino, sukupuoli) muokkauslomake.
  */
 class SettingsForm extends ValidatingComponent<Props, any> {
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.evaluators = {
             bodyWeight: [(input: any) => input >= 20]
@@ -61,7 +62,7 @@ class SettingsForm extends ValidatingComponent<Props, any> {
             { this.props.user && <label class="input-set inline">
                 <input type="checkbox" name="saveValues" onChange={ e => this.receiveCheckboxValue(e) }/>Tallenna asetukset
             </label> }
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } autoCloseOnConfirm={ false }/>
+            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } autoCloseOnConfirm={ false }/>
         </div>;
     }
 }
