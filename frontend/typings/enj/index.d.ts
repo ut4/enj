@@ -50,6 +50,7 @@ declare module Enj {
         interface ExerciseVariantRecord {
             id: AAGUID;
             content: string;
+            exerciseId: AAGUID;
         }
         interface ExerciseRecord {
             id: AAGUID;

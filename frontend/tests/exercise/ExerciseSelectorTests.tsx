@@ -8,7 +8,7 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     let testExerciseList: Array<Enj.API.ExerciseRecord>;
     hooks.beforeEach(() => {
         testExerciseList = [
-            {id: 'uuid1', name: 'foo', variants: [{id: 'uuid3', content: 'foo'}]},
+            {id: 'uuid1', name: 'foo', variants: [{id: 'uuid3', content: 'foo', exerciseId: 'uuid1'}]},
             {id: 'uuid2', name: 'bat', variants: []}
         ];
     });

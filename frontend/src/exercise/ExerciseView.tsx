@@ -22,15 +22,16 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
     public render() {
         return <div>
             <h2>Liikkeet</h2>
-            <div class="sub-nav left-aligned">
+            <div class="sub-nav left-aligned minor-group">
                 <a href="#/liikkeet/luo-uusi">Luo uusi liike</a>
+                <a href="#/liikkeet/luo-uusi-variantti">Luo uusi liikevariantti</a>
             </div>
             { this.state.exercises && (
                 this.state.exercises.length > 0 ? <table class="striped crud-table responsive">
                     <thead><tr>
                         <th>Nimi</th>
                         <th>Variantit</th>
-                        <th class="action-links-cell">&nbsp;</th>
+                        <th>&nbsp;</th>
                     </tr></thead>
                     <tbody>{ this.state.exercises.map(exercise =>
                         <tr>
@@ -39,7 +40,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
                                 ? exercise.variants.map(v => v.content).join(', ')
                                 : '-'
                             }</td>
-                            <td class="action-links-cell">
+                            <td class="minor-group">
                                 <a href={ '#/liikkeet/muokkaa/' + exercise.id }>Muokkaa</a>
                                 <a href={ '#/liikkeet/poista/' + exercise.id }>Poista</a>
                             </td>

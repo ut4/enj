@@ -18,11 +18,11 @@ QUnit.module('exercise/ExerciseView', hooks => {
         someTestExercises = [
             {id:'uuid1', name: 'foo', variants: []},
             {id:'uuid2', name: 'bar', variants: [
-                {id: 'uuid20', content: 'naz'},
-                {id: 'uuid21', content: 'gas'}
+                {id: 'uuid20', content: 'naz', exerciseId: 'uuid2'},
+                {id: 'uuid21', content: 'gas', exerciseId: 'uuid2'}
             ]},
             {id:'uuid3', name: 'baz', variants: [
-                {id: 'uuid22', content: 'frt'}
+                {id: 'uuid22', content: 'frt', exerciseId: 'uuid3'}
             ]}
         ];
     });

@@ -27,6 +27,12 @@
 .left-aligned {
     text-align: left;
 }
+.minor-group > * {
+    margin-right: 5px;
+}
+.minor-group > *:last-of-type {
+    margin-right: 0;
+}
 html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
@@ -347,12 +353,6 @@ table.striped td:first-child {
 table.crud-table th:last-of-type,
 table.crud-table td:last-of-type {
     width: 112px;
-}
-table.crud-table td:last-of-type a {
-    margin-right: 5px;
-}
-table.crud-table td:last-of-type a:last-of-type {
-    margin-right: 0;
 }
 
 /* -- Notifier ---------- */
