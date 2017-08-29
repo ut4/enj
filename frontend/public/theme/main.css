@@ -21,6 +21,12 @@
 .hidden {
     display: none !important;
 }
+.end {
+    margin-bottom: 15px;
+}
+.left-aligned {
+    text-align: left;
+}
 html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
@@ -111,22 +117,6 @@ ul {
     list-style: outside none none;
     padding: 0;
     text-align: left;
-}
-.end {
-    margin-bottom: 15px;
-}
-.appendix-text {
-    font-size: 13px;
-    margin-left: 4px;
-    font-weight: normal;
-}
-.appendix-text:before {
-    content: "(";
-    margin-right: 1px;
-}
-.appendix-text:after {
-    content: ")";
-    margin-left: 1px;
 }
 .info-box {
     font-size: 13px;
@@ -324,9 +314,15 @@ table {
     max-width: 100%;
     width: 100%;
 }
+table.crud-table {
+    table-layout: fixed;
+}
 table th {
     padding-right: 10px;
     text-align: left;
+}
+table th:first-of-type {
+    padding-left: 8px;
 }
 table.striped tr:nth-of-type(2n) td, .striped:nth-of-type(2n) {
     background-color: #ECECEC;
@@ -336,8 +332,27 @@ table td {
     text-align: left;
     vertical-align: top;
 }
+table.crud-table td {
+    padding: 8px 10px 8px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 table td:first-child {
     padding-left: 4px;
+}
+table.striped td:first-child {
+    padding-left: 8px;
+}
+table.crud-table th:last-of-type,
+table.crud-table td:last-of-type {
+    width: 112px;
+}
+table.crud-table td:last-of-type a {
+    margin-right: 5px;
+}
+table.crud-table td:last-of-type a:last-of-type {
+    margin-right: 0;
 }
 
 /* -- Notifier ---------- */
@@ -699,30 +714,32 @@ footer a {
 }
 /* -- sama taulukoiden osalta ---------- */
 @media (max-width:480px) {
-    table.respond {
-        max-width: 260px;
+    table.tight {
+        max-width: 280px;
         margin: 0 auto;
     }
-    table.respond th {
+    table.responsive th {
         display: none;
     }
-    table.respond td {
+    table.responsive td {
         display: block;
-        padding: 0 15px;
+        padding: 0 15px 0 86px;
         position: relative;
         text-align: right;
+        width: auto;
     }
-    table.respond tbody tr:first-child td:first-child {
+    table.responsive tbody tr:first-child td:first-child {
         padding-top: 0;
     }
-    table.respond td:first-child {
+    table.responsive td:first-child {
         padding: 10px 15px 0;
     }
-    table.respond td:last-child {
+    table.responsive td:last-child {
         padding-bottom: 10px;
         margin-bottom: 5px;
+        width: auto;
     }
-    table.respond td:before {
+    table.responsive td:before {
         content: attr(data-th);
         display: inline-block;
         font-weight: bold;

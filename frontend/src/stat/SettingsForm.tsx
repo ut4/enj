@@ -62,7 +62,7 @@ class SettingsForm extends ValidatingComponent<Props, any> {
             { this.props.user && <label class="input-set inline">
                 <input type="checkbox" name="saveValues" onChange={ e => this.receiveCheckboxValue(e) }/>Tallenna asetukset
             </label> }
-            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } autoCloseOnConfirm={ false }/>
+            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } shouldConfirmButtonBeDisabled={ () => this.state.validity === false }/>
         </div>;
     }
 }

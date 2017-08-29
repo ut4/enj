@@ -193,7 +193,7 @@ class StrengthLevelTable extends Component<any, {tableIsVisible: boolean}> {
                 this.setState({tableIsVisible: !this.state.tableIsVisible})
             }></button>
             { this.state.tableIsVisible && <div>
-                <table id="score-lookup-table" class="striped respond end"><thead>
+                <table id="score-lookup-table" class="striped responsive tight end"><thead>
                     <tr>
                         <th>Paino <span class="text-small">(kg)</span></th>
                         <th>Subbar</th>

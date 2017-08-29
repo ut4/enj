@@ -2,12 +2,23 @@ import Component from 'inferno-component';
 import iocFactories from 'src/ioc';
 import Modal from 'src/ui/Modal';
 
+type CloseBehaviour = {
+    DISABLED: 1;
+    WHEN_RESOLVED: 1;
+    IMMEDIATE: 1;
+};
+const CloseBehaviour = Object.freeze({
+    DISABLED: 'disabled',
+    WHEN_RESOLVED: 'after-confirm-promise-is-resolved',
+    IMMEDIATE: 'immediately-after-confirm-button-is-clicked'
+});
+
 interface Props {
     onConfirm: (e: Event) => any;
     onCancel?: (e: Event) => any;
     close?: Function;
     shouldConfirmButtonBeDisabled?: () => boolean;
-    autoCloseOnConfirm?: boolean;
+    closeBehaviour?: keyof CloseBehaviour;
     isModal?: false;
 }
 
@@ -28,8 +39,17 @@ class FormButtons extends Component<Props, any> {
         this.props.isModal !== false ? Modal.close() : iocFactories.history().goBack();
     }
     private confirm(e) {
+        if (this.props.closeBehaviour === CloseBehaviour.WHEN_RESOLVED) {
+            this.props.onConfirm(e).then(() => this.close());
+            return;
+        }
+        // Confirmaa aina
         this.props.onConfirm(e);
-        this.props.autoCloseOnConfirm === true && this.close();
+        // Sulje vain, jos CloseBehaviour.IMMEDIATE (skippaa, jos undefined tai
+        // CloseBehaviour.DISABLED)
+        if (this.props.closeBehaviour === CloseBehaviour.IMMEDIATE) {
+            this.close();
+        }
     }
     private cancel(e) {
         this.props.onCancel && this.props.onCancel(e);
@@ -44,3 +64,4 @@ class FormButtons extends Component<Props, any> {
 }
 
 export default FormButtons;
+export { CloseBehaviour };
