@@ -23,6 +23,7 @@ import 'tests/stat/StatViewTests';
 import 'tests/ui/TimerTests';
 import 'tests/ui/UserMenuTests';
 import 'tests/ui/ValidatingFormTests';
+import 'tests/user/UserProfileViewTests';
 import 'tests/user/UserStateTests';
 import 'tests/workout/EditableWorkoutExerciseSetListTests';
 import 'tests/workout/EditableWorkoutExerciseTests';

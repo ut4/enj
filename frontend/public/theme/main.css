@@ -33,6 +33,34 @@
 .minor-group > *:last-of-type {
     margin-right: 0;
 }
+.row:before,
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.col-1   {  width: 7.875%;  }
+.col-2   {  width: 16.25%;  }
+.col-3   {  width: 24.625%; }
+.col-4   {  width: 33%;     }
+.col-5   {  width: 41.375%; }
+.col-6   {  width: 49.75%;  }
+.col-7   {  width: 58.125%; }
+.col-8   {  width: 66.5%;   }
+.col-9   {  width: 74.875%; }
+.col-10 { width: 83.25%;   }
+.col-11 { width: 91.625%;  }
+.col-12 { width: 100%;     }
+[class*='col-'] {
+    box-sizing: border-box;
+    float: left;
+    margin-right: .5%;
+}
+.row[class*='col-'],
+.row [class*='col-']:last-child {
+    margin-right: 0;
+}
+
 html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
@@ -213,6 +241,7 @@ a.icon-button.with-text:hover {
     background-position: 6px 7px;
     background-size: 22px auto;
 }
+
 .icon-button.add {
     background-image: url("icon-sprite.svg#add");
 }
@@ -694,6 +723,14 @@ footer a {
 .stats-view td { padding: 2px 10px 2px 0 }
 .stats-view .inline-form { background-color: #ECECEC; padding: 20px;}
 @media (max-width:530px) { #score-lookup-table { font-size: 13px } }
+
+/* -- Käyttäjänäkymät ---------- */
+.profile-pic { margin-right: 15px; height: 140px; background-color: #e0e0e0;
+    border-radius: 2px; }
+.profile-pic:before { display: inline-block; height: 100%; vertical-align: middle;
+    content: " "; }
+.profile-pic img {  display: inline-block; vertical-align: middle; opacity: 0.1; }
+
 
 /* ==== Media queries ====
 ==============================================================================*/

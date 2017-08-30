@@ -1,4 +1,3 @@
-import Component from 'inferno-component';
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';

@@ -20,6 +20,8 @@ interface Props {
     shouldConfirmButtonBeDisabled?: () => boolean;
     closeBehaviour?: keyof CloseBehaviour;
     isModal?: false;
+    confirmButtonText?: string;
+    cancelButtonText?: string;
 }
 
 /**
@@ -57,8 +59,8 @@ class FormButtons extends Component<Props, any> {
     }
     public render() {
         return <div class="form-buttons">
-            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.props.shouldConfirmButtonBeDisabled() }>Ok</button>
-            <button class="text-button" type="button" onClick={ e => this.cancel(e) }>Peruuta</button>
+            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.props.shouldConfirmButtonBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
+            <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
         </div>;
     }
 }
