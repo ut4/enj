@@ -51,14 +51,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         assert.equal(getRenderedExerciseName(rendered), testWorkoutExercise.exerciseName + '(somevariant)');
     });
     QUnit.test('renderöi treeniliikkeen nimen, ja sarjalistan järjestyksessä', assert => {
-        const set1 = new WorkoutExerciseSet();
-        set1.weight = 60.0;
-        set1.reps = 6;
-        set1.ordinal = 1;
-        const set2 = new WorkoutExerciseSet();
-        set2.weight = -10.25;
-        set2.reps = 4;
-        set1.ordinal = 0;
+        const set1 = {id: 'a', weight: 60.0, reps: 6, ordinal: 1, workoutExerciseId: 'aa'};
+        const set2 = {id: 'b', weight: -10.25, reps: 4, ordinal: 0, workoutExerciseId: 'bb'};
         testWorkoutExercise.sets = [set1, set2];
         //
         const rendered = itu.renderIntoDocument(
@@ -73,6 +67,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         assert.equal(setItems[1].textContent, getExpectedSetContent(set1),
             'Pitäisi renderöidä suuremmalla ordinal-arvolla varustettu sarja seuraavaksi'
         );
+        const totals = itu.findRenderedDOMElementWithClass(rendered, 'footer');
+        assert.equal(totals.textContent, getExpectedTotals(testWorkoutExercise.sets));
     });
     QUnit.test('Muokkaa-painikkeen modal lähettää päivitetyn treeniliikeen backediin, ja lopuksi renderöi näkymän', assert => {
         const updateWorkoutExerciseCallStub = sinon.stub(shallowWorkoutBackend, 'updateExercise').returns(Promise.resolve());
@@ -132,6 +128,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             <Modal/>
             <EditableWorkoutExercise workoutExercise={ testWorkoutExercise }/>
         </div>);
+        const originalTotals = itu.findRenderedDOMElementWithClass(rendered, 'footer').textContent;
         // Avaa modal klikkaamalla Muokkaa-painiketta
         const editWorkoutExerciseButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa');
         editWorkoutExerciseButton.click();
@@ -155,6 +152,11 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             assert.equal(renderedSets[1].textContent, getExpectedSetContent(setListInstance.state.sets[1]),
                 'Pitäisi renderöidä päivitetty sarja'
             );
+            const totals = itu.findRenderedDOMElementWithClass(rendered, 'footer');
+            assert.equal(totals.textContent, getExpectedTotals(setListInstance.state.sets),
+                'Pitäisi päivittää totals'
+            );
+            assert.notEqual(totals, originalTotals);
             done();
         });
     });
@@ -279,5 +281,11 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     }
     function getExpectedSetContent(data: Enj.API.WorkoutExerciseSetRecord) {
         return `${data.weight}kg x ${data.reps}`;
+    }
+    function getExpectedTotals(sets: Array<Enj.API.WorkoutExerciseSetRecord>) {
+        const reps = sets.reduce((a, b) => a + b.reps, 0);
+        const lifted = sets.reduce((a, b) => a + b.weight * b.reps, 0);
+        const count = sets.length;
+        return `Yhteensä: ${lifted}kg, ${count} sarjaa, ${reps} toistoa`;
     }
 });
