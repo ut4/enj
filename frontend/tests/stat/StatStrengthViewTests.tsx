@@ -4,7 +4,7 @@ import utils from 'tests/utils';
 import * as itu from 'inferno-test-utils';
 import { formulae } from 'src/stat/StatBackend';
 import UserBackend from 'src/user/UserBackend';
-import StatsStrengthView from 'src/stat/StatsStrengthView';
+import StatsStrengthView from 'src/stat/StatStrengthView';
 import SettingsForm from 'src/stat/SettingsForm';
 import iocFactories from 'src/ioc';
 

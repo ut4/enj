@@ -8,10 +8,19 @@ class StatBackend {
     public constructor(http: Http) {
         this.http = http;
     }
-    /**
-     */
     public getBestSets(): Promise<Array<Enj.API.BestSet>> {
         return this.http.get('stat/best-sets');
+    }
+    public getStats(): Promise<Enj.API.Statistics> {
+        return Promise.resolve({
+            totalWorkoutCount: 34,
+            totalWorkoutTime: 122400,
+            averageWorkoutTime: 3550,
+            longestWorkoutTime: 3690,
+            shortestWorkoutTime: 1456,
+            lifted: 576980,
+            reps: 457663
+        });
     }
 }
 

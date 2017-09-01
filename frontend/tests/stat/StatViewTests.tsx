@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import Component from 'inferno-component';
 import * as itu from 'inferno-test-utils';
 import StatBackend, { formulae } from 'src/stat/StatBackend';
-import StatsView from 'src/stat/StatsView';
+import StatsView from 'src/stat/StatView';
 import iocFactories from 'src/ioc';
 
 function newRouteAwareStatsViewComponent(url) {
@@ -62,9 +62,18 @@ QUnit.module('stat/StatView', hooks => {
         //
         assertNthLinkHasCurrentClass(assert, rendered, 1);
     });
-    QUnit.test('lataa parhaat sarjat StatOverviewView alinäkymälle', assert => {
+    QUnit.test('lataa parhaat sarjat StatsOverviewView alinäkymälle', assert => {
+        sinon.stub(shallowStatBackend, 'getStats').returns(Promise.resolve('sd'));
+        const [rendered, loadHook] = render('/statistiikka/yleista');
         //
-        assert.strictEqual('todo', 'foo');
+        const done = assert.async();
+        loadHook.firstCall.returnValue.then(() => {
+            assert.deepEqual(mockSubView.props.stats, 'sd', 'Pitäisi passata ' +
+                'alinäkymälle backendin palauttamat statistiikat');
+            done();
+        });
+        //
+        assertNthLinkHasCurrentClass(assert, rendered, 2);
     });
     function assertNthLinkHasCurrentClass(assert, rendered, nth: number) {
         itu.scryRenderedDOMElementsWithTag(rendered, 'a').forEach((link, i) => {

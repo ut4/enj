@@ -17,6 +17,7 @@ import 'tests/offline/OfflineTests';
 import 'tests/offline/SyncBackendTests';
 import 'tests/serviceworker/SWManagerTests';
 import 'tests/stat/StatBackendTests';
+import 'tests/stat/StatOverviewViewTests';
 import 'tests/stat/StatProgressViewTests';
 import 'tests/stat/StatStrengthViewTests';
 import 'tests/stat/StatViewTests';

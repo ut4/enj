@@ -2,7 +2,7 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import utils from 'tests/utils';
 import * as itu from 'inferno-test-utils';
-import StatsProgressView from 'src/stat/StatsProgressView';
+import StatsProgressView from 'src/stat/StatProgressView';
 
 QUnit.module('stat/StatProgressView', hooks => {
     let testBestSets: Array<Enj.API.BestSet>;

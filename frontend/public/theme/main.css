@@ -356,7 +356,7 @@ table {
     max-width: 100%;
     width: 100%;
 }
-table.crud-table {
+table.crud-table, table.fixed {
     table-layout: fixed;
 }
 table th {
@@ -366,7 +366,7 @@ table th {
 table th:first-of-type {
     padding-left: 8px;
 }
-table.striped tr:nth-of-type(2n) td, .striped:nth-of-type(2n) {
+table.striped tr:nth-of-type(2n) td, .striped > *:nth-of-type(2n) {
     background-color: #ECECEC;
 }
 table td {
@@ -731,13 +731,23 @@ footer a {
 .stats-view .inline-form { background-color: #ECECEC; padding: 20px;}
 @media (max-width:530px) { #score-lookup-table { font-size: 13px } }
 
+.stats-overview-view .box { background-color: #3B3938; margin-bottom: 10px; border-radius: 2px;
+    padding: 18px; color: #FFFFFF; }
+.stats-overview-view .box > div:first-of-type { text-transform: uppercase; letter-spacing: 2px;
+    font-size: 14px; }
+.stats-overview-view table { font-size: 13px; margin: 10px auto; width: auto; }
+.stats-overview-view table td:last-of-type { padding-bottom: 10px; vertical-align: bottom; }
+.stats-overview-view .score { color: #FFFFFF; line-height: 65px; text-shadow: 1px 1px 4px rgba(0,0,0,0.4); }
+.stats-overview-view .box:nth-of-type(2) .score { font-size: 52px; line-height: 56px; }
+.stats-overview-view .box:nth-of-type(3) .score { font-size: 40px; line-height: 44px; }
+.stats-overview-view .box:nth-of-type(3) .score > span { font-size: 24px; }
+
 /* -- Käyttäjänäkymät ---------- */
 .profile-pic { margin-right: 15px; height: 140px; background-color: #e0e0e0;
     border-radius: 2px; }
 .profile-pic:before { display: inline-block; height: 100%; vertical-align: middle;
     content: " "; }
 .profile-pic img {  display: inline-block; vertical-align: middle; opacity: 0.1; }
-
 
 /* ==== Media queries ====
 ==============================================================================*/

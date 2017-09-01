@@ -25,7 +25,7 @@ class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, a
         };
     }
     public render() {
-        return <div class="inline-form">
+        return <div>
             <label class="input-set">
                 <span>Olen</span>
                 <select name="isMale" value={ this.state.isMale } onChange={ e => this.receiveInputValue(e, true) }>
