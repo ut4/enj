@@ -8,7 +8,7 @@ import AuthBackend from 'src/auth/AuthBackend';
 class AuthService {
     private authBackend: AuthBackend;
     private userState: UserState;
-    constructor(authBackend: AuthBackend, userState: UserState) {
+    public constructor(authBackend: AuthBackend, userState: UserState) {
         this.authBackend = authBackend;
         this.userState = userState;
     }

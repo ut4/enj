@@ -37,7 +37,7 @@ QUnit.module('workout/EditableWorkoutExerciseSetList', hooks => {
         );
         assert.ok(onChangeSpy.calledOnce, 'Pitäisi triggeröidä props.onChange');
     });
-    QUnit.test('Settilistan Poista-painike poistaa setin', assert => {
+    QUnit.test('Sarjalistan Poista-painike poistaa sarjan', assert => {
         const onChangeSpy = sinon.spy();
         const rendered = itu.renderIntoDocument(
             <EditableWorkoutExerciseSetList workoutExerciseSets={ testSets } onChange={ onChangeSpy }/>

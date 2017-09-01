@@ -12,7 +12,6 @@ type powerLiftSets = {
 
 interface State {
     scores: Scores;
-    userData: Enj.API.UserRecord;
     configMode: boolean;
 }
 
@@ -24,25 +23,26 @@ interface State {
 class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, State> {
     private powerLiftSets: powerLiftSets;
     private userDataFetch: Promise<Enj.API.UserRecord>;
+    private userData: Enj.API.UserRecord = null;
     public constructor(props, context) {
         super(props, context);
-        this.state = {configMode: false, scores: this.makeScores(props.bestSets || [], null), userData: null};
+        this.state = {configMode: false, scores: this.makeScores(props.bestSets || [], null)};
     }
     public componentWillMount() {
         this.userDataFetch = iocFactories.userBackend().get();
     }
     public componentWillReceiveProps(props) {
         return this.userDataFetch.then(userData => {
-            this.state.userData = userData;
+            this.userData = userData;
             this.setState({scores: this.makeScores(props.bestSets, userData)});
         });
     }
-    private makeScores(bestSets: Array<Enj.API.BestSet>, userData: Enj.API.UserRecord) {
+    private makeScores(bestSets: Array<Enj.API.BestSet>, userData: Enj.API.UserRecord): Scores {
         this.powerLiftSets = this.collectPowerLiftSets(bestSets);
         return new Scores(this.powerLiftSets, userData);
     }
     /**
-     * Filtteröi parhaista seteistä penkki-, kyykky-, ja mave -setit.
+     * Filtteröi parhaista sarjoista penkki-, kyykky-, ja mave -sarjat.
      */
     private collectPowerLiftSets(bestSets: Array<Enj.API.BestSet>): powerLiftSets {
         const p = bestSets && bestSets.length;
@@ -52,8 +52,16 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             deadlift: p && bestSets.find(set => set.exerciseName === 'Maastaveto')
         };
     }
-    private applyNewUserData() {
-        this.setState({scores: this.makeScores(this.props.bestSets, this.state.userData), configMode: false});
+    /**
+     * Vastaanottaa päivitetyn käyttäjädatan {newUser} Asetukset-lomakkeelta.
+     */
+    private applyNewUserData(newUser?: Enj.API.UserRecord) {
+        const newState = {configMode: false} as any;
+        if (newUser) {
+            this.userData = newUser;
+            newState.scores = this.makeScores(this.props.bestSets, this.userData);
+        }
+        this.setState(newState);
     }
     public render() {
         return <div>
@@ -81,14 +89,14 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
                     <div class="end">Wilks coefficient { this.state.scores.wilksCoefficient }</div>,
                     !this.state.configMode
                         ? <button title="Muokkaa parametreja" class="nice-button edit" onClick={ () => this.setState({configMode: !this.state.configMode}) }>Asetukset</button>
-                        : <SettingsForm user={ this.state.userData } onDone={ () => this.applyNewUserData() }/>
+                        : <SettingsForm user={ this.userData } onDone={ userData => this.applyNewUserData(userData) } onCancel={ () => this.setState({configMode: false}) }/>
                 ] :
                 <div class="score">-</div>
             }
 
             <h2>Tasosi on</h2>
             <div class="score">{ this.state.scores.level }</div>
-            <button title="Näytä taulukko" class="arrow-button" onClick={ () => {} }>&gt;</button>
+            <StrengthLevelTable/>
         </div>;
     }
     private makeBestLiftDetailEls(lift: keyof powerLiftSets) {
@@ -117,8 +125,8 @@ class Scores {
     public total: number;
     public wilksCoefficient: number;
     public level: string;
-    constructor(powerLiftSets: powerLiftSets, userData: Enj.API.UserRecord) {
-        this.userData = userData || {weight: 0, isMale: true};
+    public constructor(powerLiftSets: powerLiftSets, userData: Enj.API.UserRecord) {
+        this.userData = userData || {id: null, bodyWeight: 0, isMale: true};
         this.oneRepMaxes = this.getOneRepMaxes(powerLiftSets);
         this.hasAllData = (
             this.oneRepMaxes.squat > 0 &&
@@ -162,13 +170,55 @@ class Scores {
      * Palauttaa wilks-kertoimen, tai 0, jos tarvittavaa dataa ei ole.
      */
     private getWilksCoefficient(): number {
-        return formulae.wilksCoefficient(this.userData.weight, this.userData.isMale);
+        return formulae.wilksCoefficient(this.userData.bodyWeight, this.userData.isMale);
     }
     /**
      * Palauttaa käyttäjän tason selväkielisenä, tai '-', jos tarvittavaa dataa ei ole.
      */
     private getLevel(): string {
-        return formulae.strengthLevel(this.total, this.userData.weight);
+        return formulae.strengthLevel(this.total, this.userData.bodyWeight);
+    }
+}
+
+class StrengthLevelTable extends Component<any, {tableIsVisible: boolean}> {
+    private table: Array<[number, number, number, number, number, number]>;
+    public constructor(props, context) {
+        super(props, context);
+        this.state = {tableIsVisible: false};
+        this.table = formulae.getStrengthLevelTable();
+    }
+    public render() {
+        return <div>
+            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-black end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () =>
+                this.setState({tableIsVisible: !this.state.tableIsVisible})
+            }></button>
+            { this.state.tableIsVisible && <div>
+                <table id="score-lookup-table" class="striped responsive tight end"><thead>
+                    <tr>
+                        <th>Paino <span class="text-small">(kg)</span></th>
+                        <th>Subbar</th>
+                        <th>Untrained</th>
+                        <th>Novice</th>
+                        <th>Intermed.</th>
+                        <th>Advanced</th>
+                        <th>Elite</th>
+                    </tr>
+                </thead><tbody>{ this.table.map((row, i) =>
+                    <tr>
+                        <td data-th="Paino (kg)">{ this.table[i+1] ? (Math.round(row[0]) + '-' + Math.round(this.table[i+1][0])) : row[0] + '+' }</td>
+                        <td data-th="Subpar">&lt;{ row[1] }</td>
+                        <td data-th="Untrained">{ row[1] }</td>
+                        <td data-th="Novice">{ row[2] }</td>
+                        <td data-th="Intermed.">{ row[3] }</td>
+                        <td data-th="Advanced">{ row[4] }</td>
+                        <td data-th="Elite">{ row[5] }</td>
+                    </tr>
+                ) }</tbody></table>
+                <a href="http://www.exrx.net/Testing/WeightLifting/SquatStandards.html">exrx.net/Testing/WeightLifting/SquatStandards.html</a><br/>
+                <a href="http://www.exrx.net/Testing/WeightLifting/BenchStandards.html">exrx.net/Testing/WeightLifting/BenchStandards.html</a><br/>
+                <a href="http://www.exrx.net/Testing/WeightLifting/DeadliftStandards.html">exrx.net/Testing/WeightLifting/DeadliftStandards.html</a>
+            </div> }
+        </div>;
     }
 }
 

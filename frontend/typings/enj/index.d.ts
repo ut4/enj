@@ -47,9 +47,19 @@ declare module Enj {
             timesImproved: number;
             exerciseName: string;
         }
+        interface Statistics {
+            totalWorkoutCount: number;
+            totalWorkoutTime: number;
+            averageWorkoutTime: number;
+            longestWorkoutTime: number;
+            shortestWorkoutTime: number;
+            lifted: number;
+            reps: number;
+        }
         interface ExerciseVariantRecord {
             id: AAGUID;
             content: string;
+            exerciseId: AAGUID;
         }
         interface ExerciseRecord {
             id: AAGUID;
@@ -57,7 +67,8 @@ declare module Enj {
             variants: Array<ExerciseVariantRecord>;
         }
         interface UserRecord {
-            weight: number;
+            id: AAGUID;
+            bodyWeight: number;
             isMale: boolean;
         }
         // REST-vastauswrapperit

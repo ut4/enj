@@ -6,6 +6,7 @@ import iocFactories from 'src/ioc';
  */
 class StatsView extends Component<any, any> {
     private bestSets: Array<Enj.API.BestSet>;
+    private miscStats: Enj.API.Statistics;
     public componentWillMount() {
         this.componentWillReceiveProps();
     }
@@ -15,35 +16,28 @@ class StatsView extends Component<any, any> {
      */
     public componentWillReceiveProps() {
         return (this.context.router.url.indexOf('/yleista') < 0
-            ? this.fetchBestSets().then(bestSets => {
-                this.bestSets = bestSets;
-                this.props.children.props.bestSets = bestSets;
-                return bestSets.length > 0;
-            })
-            : this.fetchMiscStats().then(miscStats => {
-                // tähän jotain..
-                return true;
-            })).then(ok => {
+            ? this.fetchAndCache('getBestSets', 'bestSets', [])
+            : this.fetchAndCache('getStats', 'stats', null)).then(ok => {
                 ok && this.forceUpdate();
             });
     }
     /**
-     * Hakee parhaat setit backendistä.
+     * Hakee parhaat sarjat, tai yleistä statistiikkaa backendistä.
      */
-    private fetchBestSets(): Promise<Array<Enj.API.BestSet>> {
-        return (this.bestSets
-            ? Promise.resolve(this.bestSets)
-            : iocFactories.statBackend().getBestSets().then(
-                bestSets => bestSets,
+    private fetchAndCache(method: 'getBestSets' | 'getStats', prop: 'bestSets' | 'stats', fallbackValue) {
+        return (this[prop]
+            ? Promise.resolve(this[prop])
+            : iocFactories.statBackend()[method]()).then(
+                data => data,
                 () => {
                     iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
-                    return [];
+                    return fallbackValue;
                 }
-            )
-        );
-    }
-    private fetchMiscStats(): Promise<any> {
-        return Promise.resolve(null);
+            ).then(data => {
+                this[prop] = data;
+                this.props.children.props[prop] = data;
+                return Array.isArray(data) ? data.length > 0 : data !== null;
+            });
     }
     public render() {
         return <div class="stats-view">

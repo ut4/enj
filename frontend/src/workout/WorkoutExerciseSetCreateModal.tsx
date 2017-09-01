@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import WorkoutExerciseSetForm from 'src/workout/WorkoutExerciseSetForm';
-import FormButtons from 'src/ui/FormButtons';
+import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -15,20 +15,20 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
         this.state = {validity: true};
     }
     /**
-     * Lähettää treeniliikesetin backendiin tallennettavaksi, ja ohjaa käyttäjän
-     * takaisin mikäli tallennus onnistui.
+     * Lähettää sarjan backendiin tallennettavaksi, ja ohjaa käyttäjän takaisin
+     * mikäli tallennus onnistui.
      */
     private confirm() {
         iocFactories.workoutBackend().insertSet(this.props.workoutExerciseSet).then(
             () => this.props.afterInsert(this.props.workoutExerciseSet),
-            () => iocFactories.notify()('Setin lisäys epäonnistui', 'error')
+            () => iocFactories.notify()('Sarjan lisäys epäonnistui', 'error')
         );
     }
     public render() {
         return <div>
             <h3>Lisää sarja</h3>
             <WorkoutExerciseSetForm workoutExerciseSet={ this.props.workoutExerciseSet } ref={ instance => { this.workoutExerciseSetForm = instance; } } onValidityChange={ validity => this.setState({validity}) }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } autoCloseOnConfirm={ true }/>
+            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
 }
