@@ -4,6 +4,7 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
 import net.mdh.enj.mapping.NoDupeRowMapper;
 import net.mdh.enj.mapping.SubCollector;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import javax.inject.Inject;
@@ -19,13 +20,15 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     /**
-     * Palauttaa kaikki liikkeet tietokannasta.
-     *
-     * @return liikkeet
+     * Palauttaa kaikki globaalit, sekä {userId}-käyttäjälle kuuluvat liikkeet.
      */
-    List<Exercise> selectAll() {
+    List<Exercise> selectAll(String userId) {
         return super.selectAll(
-            String.format("SELECT * FROM %sView", TABLE_NAME),
+            String.format("SELECT * FROM %sView WHERE (" +
+                "(exerciseUserId IS NULL OR exerciseUserId = :userId) AND " +
+                "(exerciseVariantUserId IS NULL OR exerciseVariantUserId = :userId)" +
+            ")", TABLE_NAME),
+            new MapSqlParameterSource("userId", userId),
             new ExerciseMapper()
         );
     }
@@ -33,12 +36,12 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     /**
      * Luo Exercise-beaneja resultSet-rivin tiedoilla.
      */
-    public static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
+    private static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {
 
         private static final String ID_COL = "exerciseId";
         private final SubCollector<Exercise.Variant> variantCollector;
 
-        public ExerciseMapper() {
+        ExerciseMapper() {
             super(ID_COL);
             this.variantCollector = new SubCollector<>(new ExerciseVariantMapper(), ID_COL);
         }
@@ -49,6 +52,7 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
             String id = rs.getString(ID_COL);
             exercise.setId(id);
             exercise.setName(rs.getString("exerciseName"));
+            exercise.setUserId(rs.getString("exerciseUserId"));
             exercise.setVariants(this.variantCollector.collect(rs, rowNum, id));
             return exercise;
         }
@@ -70,9 +74,11 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
                 if (id != null) {
                     variant.setContent(rs.getString("exerciseVariantContent"));
                     variant.setExerciseId(rs.getString("exerciseId"));
+                    variant.setUserId(rs.getString("exerciseVariantUserId"));
                 } else {
                     variant.setContent(null);
                     variant.setExerciseId(null);
+                    variant.setUserId(null);
                 }
                 return variant;
             }

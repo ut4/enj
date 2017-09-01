@@ -136,7 +136,7 @@ public class WorkoutController {
     }
 
     /**
-     * Poistaa treeniliikkeen, ja kaikki sille kuuluvat setit tietokannasta.
+     * Poistaa treeniliikkeen, ja kaikki sille kuuluvat sarjat tietokannasta.
      */
     @DELETE
     @Path("/exercise/{workoutExerciseId}")
@@ -147,7 +147,7 @@ public class WorkoutController {
     }
 
     /**
-     * Lisää uuden setin tietokantaan.
+     * Lisää uuden sarjan tietokantaan.
      */
     @POST
     @Path("/exercise/set")
@@ -159,7 +159,7 @@ public class WorkoutController {
     }
 
     /**
-     * Lisää inputin kaikki setit tietokantaan.
+     * Lisää inputin kaikki sarjat tietokantaan.
      */
     @POST
     @Path("/exercise/set/all")
@@ -171,7 +171,7 @@ public class WorkoutController {
     }
 
     /**
-     * Päivittää kaikki treeniliikesetit {workoutExerciseSets}:n tiedoilla.
+     * Päivittää kaikki sarjat {workoutExerciseSets}:n tiedoilla.
      */
     @PUT
     @Path("/exercise/set")
@@ -182,7 +182,7 @@ public class WorkoutController {
     }
 
     /**
-     * Poistaa treeniliikesetin tietokannasta, jolla urlin uuid.
+     * Poistaa sarjan tietokannasta, jolla urlin uuid.
      */
     @DELETE
     @Path("/exercise/set/{workoutExerciseSetId}")

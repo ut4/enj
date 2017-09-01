@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.junit.Assert;
 import java.util.Comparator;
 import java.util.List;
 
@@ -49,5 +50,15 @@ public class JerseyTestCase extends JerseyTest implements HttpClient {
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
         errors.sort(Comparator.comparing(ValidationError::getPath));// aakkosjärjestykseen
         return errors;
+    }
+    public void assertRequestFailsOnNullInput(String url, String methodPath) {
+        Response response = this.newPostRequest(url, null);
+        // Testaa että palauttaa 400
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals(methodPath + ".arg0", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
     }
 }

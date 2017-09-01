@@ -21,6 +21,8 @@ CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     passwordHash VARCHAR(255) NOT NULL,
+    bodyWeight FLOAT UNSIGNED DEFAULT NULL,
+    isMale TINYINT(1) DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -36,14 +38,18 @@ CREATE VIEW userView AS
 CREATE TABLE exercise (
     id CHAR(36) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
+    userId CHAR(36) DEFAULT NULL, -- NULL = Globaali liike, !NULL = Käyttäjäkohtainen liike
+    FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE exerciseVariant (
     id CHAR(36) NOT NULL,
-    content VARCHAR(32) NOT NULL,
+    content VARCHAR(64) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
+    userId CHAR(36) DEFAULT NULL, -- NULL = Globaali liike, !NULL = Käyttäjäkohtainen liike
     FOREIGN KEY (exerciseId) REFERENCES exercise(id),
+    FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -51,8 +57,10 @@ CREATE VIEW exerciseView AS
     SELECT
         e.id       AS exerciseId,
         e.`name`   AS exerciseName,
+        e.userId   AS exerciseUserId,
         ev.id      AS exerciseVariantId,
-        ev.content AS exerciseVariantContent
+        ev.content AS exerciseVariantContent,
+        ev.userId  AS exerciseVariantUserId
     FROM exercise e
     LEFT JOIN exerciseVariant ev ON (ev.exerciseId = e.id);
 
@@ -125,9 +133,14 @@ FOR EACH ROW BEGIN
 END;//
 
 -- Treeniliikkeen poiston yhteydessä ajautuva triggeri, joka poistaa kaikki sille
--- kuuluvat setit ennen varsinaista poistoa
+-- kuuluvat sarjat + ennätykset ennen varsinaista poistoa
 CREATE TRIGGER workoutExerciseDeleteTrg BEFORE DELETE ON workoutExercise
 FOR EACH ROW BEGIN
+    -- bestSet, täytyy ajaa ennen & erikseen ettei constraint-failaa
+    DELETE bestSet FROM bestSet
+    JOIN workoutExerciseSet ws ON ws.id = bestSet.workoutExerciseSetId
+    WHERE ws.workoutExerciseId = OLD.id;
+    -- workoutExerciseSet
     DELETE FROM workoutExerciseSet WHERE workoutExerciseId = OLD.id;
 END;//
 
@@ -142,7 +155,10 @@ FOR EACH ROW BEGIN
     IF (NOT EXISTS(
         SELECT * FROM bestSet bs
         JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
-        WHERE wes.weight >= NEW.weight AND bs.exerciseId = @exerciseId
+        -- https://en.wikipedia.org/wiki/One-repetition_maximum#O.27Conner_et_al.
+        WHERE bs.exerciseId = @exerciseId AND
+            IF(wes.reps > 1, wes.weight*(wes.reps+1/40), wes.weight) >=
+            IF(NEW.reps > 1, NEW.weight*(NEW.reps+1/40), NEW.weight)
     )) THEN
         INSERT INTO bestSet (workoutExerciseSetId, exerciseId)
             VALUES (NEW.id, @exerciseId);

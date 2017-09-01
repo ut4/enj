@@ -23,6 +23,11 @@ public class UserRepository extends BasicRepository<User> {
         );
     }
 
+    int update(User user) {
+        return super.update("UPDATE `user` SET username = :username, " +
+            "bodyWeight = :bodyWeight, isMale = :isMale WHERE id = :id", user);
+    }
+
     private static class UserMapper extends NoDupeRowMapper<User> {
 
         private UserMapper() {

@@ -139,6 +139,26 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     }
 
     @Test
+    public void updatePäivittääBeaninJaPalauttaaPäivitettyjenRivienLukumäärän() {
+        //
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
+        Assert.assertEquals(1, this.testRepo.insert(data));
+        // Päivitä beanin tietoja
+        String newName = "foo2";
+        data.setName(newName);
+        int updateCount = this.testRepo.update(data);
+        // Päivittyikö?
+        Assert.assertEquals("Pitäisi päivittää itemi", 1, updateCount);
+        List<SimpleExerciseEntity> updated = this.testRepo.selectAll(
+            "SELECT id, `name` FROM exercise WHERE id = :id",
+            new MapSqlParameterSource().addValue("id", data.getId()),
+            new SimpleExerciseMapper()
+        );
+        Assert.assertEquals("Pitäisi päivittää data", newName, updated.get(0).getName());
+    }
+
+    @Test
     public void updateManyPäivittääKaikkiBeanitJaPalauttaaPäivitettyjenRivienLukumäärän() {
         //
         SimpleExerciseEntity data = new SimpleExerciseEntity();
@@ -190,11 +210,15 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
      *  vain schemassa pakolliseksi määritellyn kentän "name".
      */
     private static class SimpleExerciseRepository extends BasicRepository<SimpleExerciseEntity> {
+        private static final String UPDATE_Q = "UPDATE exercise SET `name` = :name WHERE id = :id";
         SimpleExerciseRepository(DataSourceFactory dataSourceFac) {
             super(dataSourceFac, "exercise", BasicRepository.DEFAULT_ID);
         }
+        int update(SimpleExerciseEntity item) {
+            return super.update(UPDATE_Q, item);
+        }
         int updateMany(List<SimpleExerciseEntity> items) {
-            return super.updateMany("UPDATE exercise SET `name` = :name WHERE id = :id", items);
+            return super.updateMany(UPDATE_Q, items);
         }
     }
     private static class SimpleExerciseMapper implements RowMapper<SimpleExerciseEntity> {

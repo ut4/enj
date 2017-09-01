@@ -26,10 +26,10 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         we.setWorkoutId(testWorkout.getId());
         we.setExerciseId(testExercise.getId());
         utils.insertWorkoutExercise(we);
-        // Insertoi ennätys #1 -------------------------------------------------
+        // Insertoi ennätys #1 (laskettu 1RM 92) -------------------------------
         Workout.Exercise.Set set1 = new Workout.Exercise.Set();
-        set1.setWeight(5);
-        set1.setReps(2);
+        set1.setWeight(80);
+        set1.setReps(6);
         set1.setWorkoutExerciseId(we.getId());
         utils.insertWorkoutExerciseSet(set1);
         // Assertoi, että palauttaa parhaimman
@@ -40,10 +40,10 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         Assert.assertEquals(String.valueOf(set1.getWeight()), String.valueOf(result1.getBestWeight()));
         Assert.assertEquals(set1.getReps(), result1.getBestWeightReps());
         Assert.assertEquals(0, result1.getTimesImproved());
-        // Lisää ennätys #2 ----------------------------------------------------
+        // Lisää ennätys #2 (laskettu 1RM 94) ----------------------------------
         Workout.Exercise.Set set2 = new Workout.Exercise.Set();
-        set2.setWeight(6);
-        set2.setReps(3);
+        set2.setWeight(80);
+        set2.setReps(7);
         set2.setWorkoutExerciseId(we.getId());
         utils.insertWorkoutExerciseSet(set2);
         // Assertoi, että yliajoi edellisen ennätyksen
@@ -55,10 +55,10 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         Assert.assertEquals(String.valueOf(set2.getWeight()), String.valueOf(result2.getBestWeight()));
         Assert.assertEquals(set2.getReps(), result2.getBestWeightReps());
         Assert.assertEquals(1, result2.getTimesImproved());
-        // Lisää ei-ennätys/normaali sarja -------------------------------------
+        // Lisää ei-ennätys -sarja ---------------------------------------------
         Workout.Exercise.Set set3 = new Workout.Exercise.Set();
-        set3.setWeight(set2.getWeight());
-        set3.setReps(set2.getReps());
+        set3.setWeight(93);
+        set3.setReps(1);
         set3.setWorkoutExerciseId(we.getId());
         utils.insertWorkoutExerciseSet(set3);
         // Assertoi, ettei muuttanut mitään, koska tulos ei parantunut

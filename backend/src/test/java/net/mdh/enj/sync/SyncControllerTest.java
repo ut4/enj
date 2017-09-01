@@ -8,7 +8,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.validation.ValidationError;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,15 +32,7 @@ public class SyncControllerTest extends JerseyTestCase {
 
     @Test
     public void POSTHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("sync", null);
-        // Testaa että palauttaa 400
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("SyncController.syncAll.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("sync", "SyncController.syncAll");
     }
 
     @Test
