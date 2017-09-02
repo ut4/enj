@@ -5,6 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 class InsertGroupingOptimizer extends AbstractOptimizer {
+
+    private final List<Pointer> grouped;
+
+    InsertGroupingOptimizer() {
+        this.grouped = new ArrayList<>();
+    }
+
     /**
      * Ryhmittelee jonon samantyyppiset POST-operaatiot yhteen (miksi suorittaa
      * useita POST-pyyntöjä jos ne voi tehdä kerralla?).
@@ -21,6 +28,7 @@ class InsertGroupingOptimizer extends AbstractOptimizer {
                 }
             }
         }
+        this.normalizeUrls();
         this.removeNullifiedOperations();
     }
 
@@ -33,7 +41,7 @@ class InsertGroupingOptimizer extends AbstractOptimizer {
                 continue;
             }
             Route r = this.queue.get(p.syncQueueItemIndex).getRoute();
-            if (r.getUrl().equals(url) &&
+            if (r.getUrl().replace("/all", "").equals(url.replace("/all", "")) &&
                 r.getMethod().equals(HttpMethod.POST)) {
                 groupables.add(p);
             }
@@ -46,16 +54,34 @@ class InsertGroupingOptimizer extends AbstractOptimizer {
 
     private void groupOperations(List<Pointer> groupables) {
         // Tee ensimmäisestä insertistä ryhmä
-        Pointer mainOp = groupables.get(0);
-        this.queue.get(mainOp.syncQueueItemIndex).setData(
+        Pointer mainOpPointer = groupables.get(0);
+        this.queue.get(mainOpPointer.syncQueueItemIndex).setData(
             SyncQueueUtils.makeBatch(groupables, this.queue)
         );
+        this.grouped.add(mainOpPointer);
         // Ja merkkaa ryhmään lisätyt itemit poistettavaksi
         for (Pointer p : groupables) {
-            if (p.syncQueueItemIndex != mainOp.syncQueueItemIndex) {
+            if (p.syncQueueItemIndex != mainOpPointer.syncQueueItemIndex) {
                 this.nullifyOperation(p);
             } else {
                 p.isProcessed = true;
+            }
+        }
+    }
+
+    /**
+     * Muuttaa itemin urlin foo -> foo/all, jos sen data muuttui optiminnissa
+     * objektista taulukoksi.
+     */
+    private void normalizeUrls() {
+        for (Pointer p: this.grouped) {
+            SyncQueueItem op = this.queue.get(p.syncQueueItemIndex);
+            if (op == null) {
+                continue;
+            }
+            String url = op.getRoute().getUrl();
+            if (!url.contains("/all")) {
+                op.getRoute().setUrl(!url.contains("?") ? url + "/all" : url.replace("?", "/all?"));
             }
         }
     }

@@ -10,10 +10,13 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ClientErrorException;
 import net.mdh.enj.HttpClient;
+import net.mdh.enj.Application;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import javax.validation.constraints.NotNull;
 import java.util.function.BiFunction;
 import java.util.Comparator;
@@ -37,6 +40,7 @@ public class SyncController {
     private final RequestContext requestContext;
     private final Map<String, Integer> operationPriorities;
     private final Map<String, Integer> methodPriorities;
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
     public SyncController(
@@ -66,8 +70,10 @@ public class SyncController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Set<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
         //
+        logger.debug("Alkuperäinen jono: ((" + syncQueue + "))");
         this.sortQueueByPriority(syncQueue);
         List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue).optimize(QueueOptimizer.ALL);
+        logger.debug("Optimoitu jono: ((" + optimized + "))");
         //
         return this.doSyncAll(syncQueue, optimized, (syncable, idsOfSuccesfullySyncedItems) -> {
             // Suorita synkkaus HTTP:lla
@@ -84,6 +90,7 @@ public class SyncController {
                 // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
                 // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
             } else if (idsOfSuccesfullySyncedItems.size() > 0) {
+                logger.error("Synkkaus epäonnistui: " + syncResponse.readEntity(String.class));
                 syncResponse.close();
                 return false;
                 // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
@@ -121,6 +128,22 @@ public class SyncController {
     }
 
     /**
+     * Lähettää HTTP-pyynnön {syncableItem}:in routen määrittelemään urliin.
+     */
+    private Response callSyncableResource(SyncQueueItem syncableItem) throws JsonProcessingException {
+        Route route = syncableItem.getRoute();
+        return this.appHttpClient.target(route.getUrl())
+            .request(MediaType.APPLICATION_JSON)
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
+            .method(
+                route.getMethod(),
+                !route.getMethod().equals("DELETE")
+                    ? Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData()))
+                    : null
+            );
+    }
+
+    /**
      * Järjestää listan niin, että muista riippumattomat itemit siirretään jonon
      * alkuun.
      */
@@ -135,21 +158,5 @@ public class SyncController {
         queue.sort(Comparator.comparingInt(a ->
             methodPriorities.get(a.getRoute().getMethod())
         ));
-    }
-
-    /**
-     * Lähettää HTTP-pyynnön {syncableItem}:in routen määrittelemään urliin.
-     */
-    private Response callSyncableResource(SyncQueueItem syncableItem) throws JsonProcessingException {
-        Route route = syncableItem.getRoute();
-        return this.appHttpClient.target(route.getUrl())
-            .request(MediaType.APPLICATION_JSON)
-            .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
-            .method(
-                route.getMethod(),
-                !route.getMethod().equals("DELETE")
-                    ? Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData()))
-                    : null
-            );
     }
 }

@@ -24,13 +24,14 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
+        expected.add(this.clone(input.get(1), this.makeBatch(
             input.get(1).getData(),
             input.get(2).getData()
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (2)
         // Pitäisi siirtää (3) 1. kohtaan
-        expected.add(SyncQueueUtils.clone(input.get(4), input.get(5).getData()));
+        expected.add(this.clone(input.get(4), input.get(5).getData()));
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expected.toString(), i.toString());
     }
@@ -42,10 +43,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid2','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(0).getData(),
             input.get(2).getData()
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (1)
         // Pitäisi poistaa (2)
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
@@ -62,10 +64,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':4,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(3).getData(),
             input.get(1).getData()
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (0)
         // Pitäisi siirtää (1) 0[1]
         // Pitäisi poistaa (2)
@@ -78,7 +81,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void ryhmitteleeMyösOptimoidutItemit3() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}" +
             "]}," +
@@ -86,7 +89,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(2).getData(),
             ((List)input.get(0).getData()).get(1),
             input.get(1).getData()
@@ -112,10 +115,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(0));
         expected.add(input.get(1));
         expected.add(input.get(2));
-        expected.add(SyncQueueUtils.clone(input.get(3), this.makeBatch(
+        expected.add(this.clone(input.get(3), this.makeBatch(
             input.get(3).getData(),
             input.get(5).getData()
         )));
+        expected.get(3).getRoute().setUrl("workout/exercise/all");
         // Pitäisi poistaa (4)
         // Pitäisi poistaa (5)
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
@@ -171,18 +175,19 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':21,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid34','workoutExerciseId':'uid13','reps':1}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), ((List)input.get(1).getData()).get(0)));
+        expected.add(this.clone(input.get(0), ((List)input.get(1).getData()).get(0)));
         // Pitäisi siirtää (1) 0. itemiin
-        expected.add(SyncQueueUtils.clone(input.get(2), this.makeBatch(
+        expected.add(this.clone(input.get(2), this.makeBatch(
             input.get(2).getData(),
             input.get(3).getData(),
             input.get(4).getData(),
             input.get(5).getData()
         )));
+        expected.get(1).getRoute().setUrl("workout/exercise/all");
         // Pitäisi siirtää (3) 1. itemin batchiin
         // Pitäisi siirtää (4) 1. itemin batchiin
         // Pitäisi siirtää (5) 1. itemin batchiin
-        expected.add(SyncQueueUtils.clone(input.get(6), this.makeBatch(
+        expected.add(this.clone(input.get(6), this.makeBatch(
             input.get(6).getData(),
             input.get(7).getData(),
             input.get(8).getData(),
@@ -199,6 +204,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             input.get(19).getData(),
             input.get(20).getData()
         )));
+        expected.get(2).getRoute().setUrl("workout/exercise/set/all");
         // Pitäisi siirtää (6) 2. itemin batchiin
         // Pitäisi siirtää (7) 2. itemin batchiin
         // Pitäisi siirtää (8) 2. itemin batchiin
@@ -256,13 +262,13 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':1,'end':2}}," +
-            "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':[" +
+            "{'id':3,'route':{'url':'workout/exercise/all','method':'POST'},'data':[" +
                 "{'id':'uid10','workoutId':'uid1'}," +
                 "{'id':'uid11','workoutId':'uid1'}," +
                 "{'id':'uid12','workoutId':'uid1'}," +
                 "{'id':'uid13','workoutId':'uid1'}" +
             "]}," +
-            "{'id':4,'route':{'url':'workout/exercise','method':'PUT'},'data':[" +
+            "{'id':4,'route':{'url':'workout/exercise/all','method':'PUT'},'data':[" +
                 "{'id':'uid11','foo':'bar'}," +
                 "{'id':'uid12','baz':'hax'}" +
             "]}," +
@@ -286,9 +292,9 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':19,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid31','workoutExerciseId':'uid12','reps':17}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), input.get(1).getData()));
+        expected.add(this.clone(input.get(0), input.get(1).getData()));
         // Pitäisi siirtää (1) 0
-        expected.add(SyncQueueUtils.clone(input.get(2), this.makeBatch(
+        expected.add(this.clone(input.get(2), this.makeBatch(
             ((List)input.get(2).getData()).get(0),
             input.get(4).getData(),
             ((List)input.get(3).getData()).get(1)
@@ -297,7 +303,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (3)
         // Pitäisi poistaa (4)
         // Pitäisi poistaa (5)
-        expected.add(SyncQueueUtils.clone(input.get(6), this.makeBatch(
+        expected.add(this.clone(input.get(6), this.makeBatch(
             input.get(6).getData(),
             input.get(7).getData(),
             input.get(8).getData(),
@@ -311,6 +317,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             input.get(17).getData(),
             input.get(18).getData()
         )));
+        expected.get(2).getRoute().setUrl("workout/exercise/set/all");
         String expectedStr = expected.toString();
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expectedStr, i.toString());
@@ -361,7 +368,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':7,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
             "{'id':8,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid10','start':1}}," +
             "{'id':9,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid11','start':1}}," +
-            "{'id':10,'route':{'url':'workout/exercise','method':'POST'},'data':[" +
+            "{'id':10,'route':{'url':'workout/exercise/all','method':'POST'},'data':[" +
                 "{'id':'uid12','workoutId':'uid2'}," +
                 "{'id':'uid13','workoutId':'uid2'}," +
                 "{'id':'uid14','workoutId':'uid2'}" +
@@ -386,22 +393,24 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
-        expected.add(SyncQueueUtils.clone(input.get(1), input.get(2).getData()));
+        expected.add(this.clone(input.get(1), input.get(2).getData()));
         // Pitäisi siirtää (2) 1
-        expected.add(SyncQueueUtils.clone(input.get(3), this.makeBatch(
+        expected.add(this.clone(input.get(3), this.makeBatch(
             input.get(6).getData(),
             input.get(5).getData()
         )));
+        expected.get(2).getRoute().setUrl("workout/all");
         // Pitäisi siirtää 5 3[0]
         // Pitäisi siirtää 6 3[1]
-        expected.add(SyncQueueUtils.clone(input.get(7), this.makeBatch(
+        expected.add(this.clone(input.get(7), this.makeBatch(
             input.get(7).getData(),
             input.get(8).getData(),
             ((List)input.get(9).getData()).get(0),
             ((List)input.get(9).getData()).get(1),
             ((List)input.get(9).getData()).get(2)
         )));
-        expected.add(SyncQueueUtils.clone(input.get(10), this.makeBatch(
+        expected.get(3).getRoute().setUrl("workout/exercise/all");
+        expected.add(this.clone(input.get(10), this.makeBatch(
             input.get(10).getData(),
             input.get(23).getData(),
             input.get(12).getData(),
@@ -416,6 +425,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             input.get(21).getData(),
             ((List)input.get(25).getData()).get(0)
         )));
+        expected.get(4).getRoute().setUrl("workout/exercise/set/all");
         String expectedStr = expected.toString();
         List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expectedStr, i.toString());

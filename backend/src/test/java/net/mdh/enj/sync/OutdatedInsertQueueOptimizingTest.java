@@ -16,7 +16,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':4,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid3','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), input.get(2).getData()));
+        expected.add(this.clone(input.get(0), input.get(2).getData()));
         expected.add(input.get(1));
         // Pitäisi poistaa (2)
         expected.add(input.get(3));
@@ -28,13 +28,13 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
     public void optimizeKorvaaYlikirjoitetunInsertinAinoanBatchItemin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid1'}}," +
-            "{'id':2,'route':{'url':'workout','method':'POST'},'data':[{'id':'uid2','start':1}]}," +
+            "{'id':2,'route':{'url':'workout/all','method':'POST'},'data':[{'id':'uid2','start':1}]}," +
             "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3'}}," +
             "{'id':4,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid2','start':2}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
+        expected.add(this.clone(input.get(1), this.makeBatch(
             input.get(3).getData()
         )));
         expected.add(input.get(2));
@@ -46,14 +46,14 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaYlikirjoitetunInsertinEnsimmäisenBatchItemin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}" +
             "]}," +
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(1).getData(),
             ((List)input.get(0).getData()).get(1)
         )));
@@ -65,7 +65,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaYlikirjoitetunInsertinToisenBatchItemin() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}" +
             "]}," +
@@ -73,7 +73,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid2','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
             input.get(2).getData()
         )));
@@ -93,8 +93,8 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), ((List)input.get(1).getData()).get(1)));
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(((List)input.get(1).getData()).get(0))));
+        expected.add(this.clone(input.get(0), ((List)input.get(1).getData()).get(1)));
+        expected.add(this.clone(input.get(1), this.makeBatch(((List)input.get(1).getData()).get(0))));
         Assert.assertEquals("Pitäisi korvata insert uudemman datan batch-itemillä",
             expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
@@ -102,7 +102,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeKorvaaYlikirjoitetunBatchIteminKaksiKertaa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}," +
                 "{'id':'uid3','start':3}" +
@@ -114,7 +114,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid3','start':6}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
             ((List)input.get(1).getData()).get(1),
             input.get(2).getData()
@@ -133,7 +133,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
-        expected.add(SyncQueueUtils.clone(input.get(1), ((List)input.get(2).getData()).get(0)));
+        expected.add(this.clone(input.get(1), ((List)input.get(2).getData()).get(0)));
         // Pitäisi poistaa (2), koska sinne ei jäänyt enää itemeitä
         Assert.assertEquals("Pitäisi korvata insert uudemman datan batch-itemillä",
             expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()

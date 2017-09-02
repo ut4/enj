@@ -15,11 +15,12 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(0).getData(),
             input.get(1).getData(),
             input.get(2).getData()
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (1)
         // Pitäisi poistaa (2)
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen",
@@ -35,10 +36,11 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':2}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(0).getData(),
             input.get(3).getData()
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         expected.add(input.get(1));
         expected.add(input.get(2));
         // Pitäisi poistaa (3)
@@ -49,7 +51,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeInsertOperaatiotJoissaEnsimmäisessäBatchDataa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}," +
                 "{'id':'uid4','start':3}" +
@@ -57,7 +59,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
             ((List)input.get(0).getData()).get(1),
             ((List)input.get(0).getData()).get(2),
@@ -72,19 +74,20 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     public void optimizeRyhmitteleeInsertOperaatiotJoissaMyöhemminBatchDataa() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
-            "{'id':2,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':2,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid2','start':2}," +
                 "{'id':'uid3','start':3}," +
                 "{'id':'uid3','start':4}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(0).getData(),
             ((List)input.get(1).getData()).get(0),
             ((List)input.get(1).getData()).get(1),
             ((List)input.get(1).getData()).get(2)
         )));
+        expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi ottaa batch-data huomioon ryhmitellessä insertoinnit",
             expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
@@ -93,19 +96,19 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void optimizeRyhmitteleeUseitaBatchDataInsertOperaatiota() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid1','start':1}," +
                 "{'id':'uid2','start':2}," +
                 "{'id':'uid3','start':3}" +
             "]}," +
-            "{'id':2,'route':{'url':'workout','method':'POST'},'data':[" +
+            "{'id':2,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid4','start':4}," +
                 "{'id':'uid5','start':5}," +
                 "{'id':'uid6','start':6}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
             ((List)input.get(0).getData()).get(1),
             ((List)input.get(0).getData()).get(2),
@@ -124,30 +127,32 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1'}}," +
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[{'id':'uid2'}]}," +
             "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3'}}," +
-            "{'id':4,'route':{'url':'workout/exercise/set','method':'POST'},'data':[{'id':'uid4'}]}," +
+            "{'id':4,'route':{'url':'workout/exercise/set/all','method':'POST'},'data':[{'id':'uid4'}]}," +
             "{'id':5,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid5'}}," +
             "{'id':6,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid6'}}," +
             "{'id':7,'route':{'url':'workout','method':'POST'},'data':{'id':'uid7'}}," +
             "{'id':8,'route':{'url':'workout/exercise/set','method':'PUT'},'data':{'id':'uid8'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch( // 0
+        expected.add(this.clone(input.get(0), this.makeBatch( // 0
             input.get(0).getData(),
             input.get(6).getData()
         )));
-        expected.add(input.get(1));                                     // 1
-        expected.add(SyncQueueUtils.clone(input.get(2), this.makeBatch( // 2
+        expected.get(0).getRoute().setUrl("workout/all");
+        expected.add(input.get(1));                           // 1
+        expected.add(this.clone(input.get(2), this.makeBatch( // 2
             input.get(2).getData(),
             input.get(5).getData()
         )));
-        expected.add(SyncQueueUtils.clone(input.get(3), this.makeBatch( // 3
+        expected.get(2).getRoute().setUrl("workout/exercise/all");
+        expected.add(this.clone(input.get(3), this.makeBatch( // 3
             ((List)input.get(3).getData()).get(0),
             input.get(4).getData()
         )));
-        // Pitäisi poistaa (4)                                          // 4
-        // Pitäisi poistaa (5)                                          // 5
-        // Pitäisi poistaa (6)                                          // 6
-        expected.add(input.get(7));                                     // 7
+        // Pitäisi poistaa (4)                                // 4
+        // Pitäisi poistaa (5)                                // 5
+        // Pitäisi poistaa (6)                                // 6
+        expected.add(input.get(7));                           // 7
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen",
             expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );

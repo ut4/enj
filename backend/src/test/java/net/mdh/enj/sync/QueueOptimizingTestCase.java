@@ -18,6 +18,13 @@ class QueueOptimizingTestCase {
             new TypeReference<List<SyncQueueItem>>() {}
         );
     }
+    SyncQueueItem clone(SyncQueueItem item, Object data) {
+        SyncQueueItem clone = new SyncQueueItem();
+        clone.setId(item.getId());
+        clone.setRoute(new Route(item.getRoute().getUrl(), item.getRoute().getMethod()));
+        clone.setData(data);
+        return clone;
+    }
     List<Object> makeBatch(Object... batchItems) {
         List<Object> list = new ArrayList<>();
         list.addAll(Arrays.asList(batchItems));

@@ -60,7 +60,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
         // Pitäisi poistaa (1)
-        expected.add(SyncQueueUtils.clone(input.get(2), this.makeBatch(
+        expected.add(this.clone(input.get(2), this.makeBatch(
             ((List)input.get(2).getData()).get(0)
         )));
         // Pitäisi poistaa (3)

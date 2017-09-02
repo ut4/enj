@@ -59,6 +59,7 @@
             <artifactId>spring-jdbc</artifactId>
             <version>4.3.8.RELEASE</version>
         </dependency>
+        <!-- Muut -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

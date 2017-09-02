@@ -15,7 +15,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), input.get(2).getData()));
+        expected.add(this.clone(input.get(0), input.get(2).getData()));
         // Pitäisi poistaa (1)
         // Pitäisi poistaa (2)
         Assert.assertEquals("Pitäisi poistaa ylikirjoitetut esiintymät & korvata ensimmäisen" +
@@ -33,7 +33,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(1).getData(),
             ((List)input.get(0).getData()).get(1)
         )));
@@ -54,7 +54,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':4}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0), this.makeBatch(
+        expected.add(this.clone(input.get(0), this.makeBatch(
             ((List)input.get(0).getData()).get(0),
             input.get(1).getData(),
             ((List)input.get(0).getData()).get(2)
@@ -75,10 +75,10 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0),
+        expected.add(this.clone(input.get(0),
             ((List)input.get(1).getData()).get(0)
         ));
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
+        expected.add(this.clone(input.get(1), this.makeBatch(
             ((List)input.get(1).getData()).get(1)
         )));
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",
@@ -96,10 +96,10 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0),
+        expected.add(this.clone(input.get(0),
             ((List)input.get(1).getData()).get(0)
         ));
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
+        expected.add(this.clone(input.get(1), this.makeBatch(
             ((List)input.get(1).getData()).get(1),
             ((List)input.get(1).getData()).get(2)
         )));
@@ -120,11 +120,11 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0),this.makeBatch(
+        expected.add(this.clone(input.get(0),this.makeBatch(
             ((List)input.get(1).getData()).get(0),
             ((List)input.get(0).getData()).get(1)
         )));
-        expected.add(SyncQueueUtils.clone(input.get(1), this.makeBatch(
+        expected.add(this.clone(input.get(1), this.makeBatch(
             // Siirtynyt kohtaan 1[0]
             ((List)input.get(1).getData()).get(1)
         )));
@@ -145,7 +145,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(SyncQueueUtils.clone(input.get(0),this.makeBatch(
+        expected.add(this.clone(input.get(0),this.makeBatch(
             ((List)input.get(1).getData()).get(1),
             ((List)input.get(1).getData()).get(0)
         )));
@@ -173,10 +173,10 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
-        expected.add(SyncQueueUtils.clone(input.get(1), ((List)input.get(3).getData()).get(1)));
-        expected.add(SyncQueueUtils.clone(input.get(2), ((List)input.get(5).getData()).get(0)));
+        expected.add(this.clone(input.get(1), ((List)input.get(3).getData()).get(1)));
+        expected.add(this.clone(input.get(2), ((List)input.get(5).getData()).get(0)));
         // Pitäisi poistaa (3)
-        expected.add(SyncQueueUtils.clone(input.get(4), ((List)input.get(5).getData()).get(1)));
+        expected.add(this.clone(input.get(4), ((List)input.get(5).getData()).get(1)));
         //
         Assert.assertEquals(
             expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()

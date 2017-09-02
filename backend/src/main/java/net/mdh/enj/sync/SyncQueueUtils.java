@@ -5,14 +5,6 @@ import java.util.List;
 
 class SyncQueueUtils {
 
-    static SyncQueueItem clone(SyncQueueItem item, Object data) {
-        SyncQueueItem clone = new SyncQueueItem();
-        clone.setId(item.getId());
-        clone.setRoute(item.getRoute());
-        clone.setData(data);
-        return clone;
-    }
-
     static Object makeBatch(List<Pointer> pointers, List<SyncQueueItem> queue) {
         List<Object> list = new ArrayList<>();
         for (Pointer pointer: pointers) {
