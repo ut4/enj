@@ -47,7 +47,8 @@ self.CACHE_FILES = [
     'theme/firasans-light-webfont.woff2',
     'theme/icon-sprite.svg',
     'theme/main.css',
-    'theme/polygons.png'
+    'theme/polygons.png',
+    'theme/user-icon-sprite.svg'
 ];
 self.DYNAMIC_CACHE = [{
     urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),

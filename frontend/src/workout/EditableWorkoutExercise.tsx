@@ -48,6 +48,7 @@ class EditableWorkoutExercise extends Component<Props, any> {
         );
     }
     public render() {
+        const totals = this.getTotals();
         return (<li>
             <div class="heading">
                 { this.props.workoutExercise.exerciseName }
@@ -63,6 +64,11 @@ class EditableWorkoutExercise extends Component<Props, any> {
                     : <div> - </div>
                 }
             </div>
+            { totals && <div class="footer">
+                <span>Yhteensä: { Math.round(totals.lifted) }kg, </span>
+                <span>{ totals.sets } sarjaa, </span>
+                <span>{ totals.reps } toistoa</span>
+            </div> }
             <button class="nice-button icon-button add with-text" onClick={ () => this.openSetAddModal() }>
                 Uusi sarja
             </button>
@@ -73,6 +79,22 @@ class EditableWorkoutExercise extends Component<Props, any> {
                 <button class="icon-button arrow down" onClick={ () => this.props.moveExercise('down') } title="Siirrä alas"></button>
             </div>
         </li>);
+    }
+    /**
+     * Palauttaa yhteenvedon tehdystä treeniliikkeestä, tai null, jos liikkeellä
+     * ei ole vielä tehtyjä sarjoja.
+     */
+    private getTotals(): {lifted: number; sets: number; reps: number} {
+        const setCount = this.props.workoutExercise.sets.length;
+        return setCount ? {
+            reps: this.props.workoutExercise.sets.reduce(
+                (reps, set) => reps + set.reps, 0
+            ),
+            lifted: this.props.workoutExercise.sets.reduce(
+                (lifted, set) => lifted + set.reps * set.weight, 0
+            ),
+            sets: setCount
+        } : null;
     }
 }
 

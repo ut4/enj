@@ -112,6 +112,15 @@ public abstract class BasicRepository<T extends DbEntity> {
     }
 
     /**
+     * Ajaa tietokantakyselyn {q} datalla {data}.
+     *
+     * @return {int} Päivitettyjen rivien lukumäärä
+     */
+    public int update(String q, T data) {
+        return this.qTemplate.update(q, new BeanPropertySqlParameterSource(data));
+    }
+
+    /**
      * Ajaa tietokantakyselyn {q} jokaisesta batchin {data} itemistä.
      *
      * @return {int} Päivitettyjen rivien lukumäärä

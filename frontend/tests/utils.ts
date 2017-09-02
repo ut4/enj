@@ -36,4 +36,14 @@ function findButton(rendered, predicate: Function): HTMLButtonElement {
     return Array.from(allButtons).find(el => predicate(el)) as HTMLButtonElement;
 }
 
+const validationTestUtils = {
+    isSubmitButtonClickable(rendered) {
+        return utils.findButtonByContent(rendered, 'Ok').disabled === false;
+    },
+    getRenderedValidationErrors(rendered) {
+        return itu.scryRenderedDOMElementsWithClass(rendered, 'text-error');
+    }
+};
+
 export default utils;
+export { validationTestUtils };

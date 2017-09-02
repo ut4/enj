@@ -1,6 +1,5 @@
 package net.mdh.enj.workout;
 
-import net.mdh.enj.Utils;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
 import net.mdh.enj.validation.AuthenticatedUserId;
@@ -64,7 +63,7 @@ public class Workout extends DbEntity {
             ", end=" + this.getEnd() +
             ", notes=" + this.getNotes() +
             ", userId=" + this.getUserId() +
-            ", exercises=" + Utils.stringifyAll(this.getExercises()) +
+            ", exercises=" + this.getExercises() +
         "}";
     }
 
@@ -143,7 +142,7 @@ public class Workout extends DbEntity {
                 ", exerciseName=" + this.getExerciseName() +
                 ", exerciseVariantId=" + this.getExerciseVariantId() +
                 ", exerciseVariantContent=" + this.getExerciseVariantContent() +
-                ", sets=" + Utils.stringifyAll(this.getSets()) +
+                ", sets=" + this.getSets() +
             "}";
         }
 

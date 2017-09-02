@@ -4,11 +4,13 @@ import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
 import { createHashHistory } from 'history';
+import StatBackend     from 'src/stat/StatBackend';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import UserState       from 'src/user/UserState';
 import AuthBackend     from 'src/auth/AuthBackend';
 import AuthService     from 'src/auth/AuthService';
+import UserBackend     from 'src/user/UserBackend';
 import Offline         from 'src/offline/Offline';
 import SyncBackend     from 'src/offline/SyncBackend';
 import settings        from 'src/config/settings';
@@ -34,8 +36,8 @@ class IocFactories extends IocContainer {
     }
 
     // == Stat =================================================================
-    public statBackend(): any {
-        return null;
+    public statBackend(): StatBackend {
+        return this.memoize('statBackend', () => new StatBackend(this.http()));
     }
 
     // == Workout ==============================================================
@@ -71,8 +73,8 @@ class IocFactories extends IocContainer {
     public authService(): AuthService {
         return this.memoize('authService', () => new AuthService(this.authBackend(), this.userState()));
     }
-    public userBackend(): any {
-        return null;
+    public userBackend(): UserBackend {
+        return this.memoize('userBackend', () => new UserBackend(this.http(), 'user'));
     }
 
     // == Offline ==============================================================

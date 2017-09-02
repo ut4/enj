@@ -35,7 +35,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
     /**
      * Testaa, että selectAll hakee treenit tietokannasta relaatioineen (mappaa
      * treeniin myös siihen kuuluvat liikkeet (jos niitä on), ja liikkeisiin niihin
-     * kuuluvat setit (jos niitä on)).
+     * kuuluvat sarjat (jos niitä on)).
      */
     @Test
     public void selectAllSisältääLiikkeetJaSetit() {
@@ -45,6 +45,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         //
         SearchFilters searchFilters = new SearchFilters();
         searchFilters.setUserId(TestData.TEST_USER_ID);
+        searchFilters.setStartFrom(w1.getStart());
         List<Workout> results = this.workoutRepository.selectAll(searchFilters);
         Assert.assertEquals(3, results.size());
         Workout actualW1 = results.get(2);
@@ -78,7 +79,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         // Treenille 1 liike
         Workout.Exercise we = this.insertWorkoutExercise(workout.getId(), 0);
         this.addExercisesToWorkout(workout, we);
-        // Liikkeeelle yksi setti
+        // Liikkeeelle yksi sarja
         Workout.Exercise.Set wes = this.insertWorkoutExercseSet(we.getId());
         this.addSetsToWorkoutExercise(we, wes);
         return workout;
@@ -101,6 +102,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         Workout workout = new Workout();
         workout.setUserId(TestData.TEST_USER_ID);
         workout.setStart(timestamp);
+        workout.setExercises(new ArrayList<>());
         this.utils.insertWorkout(workout);
         return workout;
     }
@@ -111,6 +113,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         we.setWorkoutId(workoutId);
         we.setExerciseId(WorkoutRepositoryTest.testExercise.getId());
         we.setExerciseName(WorkoutRepositoryTest.testExercise.getName());
+        we.setSets(new ArrayList<>());
         this.utils.insertWorkoutExercise(we);
         return we;
     }

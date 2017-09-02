@@ -1,5 +1,5 @@
 import { render } from 'inferno';
-import { Router, Route } from 'inferno-router';
+import { Router, Redirect, Route } from 'inferno-router';
 import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
 import iocFactories from 'src/ioc';
@@ -9,11 +9,12 @@ asyncBoot.then(() => render(
     <Router history={ iocFactories.history() }>
         <Route component={ Layout }>
             <Route path="/" component={ views.HomeView }/>
-            <Route path="statistiikka" component={ views.StatsView }>
-                <Route path="/kehitys" component={ views.StatsProgressView }/>
-                <Route path="/voima" component={ views.StatsStrengthView }/>
-                <Route path="/yleista" component={ views.StatsOverviewView }/>
+            <Route path="statistiikka" component={ views.StatView }>
+                <Route path="/kehitys" component={ views.StatProgressView }/>
+                <Route path="/voima" component={ views.StatStrengthView }/>
+                <Route path="/yleista" component={ views.StatOverviewView }/>
             </Route>
+            <Redirect from="/statistiikka" to="/statistiikka/voima"/>
             <Route path="treenit" component={ views.WorkoutsView }/>
             <Route path="treeni/:id" component={ views.WorkoutView }/>
             <Route path="ohjelmat" component={ views.ProgramView }/>
@@ -21,6 +22,7 @@ asyncBoot.then(() => render(
             <Route path="ohjelmat/muokkaa/:id" component={ views.ProgramEditView }/>
             <Route path="liikkeet" component={ views.ExerciseView }/>
             <Route path="liikkeet/luo-uusi" component={ views.ExerciseCreateView }/>
+            <Route path="liikkeet/luo-uusi-variantti" component={ views.ExerciseVariantCreateView }/>
             <Route path="liikkeet/muokkaa/:id" component={ views.ExerciseEditView }/>
             <Route path="liikkeet/poista/:id" component={ views.ExerciseDeleteView }/>
             <Route path="ravinto/:id" component={ views.NutritionView }>

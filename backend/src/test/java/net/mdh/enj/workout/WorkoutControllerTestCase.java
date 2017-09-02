@@ -12,6 +12,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.BeforeClass;
+import java.util.ArrayList;
 
 public class WorkoutControllerTestCase extends RollbackingDBJerseyTest {
 
@@ -25,6 +26,7 @@ public class WorkoutControllerTestCase extends RollbackingDBJerseyTest {
         testWorkout = new Workout();
         testWorkout.setStart(System.currentTimeMillis() / 1000L);
         testWorkout.setUserId(TestData.TEST_USER_ID);
+        testWorkout.setExercises(new ArrayList<>());
         utils.insertWorkout(testWorkout);
         testExercise = new Exercise();
         testExercise.setName("exs");

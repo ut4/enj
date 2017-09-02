@@ -2,10 +2,12 @@ import Component from 'inferno-component';
 import iocFactories from 'src/ioc';
 
 interface Props {
+    onSelect: (selectedExercise: Enj.API.ExerciseRecord, selectedVariant: Enj.API.ExerciseVariantRecord) => void;
     exerciseList?: Array<Enj.API.ExerciseRecord>;
     initialExerciseId?: AAGUID;
     initialExerciseVariantId?: AAGUID;
-    onSelect: (selectedExercise: Enj.API.ExerciseRecord, selectedVariant: Enj.API.ExerciseVariantRecord) => void;
+    noVariant?: boolean;
+    label?: string;
 }
 interface State {
     exercises: Array<Enj.API.ExerciseRecord>;
@@ -93,7 +95,7 @@ class ExerciseSelector extends Component<Props, State> {
     public render() {
         return (<div>
             <label class="input-set">
-                <span>Liikkeen nimi</span>
+                <span>{ this.props.label || 'Liikkeen nimi' }</span>
                 <select onChange={ this.receiveExerciseSelection.bind(this) } value={ this.getIndexOfSelectedExercise() }>
                     <option value=""> - </option>
                     { this.state.exercises.map((exercise, i) =>
@@ -101,17 +103,19 @@ class ExerciseSelector extends Component<Props, State> {
                     ) }
                 </select>
             </label>
-            { (this.state.selectedExercise && this.state.selectedExercise.variants.length)
-                ? <label class="input-set">
-                    <span>Variantti</span>
-                    <select onChange={ this.receiveVariantSelection.bind(this) } value={ this.getIndexOfSelectedVariant() }>
-                        <option value=""> - </option>
-                        { this.state.selectedExercise.variants.map((variant, i) =>
-                            <option value={ i }>{ variant.content }</option>
-                        ) }
-                    </select>
-                </label>
-                : ''
+            { (this.state.selectedExercise &&
+                this.props.noVariant !== true &&
+                this.state.selectedExercise.variants.length)
+                    ? <label class="input-set">
+                        <span>Variantti</span>
+                        <select onChange={ this.receiveVariantSelection.bind(this) } value={ this.getIndexOfSelectedVariant() }>
+                            <option value=""> - </option>
+                            { this.state.selectedExercise.variants.map((variant, i) =>
+                                <option value={ i }>{ variant.content }</option>
+                            ) }
+                        </select>
+                    </label>
+                    : ''
             }
         </div>);
     }

@@ -40,15 +40,38 @@ declare module Enj {
             ordinal: number;
             workoutExerciseId: AAGUID;
         }
+        interface BestSet {
+            startWeight: number;
+            bestWeight: number;
+            bestWeightReps: number;
+            timesImproved: number;
+            exerciseName: string;
+        }
+        interface Statistics {
+            totalWorkoutCount: number;
+            totalWorkoutTime: number;
+            averageWorkoutTime: number;
+            longestWorkoutTime: number;
+            shortestWorkoutTime: number;
+            lifted: number;
+            reps: number;
+        }
         interface ExerciseVariantRecord {
             id: AAGUID;
             content: string;
+            exerciseId: AAGUID;
         }
         interface ExerciseRecord {
             id: AAGUID;
             name: string;
             variants: Array<ExerciseVariantRecord>;
         }
+        interface UserRecord {
+            id: AAGUID;
+            bodyWeight: number;
+            isMale: boolean;
+        }
+        // REST-vastauswrapperit
         interface InsertResponse {
             insertCount: number;
             insertId?: AAGUID;

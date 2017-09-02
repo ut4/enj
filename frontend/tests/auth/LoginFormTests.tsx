@@ -1,7 +1,7 @@
 import QUnit from 'qunitjs';
 import LoginForm from 'src/auth/LoginForm';
 import itu from 'inferno-test-utils';
-import utils from 'tests/utils';
+import utils, { validationTestUtils as vtu } from 'tests/utils';
 
 QUnit.module('auth/LoginForm', hooks => {
     let rendered: any;
@@ -16,35 +16,32 @@ QUnit.module('auth/LoginForm', hooks => {
         passwordInputEl = inputEls[1] as HTMLInputElement;
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa invalid', assert => {
-        const initialErrorMessages = getRenderedErrorMessages();
+        const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);
         assert.equal(initialErrorMessages.length, 0);
         assert.equal(loginFormInstance.state.validity, false);
         //
         usernameInputEl.value = 'f';
         utils.triggerEvent('input', usernameInputEl);
-        const errorMessagesAfterFillingInvalidUsername = getRenderedErrorMessages();
+        const errorMessagesAfterFillingInvalidUsername = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingInvalidUsername.length, 1);
         assert.equal(loginFormInstance.state.validity, false);
         //
         usernameInputEl.value = 'foo';
         utils.triggerEvent('input', usernameInputEl);
-        const errorMessagesAfterFillingUsername = getRenderedErrorMessages();
+        const errorMessagesAfterFillingUsername = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingUsername.length, 0);
         assert.equal(loginFormInstance.state.validity, false);
         //
         passwordInputEl.value = 'ba';
         utils.triggerEvent('input', passwordInputEl);
-        const errorMessagesAfterFillingInvalidPassword = getRenderedErrorMessages();
+        const errorMessagesAfterFillingInvalidPassword = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingInvalidPassword.length, 1);
         assert.equal(loginFormInstance.state.validity, false);
         //
         passwordInputEl.value = 'bars';
         utils.triggerEvent('input', passwordInputEl);
-        const errorMessagesAfterFillingPassword = getRenderedErrorMessages();
+        const errorMessagesAfterFillingPassword = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingPassword.length, 0);
         assert.equal(loginFormInstance.state.validity, true);
     });
-    function getRenderedErrorMessages() {
-        return itu.scryRenderedDOMElementsWithClass(rendered, 'text-error');
-    }
 });

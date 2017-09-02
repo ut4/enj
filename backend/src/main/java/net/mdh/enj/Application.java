@@ -3,7 +3,7 @@ package net.mdh.enj;
 import net.mdh.enj.auth.AuthenticationFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import java.io.IOException;
 import java.net.URI;
@@ -21,11 +21,11 @@ public class Application {
         // Rekisteröi sorsat & configuroi jersey
         final ResourceConfig applicationConfig = new ResourceConfig();
         applicationConfig.packages("net.mdh.enj");
+        applicationConfig.register(JacksonFeature.class);
         applicationConfig.register(CORSEnabler.class);
         applicationConfig.register(AuthenticationFilter.class);
         applicationConfig.register(SyncRouteCollector.class);
         applicationConfig.register(new InjectionBinder());
-        applicationConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         // Luo & käynnistä serveri
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(
             URI.create(BASE_URI),

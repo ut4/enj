@@ -23,14 +23,7 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
      */
     @Test
     public void POSTHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout", null);
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insert.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout", "WorkoutController.insert");
     }
 
     /**
@@ -173,10 +166,12 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
         Workout anotherWorkout = new Workout();
         anotherWorkout.setStart(1); // 1970-01-01T00:00:01
         anotherWorkout.setUserId(TestData.TEST_USER_ID);
+        anotherWorkout.setExercises(new ArrayList<>());
         utils.insertWorkout(anotherWorkout);
         Workout anotherWorkout2 = new Workout();
         anotherWorkout2.setStart(3); // 1970-01-01T00:00:03
         anotherWorkout2.setUserId(TestData.TEST_USER_ID);
+        anotherWorkout2.setExercises(new ArrayList<>());
         utils.insertWorkout(anotherWorkout2);
         Response response = this.newGetRequest("workout", t ->
             t.queryParam("startFrom", "1").queryParam("startTo", "3")

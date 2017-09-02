@@ -22,14 +22,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
      */
     @Test
     public void POSTExerciseHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout/exercise", null);
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insertWorkoutExercise.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout/exercise", "WorkoutController.insertWorkoutExercise");
     }
 
     /**
@@ -83,14 +76,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
      */
     @Test
     public void POSTExerciseAllHylkääPyynnönJosDataPuuttuuKokonaan() {
-        // Simuloi POST, jossa ei dataa ollenkaan
-        Response response = this.newPostRequest("workout/exercise/all", null);
-        Assert.assertEquals(400, response.getStatus());
-        // Testaa että sisältää validaatiovirheet
-        List<ValidationError> errors = super.getValidationErrors(response);
-        Assert.assertEquals(1, errors.size());
-        Assert.assertEquals("WorkoutController.insertAllWorkoutExercises.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        this.assertRequestFailsOnNullInput("workout/exercise/all", "WorkoutController.insertAllWorkoutExercises");
     }
 
     /**
@@ -223,11 +209,11 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
 
     /*
      * Testaa samalla, että workoutExerciseDeleteTrg (ks. @/backend/schema.mariadb.sql)
-     * poistaa treeniliikkeelle kuuluvat setit.
+     * poistaa treeniliikkeelle kuuluvat sarjat.
      */
     @Test
     public void DELETEExercisePoistaaTreeniliikkeenJaPalauttaaDeleteResponsenJossaPoistettujenRivienLukumäärä() {
-        // Lisää ensin treeniliike & sille yksi setti
+        // Lisää ensin treeniliike & sille yksi sarja
         Workout.Exercise workoutExercise = this.makeCoupleOfWorkoutExercises().get(0);
         utils.insertWorkoutExercise(workoutExercise);
         Workout.Exercise.Set workoutExerciseSet = new Workout.Exercise.Set();
@@ -241,7 +227,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Assert.assertEquals(200, response.getStatus());
         Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
         Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
-        // Testaa, että treeniliike JA setti poistui
+        // Testaa, että treeniliike JA sarja poistui
         Assert.assertEquals((Integer)0, this.selectDataCount(workoutExercise.getId()));
     }
 

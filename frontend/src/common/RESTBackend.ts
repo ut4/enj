@@ -22,8 +22,16 @@ class RESTBackend<T extends {id?: AAGUID}> {
         };
     }
     /**
-     * Hakee kaikki <T>:t backendistä urlilla <this.urlNamespace>[<url>]
+     * Hakee <T>:n backendistä urlilla <this.urlNamespace>[<url>]
      * (esim. workout?foo=bar).
+     *
+     * @returns Promise -> ({Object} T, {any} error)
+     */
+    public get(url?: string): Promise<T> {
+        return this.http.get<T>(this.completeUrl(url));
+    }
+    /**
+     * Hakee kaikki <T>:t backendistä urlilla <this.urlNamespace>[<url>].
      *
      * @returns Promise -> ({Array} <T>, {any} error)
      */

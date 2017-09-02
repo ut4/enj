@@ -3,7 +3,7 @@ import WorkoutExerciseSetForm from 'src/workout/WorkoutExerciseSetForm';
 import { arrayUtils } from 'src/common/utils';
 
 /**
- * Treenin settilista.
+ * Treenin sarjalista.
  */
 class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>}, {sets: Array<Enj.API.WorkoutExerciseSetRecord>}> {
     private initialValues: Array<{weight: number, reps: number, ordinal: number}>;
@@ -16,7 +16,7 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
         }));
     }
     /**
-     * Palauttaa kaikki setit, joiden tietoja on muutettu.
+     * Palauttaa kaikki sarjat, joiden tietoja on muutettu.
      */
     public getModifiedSets(): Array<Enj.API.WorkoutExerciseSetRecord> {
         return this.state.sets.filter(set => {
@@ -28,7 +28,7 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
         });
     }
     /**
-     * Palauttaa kaikki listalta poistetut setit.
+     * Palauttaa kaikki listalta poistetut sarjat.
      */
     public getDeletedSets(): Array<Enj.API.WorkoutExerciseSetRecord> {
         return this.props.workoutExerciseSets.filter(a =>

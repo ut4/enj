@@ -1,8 +1,8 @@
 import HomeView                  from 'src/stat/HomeView';
-import StatsView                 from 'src/stat/StatsView';
-import StatsProgressView         from 'src/stat/StatsProgressView';
-import StatsStrengthView         from 'src/stat/StatsStrengthView';
-import StatsOverviewView         from 'src/stat/StatsOverviewView';
+import StatView                  from 'src/stat/StatView';
+import StatProgressView          from 'src/stat/StatProgressView';
+import StatStrengthView          from 'src/stat/StatStrengthView';
+import StatOverviewView          from 'src/stat/StatOverviewView';
 import WorkoutsView              from 'src/stat/WorkoutsView';
 import WorkoutView               from 'src/workout/WorkoutView';
 import ProgramView               from 'src/program/ProgramView';
@@ -10,6 +10,7 @@ import ProgramCreateView         from 'src/program/ProgramCreateView';
 import ProgramEditView           from 'src/program/ProgramEditView';
 import ExerciseView              from 'src/exercise/ExerciseView';
 import ExerciseCreateView        from 'src/exercise/ExerciseCreateView';
+import ExerciseVariantCreateView from 'src/exercise/ExerciseVariantCreateView';
 import ExerciseEditView          from 'src/exercise/ExerciseEditView';
 import ExerciseDeleteView        from 'src/exercise/ExerciseDeleteView';
 import NutritionView             from 'src/nutrition/NutritionView';
@@ -27,10 +28,10 @@ import OfflineEndView            from 'src/offline/OfflineEndView';
 
 export {
     HomeView,
-    StatsView,
-    StatsProgressView,
-    StatsStrengthView,
-    StatsOverviewView,
+    StatView,
+    StatProgressView,
+    StatStrengthView,
+    StatOverviewView,
     WorkoutsView,
     WorkoutView,
     ProgramView,
@@ -38,6 +39,7 @@ export {
     ProgramEditView,
     ExerciseView,
     ExerciseCreateView,
+    ExerciseVariantCreateView,
     ExerciseEditView,
     ExerciseDeleteView,
     NutritionView,
