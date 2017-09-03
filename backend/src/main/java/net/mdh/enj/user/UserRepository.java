@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import java.sql.SQLException;
 import javax.inject.Inject;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserRepository extends BasicRepository<User> {
 
@@ -23,9 +25,17 @@ public class UserRepository extends BasicRepository<User> {
         );
     }
 
-    int update(User user) {
+    public int update(User user) {
         return super.update("UPDATE `user` SET username = :username, " +
             "bodyWeight = :bodyWeight, isMale = :isMale WHERE id = :id", user);
+    }
+
+    public int updatePartial(User user, User.ColumnNames[] columns) {
+        List<String> parts = new ArrayList<>();
+        for (User.ColumnNames c: columns) {
+            parts.add(c.toString() + " = :" + c.toString());
+        }
+        return super.update("UPDATE `user` SET " + String.join(", ", parts) + " WHERE id = :id", user);
     }
 
     private static class UserMapper extends NoDupeRowMapper<User> {
@@ -40,6 +50,8 @@ public class UserRepository extends BasicRepository<User> {
             user.setId(rs.getString("userId"));
             user.setUsername(rs.getString("userUsername"));
             user.setPasswordHash(rs.getString("userPasswordHash"));
+            user.setLastLogin(rs.getLong("userLastLogin"));
+            user.setCurrentToken(rs.getString("userCurrentToken"));
             return user;
         }
     }

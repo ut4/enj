@@ -8,8 +8,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.NotAuthorizedException;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
-import net.mdh.enj.user.UserRepository;
-import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.user.User;
 import javax.validation.Valid;
 import javax.inject.Inject;
@@ -21,19 +19,11 @@ import javax.inject.Inject;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final TokenService tokenService;
-    private final HashingProvider hashingProvider;
+    private final AuthService authService;
 
     @Inject
-    public AuthController(
-        UserRepository userRepository,
-        TokenService tokenService,
-        HashingProvider hashingProvider
-    ) {
-        this.userRepository = userRepository;
-        this.tokenService = tokenService;
-        this.hashingProvider = hashingProvider;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     /**
@@ -49,20 +39,12 @@ public class AuthController {
     @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
     public LoginResponse login(@Valid @NotNull LoginCredentials loginCredentials) {
-        SelectFilters selectFilters = new SelectFilters();
-        selectFilters.setUsername(loginCredentials.getUsername());
-        User user = this.userRepository.selectOne(selectFilters);
+        User user = this.authService.getUser(loginCredentials);
         // Jos käyttäjää ei löydy, tai salasana menee väärin -> 401
-        if (user == null || !this.hashingProvider.verify(
-            loginCredentials.getPassword(),
-            user.getPasswordHash()
-        )) {
-            loginCredentials.nuke();
+        if (user == null) {
             throw new NotAuthorizedException("Invalid credentials");
         }
         // Kaikki ok -> luo token & palauta frontendiin
-        String tokenHash = this.tokenService.generateNew(user.getId());
-        loginCredentials.nuke();
-        return new LoginResponse(tokenHash);
+        return new LoginResponse(this.authService.login(user));
     }
 }

@@ -1,11 +1,9 @@
 package net.mdh.enj.auth;
 
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Claims;
-import net.mdh.enj.api.RequestContext;
 import javax.inject.Provider;
 import javax.annotation.Priority;
 import javax.annotation.security.PermitAll;
+import net.mdh.enj.api.RequestContext;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
@@ -16,53 +14,59 @@ import javax.inject.Inject;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
+    private final AuthService authService;
     private ResourceInfo resourceInfo;
-    private final TokenService tokenService;
     private Provider<RequestContext> requestContextProvider;
 
     public static final String AUTH_HEADER_NAME = "Authorization";
-    private static final String AUTH_TOKEN_PREFIX = "Bearer ";
+    static final String NEW_TOKEN = "newToken";
+    static final String NEW_TOKEN_HEADER_NAME = "New-Token";
     static final String MSG_LOGIN_REQUIRED = "Kirjautuminen vaaditaan";
+    static final String AUTH_TOKEN_PREFIX = "Bearer ";
 
     @Inject
     public AuthenticationFilter(
+        AuthService authService,
         ResourceInfo resourceInfo,
-        TokenService tokenService,
         Provider<RequestContext> rcProvider
     ) {
+        this.authService = authService;
         this.resourceInfo = resourceInfo;
-        this.tokenService = tokenService;
         this.requestContextProvider = rcProvider;
     }
 
     /**
-     * Master autentikaatio; tarkastaa REST-pyynnön "Authentication" headerista
-     * JWT:n, ja hylkää pyynnön mikäli sitä ei ole, tai se ei ole kelpoinen.
-     * Triggeröityy jokaisen, paitsi @PermitAll-annotaatiolla merkityn REST-
-     * pyynnän yhteydessä.
+     * Master-autentikaatio; tarkastaa REST-pyynnön "Authentication" headerista
+     * JWT:n, ja hylkää pyynnön mikäli sitä ei ole, se ei ole validi, tai sen uusiminen
+     * ei ollut mahdollista. Triggeröityy jokaisen, paitsi @PermitAll-annotaatiolla
+     * merkityn REST-pyynnön yhteydessä.
      */
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        // Luultavasti login, register jne. -> älä tee mitään
+        // -- login, register jne. -> älä tee mitään
         if (this.resourceInfo.getResourceMethod().isAnnotationPresent(PermitAll.class)) {
             return;
         }
-        final String authHeader = requestContext.getHeaderString(AUTH_HEADER_NAME);
-        // Authorization-headeria ei löytynyt tai se on virhellinen -> hylkää pyyntö
+        String authHeader = requestContext.getHeaderString(AUTH_HEADER_NAME);
+        // -- Authorization-headeria ei löytynyt tai se on virhellinen -> hylkää pyyntö
         if (authHeader == null || !authHeader.startsWith(AUTH_TOKEN_PREFIX)) {
             requestContext.abortWith(this.newUnauthorizedResponse());
             return;
         }
-        Jws<Claims> parsedTokenData = this.tokenService.parse(authHeader.substring(AUTH_TOKEN_PREFIX.length()));
-        // JWT virheellinen -> hylkää pyyntö
-        if (parsedTokenData == null) {
+        String token = authHeader.substring(AUTH_TOKEN_PREFIX.length());
+        AuthService.TokenData alwaysFreshTokenData = this.authService.parseOrRenewToken(token);
+        // -- Token oli virheellinen, tai sen uusiminen epäonnistui -> hylkää pyyntö
+        if (alwaysFreshTokenData == null) {
             requestContext.abortWith(this.newUnauthorizedResponse());
             return;
         }
-        // JWT header OK, tallenna tokenin sisältö contekstiin & hyväksy pyyntö
+        // -- Token OK, tallenna tokenin sisältö kontekstiin & hyväksy pyyntö
         RequestContext rc = this.requestContextProvider.get();
-        rc.setAuthHeader(authHeader);
-        rc.setUserId(parsedTokenData.getBody().getSubject());
+        rc.setUserId(alwaysFreshTokenData.userId);
+        rc.setAuthHeader(AUTH_TOKEN_PREFIX + alwaysFreshTokenData.signature);
+        if (!alwaysFreshTokenData.signature.equals(token)) {
+            requestContext.setProperty(NEW_TOKEN, AUTH_TOKEN_PREFIX + alwaysFreshTokenData.signature);
+        }
     }
 
     private Response newUnauthorizedResponse() {

@@ -5,6 +5,8 @@ import net.mdh.enj.mapping.DbEntity;
 public class User extends DbEntity {
     private String username;
     private String passwordHash;
+    private Long lastLogin;
+    private String currentToken;
     private Double bodyWeight;
     private Integer isMale;
 
@@ -20,6 +22,20 @@ public class User extends DbEntity {
     }
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public Long getLastLogin() {
+        return this.lastLogin;
+    }
+    public void setLastLogin(Long lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public String getCurrentToken() {
+        return this.currentToken;
+    }
+    public void setCurrentToken(String currentToken) {
+        this.currentToken = currentToken;
     }
 
     public Double getBodyWeight() {
@@ -42,8 +58,27 @@ public class User extends DbEntity {
             "id=" + this.getId() +
             ", username=" + this.getUsername() +
             ", passwordHash=" + this.getPasswordHash() +
+            ", lastLogin=" + this.getLastLogin() +
+            ", currentToken=" + this.getCurrentToken() +
             ", bodyWeight=" + this.getBodyWeight() +
             ", isMale=" + this.getIsMale() +
         "}";
+    }
+
+    public enum ColumnNames {
+
+        LAST_LOGIN("lastLogin"),
+        CURRENT_TOKEN("currentToken");
+
+        private final String name;
+
+        ColumnNames(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
     }
 }

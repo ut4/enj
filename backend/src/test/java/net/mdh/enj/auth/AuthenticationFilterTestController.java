@@ -11,10 +11,10 @@ import javax.annotation.security.PermitAll;
 @Path(AuthenticationFilterTestController.TEST_URL)
 @Produces(MediaType.TEXT_PLAIN)
 public class AuthenticationFilterTestController {
-    public final static String TEST_URL = "auth-test";
-    public final static String NORMAL_PATH = "secured";
-    public final static String WHITELISTED_PATH = "not-secured";
-    public final static String NORMAL_RESPONSE = "foo";
+    final static String TEST_URL = "auth-test";
+    final static String NORMAL_PATH = "secured";
+    final static String WHITELISTED_PATH = "not-secured";
+    final static String NORMAL_RESPONSE = "foo";
     private final RequestContext requestContext;
     @Inject
     AuthenticationFilterTestController(RequestContext rc) {

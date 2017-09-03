@@ -21,6 +21,8 @@ CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     passwordHash VARCHAR(255) NOT NULL,
+    lastLogin INT UNSIGNED DEFAULT NULL,
+    currentToken VARCHAR(),
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) DEFAULT NULL,
     PRIMARY KEY (id)
@@ -30,7 +32,9 @@ CREATE VIEW userView AS
     SELECT
         u.id           AS userId,
         u.username     AS userUsername,
-        u.passwordHash AS userPasswordHash
+        u.passwordHash AS userPasswordHash,
+        u.lastLogin    AS userLastLogin,
+        u.currentToken AS currentToken
     FROM `user` AS u;
 
 -- == Exercise ====
