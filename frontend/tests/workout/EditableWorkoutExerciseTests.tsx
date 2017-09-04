@@ -246,12 +246,18 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         // Klikkaa "Uusi sarja" -painiketta
         const addSetButton = utils.findButtonByContent(rendered, 'Uusi sarja');
         addSetButton.click();
+        // Täytä lomake
+        const [weightInput, repsInput] = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+        assert.equal(weightInput.value, '45', 'Pitäisi poimia weight edellisestä sarjasta');
+        assert.equal(repsInput.value, '2', 'Pitäisi poimia reps edellisestä sarjasta');
+        weightInput.value = '46'; utils.triggerEvent('input', weightInput);
+        repsInput.value = '3'; utils.triggerEvent('input', repsInput);
         // Hyväksy modal
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Assertoi että lähetti datan backendiin
         assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi sarja backediin');
-        const expectedNewSet = {weight: 8, reps: 6, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
+        const expectedNewSet = {weight: 46, reps: 3, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
         assert.deepEqual(
             setInsertCallStub.firstCall.args,
             [expectedNewSet],

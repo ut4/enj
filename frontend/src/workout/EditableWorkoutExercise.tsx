@@ -35,10 +35,11 @@ class EditableWorkoutExercise extends Component<Props, any> {
         );
     }
     private openSetAddModal() {
+        const lastSet = this.getLastSet();
         Modal.open(() =>
             <WorkoutExerciseSetCreateModal workoutExerciseSet={ {
-                weight: 8,
-                reps: 6,
+                weight: lastSet ? lastSet.weight : 8,
+                reps: lastSet ? lastSet.reps : 6,
                 ordinal: arrayUtils.max(this.props.workoutExercise.sets, 'ordinal') + 1,
                 workoutExerciseId: this.props.workoutExercise.id
             } } afterInsert={ insertedWorkoutExerciseSet => {
@@ -95,6 +96,14 @@ class EditableWorkoutExercise extends Component<Props, any> {
             ),
             sets: setCount
         } : null;
+    }
+    /**
+     * Palauttaa viimeisimmän suoritetun sarjan, tai null, jos sarjoja ei ole.
+     */
+    private getLastSet(): Enj.API.WorkoutExerciseSetRecord {
+        return this.props.workoutExercise.sets.length
+            ? this.props.workoutExercise.sets[this.props.workoutExercise.sets.length - 1]
+            : null;
     }
 }
 

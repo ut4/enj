@@ -59,7 +59,7 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
         if (!setCount) {
             return;
         }
-        return <table>
+        return <table class="striped">
             <thead><tr>
                 <th>Paino</th>
                 <th>Toistot</th>
