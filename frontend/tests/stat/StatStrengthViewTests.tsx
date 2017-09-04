@@ -31,8 +31,8 @@ QUnit.module('stat/StatStrengthView', hooks => {
         userBackendIocOverride.restore();
     });
     QUnit.test('laskee parhaista voimanostoista kokonaistulokset', assert => {
-        const testBodyWeight = 45;
-        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve({bodyWeight: testBodyWeight}));
+        const testUser: Enj.API.UserRecord = {id: 'uid', bodyWeight: 45, isMale: 1};
+        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const [rendered, componentInstance] = renderComponent();
         const done = assert.async();
@@ -41,14 +41,12 @@ QUnit.module('stat/StatStrengthView', hooks => {
         componentInstance.componentWillReceiveProps({bestSets: testBestSets}).then(() => {
             //
             const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
-            assert.equal(totalScores.length, 3, 'Pitäisi renderöidä 3 kokonaistulosta');
-            const [total, wilks, level] = totalScores;
+            assert.equal(totalScores.length, 5, 'Pitäisi renderöidä 5 kokonaistulosta');
+            const [total, wilks] = totalScores;
             const expectedTotal = getExpectedTotal();
             assert.equal(total.textContent, expectedTotal, 'Yhteistulos pitäisi olla tämä');
-            assert.equal(wilks.textContent, getExpectedWilks(testBodyWeight, false), 'Wilks pitäisi olla tämä');
-            assert.equal(level.textContent, getExpectedStrengthLevel(expectedTotal, testBodyWeight),
-                'Level pitäisi olla tämä'
-            );
+            assert.equal(wilks.textContent, getExpectedWilks(testUser.bodyWeight, true), 'Wilks pitäisi olla tämä');
+            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser));
             //
             const powerLiftDetails = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(powerLiftDetails[0].textContent, getExpectedPowerLiftDetails(testBestSets[1]));
@@ -58,18 +56,23 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('näyttää tulokset, vaikkei kaikkia voimanostoliikkeitä ole saatavilla', assert => {
-        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve({bodyWeight: 0}));
+        const testUser = {id: 'uid', bodyWeight: null, isMale: null};
+        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const [rendered, componentInstance] = renderComponent();
         const done = assert.async();
+        // bestSets, josta puuttuu jalkakyykky, ja maastaveto
         componentInstance.props.bestSets = [testBestSets[0]];
         componentInstance.componentWillReceiveProps({bestSets: componentInstance.props.bestSets}).then(() => {
             //
             const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
-            const [total, wilks, level] = totalScores;
+            const [total, wilks] = totalScores;
             assert.equal(total.textContent, getExpectedTotal([0]), 'Yhteistulos pitäisi olla tämä');
-            assert.equal(wilks.textContent, getExpectedWilks(0, false, [0]), 'Wilks pitäisi olla tämä');
-            assert.equal(level.textContent, getExpectedStrengthLevel(0, 0), 'Level pitäisi olla tämä');
+            assert.equal(wilks.textContent, getExpectedWilks(0, true, [0]), 'Wilks pitäisi olla tämä');
+            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser, {
+                squat: '-',
+                deadlift: '-'
+            }));
             //
             const [squatDetails, benchDetails, deadliftDetails] = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(squatDetails.textContent, testBestSets[1].exerciseName+'--');
@@ -79,17 +82,18 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Laskee tulokset uudelleen Asetukset-lomakkeen arvoilla', assert => {
-        const userData = {bodyWeight: 50, isMale: 1};
-        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(userData));
+        const testUser: Enj.API.UserRecord = {id: 'uid', bodyWeight: 50, isMale: 1};
+        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateSpy = sinon.spy(shallowUserBackend, 'update');
         //
         const [rendered, componentInstance] = renderComponent();
         const done = assert.async();
         const newBodyWeight = 60;
-        let levelBefore;
+        let levelsBefore;
         componentInstance.props.bestSets = testBestSets;
         componentInstance.componentWillReceiveProps({bestSets: testBestSets}).then(() => {
-            levelBefore = itu.scryRenderedDOMElementsWithClass(rendered, 'score')[2].textContent;
+            const scores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
+            levelsBefore = [scores[2].textContent, scores[3].textContent, scores[4].textContent];
             // Avaa lomake & muuta jotain
             utils.findButtonByContent(rendered, 'Asetukset').click();
             const weightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[0] as HTMLInputElement;
@@ -104,26 +108,31 @@ QUnit.module('stat/StatStrengthView', hooks => {
             // Assertoi, että lomake sulkeutui, ja arvot laskettiin uudestaan
             assert.ok(userDataUpdateSpy.notCalled, 'Ei pitäisi tallentaa arvoja,' +
                 ' jos checkboxia ei valittuna');
-            assertNewScores(assert, rendered, newBodyWeight, true, level => {
-                assert.notEqual(level, levelBefore);
+            assertNewScores(assert, rendered, Object.assign(testUser, {bodyWeight: newBodyWeight}), levels => {
+                assert.notEqual(levels[0].textContent, levelsBefore[0], 'Pitäisi renderöidä uusi Jalkakyykky-level');
+                assert.notEqual(levels[1].textContent, levelsBefore[1], 'Pitäisi renderöidä uusi Penkkipunnerrus-level');
+                assert.notEqual(levels[2].textContent, levelsBefore[2], 'Pitäisi renderöidä uusi Maastaveto-level');
             });
             done();
         });
     });
     QUnit.test('Tallentaa uudet Asetukset-lomakkeen arvot, jos checkbox on valittuna', assert => {
-        const userData = {bodyWeight: 30, isMale: 0};
-        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(userData));
+        const testUser: Enj.API.UserRecord = {id: 'ud', bodyWeight: 30, isMale: null};
+        sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateStub = sinon.stub(shallowUserBackend, 'update')
             .returns(Promise.resolve(1));
         //
         const [rendered, componentInstance] = renderComponent();
         const done = assert.async();
         componentInstance.props.bestSets = testBestSets;
+        let firstStrengthTableRowBefore;
         componentInstance.componentWillReceiveProps({bestSets: testBestSets}).then(() => {
-            // Avaa lomake & muuta jotain
+            utils.findButtonByAttribute(rendered, 'title', 'Näytä taulukko').click();
+            firstStrengthTableRowBefore = getRenderedStrengthTableRows(rendered)[1].textContent;
+            // Avaa lomake & muuta isMale null -> 2
             utils.findButtonByContent(rendered, 'Asetukset').click();
-            const isMaleSelectlist = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
-            isMaleSelectlist.selectedIndex = 0; // 0 = null, 1 = Mies, 2 = Nainen
+            const isMaleSelectlist = itu.scryRenderedDOMElementsWithTag(rendered, 'select')[0] as HTMLSelectElement;
+            isMaleSelectlist.selectedIndex = 2; // 0 = null, 1 = Mies, 2 = Nainen
             utils.triggerEvent('change', isMaleSelectlist);
             const saveValuesCheckbox = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1] as HTMLInputElement;
             saveValuesCheckbox.checked = true;
@@ -134,24 +143,31 @@ QUnit.module('stat/StatStrengthView', hooks => {
             return confirmSpy.firstCall.returnValue;
         }).then(() => {
             assert.ok(userDataUpdateStub.calledOnce, 'Pitäisi tallentaa arvot');
-            assert.deepEqual(userDataUpdateStub.firstCall.args, [{
-                bodyWeight: userData.bodyWeight,
-                isMale: null
-            }, '/me']);
-            assertNewScores(assert, rendered, userData.bodyWeight, false);
+            const expextedNewUser = Object.assign({}, testUser, {isMale: 0});
+            assert.deepEqual(userDataUpdateStub.firstCall.args, [expextedNewUser, '/me']);
+            assertNewScores(assert, rendered, expextedNewUser);
+            assert.notDeepEqual(getRenderedStrengthTableRows(rendered)[1].textContent,
+                firstStrengthTableRowBefore,
+                'Pitäisi päivittää strengthLevel-taulukon sisältö (male -> female)'
+            );
             done();
         });
     });
-    function assertNewScores(assert, rendered, bodyWeight: number, isMale: boolean, and?: Function) {
+    function getExpectedStrengthLevelsContent(testUser: Enj.API.UserRecord, expected = {} as any): string {
+        return (
+            'Jalkakyykky ' + (expected.squat || getExpectedStrengthLevel('squat', testBestSets[1], testUser)) +
+            'Penkkipunnerrus ' + (expected.bench || getExpectedStrengthLevel('bench',testBestSets[0], testUser)) +
+            'Maastaveto ' + (expected.deadlift || getExpectedStrengthLevel('deadlift', testBestSets[3], testUser))
+        );
+    }
+    function assertNewScores(assert, rendered, testUser: Enj.API.UserRecord, and?: Function) {
         assert.deepEqual(itu.findRenderedDOMElementWithClass(rendered, 'inline-form'),
             undefined, 'Pitäisi sulkea asetuslomake');
-        const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
-        const [wilks, level] = [totalScores[1], totalScores[2]];
-        assert.equal(wilks.textContent, getExpectedWilks(bodyWeight, isMale), 'Wilks pitäisi olla tämä');
-        assert.equal(level.textContent, getExpectedStrengthLevel(getExpectedTotal(), bodyWeight),
-            'Level pitäisi olla tämä'
-        );
-        and && and(level.textContent);
+        const scores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
+        const wilks = scores[1].textContent;
+        assert.equal(wilks, getExpectedWilks(testUser.bodyWeight, testUser.isMale !== 0), 'Wilks pitäisi olla tämä');
+        assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser));
+        and && and(scores.slice(2));
     }
     function getExpectedTotal(includedTestSets: Array<number> = [1, 0, 3]) {
         let total = 0;
@@ -163,8 +179,8 @@ QUnit.module('stat/StatStrengthView', hooks => {
     function getExpectedWilks(bodyWeight: number, isMale: boolean, includedTestSets?: Array<number>): number {
         return Math.round(formulae.wilksCoefficient(bodyWeight, isMale) * getExpectedTotal(includedTestSets));
     }
-    function getExpectedStrengthLevel(totalScore: number, bodyWeigth: number): string {
-        return formulae.strengthLevel(totalScore, bodyWeigth);
+    function getExpectedStrengthLevel(lift: keyof Enj.powerLift, set: Enj.API.BestSet, user: Enj.API.UserRecord): string {
+        return formulae.strengthLevel(lift, formulae.oneRepMax(set.bestWeight, set.bestWeightReps), user.bodyWeight, user.isMale !== 0);
     }
     function getExpectedPowerLiftDetails(set: Enj.API.BestSet): string {
         // esim Penkkipunnerrus 12 (10 x 6)
@@ -173,5 +189,9 @@ QUnit.module('stat/StatStrengthView', hooks => {
             Math.round(formulae.oneRepMax(set.bestWeight, set.bestWeightReps)) +
             `(${set.bestWeight} x ${set.bestWeightReps})`
         );
+    }
+    function getRenderedStrengthTableRows(rendered) {
+        const table = itu.findRenderedDOMElementWithClass(rendered, 'striped');
+        return table.querySelectorAll('tr');
     }
 });

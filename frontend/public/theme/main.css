@@ -731,6 +731,11 @@ footer a {
 .stats-view .inline-form { background-color: #ECECEC; padding: 20px;}
 @media (max-width:530px) { #score-lookup-table { font-size: 13px } }
 
+.stats-strength-view ul { display: inline-block; margin: 0; }
+.stats-strength-view li span { font-size: 14px; display: inline-block;
+    margin-bottom: 7px; }
+.stats-strength-view li .score { font-size: 55px; }
+
 .stats-overview-view .box { background-color: #3B3938; margin-bottom: 10px; border-radius: 2px;
     padding: 18px; color: #FFFFFF; }
 .stats-overview-view .box > div:first-of-type { text-transform: uppercase; letter-spacing: 2px;
