@@ -80,6 +80,9 @@ class RESTBackend<T extends {id?: AAGUID}> {
     protected completeUrl(url?: string): string {
         return this.urlNamespace + (url || '');
     }
+    public getUrlNamespace(): string {
+        return this.urlNamespace;
+    }
 }
 
 export default RESTBackend;

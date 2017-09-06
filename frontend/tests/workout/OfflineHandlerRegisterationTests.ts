@@ -15,7 +15,7 @@ QUnit.module('workout/OfflineHandlerRegisteration', hooks => {
     // beforeAll
     const shallowUserState: UserState = Object.create(UserState.prototype);
     sinon.stub(shallowUserState, 'isOffline').returns(Promise.resolve(true));
-    const offlineHttp: OfflineHttp = iocFactories.offlineHttp();
+    const offlineHttp: OfflineHttp = Object.create(OfflineHttp.prototype);
     sinon.stub(offlineHttp, 'logRequestToSyncQueue').returns(Promise.resolve());
     //
     hooks.beforeEach(() => {
