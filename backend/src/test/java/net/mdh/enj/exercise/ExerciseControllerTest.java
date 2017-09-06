@@ -88,6 +88,20 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(exercise.toString(), actualExercise.toString());
     }
 
+    @Test
+    public void GETPalauttaaLiikkeenJaVariantit() {
+        Exercise exerciseWithVariants = insertTestExercise("qwer", TestData.TEST_USER_ID);
+        List<Exercise.Variant> variants = new ArrayList<>();
+        variants.add(insertTestVariant("rtye", exerciseWithVariants.getId(), TestData.TEST_USER_ID));
+        exerciseWithVariants.setVariants(variants);
+        //
+        Response response = target("exercise/" + exerciseWithVariants.getId()).request().get();
+        Assert.assertEquals(200, response.getStatus());
+        Exercise actualExercise = response.readEntity(new GenericType<Exercise>() {});
+        testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
+        Assert.assertEquals(exerciseWithVariants.toString(), actualExercise.toString());
+    }
+
     /**
      * Testaa, että GET /api/exercise palauttaa kirjautuneen käyttäjän liikkeet,
      * jossa uusimmat / viimeksi insertoidut ensimmäisenä. Exercise:ihin pitäisi
@@ -118,6 +132,69 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
         Assert.assertEquals(2, exercises.get(1).getVariants().size());
         Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
+    }
+
+    @Test
+    public void PUTValidoiInputin() {
+        Response response = this.newPutRequest("exercise/invaliduuid", "{}");
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
+        Assert.assertEquals("ExerciseController.update.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ExerciseController.update.arg1.name", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTEiPäivitäMitäänJosLiikeEiKuuluKirjautuneelleKäyttäjälle() {
+        // Luo ensin globaali, ja toiselle käyttäjälle kuuluva liike
+        String originalName = "fyr";
+        String originalName2 = "byr";
+        Exercise exercise = insertTestExercise(originalName, null);
+        Exercise exercise2 = insertTestExercise(originalName2, TestData.TEST_USER_ID2);
+        // Päivitä jotain
+        exercise.setName("fus");
+        exercise2.setName("bas");
+        // Suorita PUT-pyynnöt päivitetyillä tiedoilla
+        Response response = this.newPutRequest("exercise/" + exercise.getId(), exercise);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("1. UpdateResponse.updateCount pitäisi olla 0", (Integer)0, responseBody.updateCount);
+        Response response2 = this.newPutRequest("exercise/" + exercise2.getId(), exercise2);
+        Assert.assertEquals(200, response2.getStatus());
+        Responses.UpdateResponse responseBody2 = response2.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("2. UpdateResponse.updateCount pitäisi olla 0", (Integer)0, responseBody2.updateCount);
+        // Testaa, että pyyntö päivitti liikkeen
+        List<?> updated = utils.selectAllWhere(
+            "SELECT * FROM exercise WHERE id IN (:id1, :id2)",
+            new MapSqlParameterSource("id1", exercise.getId()).addValue("id2", exercise2.getId()),
+            new SimpleMappers.ExerciseMapper()
+        );
+        Assert.assertEquals(originalName, ((Exercise)updated.get(0)).getName());
+        Assert.assertEquals(originalName2, ((Exercise)updated.get(1)).getName());
+    }
+
+    @Test
+    public void PUTPäivittääLiikkeenJaPalauttaaUpdateResponsen() {
+        // Luo ensin liike
+        Exercise exercise = insertTestExercise("fus", TestData.TEST_USER_ID);
+        // Päivitä sen tietoja
+        exercise.setName("jht");
+        // Suorita PUT-pyyntö päivitetyillä tiedoilla
+        Response response = this.newPutRequest("exercise/" + exercise.getId(), exercise);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 1", (Integer)1, responseBody.updateCount);
+        // Testaa, että pyyntö päivitti liikkeen
+        Exercise updated = (Exercise) utils.selectOneWhere(
+            "SELECT * FROM exercise WHERE id = :id",
+            new MapSqlParameterSource("id", exercise.getId()),
+            new SimpleMappers.ExerciseMapper()
+        );
+        Assert.assertEquals(exercise.getName(), updated.getName());
+        Assert.assertEquals(exercise.getUserId(), updated.getUserId());
     }
 
     @Test

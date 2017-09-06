@@ -1,16 +1,20 @@
 package net.mdh.enj.exercise;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import javax.ws.rs.PathParam;
 import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
 import javax.validation.constraints.NotNull;
+import net.mdh.enj.api.Responses;
+import net.mdh.enj.sync.Syncable;
 import static net.mdh.enj.api.Responses.InsertResponse;
 import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.validation.UUID;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -49,16 +53,14 @@ public class ExerciseController {
     }
 
     /**
-     * Lisää uuden treeniliikevariantin tietokantaan kirjautuneelle käyttäjälle.
+     * Palauttaa kirjautuneen käyttäjän liikkeen tietokannasta.
+     *
+     * @return Exercise liike
      */
-    @POST
-    @Path("/variant")
-    @Syncable
-    @Consumes(MediaType.APPLICATION_JSON)
-    public InsertResponse insertVariant(@Valid @NotNull Exercise.Variant exerciseVariant) {
-        exerciseVariant.setUserId(this.requestContext.getUserId());
-        int insertCount = this.exerciseVariantRepository.insert(exerciseVariant);
-        return new InsertResponse(insertCount, exerciseVariant.getId());
+    @GET
+    @Path("/{exerciseId}")
+    public Exercise get(@PathParam("exerciseId") @UUID String id) {
+        return this.exerciseRepository.selectOne(id, this.requestContext.getUserId());
     }
 
     /**
@@ -69,5 +71,34 @@ public class ExerciseController {
     @GET
     public List<Exercise> getAll() {
         return this.exerciseRepository.selectAll(this.requestContext.getUserId());
+    }
+
+    /**
+     * Päivittää kirjautuneen käyttäjän liikkeen {exerciseId}.
+     */
+    @PUT
+    @Path("/{exerciseId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.UpdateResponse update(
+        @PathParam("exerciseId") @UUID String exerciseId,
+        @Valid @NotNull Exercise exercise
+    ) {
+        exercise.setId(exerciseId);
+        exercise.setUserId(this.requestContext.getUserId());
+        return new Responses.UpdateResponse(this.exerciseRepository.update(exercise));
+    }
+
+    /**
+     * Lisää uuden treeniliikevariantin tietokantaan kirjautuneelle käyttäjälle.
+     */
+    @POST
+    @Path("/variant")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public InsertResponse insertVariant(@Valid @NotNull Exercise.Variant exerciseVariant) {
+        exerciseVariant.setUserId(this.requestContext.getUserId());
+        int insertCount = this.exerciseVariantRepository.insert(exerciseVariant);
+        return new InsertResponse(insertCount, exerciseVariant.getId());
     }
 }
