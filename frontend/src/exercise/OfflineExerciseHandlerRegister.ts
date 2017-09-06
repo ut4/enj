@@ -17,6 +17,9 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
         offlineHttp.addHandler('POST', 'exercise/variant', exerciseVariant =>
             this.insertVariant(exerciseVariant)
         );
+        offlineHttp.addHandler('PUT', 'exercise/variant/*', exerciseVariant =>
+            this.updateVariant(exerciseVariant)
+        );
     }
     /**
      * Handlaa POST /api/exercise REST-pyynnön.
@@ -50,6 +53,17 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
             parentExerciseRef.variants.push(exerciseVariant);
             //
             return {insertCount: 1};
+        });
+    }
+    /**
+     * Handlaa PUT /api/exercise/variant/{exerciseVariantId} REST-pyynnön.
+     */
+    public updateVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
+        return this.updateCache(cachedExercises => {
+            // Päivitä liikevariantti sille kuuluvan liikeen varianttilistaan
+            const exerciseVariantListRef = this.findItemById(exerciseVariant.exerciseId, cachedExercises).variants;
+            Object.assign(exerciseVariantListRef.find(ev => ev.id === exerciseVariant.id), exerciseVariant);
+            return {updateCount: 1};
         });
     }
 }

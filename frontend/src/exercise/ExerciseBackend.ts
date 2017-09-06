@@ -25,7 +25,7 @@ class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {
      * Sama kuin ExerciseVariantBackend.update.
      */
     public updateVariant(exerciseVariant: Enj.API.ExerciseVariantRecord, url?: string) {
-        return this.exerciseVariantBackend.update(exerciseVariant, '/' + exerciseVariant.id);
+        return this.exerciseVariantBackend.update(exerciseVariant, url);
     }
 }
 

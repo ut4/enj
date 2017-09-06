@@ -70,4 +70,19 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('exerciseBackend.updateVariant kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const putCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'updateVariant').returns(Promise.resolve('{"updateCount": 21}'));
+        const testVariant = {id: 'uid', content: 'fuy', exerciseId: 'ei', userId: 'u'};
+        //
+        const done = assert.async();
+        exerciseBackend.updateVariant(testVariant, '/' + testVariant.id).then(updateCount => {
+            //
+            assert.ok(putCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testVariant]);
+            assert.equal(updateCount, 21, 'Pitäisi palauttaa offline-handlerin updateCount');
+            done();
+        });
+    });
 });
