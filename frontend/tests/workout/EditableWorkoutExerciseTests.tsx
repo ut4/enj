@@ -19,8 +19,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     let exerciseBackendIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         testDropdownExercises = [
-            {id: 'someuuid', name: 'foo', variants: [{id: 'asd', content: 'fy', exerciseId: 'someuuid'}]},
-            {id: 'someuuid2', name: 'bar', variants: []}
+            {id: 'someuuid', name: 'foo', variants: [{id: 'asd', content: 'fy', exerciseId: 'someuuid', userId: 'u'}], userId: 'u'},
+            {id: 'someuuid2', name: 'bar', variants: [], userId: 'u'}
         ];
         testWorkoutExercise = new WorkoutExercise();
         testWorkoutExercise.exerciseId =  testDropdownExercises[1].id;

@@ -12,7 +12,7 @@ QUnit.module('exercise/ExerciseVariantCreateView', hooks => {
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {
-        testDropdownExercises = [{id: 'someuuid', name: 'bar', variants: []}];
+        testDropdownExercises = [{id: 'someuuid', name: 'bar', variants: [], userId: 'u'}];
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
     });

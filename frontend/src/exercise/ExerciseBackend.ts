@@ -4,6 +4,7 @@ class Exercise implements Enj.API.ExerciseRecord {
     public id;
     public name;
     public variants;
+    public userId;
 }
 
 /**

@@ -363,8 +363,8 @@ table th {
     padding-right: 10px;
     text-align: left;
 }
-table th:first-of-type {
-    padding-left: 8px;
+table th:first-child {
+    padding-left: 6px;
 }
 table.striped tr:nth-of-type(2n) td, .striped > *:nth-of-type(2n) {
     background-color: #ECECEC;
@@ -384,11 +384,21 @@ table td:first-child {
     padding-left: 4px;
 }
 table.striped td:first-child {
-    padding-left: 8px;
+    padding-left: 6px;
+}
+table.crud-table td:first-child {
+    padding-left: 10px;
+}
+.striped thead tr:only-child th:first-child, .striped tbody tr:only-child td:first-child {
+    padding-left: 0;
 }
 table.crud-table th:last-of-type,
 table.crud-table td:last-of-type {
-    width: 112px;
+    width: 114px;
+}
+table.crud-table th:only-child,
+table.crud-table td:only-child {
+    width: initial;
 }
 
 /* -- Notifier ---------- */
@@ -498,7 +508,7 @@ table .input-set > span:first-of-type {
     display: none;
 }
 table .input-set input {
-    margin: 0 0 0 2px;
+    margin: 0;
 }
 table .input-set .text-error {
     font-size: 12px;
@@ -722,6 +732,10 @@ footer a {
 .workout-exercise-modal table tr:last-of-type .arrow-black {
     transform: rotate(180deg);
 }
+
+/* -- Liike-näkymät ---------------*/
+.exercise-view ul { margin: 5px 0 5px 15px; font-size: 14px; opacity: 0.8; }
+.exercise-view ul .minor-group { margin-left: 5px }
 
 /* -- Statistiikkanäkymät ---------- */
 .stats-view .sub-nav .text-button { padding: 8px 20px; }

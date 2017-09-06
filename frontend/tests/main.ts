@@ -7,6 +7,7 @@ import 'tests/common/HttpTests';
 import 'tests/common/RESTBackendTests';
 import 'tests/common/IocContainerTests';
 import 'tests/common/OfflineHttpTests';
+import 'tests/exercise/ExerciseEditViewTests';
 import 'tests/exercise/ExerciseFormTests';
 import 'tests/exercise/ExerciseSelectorTests';
 import 'tests/exercise/ExerciseVariantCreateViewTests';
