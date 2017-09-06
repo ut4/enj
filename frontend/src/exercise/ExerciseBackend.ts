@@ -1,12 +1,5 @@
 import RESTBackend  from 'src/common/RESTBackend';
 
-class Exercise implements Enj.API.ExerciseRecord {
-    public id;
-    public name;
-    public variants;
-    public userId;
-}
-
 /**
  * Vastaa /api/exercise -REST-pyynnöistä.
  */
@@ -30,4 +23,3 @@ class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {
 class ExerciseVariantBackend extends RESTBackend<Enj.API.ExerciseVariantRecord> {}
 
 export default ExerciseBackend;
-export { Exercise };

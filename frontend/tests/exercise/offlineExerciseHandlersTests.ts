@@ -1,7 +1,7 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import Offline from 'src/offline/Offline';
-import ExerciseBackend, { Exercise } from 'src/exercise/ExerciseBackend';
+import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import OfflineExerciseHandlerRegister from 'src/exercise/OfflineExerciseHandlerRegister';
 
 QUnit.module('exercise/offlineExerciseHandlers', hooks => {
@@ -27,7 +27,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        const newExercise = new Exercise();
+        const newExercise = {name: 'foo'} as any;
         //
         const done = assert.async();
         exerciseHandlerRegister.insert(newExercise).then(result => {
@@ -38,6 +38,47 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
             ], 'Pitäisi päivittää cache uudella liikkeellä varustettuna');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
             assert.equal(newExercise.id, mockNewUuid, 'Pitäisi luoda treenille id');
+            done();
+        });
+    });
+    QUnit.test('update päivittää liikkeen cacheen, ja palauttaa updateCount:n', assert => {
+        const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        // Tee jotain muutoksia
+        const updatedExercise = Object.assign({}, cachedExercisesCopy[0]);
+        updatedExercise.name = 'sss';
+        // Päivitä kumpikin
+        const done = assert.async();
+        exerciseHandlerRegister.update(updatedExercise).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'exercise',
+                [updatedExercise, mockCachedExercises[1]]
+            ], 'Pitäisi päivittää liike cacheen');
+            assert.equal(result, JSON.stringify({updateCount: 1}), 'Pitäisi palauttaa updateCount');
+            done();
+        });
+    });
+    QUnit.test('insertVariant lisää variantin liikecacheen, ja palauttaa insertCount:n', assert => {
+        const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        const newExerciseVariant: Enj.API.ExerciseVariantRecord = {
+            content: 'rte', exerciseId: cachedExercisesCopy[1].id, userId: 'u'
+        };
+        // Lisää liike cachen keskimmäiseen treeniin
+        const done = assert.async();
+        exerciseHandlerRegister.insertVariant(newExerciseVariant).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'exercise',
+                [mockCachedExercises[0], Object.assign(mockCachedExercises[1], {
+                    variants: mockCachedExercises[1].variants.concat([newExerciseVariant])
+                })]
+            ], 'Pitäisi lisätä uusi variantti liikecachen oikeaan itemiin');
+            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(newExerciseVariant.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
         });
     });

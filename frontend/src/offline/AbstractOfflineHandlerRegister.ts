@@ -5,7 +5,7 @@ import RESTBackend from 'src/common/RESTBackend';
 /**
  * Sisältää kaikille OfflineHandlerRegistereille yhteiset toiminnallisuudet.
  */
-abstract class AbstractOfflineHandlerRegister<T> {
+abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
     protected offline: Offline;
     protected backend: RESTBackend<T>;
     public constructor(offline: Offline, backend: RESTBackend<T>) {
@@ -34,6 +34,12 @@ abstract class AbstractOfflineHandlerRegister<T> {
             // 4. palauta feikattu backendin vastaus
             .then(() => JSON.stringify(response))
         );
+    }
+    /**
+     * Palauttaa <T>:n, jolla id {id}, tai undefinded, jos mitään ei löytynyt.
+     */
+    protected findItemById(id: string, items: Array<T>): T {
+        return items.find(item => item.id === id);
     }
 }
 

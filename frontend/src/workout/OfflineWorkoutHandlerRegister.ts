@@ -54,7 +54,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         return this.updateCache(cachedWorkouts => {
             // Päivitä treenit niille kuuluviin cachetaulukon paikkoihin
             workoutsToUpdate.forEach(workout => {
-                Object.assign(findWorkoutById(workout.id, cachedWorkouts), workout);
+                Object.assign(this.findItemById(workout.id, cachedWorkouts), workout);
             });
             return {updateCount: workoutsToUpdate.length};
         });
@@ -65,7 +65,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     public delete(workoutId: AAGUID) {
         return this.updateCache(cachedWorkouts => {
             // Poista treeni cachetaulukosta
-            const ref = findWorkoutById(workoutId, cachedWorkouts);
+            const ref = this.findItemById(workoutId, cachedWorkouts);
             cachedWorkouts.splice(cachedWorkouts.indexOf(ref), 1);
             //
             return {deleteCount: 1};
@@ -77,7 +77,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
         return this.updateCache(workouts => {
             // Lisää uusi liike sille kuuluvan treenin liikelistaan
-            const parentWorkoutRef = findWorkoutById(workoutExercise.workoutId, workouts);
+            const parentWorkoutRef = this.findItemById(workoutExercise.workoutId, workouts);
             workoutExercise.id = this.backend.utils.uuidv4();
             parentWorkoutRef.exercises.push(workoutExercise);
             //
@@ -91,7 +91,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         return this.updateCache(cachedWorkouts => {
             // Päivitä liikkeet niille kuuluvien treenien liikelistoihin
             workoutExercises.forEach(we => {
-                const workoutExerciseListRef = findWorkoutById(we.workoutId, cachedWorkouts).exercises;
+                const workoutExerciseListRef = this.findItemById(we.workoutId, cachedWorkouts).exercises;
                 Object.assign(workoutExerciseListRef.find(we2 => we2.id === we.id), we);
             });
             return {updateCount: workoutExercises.length};
@@ -151,10 +151,6 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
             return {deleteCount: 1};
         });
     }
-}
-
-function findWorkoutById(id: string, workouts: Array<Enj.API.WorkoutRecord>): Enj.API.WorkoutRecord {
-    return workouts.find(workout => workout.id === id);
 }
 
 function findWorkoutByExerciseId(workoutExerciseId: string, workouts: Array<Enj.API.WorkoutRecord>): {workoutRef: Enj.API.WorkoutRecord, exerciseIndex: number} {

@@ -5,7 +5,6 @@ import Modal from 'src/ui/Modal';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutBackend, { WorkoutExercise, WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
-import { Exercise } from 'src/exercise/ExerciseBackend';
 import workoutTestUtils from 'tests/workout/utils';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';

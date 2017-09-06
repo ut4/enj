@@ -62,7 +62,7 @@ declare module Enj {
             reps: number;
         }
         interface ExerciseVariantRecord {
-            id: AAGUID;
+            id?: AAGUID;
             content: string;
             exerciseId: AAGUID;
             userId: AAGUID;

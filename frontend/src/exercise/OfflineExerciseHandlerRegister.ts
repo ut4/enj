@@ -12,6 +12,11 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
     public registerHandlers(offlineHttp: OfflineHttp) {
         //
         offlineHttp.addHandler('POST', 'exercise', exercise => this.insert(exercise));
+        offlineHttp.addHandler('PUT', 'exercise/*', exercise => this.update(exercise));
+        //
+        offlineHttp.addHandler('POST', 'exercise/variant', exerciseVariant =>
+            this.insertVariant(exerciseVariant)
+        );
     }
     /**
      * Handlaa POST /api/exercise REST-pyynnön.
@@ -22,6 +27,28 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
             exercise.id = this.backend.utils.uuidv4();
             cachedExercises.unshift(exercise);
             // Palauta feikattu backendin vastaus
+            return {insertCount: 1};
+        });
+    }
+    /**
+     * Handlaa PUT /api/exercise/{exerciseId} REST-pyynnön.
+     */
+    public update(exercise: Enj.API.ExerciseRecord) {
+        return this.updateCache(cachedExercises => {
+            Object.assign(this.findItemById(exercise.id, cachedExercises), exercise);
+            return {updateCount: 1};
+        });
+    }
+    /**
+     * Handlaa POST /api/exercise/variant REST-pyynnön.
+     */
+    public insertVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
+        return this.updateCache(cachedExercises => {
+            // Lisää uusi variantti sille kuuluvan liikeen varianttilistaan
+            const parentExerciseRef = this.findItemById(exerciseVariant.exerciseId, cachedExercises);
+            exerciseVariant.id = this.backend.utils.uuidv4();
+            parentExerciseRef.variants.push(exerciseVariant);
+            //
             return {insertCount: 1};
         });
     }
