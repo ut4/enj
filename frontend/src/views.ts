@@ -10,9 +10,10 @@ import ProgramCreateView         from 'src/program/ProgramCreateView';
 import ProgramEditView           from 'src/program/ProgramEditView';
 import ExerciseView              from 'src/exercise/ExerciseView';
 import ExerciseCreateView        from 'src/exercise/ExerciseCreateView';
-import ExerciseVariantCreateView from 'src/exercise/ExerciseVariantCreateView';
 import ExerciseEditView          from 'src/exercise/ExerciseEditView';
 import ExerciseDeleteView        from 'src/exercise/ExerciseDeleteView';
+import ExerciseVariantCreateView from 'src/exercise/ExerciseVariantCreateView';
+import ExerciseVariantEditView   from 'src/exercise/ExerciseVariantEditView';
 import NutritionView             from 'src/nutrition/NutritionView';
 import NutritionMealAddView      from 'src/nutrition/NutritionMealAddView';
 import NutritionMealEditView     from 'src/nutrition/NutritionMealEditView';
@@ -39,9 +40,10 @@ export {
     ProgramEditView,
     ExerciseView,
     ExerciseCreateView,
-    ExerciseVariantCreateView,
     ExerciseEditView,
     ExerciseDeleteView,
+    ExerciseVariantCreateView,
+    ExerciseVariantEditView,
     NutritionView,
     NutritionMealAddView,
     NutritionMealEditView,

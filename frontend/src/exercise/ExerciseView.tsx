@@ -24,7 +24,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
             <h2>Liikkeet</h2>
             <div class="sub-nav left-aligned minor-group">
                 <a href="#/liikkeet/luo-uusi">Luo uusi liike</a>
-                <a href="#/liikkeet/luo-uusi-variantti">Luo uusi liikevariantti</a>
+                <a href="#/liikevariantti/luo-uusi">Luo uusi liikevariantti</a>
             </div>
             { this.state.exercises && (
                 this.state.exercises.length > 0 ?
@@ -51,7 +51,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
             <li>
                 <span>- {variant.content}</span>
                 <span class="minor-group">
-                    <a href={ '#/liikevariantti/muokkaa/' + variant.id }>Muokkaa</a>
+                    <a onClick={ () => { this.context.router.exerciseVariant = variant; } } href={ '#/liikevariantti/muokkaa/' + variant.id }>Muokkaa</a>
                     { variant.userId && <a href={ '#/liikevariantti/poista/' + variant.id }>Poista</a> }
                 </span>
             </li>

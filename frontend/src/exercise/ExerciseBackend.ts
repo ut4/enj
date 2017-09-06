@@ -15,6 +15,18 @@ class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {
     public insertVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
         return this.exerciseVariantBackend.insert(exerciseVariant);
     }
+    /**
+     * Sama kuin ExerciseVariantBackend.get.
+     */
+    public getVariant(url?: string): Promise<Enj.API.ExerciseVariantRecord> {
+        return this.exerciseVariantBackend.get(url);
+    }
+    /**
+     * Sama kuin ExerciseVariantBackend.update.
+     */
+    public updateVariant(exerciseVariant: Enj.API.ExerciseVariantRecord, url?: string) {
+        return this.exerciseVariantBackend.update(exerciseVariant, '/' + exerciseVariant.id);
+    }
 }
 
 /**

@@ -11,6 +11,8 @@ import 'tests/exercise/ExerciseEditViewTests';
 import 'tests/exercise/ExerciseFormTests';
 import 'tests/exercise/ExerciseSelectorTests';
 import 'tests/exercise/ExerciseVariantCreateViewTests';
+import 'tests/exercise/ExerciseVariantEditViewTests';
+import 'tests/exercise/ExerciseVariantFormTests';
 import 'tests/exercise/ExerciseViewTests';
 import 'tests/exercise/offlineExerciseHandlersTests';
 import 'tests/exercise/OfflineHandlerRegisterationTests';
