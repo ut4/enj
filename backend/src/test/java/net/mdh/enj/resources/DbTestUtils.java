@@ -4,10 +4,11 @@ import net.mdh.enj.user.User;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import javax.sql.DataSource;
@@ -55,6 +56,17 @@ public class DbTestUtils {
     public List<?> selectAllWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
         return this.queryTemplate.query(query, params, mapper);
     }
+    public int delete(final String from, final String... ids) {
+        MapSqlParameterSource ps = new MapSqlParameterSource();
+        for (int i = 0; i < ids.length; i++) {
+            ps.addValue("id" + (i + 1), ids[i]);
+            i++;
+        }
+        return this.queryTemplate.update(
+            String.format("DELETE FROM `%s` WHERE id IN (:" +
+                String.join(", :", ps.getValues().keySet())
+            + ")", from), ps);
+    }
 
     private SimpleJdbcInsert getInserter(String tableName) {
         if (!this.inserters.containsKey(tableName)) {
@@ -68,6 +80,8 @@ public class DbTestUtils {
         if (data.getId() == null) {
             data.setId(UUID.randomUUID().toString());
         }
-        inserter.execute(new BeanPropertySqlParameterSource(data));
+        if (inserter.execute(new BeanPropertySqlParameterSource(data)) < 1) {
+            throw new RuntimeException("Tietokantaan kirjoitus epäonnistui");
+        }
     }
 }

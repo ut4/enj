@@ -51,6 +51,19 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     /**
+     * Palauttaa kaikki liikkeet, joiden userId, tai variant.userId = {userId}.
+     */
+    List<Exercise> selectMyExercises(String userId) {
+        return super.selectAll(
+            this.newSelectQ("exerciseUserId = :userId OR (" +
+                "exerciseUserId IS NULL AND exerciseVariantUserId = :userId" +
+            ")"),
+            new MapSqlParameterSource("userId", userId),
+            new ExerciseMapper()
+        );
+    }
+
+    /**
      * Päivittää liikkeen {exercise} tietokantaan, ja palauttaa päivitettyjen
      * rivien lukumäärän.
      */

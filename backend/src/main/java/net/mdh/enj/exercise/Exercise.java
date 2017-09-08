@@ -36,6 +36,11 @@ public class Exercise extends DbEntity {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj instanceof Exercise && obj.toString().equals(this.toString());
+    }
+
+    @Override
     public String toString() {
         return "Exercise{" +
             "id=" + this.getId() +

@@ -74,6 +74,19 @@ public class ExerciseController {
     }
 
     /**
+     * Palauttaa kaikki liikkeet tietokannasta, jotka kuuluu kirjautuneelle
+     * käyttäjälle, tai jossa on yksi tai useampi kirjautuneelle käyttäjälle
+     * kuuluva variantti.
+     *
+     * @return Exercise[] liikkeet
+     */
+    @GET
+    @Path("/mine")
+    public List<Exercise> getMyExercises() {
+        return this.exerciseRepository.selectMyExercises(this.requestContext.getUserId());
+    }
+
+    /**
      * Päivittää kirjautuneen käyttäjän liikkeen {exerciseId}.
      */
     @PUT
@@ -100,5 +113,21 @@ public class ExerciseController {
         exerciseVariant.setUserId(this.requestContext.getUserId());
         int insertCount = this.exerciseVariantRepository.insert(exerciseVariant);
         return new InsertResponse(insertCount, exerciseVariant.getId());
+    }
+
+    /**
+     * Päivittää kirjautuneen käyttäjän liikevariantin {exerciseVariantId}.
+     */
+    @PUT
+    @Path("/variant/{exerciseVariantId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.UpdateResponse updateVariant(
+        @PathParam("exerciseVariantId") @UUID String exerciseVariantId,
+        @Valid @NotNull Exercise.Variant exerciseVariant
+    ) {
+        exerciseVariant.setId(exerciseVariantId);
+        exerciseVariant.setUserId(this.requestContext.getUserId());
+        return new Responses.UpdateResponse(this.exerciseVariantRepository.update(exerciseVariant));
     }
 }

@@ -43,15 +43,11 @@ public class SyncControllerTest extends JerseyTestCase {
         Assert.assertEquals(400, response.getStatus());
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = this.getValidationErrors(response);
-        Assert.assertEquals("SyncController.syncAll.arg0[0].data", errors.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("SyncController.syncAll.arg0[0].id", errors.get(1).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(1).getMessageTemplate());
-        Assert.assertEquals("SyncController.syncAll.arg0[0].route", errors.get(2).getPath());
+        Assert.assertEquals("SyncController.syncAll.arg0[0].id", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("SyncController.syncAll.arg0[0].route", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.sync.validation.SyncableRoute.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("SyncController.syncAll.arg0[1].route", errors.get(2).getPath());
         Assert.assertEquals("{net.mdh.enj.sync.validation.SyncableRoute.message}", errors.get(2).getMessageTemplate());
-        Assert.assertEquals("SyncController.syncAll.arg0[1].data", errors.get(3).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(3).getMessageTemplate());
-        Assert.assertEquals("SyncController.syncAll.arg0[1].route", errors.get(4).getPath());
-        Assert.assertEquals("{net.mdh.enj.sync.validation.SyncableRoute.message}", errors.get(4).getMessageTemplate());
     }
 }
