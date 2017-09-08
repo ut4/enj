@@ -26,7 +26,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
         testExercise = new Exercise();
         testExercise.setName("exs");
         utils.insertExercise(testExercise);

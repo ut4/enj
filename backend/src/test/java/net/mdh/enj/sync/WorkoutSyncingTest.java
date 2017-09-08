@@ -22,7 +22,7 @@ public class WorkoutSyncingTest extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() throws SQLException {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
     }
 
     @Override

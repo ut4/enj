@@ -13,6 +13,7 @@ class BestSetMapper implements RowMapper<BestSetMapper.BestSet> {
         set.setBestWeightReps(rs.getInt("bestWeightReps"));
         set.setTimesImproved(rs.getInt("timesImproved"));
         set.setExerciseName(rs.getString("exerciseName"));
+        set.setWorkoutExerciseSetId(rs.getString("workoutExerciseSetId"));
         return set;
     }
 
@@ -22,6 +23,7 @@ class BestSetMapper implements RowMapper<BestSetMapper.BestSet> {
         private int bestWeightReps; // Viimeisimmän ennätyksen toistot
         private int timesImproved;
         private String exerciseName;
+        private String workoutExerciseSetId;
 
         public double getStartWeight() {
             return this.startWeight;
@@ -58,6 +60,13 @@ class BestSetMapper implements RowMapper<BestSetMapper.BestSet> {
             this.exerciseName = exerciseName;
         }
 
+        public String getWorkoutExerciseSetId() {
+            return this.workoutExerciseSetId;
+        }
+        public void setWorkoutExerciseSetId(String workoutExerciseSetId) {
+            this.workoutExerciseSetId = workoutExerciseSetId;
+        }
+
         @Override
         public String toString() {
             return "BestSet{" +
@@ -66,6 +75,7 @@ class BestSetMapper implements RowMapper<BestSetMapper.BestSet> {
                 ", bestWeightReps=" + this.getBestWeightReps() +
                 ", timesImproved=" + this.getTimesImproved() +
                 ", exerciseName=" + this.getExerciseName() +
+                ", workoutExerciseSetId=" + this.getWorkoutExerciseSetId() +
             "}";
         }
     }

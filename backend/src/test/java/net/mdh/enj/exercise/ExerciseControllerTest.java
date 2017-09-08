@@ -31,7 +31,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() throws SQLException {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
         testExercise = insertTestExercise("foo", null);
     }
 
@@ -147,7 +147,6 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Response response = target("exercise/mine").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
-        System.out.println(exercises);
         Assert.assertTrue("Ei pitäisi sisältää globaalia liikettä", exercises.indexOf(e1) < 0);
         Assert.assertTrue("Pitäisi sisältää globaali liike, jos sillä on käyttäjän variantt[i/eja]",
             exercises.indexOf(e2) > -1

@@ -31,7 +31,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     public static void beforeClass() throws Exception {
         AuthControllerTest.tokenService = new TokenService(AppConfigProvider.getInstance());
         AuthControllerTest.mockHasherSpy = Mockito.spy(new MockHashingProvider());
-        DbTestUtils utils = new DbTestUtils(rollbackingDataSource);
+        DbTestUtils utils = new DbTestUtils(rollbackingDSFactory);
         testUser = new User();
         testUser.setUsername(correctUsername);
         testUser.setPasswordHash(String.valueOf(correctPassword));

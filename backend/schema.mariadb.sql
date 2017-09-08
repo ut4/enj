@@ -196,12 +196,13 @@ CREATE VIEW workoutExerciseView AS
 
 CREATE VIEW bestSetView AS
     SELECT
-        e.`name` as exerciseName,
-        MIN(wes.weight) AS startWeight,
-        MAX(wes.weight) AS bestWeight,
-        MAX(wes.reps) AS bestWeightReps,
+        MIN(wes.weight)          AS startWeight,
+        MAX(wes.weight)          AS bestWeight,
+        MAX(wes.reps)            AS bestWeightReps,
         COUNT(bs.exerciseId) - 1 AS timesImproved,
-        w.userId
+        e.`name`                 AS exerciseName,
+        wes.id                   AS workoutExerciseSetId,
+        w.userId                 AS userId
     FROM bestSet bs
     JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
     JOIN exercise e ON (e.id = bs.exerciseId)
