@@ -25,12 +25,12 @@ public class AuthenticationFilterTest extends JerseyTest {
                     AuthenticationFilterTestController.WHITELISTED_PATH;
 
     private UserRepository mockUserRepository;
-    private TokenService spyingTokenService;
+    private FixableTokenService spyingTokenService;
 
     public AuthenticationFilterTest() throws Exception {
         super();
         this.mockUserRepository = Mockito.mock(UserRepository.class);
-        this.spyingTokenService = Mockito.spy(new TokenService(AppConfigProvider.getInstance()));
+        this.spyingTokenService = Mockito.spy(new FixableTokenService(AppConfigProvider.getInstance()));
     }
 
     @Override
@@ -93,13 +93,13 @@ public class AuthenticationFilterTest extends JerseyTest {
         String mockUuid = "uuid78";
         User userWithValidLogin = new User();
         userWithValidLogin.setId(mockUuid);
-        userWithValidLogin.setLastLogin(System.currentTimeMillis() / 1000L - 100);
+        userWithValidLogin.setLastLogin(System.currentTimeMillis() / 1000L);
         Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(userWithValidLogin);
         Mockito.when(this.mockUserRepository.updatePartial(Mockito.any(), Mockito.any())).thenReturn(1);
         ReturnValueCaptor<String> newTokenCaptor = new ReturnValueCaptor<>();
         Mockito.doAnswer(newTokenCaptor).when(spyingTokenService).generateNew(mockUuid);
         // Simuloi pyyntö, jossa vanhentunut token
-        String expiredToken = this.spyingTokenService.generateNew(mockUuid, 0L);
+        String expiredToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
         Response response = target(this.normalUrl)
             .request()
             .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
@@ -107,14 +107,56 @@ public class AuthenticationFilterTest extends JerseyTest {
         Assert.assertEquals(200, response.getStatus());
         String newToken = newTokenCaptor.getResult();
         userWithValidLogin.setCurrentToken(newToken);
-        // Lisäytyikö uuden tokenin headeriin?
+        // Lisäsikö uuden tokenin headeriin?
         Assert.assertEquals("Pitäisi uusia token, ja lisätä se responsen \"New-Token\"-headeriin",
-            AuthenticationFilter.AUTH_TOKEN_PREFIX + newToken,
+            newToken,
             response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
         );
-        // Päivittikö uusi token myös tietokantaan?
+        // Päivittikö uuden tokenin myös tietokantaan?
         Mockito.verify(this.mockUserRepository, Mockito.times(1)).updatePartial(Mockito.eq(userWithValidLogin), Mockito.any());
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + mockUuid, response.readEntity(String.class));
+    }
+    @Test
+    public void eiUusiTokeniaJosViimeisestäKirjautumisestaOnLiianKauan() throws Exception {
+        String mockUuid = "uuid79";
+        User userWithInvalidLogin = new User();
+        userWithInvalidLogin.setId(mockUuid);
+        userWithInvalidLogin.setLastLogin(System.currentTimeMillis() / 1000L - AuthService.LOGIN_EXPIRATION - 10);
+        Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(userWithInvalidLogin);
+        Mockito.when(this.mockUserRepository.updatePartial(Mockito.any(), Mockito.any())).thenReturn(1);
+        // Simuloi pyyntö, jossa vanhentunut token, ja vanhentunut kirjautuminen
+        String expiredToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
+        Response response = target(this.normalUrl)
+            .request()
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
+            .get();
+        Assert.assertEquals(401, response.getStatus());
+        // Lisäsikö uuden tokenin headeriin?
+        Assert.assertNull("Ei pitäisi uusia tokenia",
+            response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
+        );
+        // Invalidoiko kirjautumisen?
+        User invalidated = new User();
+        invalidated.setId(userWithInvalidLogin.getId());
+        invalidated.setLastLogin(null);
+        invalidated.setCurrentToken(null);
+        Mockito.verify(this.mockUserRepository, Mockito.times(1)).updatePartial(Mockito.eq(invalidated), Mockito.any());
+    }
+    @Test
+    public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() throws Exception {
+        // Simuloi tilanne, jossa headerin tokeni ei täsmää tietokantaan tallennettuan
+        // tokeniin (selectOne palauttaa null)
+        Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(null);
+        String expiredToken = this.spyingTokenService.generateNew("uuid80", -2000L);
+        Response response = target(this.normalUrl)
+            .request()
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
+            .get();
+        Assert.assertEquals(401, response.getStatus());
+        // Lisäsikö uuden tokenin headeriin?
+        Assert.assertNull("Ei pitäisi uusia tokenia",
+            response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
+        );
     }
     /**
      * Testaa että @PermitAll-annotaatio skippaa autentikoinnin.

@@ -53,6 +53,11 @@ public class User extends DbEntity {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj instanceof User && obj.toString().equals(this.toString());
+    }
+
+    @Override
     public String toString() {
         return "User{" +
             "id=" + this.getId() +

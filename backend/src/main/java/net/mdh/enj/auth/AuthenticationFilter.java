@@ -22,7 +22,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     static final String NEW_TOKEN = "newToken";
     static final String NEW_TOKEN_HEADER_NAME = "New-Token";
     static final String MSG_LOGIN_REQUIRED = "Kirjautuminen vaaditaan";
-    static final String AUTH_TOKEN_PREFIX = "Bearer ";
+    private static final String AUTH_TOKEN_PREFIX = "Bearer ";
 
     @Inject
     public AuthenticationFilter(
@@ -36,10 +36,21 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Master-autentikaatio; tarkastaa REST-pyynnön "Authentication" headerista
+     * Master-autentikaatio; tarkastaa REST-pyynnön "Authentication"-headerista
      * JWT:n, ja hylkää pyynnön mikäli sitä ei ole, se ei ole validi, tai sen uusiminen
      * ei ollut mahdollista. Triggeröityy jokaisen, paitsi @PermitAll-annotaatiolla
      * merkityn REST-pyynnön yhteydessä.
+     *
+     * Kuvaus:
+     *
+     * Käyttäjä kirjautuu, luodaan uusi, 30min ajan validi JWT, joka tallennetaan
+     * tietokantaan sekä palautetaan frontendiin. JWT sisällytetään tämän jälkeen
+     * jokaiseen REST-pyyntöön headerissa. Kun 30min aika umpeutuu, luodaan uusi
+     * JWT, joka tallennetaan tietokantaan, sekä palautetaan frontendiin headerissa,
+     * mikäli vanhentunut token oli sama kuin tietokantaan aiemmin tallennettu JWT.
+     * Jos huomattiin, että vanhentunut token ei täsmännyt, tai käyttäjän ensimmäisestä
+     * kirjautumisesta on yli 2kk, JWT:n uusiminen perutaan ja pyyntö hylätään. Käyttäjä
+     * kirjautuu uudelleen.
      */
     @Override
     public void filter(ContainerRequestContext requestContext) {
@@ -65,7 +76,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         rc.setUserId(alwaysFreshTokenData.userId);
         rc.setAuthHeader(AUTH_TOKEN_PREFIX + alwaysFreshTokenData.signature);
         if (!alwaysFreshTokenData.signature.equals(token)) {
-            requestContext.setProperty(NEW_TOKEN, AUTH_TOKEN_PREFIX + alwaysFreshTokenData.signature);
+            requestContext.setProperty(NEW_TOKEN, alwaysFreshTokenData.signature);
         }
     }
 

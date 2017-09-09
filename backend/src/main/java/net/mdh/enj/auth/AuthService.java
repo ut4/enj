@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 
 public class AuthService {
 
-    private static final Integer LOGIN_EXPIRATION = 5259600; // ~2kk
+    static final Integer LOGIN_EXPIRATION = 5259600; // ~2kk
 
     private final TokenService tokenService;
     private final UserRepository userRepository;
@@ -50,8 +50,7 @@ public class AuthService {
             credentials.getPassword(),
             user.getPasswordHash()
         )) {
-            credentials.nuke();
-            return null;
+            user = null;
         }
         credentials.nuke();
         return user;
@@ -80,8 +79,11 @@ public class AuthService {
         } catch (MalformedJwtException | SignatureException | UnsupportedJwtException e) {
             return null;
         } catch (ExpiredJwtException e) { // vanhentunut, mutta muutoin validi
-            Jws<Claims> expired = this.tokenService.parseExpired(tokenHash);
-            String userId = expired.getBody().getSubject();
+            Claims claims = this.tokenService.getClaimsFromExpiredToken(tokenHash);
+            if (claims == null) {
+                return null;
+            }
+            String userId = claims.getSubject();
             String newTokenHash = this.renewToken(tokenHash, userId);
             if (newTokenHash == null) {
                 return null;

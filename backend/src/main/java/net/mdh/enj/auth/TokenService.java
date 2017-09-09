@@ -5,25 +5,30 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.impl.TextCodec;
+import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.impl.DefaultClock;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.mdh.enj.AppConfig;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 public class TokenService {
-    private final byte[] JWT_KEY;
+    final byte[] JWT_KEY;
     /**
      * Aika, jonka token on validi luomisen jälkeen. Yksikkö millisekunteina.
      */
-    static final long JWT_AGE_IN_MS = 10; // 15min
-    private final SignatureAlgorithm SIGNATURE_ALGO = SignatureAlgorithm.HS512; // HMAC using SHA-512
-    private final JwtBuilder jwtBuilder;
+    static final long JWT_AGE_IN_MS = 1800000; // 30min
+    final SignatureAlgorithm SIGNATURE_ALGO = SignatureAlgorithm.HS512; // HMAC using SHA-512
+    final JwtBuilder jwtBuilder;
     private final JwtParser jwtParser;
+    private final ObjectMapper objectMapper;
 
     @Inject
     TokenService(AppConfig appConfig) throws Exception {
@@ -35,6 +40,7 @@ public class TokenService {
             throw new Exception("auth.tokenSigningKey configuration property not found.");
         }
         this.JWT_KEY = secretKeyConfigValue.getBytes();
+        this.objectMapper = new ObjectMapper();
         this.jwtBuilder = jwtBuilder;
         this.jwtParser = jwtParser;
     }
@@ -48,12 +54,9 @@ public class TokenService {
      * @return Signattu JWT
      */
     String generateNew(String userId) {
-        return this.generateNew(userId, null);
-    }
-    String generateNew(String userId, Long age) {
         return this.jwtBuilder
             .setSubject(userId)
-            .setExpiration(new Date(System.currentTimeMillis() + (age == null ? JWT_AGE_IN_MS: age)))
+            .setExpiration(new Date(System.currentTimeMillis() + JWT_AGE_IN_MS))
             .signWith(SIGNATURE_ALGO, JWT_KEY)
             .compact();
     }
@@ -66,12 +69,16 @@ public class TokenService {
         SignatureException, UnsupportedJwtException {
         return this.jwtParser.setSigningKey(JWT_KEY).parseClaimsJws(token);
     }
-    Jws<Claims> parseExpired(String token) throws MalformedJwtException,
-        SignatureException, UnsupportedJwtException {
-        this.jwtParser.setClock(() -> new Date(1));
-        Jws<Claims> jws = this.jwtParser.setSigningKey(JWT_KEY).parseClaimsJws(token);
-        this.jwtParser.setClock(DefaultClock.INSTANCE);
-        return jws;
+
+    Claims getClaimsFromExpiredToken(String expiredButValidToken) {
+        try {
+            return new DefaultClaims(this.objectMapper.readValue(
+                TextCodec.BASE64URL.decodeToString(expiredButValidToken.split("\\.")[1]),
+                Map.class
+            ));
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     /**
