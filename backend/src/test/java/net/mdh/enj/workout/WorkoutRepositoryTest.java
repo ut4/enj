@@ -19,7 +19,7 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
 
     public WorkoutRepositoryTest() {
         super();
-        this.utils = new DbTestUtils(rollbackingDataSource);
+        this.utils = new DbTestUtils(rollbackingDSFactory);
     }
 
     @Before

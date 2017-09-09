@@ -26,7 +26,7 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
         testExercise = new Exercise();
         testExercise.setName("exs");
         utils.insertExercise(testExercise);
@@ -52,7 +52,6 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         // Simuloi tilanne, jossa synkkaujonon toinen itemi failaa
         List<SyncQueueItem> queue = this.makeSyncQueueWithCoupleOfItems();
         queue.get(0).setData(TestData.getSomeWorkoutData(true));
-        queue.get(1).setData(TestData.getBogusWorkoutData());
         Response response = this.newPostRequest("sync", queue);
         // Assertoi että ei repinyt pelihousujansa, vaan palautti onnistuneesti synkattujen itemeiden id:t
         Assert.assertEquals("Ei pitäisi heittää erroria, koska 1. itemin synkkaus onnistui", 200, response.getStatus());
@@ -151,8 +150,8 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         testWorkoutSyncItem1.setRoute(TestData.workoutInsertRoute);
         //
         SyncQueueItem testWorkoutSyncItem2 = new SyncQueueItem();
-        testWorkoutSyncItem2.setId(1);
-        testWorkoutSyncItem2.setRoute(TestData.workoutInsertRoute);
+        testWorkoutSyncItem2.setId(2);
+        testWorkoutSyncItem2.setRoute(new Route("workout/foo", "DELETE"));
         //
         List<SyncQueueItem> queue = new ArrayList<>();
         queue.add(testWorkoutSyncItem1);

@@ -11,6 +11,7 @@ import net.mdh.enj.AppConfig;
 public class RollbackingDataSourceFactory implements DataSourceFactory {
     private static RollbackingDataSourceFactory instance;
     private static SingleConnectionDataSource dataSource;
+    private boolean isConnected = false;
     private RollbackingDataSourceFactory() {}
     static RollbackingDataSourceFactory getInstance() {
         if (instance == null) {
@@ -20,22 +21,26 @@ public class RollbackingDataSourceFactory implements DataSourceFactory {
     }
     @Override
     public DataSource getDataSource() {
-        if (dataSource == null) {
+        if (!isConnected) {
             AppConfig appConfig = AppConfigProvider.getInstance();
             dataSource = new RollbackingDS();
             dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
             dataSource.setUrl(appConfig.getProperty("db.url"));
             dataSource.setUsername(appConfig.getProperty("db.username"));
             dataSource.setPassword(appConfig.getProperty("db.password"));
+            isConnected = true;
         }
         return dataSource;
+    }
+    boolean isConnected() {
+        return isConnected;
     }
     private class RollbackingDS extends SingleConnectionDataSource {
         @Override
         public Connection getConnection() throws SQLException {
-            Connection c = super.getConnection();
-            c.setAutoCommit(false);
-            return c;
+            Connection conn = super.getConnection();
+            conn.setAutoCommit(false);
+            return conn;
         }
     }
 }

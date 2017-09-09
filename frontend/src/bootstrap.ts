@@ -1,5 +1,6 @@
 import iocFactories from 'src/ioc';
 import AuthHttpInterceptors from 'src/auth/AuthHttpInterceptors';
+import OfflineExerciseHandlerRegister from 'src/exercise/OfflineExerciseHandlerRegister';
 import OfflineWorkoutHandlerRegister from 'src/workout/OfflineWorkoutHandlerRegister';
 import { domUtils } from 'src/common/utils';
 const offlineHttp = iocFactories.offlineHttp();
@@ -19,6 +20,10 @@ http.interceptors.push({
 });
 
 // Rekisteröi kaikki offline-handlerit
+new OfflineExerciseHandlerRegister(
+    iocFactories.offline(),
+    iocFactories.exerciseBackend()
+).registerHandlers(offlineHttp);
 new OfflineWorkoutHandlerRegister(
     iocFactories.offline(),
     iocFactories.workoutBackend()

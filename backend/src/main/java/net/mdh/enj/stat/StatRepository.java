@@ -1,5 +1,6 @@
 package net.mdh.enj.stat;
 
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import net.mdh.enj.db.DataSourceFactory;
 import javax.inject.Inject;
@@ -19,6 +20,10 @@ public class StatRepository {
     }
 
     List<BestSetMapper.BestSet> selectBestSets(String userId) {
-        return this.qTemplate.query("SELECT * FROM bestSetView", (Map<String, ?>) null, new BestSetMapper());
+        return this.qTemplate.query(
+            "SELECT * FROM bestSetView WHERE userId = :userId ORDER BY timesImproved DESC",
+            new MapSqlParameterSource("userId", userId),
+            new BestSetMapper()
+        );
     }
 }

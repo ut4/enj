@@ -8,6 +8,11 @@ declare module Enj {
         up: 1;
         down: 1;
     };
+    type powerLift = {
+        squat: 1;
+        bench: 1;
+        deadlift: 1;
+    };
     /**
      * Määrittelee API-resurssien rajapinnat.
      */
@@ -57,19 +62,21 @@ declare module Enj {
             reps: number;
         }
         interface ExerciseVariantRecord {
-            id: AAGUID;
+            id?: AAGUID;
             content: string;
             exerciseId: AAGUID;
+            userId: AAGUID;
         }
         interface ExerciseRecord {
             id: AAGUID;
             name: string;
+            userId: AAGUID;
             variants: Array<ExerciseVariantRecord>;
         }
         interface UserRecord {
             id: AAGUID;
             bodyWeight: number;
-            isMale: boolean;
+            isMale: number;
         }
         // REST-vastauswrapperit
         interface InsertResponse {

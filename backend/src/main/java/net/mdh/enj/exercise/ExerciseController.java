@@ -1,16 +1,20 @@
 package net.mdh.enj.exercise;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import javax.ws.rs.PathParam;
 import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
 import javax.validation.constraints.NotNull;
+import net.mdh.enj.api.Responses;
+import net.mdh.enj.sync.Syncable;
 import static net.mdh.enj.api.Responses.InsertResponse;
 import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.validation.UUID;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -49,6 +53,56 @@ public class ExerciseController {
     }
 
     /**
+     * Palauttaa kirjautuneen käyttäjän liikkeen tietokannasta.
+     *
+     * @return Exercise liike
+     */
+    @GET
+    @Path("/{exerciseId}")
+    public Exercise get(@PathParam("exerciseId") @UUID String id) {
+        return this.exerciseRepository.selectOne(id, this.requestContext.getUserId());
+    }
+
+    /**
+     * Palauttaa kaikki globaalit, sekä kirjautuneen käyttäjän liikkeet tietokannasta.
+     *
+     * @return Exercise[] liikkeet
+     */
+    @GET
+    public List<Exercise> getAll() {
+        return this.exerciseRepository.selectAll(this.requestContext.getUserId());
+    }
+
+    /**
+     * Palauttaa kaikki liikkeet tietokannasta, jotka kuuluu kirjautuneelle
+     * käyttäjälle, tai jossa on yksi tai useampi kirjautuneelle käyttäjälle
+     * kuuluva variantti.
+     *
+     * @return Exercise[] liikkeet
+     */
+    @GET
+    @Path("/mine")
+    public List<Exercise> getMyExercises() {
+        return this.exerciseRepository.selectMyExercises(this.requestContext.getUserId());
+    }
+
+    /**
+     * Päivittää kirjautuneen käyttäjän liikkeen {exerciseId}.
+     */
+    @PUT
+    @Path("/{exerciseId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.UpdateResponse update(
+        @PathParam("exerciseId") @UUID String exerciseId,
+        @Valid @NotNull Exercise exercise
+    ) {
+        exercise.setId(exerciseId);
+        exercise.setUserId(this.requestContext.getUserId());
+        return new Responses.UpdateResponse(this.exerciseRepository.update(exercise));
+    }
+
+    /**
      * Lisää uuden treeniliikevariantin tietokantaan kirjautuneelle käyttäjälle.
      */
     @POST
@@ -62,12 +116,18 @@ public class ExerciseController {
     }
 
     /**
-     * Palauttaa kaikki globaalit, sekä kirjautuneen käyttäjän liikkeet tietokannasta.
-     *
-     * @return Exercise[] liikkeet
+     * Päivittää kirjautuneen käyttäjän liikevariantin {exerciseVariantId}.
      */
-    @GET
-    public List<Exercise> getAll() {
-        return this.exerciseRepository.selectAll(this.requestContext.getUserId());
+    @PUT
+    @Path("/variant/{exerciseVariantId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.UpdateResponse updateVariant(
+        @PathParam("exerciseVariantId") @UUID String exerciseVariantId,
+        @Valid @NotNull Exercise.Variant exerciseVariant
+    ) {
+        exerciseVariant.setId(exerciseVariantId);
+        exerciseVariant.setUserId(this.requestContext.getUserId());
+        return new Responses.UpdateResponse(this.exerciseVariantRepository.update(exerciseVariant));
     }
 }

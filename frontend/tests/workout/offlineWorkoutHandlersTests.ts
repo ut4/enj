@@ -13,6 +13,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     hooks.beforeEach(() => {
         shallowOffline = Object.create(Offline.prototype);
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
+        (shallowWorkoutBackend as any).urlNamespace = 'workout';
         shallowWorkoutBackend.utils = {uuidv4: () => mockNewUuid};
         workoutHandlerRegister = new OfflineWorkoutHandlerRegister(shallowOffline, shallowWorkoutBackend);
         mockCachedWorkouts = [
@@ -41,7 +42,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             assert.deepEqual(cacheUpdate.firstCall.args, [
                 'workout',
                 [newWorkout].concat(mockCachedWorkouts as any)
-            ], 'Pitäisi päivittää treenicache uudella liikkeellä varustettuna');
+            ], 'Pitäisi päivittää treenicache uudella treenillä varustettuna');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkout.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();

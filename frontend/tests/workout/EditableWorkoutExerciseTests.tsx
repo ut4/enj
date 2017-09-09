@@ -5,7 +5,6 @@ import Modal from 'src/ui/Modal';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutBackend, { WorkoutExercise, WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
-import { Exercise } from 'src/exercise/ExerciseBackend';
 import workoutTestUtils from 'tests/workout/utils';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
@@ -19,8 +18,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     let exerciseBackendIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         testDropdownExercises = [
-            {id: 'someuuid', name: 'foo', variants: [{id: 'asd', content: 'fy', exerciseId: 'someuuid'}]},
-            {id: 'someuuid2', name: 'bar', variants: []}
+            {id: 'someuuid', name: 'foo', variants: [{id: 'asd', content: 'fy', exerciseId: 'someuuid', userId: 'u'}], userId: 'u'},
+            {id: 'someuuid2', name: 'bar', variants: [], userId: 'u'}
         ];
         testWorkoutExercise = new WorkoutExercise();
         testWorkoutExercise.exerciseId =  testDropdownExercises[1].id;
@@ -246,12 +245,18 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         // Klikkaa "Uusi sarja" -painiketta
         const addSetButton = utils.findButtonByContent(rendered, 'Uusi sarja');
         addSetButton.click();
+        // Täytä lomake
+        const [weightInput, repsInput] = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+        assert.equal(weightInput.value, '45', 'Pitäisi poimia weight edellisestä sarjasta');
+        assert.equal(repsInput.value, '2', 'Pitäisi poimia reps edellisestä sarjasta');
+        weightInput.value = '46'; utils.triggerEvent('input', weightInput);
+        repsInput.value = '3'; utils.triggerEvent('input', repsInput);
         // Hyväksy modal
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Assertoi että lähetti datan backendiin
         assert.ok(setInsertCallStub.called, 'Pitäisi lähettää uusi sarja backediin');
-        const expectedNewSet = {weight: 8, reps: 6, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
+        const expectedNewSet = {weight: 46, reps: 3, ordinal: 1, workoutExerciseId: testWorkoutExercise.id};
         assert.deepEqual(
             setInsertCallStub.firstCall.args,
             [expectedNewSet],

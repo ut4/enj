@@ -18,7 +18,7 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         exerciseBackendIocOverride.restore();
     });
     QUnit.test('validoi inputit', assert => {
-        const testExercise = {name: 'tyu'};
+        const testExercise = {name: 'tyu', userId: 'u'};
         const rendered = itu.renderIntoDocument(
             <ExerciseForm exercise={ testExercise } afterInsert={ () => {} }/>
         );
@@ -44,7 +44,7 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         const insertCallStub = sinon.stub(shallowExerciseBackend, 'insert').returns(Promise.resolve(1));
         const afterInsertSpy = sinon.spy();
         //
-        const newExercise = {name: ''};
+        const newExercise = {name: '', userId: 'u'};
         const rendered = itu.renderIntoDocument(<ExerciseForm exercise={ newExercise } afterInsert={ afterInsertSpy }/>);
         // Täytä & lähetä lomake
         const inputs = itu.scryRenderedDOMElementsWithTag(rendered, 'input');

@@ -1,11 +1,5 @@
 import RESTBackend  from 'src/common/RESTBackend';
 
-class Exercise implements Enj.API.ExerciseRecord {
-    public id;
-    public name;
-    public variants;
-}
-
 /**
  * Vastaa /api/exercise -REST-pyynnöistä.
  */
@@ -21,6 +15,18 @@ class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {
     public insertVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
         return this.exerciseVariantBackend.insert(exerciseVariant);
     }
+    /**
+     * Sama kuin ExerciseVariantBackend.get.
+     */
+    public getVariant(url?: string): Promise<Enj.API.ExerciseVariantRecord> {
+        return this.exerciseVariantBackend.get(url);
+    }
+    /**
+     * Sama kuin ExerciseVariantBackend.update.
+     */
+    public updateVariant(exerciseVariant: Enj.API.ExerciseVariantRecord, url?: string) {
+        return this.exerciseVariantBackend.update(exerciseVariant, url);
+    }
 }
 
 /**
@@ -29,4 +35,3 @@ class ExerciseBackend extends RESTBackend<Enj.API.ExerciseRecord> {
 class ExerciseVariantBackend extends RESTBackend<Enj.API.ExerciseVariantRecord> {}
 
 export default ExerciseBackend;
-export { Exercise };

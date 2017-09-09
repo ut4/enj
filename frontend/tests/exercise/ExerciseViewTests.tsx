@@ -16,14 +16,15 @@ QUnit.module('exercise/ExerciseView', hooks => {
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
         someTestExercises = [
-            {id:'uuid1', name: 'foo', variants: []},
+            {id:'uuid1', name: 'foo', variants: [], userId: 'u'},
             {id:'uuid2', name: 'bar', variants: [
-                {id: 'uuid20', content: 'naz', exerciseId: 'uuid2'},
-                {id: 'uuid21', content: 'gas', exerciseId: 'uuid2'}
-            ]},
+                {id: 'uuid20', content: 'naz', exerciseId: 'uuid2', userId: 'u'},
+                {id: 'uuid21', content: 'gas', exerciseId: 'uuid2', userId: 'u'}
+            ], userId: 'u'},
             {id:'uuid3', name: 'baz', variants: [
-                {id: 'uuid22', content: 'frt', exerciseId: 'uuid3'}
-            ]}
+                {id: 'uuid22', content: 'frt', exerciseId: 'uuid3', userId: 'u'},
+                {id: 'uuid23', content: 'global', exerciseId: 'uuid3', userId: null}
+            ], userId: 'u'}
         ];
     });
     hooks.afterEach(() => {
@@ -61,12 +62,16 @@ QUnit.module('exercise/ExerciseView', hooks => {
         });
     });
     function getRenderedExerciseItems(rendered) {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'tr').slice(1);
+        return itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
     }
     function getExpectedTrContent(exs: Enj.API.ExerciseRecord): string {
         return `${exs.name}${joinVariants(exs.variants)}MuokkaaPoista`;
     }
     function joinVariants(variants: Array<Enj.API.ExerciseVariantRecord>): string {
-        return variants.length ? variants.map(v=>v.content).join(', ') : '-';
+        return variants.length
+            ? variants
+                .filter(v => v.userId !== null) // Ei pitäisi sisältää globaaleja liikkeitä
+                .map(v => '- ' + v.content + 'MuokkaaPoista').join('')
+            : '';
     }
 });

@@ -22,7 +22,7 @@ public class WorkoutControllerTestCase extends RollbackingDBJerseyTest {
 
     @BeforeClass
     public static void beforeClass() {
-        utils = new DbTestUtils(rollbackingDataSource);
+        utils = new DbTestUtils(rollbackingDSFactory);
         testWorkout = new Workout();
         testWorkout.setStart(System.currentTimeMillis() / 1000L);
         testWorkout.setUserId(TestData.TEST_USER_ID);

@@ -3,11 +3,18 @@ import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
-import ExerciseVariantCreateView from 'src/exercise/ExerciseVariantCreateView';
+import ExerciseVariantEditView from 'src/exercise/ExerciseVariantEditView';
 import iocFactories from 'src/ioc';
 import exerciseTestUtils from 'tests/exercise/utils';
 
-QUnit.module('exercise/ExerciseVariantCreateView', hooks => {
+let testVariant;
+class ContextFakingExerciseVariantViewCmp extends ExerciseVariantEditView {
+    public constructor(props, context) {
+        super(props, {router: {exerciseVariant: testVariant}});
+    }
+}
+
+QUnit.module('exercise/ExerciseVariantEditView', hooks => {
     let testDropdownExercises: Array<Enj.API.ExerciseRecord>;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
@@ -20,25 +27,31 @@ QUnit.module('exercise/ExerciseVariantCreateView', hooks => {
         exerciseBackendIocOverride.restore();
     });
     QUnit.test('lähettää tiedot backendiin', assert => {
-        const insertCallStub = sinon.stub(shallowExerciseBackend, 'insertVariant').returns(Promise.resolve(1));
+        const updateCallStub = sinon.stub(shallowExerciseBackend, 'updateVariant').returns(Promise.resolve(1));
         const exerciseListFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(testDropdownExercises));
+        testVariant = {id: 'uid', content: 'foo', exerciseId: testDropdownExercises[1].id, userId: 'u'};
         //
-        const rendered = itu.renderIntoDocument(<ExerciseVariantCreateView/>);
-        const expectedNewVariant = {content: 'foo', exerciseId: testDropdownExercises[0].id};
+        const rendered = itu.renderIntoDocument(<ContextFakingExerciseVariantViewCmp/>);
         // Odota, että liikelista latautuu
         const done = assert.async();
         exerciseListFetch.firstCall.returnValue.then(() => {
             // Täytä & lähetä lomake
             const variantContentInput = exerciseTestUtils.getContentInput(rendered);
-            const newVariantContent = expectedNewVariant.content;
+            const newVariantContent = 'bar';
             variantContentInput.value = newVariantContent;
             utils.triggerEvent('input', variantContentInput);
             exerciseTestUtils.selectExercise(rendered, 1);
-            const submitButton = utils.findButtonByContent(rendered, 'Ok');
+            //
+            const submitButton = utils.findButtonByContent(rendered, 'Tallenna');
             submitButton.click();
             // Lähettikö?
-            assert.ok(insertCallStub.calledOnce, 'Pitäisi lähettää pyyntö backediin');
-            assert.deepEqual(insertCallStub.firstCall.args, [expectedNewVariant]);
+            assert.ok(updateCallStub.calledOnce, 'Pitäisi lähettää pyyntö backediin');
+            assert.deepEqual(updateCallStub.firstCall.args,
+                [Object.assign(testVariant, {
+                    content: newVariantContent,
+                    exerciseId: testDropdownExercises[0].id
+                }), '/' + testVariant.id]
+            );
             done();
         });
     });

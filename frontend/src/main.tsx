@@ -22,9 +22,10 @@ asyncBoot.then(() => render(
             <Route path="ohjelmat/muokkaa/:id" component={ views.ProgramEditView }/>
             <Route path="liikkeet" component={ views.ExerciseView }/>
             <Route path="liikkeet/luo-uusi" component={ views.ExerciseCreateView }/>
-            <Route path="liikkeet/luo-uusi-variantti" component={ views.ExerciseVariantCreateView }/>
             <Route path="liikkeet/muokkaa/:id" component={ views.ExerciseEditView }/>
             <Route path="liikkeet/poista/:id" component={ views.ExerciseDeleteView }/>
+            <Route path="liikevariantti/luo-uusi" component={ views.ExerciseVariantCreateView }/>
+            <Route path="liikevariantti/muokkaa/:id" component={ views.ExerciseVariantEditView }/>
             <Route path="ravinto/:id" component={ views.NutritionView }>
                 <Route path="/merkinta/lisaa" component={ views.NutritionMealAddView }/>
                 <Route path="/merkinta/muokkaa/:id" component={ views.NutritionMealEditView }/>

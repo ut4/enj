@@ -20,35 +20,42 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
         );
     }
     public render() {
-        return <div>
+        return <div class="exercise-view">
             <h2>Liikkeet</h2>
             <div class="sub-nav left-aligned minor-group">
                 <a href="#/liikkeet/luo-uusi">Luo uusi liike</a>
-                <a href="#/liikkeet/luo-uusi-variantti">Luo uusi liikevariantti</a>
+                <a href="#/liikevariantti/luo-uusi">Luo uusi liikevariantti</a>
             </div>
             { this.state.exercises && (
-                this.state.exercises.length > 0 ? <table class="striped crud-table responsive">
-                    <thead><tr>
-                        <th>Nimi</th>
-                        <th>Variantit</th>
-                        <th>&nbsp;</th>
-                    </tr></thead>
-                    <tbody>{ this.state.exercises.map(exercise =>
-                        <tr>
-                            <td data-th="Nimi">{ exercise.name }</td>
-                            <td data-th="Variantit">{ exercise.variants.length
-                                ? exercise.variants.map(v => v.content).join(', ')
-                                : '-'
-                            }</td>
-                            <td class="minor-group">
+                this.state.exercises.length > 0 ?
+                <table class="striped crud-table responsive"><tbody>{ this.state.exercises.map(exercise => {
+                    const variants = exercise.variants.length ? exercise.variants.filter(v => v.userId !== null) : [];
+                    return <tr>
+                        <td data-th={ variants.length ? 'Variantit' : '' }>
+                            { exercise.name }{ variants.length > 0 && this.getVariantList(variants) }
+                        </td>
+                        { exercise.userId
+                            ? <td class="minor-group">
                                 <a href={ '#/liikkeet/muokkaa/' + exercise.id }>Muokkaa</a>
                                 <a href={ '#/liikkeet/poista/' + exercise.id }>Poista</a>
                             </td>
-                        </tr>
-                    ) }</tbody>
-                </table> : <p>Ei liikkeitä</p>
+                            : <td>&nbsp;</td>
+                        }
+                    </tr>;
+                }) }</tbody></table> : <p>Ei liikkeitä</p>
             ) }
         </div>;
+    }
+    private getVariantList(variants: Array<Enj.API.ExerciseVariantRecord>) {
+        return <ul>{ variants.map(variant =>
+            <li>
+                <span>- {variant.content}</span>
+                <span class="minor-group">
+                    <a onClick={ () => { this.context.router.exerciseVariant = variant; } } href={ '#/liikevariantti/muokkaa/' + variant.id }>Muokkaa</a>
+                    { variant.userId && <a href={ '#/liikevariantti/poista/' + variant.id }>Poista</a> }
+                </span>
+            </li>
+        ) }</ul>;
     }
 }
 

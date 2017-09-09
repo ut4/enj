@@ -82,7 +82,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
 }
 
 function toFinDate(date) {
-    return (date.getDate() + '.' + date.getMonth() + date.getFullYear());
+    return date.getDate() + '.' + date.getMonth() + ' ' + date.getFullYear();
 }
 
 export default WorkoutView;

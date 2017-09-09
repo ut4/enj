@@ -8,15 +8,35 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ExerciseRepository extends BasicRepository<Exercise> {
 
     private final static String TABLE_NAME = "exercise";
+    private final List<String> baseFilters;
 
     @Inject
     public ExerciseRepository(DataSourceFactory dSFactory) {
         super(dSFactory, TABLE_NAME);
+        this.baseFilters = Arrays.asList(
+            "(exerciseUserId IS NULL OR exerciseUserId = :userId)",
+            "(exerciseVariantUserId IS NULL OR exerciseVariantUserId = :userId)"
+        );
+    }
+
+    /**
+     * Palauttaa käyttäjän {userId} liikkeen {id}.
+     */
+    Exercise selectOne(String exerciseId, String userId) {
+        List<String> filters = new ArrayList<>(this.baseFilters);
+        filters.add("exerciseId = :id");
+        return super.selectOne(
+            this.newSelectQ(String.join(" AND ", filters)),
+            new MapSqlParameterSource("id", exerciseId).addValue("userId", userId),
+            new ExerciseMapper()
+        );
     }
 
     /**
@@ -24,13 +44,38 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
      */
     List<Exercise> selectAll(String userId) {
         return super.selectAll(
-            String.format("SELECT * FROM %sView WHERE (" +
-                "(exerciseUserId IS NULL OR exerciseUserId = :userId) AND " +
-                "(exerciseVariantUserId IS NULL OR exerciseVariantUserId = :userId)" +
-            ")", TABLE_NAME),
+            this.newSelectQ(String.join(" AND ", this.baseFilters)),
             new MapSqlParameterSource("userId", userId),
             new ExerciseMapper()
         );
+    }
+
+    /**
+     * Palauttaa kaikki liikkeet, joiden userId, tai variant.userId = {userId}.
+     */
+    List<Exercise> selectMyExercises(String userId) {
+        return super.selectAll(
+            this.newSelectQ("exerciseUserId = :userId OR (" +
+                "exerciseUserId IS NULL AND exerciseVariantUserId = :userId" +
+            ")"),
+            new MapSqlParameterSource("userId", userId),
+            new ExerciseMapper()
+        );
+    }
+
+    /**
+     * Päivittää liikkeen {exercise} tietokantaan, ja palauttaa päivitettyjen
+     * rivien lukumäärän.
+     */
+    int update(Exercise exercise) {
+        return super.update(
+            String.format("UPDATE %s SET `name` = :name WHERE id = :id AND userId = :userId", TABLE_NAME),
+            exercise
+        );
+    }
+
+    private String newSelectQ(String where) {
+        return String.format("SELECT * FROM %sView WHERE (%s)", TABLE_NAME, where);
     }
 
     /**

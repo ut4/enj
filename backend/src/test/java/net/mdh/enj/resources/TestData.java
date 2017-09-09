@@ -41,6 +41,7 @@ public class TestData {
 
     public static Map<String,Object> getBogusWorkoutData() {
         HashMap<String, Object> data = new HashMap<>();
+        data.put("id", "uuid");
         data.put("start", -4L);
         return data;
     }
@@ -57,6 +58,7 @@ public class TestData {
 
     public static Map<String, Object> getSomeJunkData() {
         HashMap<String, Object> data = new HashMap<>();
+        data.put("id", "uuid");
         data.put("foo", "bar");
         return data;
     }

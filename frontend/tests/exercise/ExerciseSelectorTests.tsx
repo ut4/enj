@@ -8,8 +8,8 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     let testExerciseList: Array<Enj.API.ExerciseRecord>;
     hooks.beforeEach(() => {
         testExerciseList = [
-            {id: 'uuid1', name: 'foo', variants: [{id: 'uuid3', content: 'foo', exerciseId: 'uuid1'}]},
-            {id: 'uuid2', name: 'bat', variants: []}
+            {id: 'uuid1', name: 'foo', variants: [{id: 'uuid3', content: 'foo', exerciseId: 'uuid1', userId: 'u'}], userId: 'u'},
+            {id: 'uuid2', name: 'bat', variants: [], userId: 'u'}
         ];
     });
     QUnit.test('informoi valitun liikkeen (tai tyhjennyksen) onSelect-callbackille', assert => {
