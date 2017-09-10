@@ -11,7 +11,7 @@ asyncBoot.then(() => render(
             <Route path="/" component={ views.HomeView }/>
             <Route path="badges" component={ views.BadgesView }/>
 
-            <Route path="treeni/:id" component={ views.WorkoutView }/>
+            <Route path="treeni/:date" component={ views.WorkoutView }/>
             <Route path="ohjelmat" component={ views.ProgramView }/>
             <Route path="ohjelmat/luo-uusi" component={ views.ProgramCreateView }/>
             <Route path="ohjelmat/muokkaa/:id" component={ views.ProgramEditView }/>

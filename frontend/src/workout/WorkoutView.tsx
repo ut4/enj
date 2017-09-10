@@ -5,7 +5,7 @@ import Datepicker from 'src/ui/Datepicker';
 import iocFactories from 'src/ioc';
 
 /**
- * Komponentti urlille #/treeni/:id.
+ * Komponentti urlille #/treeni/:date.
  */
 class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>}> {
     private workoutBackend: WorkoutBackend;
@@ -17,15 +17,18 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         this.workoutBackend = iocFactories.workoutBackend();
     }
     /**
-     * Hakee initial treenit backendistä ja asettaa ne stateen.
+     * Hakee urlin daten {prop.params.date} treenit backendistä ja asettaa ne stateen.
      */
     public componentWillMount() {
-        this.setWorkouts(new Date());
+        this.componentWillReceiveProps(this.props);
+    }
+    public componentWillReceiveProps(props) {
+        this.setWorkouts(props.params.date !== 'tanaan' ? new Date(props.params.date) : new Date());
     }
     /**
      * Hakee päivän {date} treenit backendistä, ja asettaa ne stateen.
      */
-    private setWorkouts(date) {
+    private setWorkouts(date: Date) {
         this.selectedDate = date;
         this.workoutBackend.getDaysWorkouts(date).then(
             // Backend-fetch ok, aseta backendin vastaus state.workouts:n arvoksi
@@ -36,6 +39,15 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
                 this.setState({workouts: []});
             }
         );
+    }
+    /**
+     * Ohjaa valittuun päivämäärään (treeni/2017-09-09 tai treeni/tänään)
+     */
+    private receiveDateSelection(date: Date) {
+        date.setHours(12);
+        iocFactories.history().push('/treeni/' + (
+            !isToday(date) ? date.toISOString().split('T')[0] : 'tanaan'
+        ));
     }
     /**
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
@@ -53,21 +65,17 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
             (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error');
         });
     }
-    private removeFromList(workout) {
+    private removeFromList(workout: Enj.API.WorkoutRecord) {
         const workouts = this.state.workouts;
         workouts.splice(workouts.indexOf(workout), 1);
         this.setState({ workouts });
     }
-    private isSelectedDateToday() {
-        const now = new Date();
-        return this.selectedDate.toDateString() === now.toDateString();
-    }
     public render() {
-        const isCurrent = this.isSelectedDateToday();
+        const isCurrent = isToday(this.selectedDate);
         return (<div class={ 'workout-view' + (!isCurrent ? ' not-current' : '') }>
             <h2>Treeni { isCurrent ? 'tänään' : toFinDate(this.selectedDate) }
                 <button title="Valitse päivä" class="icon-button arrow-black arrow down" onClick={ e => this.datePicker.open() }></button>
-                <Datepicker onSelect={ date => this.setWorkouts(date) } ref={ instance => { this.datePicker = instance; } }/>
+                <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ isCurrent ? undefined : this.selectedDate } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             <div>{ this.state.workouts && (
                 this.state.workouts.length
@@ -81,8 +89,12 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
     }
 }
 
-function toFinDate(date) {
+function toFinDate(date: Date): string {
     return date.getDate() + '.' + date.getMonth() + ' ' + date.getFullYear();
+}
+
+function isToday(date: Date): boolean {
+    return date.toDateString() === new Date().toDateString();
 }
 
 export default WorkoutView;

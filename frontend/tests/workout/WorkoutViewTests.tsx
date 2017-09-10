@@ -14,6 +14,8 @@ QUnit.module('workout/WorkoutView', hooks => {
     let someTestWorkouts: Array<Enj.API.WorkoutRecord>;
     let workoutBackendIocOverride: sinon.SinonStub;
     let shallowWorkoutBackend: WorkoutBackend;
+    let fakeHistory;
+    let historyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
@@ -21,15 +23,18 @@ QUnit.module('workout/WorkoutView', hooks => {
             {id:'uuid1', start: 1, exercises: [], userId: 'uuid2'},
             {id:'uuid2', start: 2, exercises: [], userId: 'uuid2'}
         ];
+        fakeHistory = {push: () => {}};
+        historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
+        historyIocOverride.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
         const todaysWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.resolve(someTestWorkouts));
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
         todaysWorkoutsFetch.firstCall.returnValue.then(() => {
@@ -42,7 +47,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.resolve([]));
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
         currentWorkoutsFetch.firstCall.returnValue.then(() => {
@@ -57,7 +62,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.reject({err: 'fo'}));
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // Assertoi että initial render on tyhjä
         const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
         assert.equal(emptyMessageRegExp.test(rootElem.innerHTML), false);
@@ -70,17 +75,40 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('Datepickerin valinta hakee valitun päivän treenit, ja renderöi ne näkymään', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts');
-        currentWorkoutsFetch.onFirstCall().returns(Promise.resolve([someTestWorkouts[1]]));
-        currentWorkoutsFetch.onSecondCall().returns(Promise.resolve([someTestWorkouts[0]]));
+    QUnit.test('Lataa urlissa passatun päivän treenit, ja renderöi ne näkymään', assert => {
+        const workoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([someTestWorkouts[0]]));
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView/>);
-        let renderedWorkoutBefore;
+        const date = '2010-07-12';
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date} }/>);
+        assert.deepEqual(workoutsFetch.firstCall.args, [new Date(date)],
+            'Pitäisi hakea treenit urliin määritellyltä päivältä'
+        );
+        //
+        const done = assert.async();
+        workoutsFetch.firstCall.returnValue.then(() => {
+            const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
+            assert.equal(currentWorkoutListItems.length, 1);
+            // Asettiko urliin määritellyn päivän datepickerin selected-päiväksi?
+            const datePickerOpenButton = utils.findButtonByAttribute(rendered, 'title', 'Valitse päivä');
+            datePickerOpenButton.click();
+            const openDatePicker = itu.findRenderedVNodeWithType(rendered, Datepicker).children as any;
+            const selected = openDatePicker.container.querySelector('td.is-selected');
+            assert.equal(selected.getAttribute('data-day'), '12',
+                'Pitäisi asettaa initial-dateksi tämä'
+            );
+            done();
+        });
+    });
+    QUnit.test('Datepickerin valinta ohjaa valitun päivän treeniin', assert => {
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([someTestWorkouts[1]]));
+        const redirectSpy = sinon.spy(fakeHistory, 'push');
+        //
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // Odota, että initial-treeni latautuu
         const done = assert.async();
         currentWorkoutsFetch.firstCall.returnValue.then(() => {
-            renderedWorkoutBefore = getRenderedWorkoutItems(rendered)[0];
             // Avaa datepicker
             const datePickerOpenButton = utils.findButtonByAttribute(rendered, 'title', 'Valitse päivä');
             datePickerOpenButton.click();
@@ -90,15 +118,10 @@ QUnit.module('workout/WorkoutView', hooks => {
             const datePicker = itu.findRenderedVNodeWithType(rendered, Datepicker).children;
             (datePicker as any).props.onSelect(expectedDate);
             //
-            assert.ok(currentWorkoutsFetch.calledTwice, 'Pitäisi hakea uudet treenit');
-            assert.ok(currentWorkoutsFetch.secondCall.args, [expectedDate],
-                'Pitäisi hakea uudet treenit valitulta päivältä'
-            );
-            return currentWorkoutsFetch.secondCall.returnValue;
-        // Odota, että toinen treeni latautuu
-        }).then(() => {
-            assert.notDeepEqual(getRenderedWorkoutItems(rendered)[0],
-                renderedWorkoutBefore, 'Pitäisi renderöidä uusi treeni'
+            assert.ok(redirectSpy.calledOnce, 'Pitäisi ohjata valitun päivän treeneihin');
+            assert.deepEqual(redirectSpy.firstCall.args,
+                ['/treeni/' + expectedDate.toISOString().split('T')[0]],
+                'Pitäisi ohjautua tänne'
             );
             done();
         });
@@ -110,7 +133,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         const newWorkoutStub = sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
         const workoutsInsertStub = sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve());
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView/>);
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // odota, että näkymä latautuu
         const done = assert.async();
         workoutFetchStub.firstCall.returnValue.then(() => {

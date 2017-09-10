@@ -1,21 +1,19 @@
 import Component from 'inferno-component';
 import Pikaday from 'pikaday';
 
-class Datepicker extends Component<{onSelect: (date: Date) => any}, any> {
+interface Props {
+    onSelect: (date: Date) => any;
+    defaultDate?: Date;
+}
+
+class Datepicker extends Component<Props, any> {
     private field: HTMLInputElement;
     private container: HTMLSpanElement;
     private pikaday: any;
     public componentDidMount() {
-        this.pikaday = new Pikaday({
-            onSelect: this.props.onSelect,
-            field: this.field,
-            container: this.container,
-            showWeekNumber: true,
-            firstDay: 1,
-            bound: true
-        });
+        this.pikaday = new Pikaday(this.makeSettings());
     }
-    open() {
+    public open() {
         this.pikaday.show();
     }
     public render() {
@@ -23,6 +21,21 @@ class Datepicker extends Component<{onSelect: (date: Date) => any}, any> {
             <input type="hidden" ref={ el => { this.field = el; } }/>
             <span ref={ el => { this.container = el; } }></span>
         </span>;
+    }
+    private makeSettings(): Object {
+        const settings = {
+            onSelect: this.props.onSelect,
+            field: this.field,
+            container: this.container,
+            showWeekNumber: true,
+            firstDay: 1,
+            bound: true
+        } as any;
+        if (this.props.defaultDate) {
+            settings.defaultDate = this.props.defaultDate;
+            settings.setDefaultDate = true;
+        }
+        return settings;
     }
 }
 
