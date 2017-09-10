@@ -34,6 +34,20 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
         authInterceptor.request(req2);
         assert.notOk(req2.headers.has('Authorization'), 'Ei pitäisi asettaa headeria');
     });
+    QUnit.test('.response päivittää headereissa saadun uuden tokenin selaintietokantaan', assert => {
+        const tokenUpdateStub = sinon.stub(userState, 'setToken');
+        const normalResponse = new Response('foo');
+        const mockNewToken = 'berber';
+        const responseWithNewToken = new Response('foo', {headers: {'new-token': mockNewToken}});
+        authInterceptor.response(normalResponse);
+        assert.ok(tokenUpdateStub.notCalled, 'Ei pitäisi tehdä mitään, jos responsessa ei ole uutta tokenia');
+        authInterceptor.response(responseWithNewToken);
+        assert.ok(tokenUpdateStub.calledOnce, 'Pitäisi päivittää uusi token selaintietokantaan');
+        assert.deepEqual(tokenUpdateStub.firstCall.args,
+            [mockNewToken],
+            'Pitäisi päivittää headerissa saatu uusi token selaintietokantaan'
+        );
+    });
     QUnit.test('.responseError ohjaa käyttäjän kirjautumissivulle, jos backend palauttaa 401 && url != auth/login', assert => {
         const res = new FakeResponse('auth/login', 401);
         authInterceptor.responseError(res as any);
@@ -43,8 +57,10 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
         authInterceptor.responseError(res2 as any);
         assert.ok(mockHistory.push.notCalled, 'Ei pitäisi ohjata kirjautumissivulle, koska status != 401');
         //
+        const tokenClearStub = sinon.stub(userState, 'setToken');
         const res3 = new FakeResponse('foo/bar', 401);
         authInterceptor.responseError(res3 as any);
+        assert.ok(tokenClearStub.calledOnce, 'Pitäisi poistaa selaintietokantaan tallennettu token');
         assert.ok(mockHistory.push.calledOnce, 'Pitäisi ohjata kirjautumissivulle');
         assert.deepEqual(mockHistory.push.firstCall.args,
             ['/kirjaudu?returnTo=' + mockHistory.location.pathname + mockHistory.location.search],

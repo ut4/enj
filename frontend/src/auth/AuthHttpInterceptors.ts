@@ -22,10 +22,17 @@ class AuthHttpInterceptors {
         });
     }
     /**
-     * Lisää pyyntöön Authorization-headerin, jos käyttäjä on kirjautunut.
+     * Lisää jokaiseen pyyntöön Authorization-headerin, jos käyttäjä on kirjautunut.
      */
     public request(request: Request) {
         this.token.length && request.headers.set('Authorization', 'Bearer ' + this.token);
+    }
+    /**
+     * Asettaa responsen "new-token"-headerin arvon uudeksi tokeniksi, tai ei tee
+     * mitään jos responsesta ei löytynyt em. headeria.
+     */
+    public response(response: Response) {
+        response.headers.has('new-token') && this.userState.setToken(response.headers.get('new-token'));
     }
     /**
      * Ohjaa kirjautumissivulle, jos vastauksen status = 401/Unauthorized, ja se
@@ -33,6 +40,7 @@ class AuthHttpInterceptors {
      */
     public responseError(response: Response) {
         if (response.status === 401 && response.url.indexOf('auth/login') < 0) {
+            this.userState.setToken('');
             const hashLocation = this.history.location;
             this.history.push('/kirjaudu?returnTo=' + hashLocation.pathname + hashLocation.search);
         }
