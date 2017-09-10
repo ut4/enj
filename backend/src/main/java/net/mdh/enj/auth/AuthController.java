@@ -8,7 +8,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.NotAuthorizedException;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
-import net.mdh.enj.user.User;
 import javax.validation.Valid;
 import javax.inject.Inject;
 
@@ -39,7 +38,7 @@ public class AuthController {
     @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
     public LoginResponse login(@Valid @NotNull LoginCredentials loginCredentials) {
-        User user = this.authService.getUser(loginCredentials);
+        AuthUser user = this.authService.getUser(loginCredentials);
         // Jos käyttäjää ei löydy, tai salasana menee väärin -> 401
         if (user == null) {
             throw new NotAuthorizedException("Invalid credentials");

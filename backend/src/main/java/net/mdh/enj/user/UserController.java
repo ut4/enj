@@ -34,9 +34,7 @@ public class UserController {
     public User get() {
         SelectFilters filters = new SelectFilters();
         filters.setId(this.requestContext.getUserId());
-        User user = this.userRepository.selectOne(filters);
-        if (user != null) user.setPasswordHash(null);
-        return user;
+        return this.userRepository.selectOne(filters);
     }
 
     /**

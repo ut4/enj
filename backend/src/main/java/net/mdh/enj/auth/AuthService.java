@@ -7,10 +7,8 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.Application;
-import net.mdh.enj.user.User;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -19,33 +17,28 @@ public class AuthService {
     static final Integer LOGIN_EXPIRATION = 5259600; // ~2kk
 
     private final TokenService tokenService;
-    private final UserRepository userRepository;
+    private final AuthUserRepository authUserRepository;
     private final HashingProvider hashingProvider;
-    private final User.ColumnNames[] authRelatedUserColumns;
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
     AuthService(
         TokenService tokenService,
-        UserRepository userRepository,
+        AuthUserRepository authUserRepository,
         HashingProvider hashingProvider
     ) {
         this.tokenService = tokenService;
-        this.userRepository = userRepository;
+        this.authUserRepository = authUserRepository;
         this.hashingProvider = hashingProvider;
-        this.authRelatedUserColumns = new User.ColumnNames[]{
-            User.ColumnNames.LAST_LOGIN,
-            User.ColumnNames.CURRENT_TOKEN
-        };
     }
 
     /**
      * Palauttaa käyttäjän tietokannasta, joka täsmää {credentials}eihin.
      */
-    User getUser(LoginCredentials credentials) {
+    AuthUser getUser(LoginCredentials credentials) {
         SelectFilters selectFilters = new SelectFilters();
         selectFilters.setUsername(credentials.getUsername());
-        User user = this.userRepository.selectOne(selectFilters);
+        AuthUser user = this.authUserRepository.selectOne(selectFilters);
         if (user == null || !this.hashingProvider.verify(
             credentials.getPassword(),
             user.getPasswordHash()
@@ -59,11 +52,11 @@ public class AuthService {
     /**
      * Tallentaa uuden JWT:n ja timestampin tietokantaan. Palauttaa uuden JWT:n.
      */
-    String login(User user) {
+    String login(AuthUser user) {
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setLastLogin(System.currentTimeMillis() / 1000L);
         user.setCurrentToken(tokenHash);
-        this.userRepository.updatePartial(user, this.authRelatedUserColumns);
+        this.authUserRepository.update(user);
         return tokenHash;
     }
 
@@ -101,7 +94,7 @@ public class AuthService {
         SelectFilters filters = new SelectFilters();
         filters.setId(userId);
         filters.setCurrentToken(expiredToken);
-        User user = this.userRepository.selectOne(filters);
+        AuthUser user = this.authUserRepository.selectOne(filters);
         // id, tai token ei täsmännyt
         if (user == null || user.getLastLogin() == null) {
             return null;
@@ -114,17 +107,17 @@ public class AuthService {
         // Kaikki ok, luo uusi token & tallenna se kantaan
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setCurrentToken(tokenHash);
-        if (this.userRepository.updatePartial(user, new User.ColumnNames[]{User.ColumnNames.CURRENT_TOKEN}) < 1) {
+        if (this.authUserRepository.updateToken(user) < 1) {
             logger.error("Uusitun tokenin tallennus epäonnistui");
             return null;
         }
         return tokenHash;
     }
 
-    private void invalidateLogin(User user) {
+    private void invalidateLogin(AuthUser user) {
         user.setLastLogin(null);
         user.setCurrentToken(null);
-        this.userRepository.updatePartial(user, this.authRelatedUserColumns);
+        this.authUserRepository.update(user);
     }
 
     // -------------------------------------------------------------------------

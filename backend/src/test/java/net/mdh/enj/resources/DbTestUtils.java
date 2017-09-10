@@ -1,6 +1,6 @@
 package net.mdh.enj.resources;
 
-import net.mdh.enj.user.User;
+import net.mdh.enj.auth.AuthUser;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
@@ -39,7 +39,7 @@ public class DbTestUtils {
     public void insertExerciseVariant(Exercise.Variant ev) {
         this.insert(this.getInserter("exerciseVariant"), ev);
     }
-    public void insertUser(User u) {
+    public void insertAuthUser(AuthUser u) {
         this.insert(this.getInserter("user"), u);
     }
     public Object selectOne(String query, RowMapper<?> mapper) {

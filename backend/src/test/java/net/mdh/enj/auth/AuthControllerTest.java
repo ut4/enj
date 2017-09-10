@@ -4,8 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.junit.BeforeClass;
-import net.mdh.enj.user.User;
-import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
 import net.mdh.enj.resources.AppConfigProvider;
@@ -25,17 +23,17 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     private final static char[] correctPassword = "bars".toCharArray();
     private static TokenService tokenService;
     private static HashingProvider mockHasherSpy;
-    private static User testUser;
+    private static AuthUser testUser;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         AuthControllerTest.tokenService = new TokenService(AppConfigProvider.getInstance());
         AuthControllerTest.mockHasherSpy = Mockito.spy(new MockHashingProvider());
         DbTestUtils utils = new DbTestUtils(rollbackingDSFactory);
-        testUser = new User();
+        testUser = new AuthUser();
         testUser.setUsername(correctUsername);
         testUser.setPasswordHash(String.valueOf(correctPassword));
-        utils.insertUser(testUser);
+        utils.insertAuthUser(testUser);
     }
 
     @Override
@@ -46,9 +44,10 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
             .register(new AbstractBinder() {
                 @Override
                 protected void configure() {
-                    bind(UserRepository.class).to(UserRepository.class);
+                    bind(AuthUserRepository.class).to(AuthUserRepository.class);
                     bind(mockHasherSpy).to(HashingProvider.class);
                     bind(AuthControllerTest.tokenService).to(TokenService.class);
+                    bind(AuthService.class).to(AuthService.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
             });

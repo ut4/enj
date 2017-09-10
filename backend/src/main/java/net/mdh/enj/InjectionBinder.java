@@ -2,6 +2,7 @@ package net.mdh.enj;
 
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthService;
+import net.mdh.enj.auth.AuthUserRepository;
 import net.mdh.enj.stat.StatRepository;
 import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.user.UserRepository;
@@ -43,5 +44,6 @@ class InjectionBinder extends AbstractBinder {
         bind(UserRepository.class).to(UserRepository.class);
         bind(Argon2HashingProvider.class).to(HashingProvider.class);
         bind(AuthService.class).to(AuthService.class);
+        bind(AuthUserRepository.class).to(AuthUserRepository.class);
     }
 }

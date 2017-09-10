@@ -4,38 +4,15 @@ import net.mdh.enj.mapping.DbEntity;
 
 public class User extends DbEntity {
     private String username;
-    private String passwordHash;
-    private Long lastLogin;
-    private String currentToken;
     private Double bodyWeight;
     private Integer isMale;
+    private String signature;
 
     public String getUsername() {
         return this.username;
     }
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPasswordHash() {
-        return this.passwordHash;
-    }
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public Long getLastLogin() {
-        return this.lastLogin;
-    }
-    public void setLastLogin(Long lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    public String getCurrentToken() {
-        return this.currentToken;
-    }
-    public void setCurrentToken(String currentToken) {
-        this.currentToken = currentToken;
     }
 
     public Double getBodyWeight() {
@@ -52,6 +29,13 @@ public class User extends DbEntity {
         this.isMale = isMale;
     }
 
+    public String getSignature() {
+        return this.signature;
+    }
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof User && obj.toString().equals(this.toString());
@@ -62,28 +46,9 @@ public class User extends DbEntity {
         return "User{" +
             "id=" + this.getId() +
             ", username=" + this.getUsername() +
-            ", passwordHash=" + this.getPasswordHash() +
-            ", lastLogin=" + this.getLastLogin() +
-            ", currentToken=" + this.getCurrentToken() +
             ", bodyWeight=" + this.getBodyWeight() +
             ", isMale=" + this.getIsMale() +
+            ", signature=" + this.getSignature() +
         "}";
-    }
-
-    public enum ColumnNames {
-
-        LAST_LOGIN("lastLogin"),
-        CURRENT_TOKEN("currentToken");
-
-        private final String name;
-
-        ColumnNames(final String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
     }
 }

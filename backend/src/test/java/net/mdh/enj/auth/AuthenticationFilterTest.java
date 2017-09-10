@@ -7,9 +7,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import net.mdh.enj.resources.AppConfigProvider;
-import net.mdh.enj.user.UserRepository;
 import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.user.User;
 import net.mdh.enj.AppConfig;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -24,12 +22,12 @@ public class AuthenticationFilterTest extends JerseyTest {
     private final String whitelistedUrl = AuthenticationFilterTestController.TEST_URL + "/" +
                     AuthenticationFilterTestController.WHITELISTED_PATH;
 
-    private UserRepository mockUserRepository;
+    private AuthUserRepository mockAuthUserRepository;
     private FixableTokenService spyingTokenService;
 
     public AuthenticationFilterTest() throws Exception {
         super();
-        this.mockUserRepository = Mockito.mock(UserRepository.class);
+        this.mockAuthUserRepository = Mockito.mock(AuthUserRepository.class);
         this.spyingTokenService = Mockito.spy(new FixableTokenService(AppConfigProvider.getInstance()));
     }
 
@@ -45,7 +43,7 @@ public class AuthenticationFilterTest extends JerseyTest {
                     bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
                     bind(AppConfigProvider.getInstance()).to(AppConfig.class);
                     bind(AuthService.class).to(AuthService.class);
-                    bind(mockUserRepository).to(UserRepository.class);
+                    bind(mockAuthUserRepository).to(AuthUserRepository.class);
                     bind(spyingTokenService).to(TokenService.class);
                     bind(Mockito.mock(HashingProvider.class)).to(HashingProvider.class);
                 }
@@ -91,11 +89,11 @@ public class AuthenticationFilterTest extends JerseyTest {
     @Test
     public void uusiiHeaderinVanhentuneenTokenin() throws Exception {
         String mockUuid = "uuid78";
-        User userWithValidLogin = new User();
+        AuthUser userWithValidLogin = new AuthUser();
         userWithValidLogin.setId(mockUuid);
         userWithValidLogin.setLastLogin(System.currentTimeMillis() / 1000L);
-        Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(userWithValidLogin);
-        Mockito.when(this.mockUserRepository.updatePartial(Mockito.any(), Mockito.any())).thenReturn(1);
+        Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(userWithValidLogin);
+        Mockito.when(this.mockAuthUserRepository.updateToken(Mockito.any())).thenReturn(1);
         ReturnValueCaptor<String> newTokenCaptor = new ReturnValueCaptor<>();
         Mockito.doAnswer(newTokenCaptor).when(spyingTokenService).generateNew(mockUuid);
         // Simuloi pyyntö, jossa vanhentunut token
@@ -113,17 +111,17 @@ public class AuthenticationFilterTest extends JerseyTest {
             response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
         );
         // Päivittikö uuden tokenin myös tietokantaan?
-        Mockito.verify(this.mockUserRepository, Mockito.times(1)).updatePartial(Mockito.eq(userWithValidLogin), Mockito.any());
+        Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).updateToken(Mockito.eq(userWithValidLogin));
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + mockUuid, response.readEntity(String.class));
     }
     @Test
     public void eiUusiTokeniaJosViimeisestäKirjautumisestaOnLiianKauan() throws Exception {
         String mockUuid = "uuid79";
-        User userWithInvalidLogin = new User();
+        AuthUser userWithInvalidLogin = new AuthUser();
         userWithInvalidLogin.setId(mockUuid);
         userWithInvalidLogin.setLastLogin(System.currentTimeMillis() / 1000L - AuthService.LOGIN_EXPIRATION - 10);
-        Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(userWithInvalidLogin);
-        Mockito.when(this.mockUserRepository.updatePartial(Mockito.any(), Mockito.any())).thenReturn(1);
+        Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(userWithInvalidLogin);
+        Mockito.when(this.mockAuthUserRepository.updateToken(Mockito.any())).thenReturn(1);
         // Simuloi pyyntö, jossa vanhentunut token, ja vanhentunut kirjautuminen
         String expiredToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
         Response response = target(this.normalUrl)
@@ -136,17 +134,17 @@ public class AuthenticationFilterTest extends JerseyTest {
             response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
         );
         // Invalidoiko kirjautumisen?
-        User invalidated = new User();
+        AuthUser invalidated = new AuthUser();
         invalidated.setId(userWithInvalidLogin.getId());
         invalidated.setLastLogin(null);
         invalidated.setCurrentToken(null);
-        Mockito.verify(this.mockUserRepository, Mockito.times(1)).updatePartial(Mockito.eq(invalidated), Mockito.any());
+        Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).update(Mockito.eq(invalidated));
     }
     @Test
     public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() throws Exception {
         // Simuloi tilanne, jossa headerin tokeni ei täsmää tietokantaan tallennettuan
         // tokeniin (selectOne palauttaa null)
-        Mockito.when(this.mockUserRepository.selectOne(Mockito.any())).thenReturn(null);
+        Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(null);
         String expiredToken = this.spyingTokenService.generateNew("uuid80", -2000L);
         Response response = target(this.normalUrl)
             .request()

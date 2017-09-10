@@ -71,9 +71,9 @@ public class SimpleMappers {
             User user = new User();
             user.setId(rs.getString("id"));
             user.setUsername(rs.getString("username"));
-            user.setPasswordHash(rs.getString("passwordHash"));
             user.setBodyWeight(rs.getDouble("bodyWeight"));
             user.setIsMale(rs.getInt("isMale"));
+            user.setSignature(rs.getString("signature"));
             return user;
         }
     }
