@@ -1,6 +1,7 @@
 package net.mdh.enj;
 
 import net.mdh.enj.auth.AuthenticationFilter;
+import net.mdh.enj.auth.ResponseFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -24,6 +25,7 @@ public class Application {
         applicationConfig.register(JacksonFeature.class);
         applicationConfig.register(CORSEnabler.class);
         applicationConfig.register(AuthenticationFilter.class);
+        applicationConfig.register(ResponseFilter.class);
         applicationConfig.register(SyncRouteCollector.class);
         applicationConfig.register(new InjectionBinder());
         // Luo & käynnistä serveri

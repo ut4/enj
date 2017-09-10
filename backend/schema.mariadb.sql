@@ -12,6 +12,7 @@ DROP TABLE   IF EXISTS workout;
 DROP VIEW    IF EXISTS exerciseView;
 DROP TABLE   IF EXISTS exerciseVariant;
 DROP TABLE   IF EXISTS exercise;
+DROP VIEW    IF EXISTS authUserView;
 DROP VIEW    IF EXISTS userView;
 DROP TABLE   IF EXISTS `user`;
 
@@ -21,16 +22,30 @@ CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     passwordHash VARCHAR(255) NOT NULL,
+    lastLogin INT UNSIGNED DEFAULT NULL,
+    currentToken VARCHAR(255) DEFAULT NULL,
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) DEFAULT NULL,
+    signature VARCHAR(255) DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
 CREATE VIEW userView AS
     SELECT
+        u.id         AS userId,
+        u.username   AS userUsername,
+        u.bodyWeight AS userBodyWeight,
+        u.isMale     AS userIsMale,
+        u.signature  AS userSignature
+    FROM `user` AS u;
+
+CREATE VIEW authUserView AS
+    SELECT
         u.id           AS userId,
         u.username     AS userUsername,
-        u.passwordHash AS userPasswordHash
+        u.passwordHash AS userPasswordHash,
+        u.lastLogin    AS userLastLogin,
+        u.currentToken AS userCurrentToken
     FROM `user` AS u;
 
 -- == Exercise ====

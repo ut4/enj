@@ -7,6 +7,7 @@ public class SelectFilters implements SelectQueryFilters {
 
     private String id;
     private String username;
+    private String currentToken;
 
     public String getId() {
         return this.id;
@@ -22,9 +23,16 @@ public class SelectFilters implements SelectQueryFilters {
         this.username = username;
     }
 
+    public String getCurrentToken() {
+        return this.currentToken;
+    }
+    public void setCurrentToken(String currentToken) {
+        this.currentToken = currentToken;
+    }
+
     @Override
     public boolean hasRules() {
-        return this.id != null || this.username != null;
+        return this.id != null || this.username != null || this.currentToken != null;
     }
 
     @Override
@@ -35,6 +43,9 @@ public class SelectFilters implements SelectQueryFilters {
         }
         if (this.username != null) {
             out.add("userUsername = :username");
+        }
+        if (this.currentToken != null) {
+            out.add("userCurrentToken = :currentToken");
         }
         return String.join(" AND ", out);
     }

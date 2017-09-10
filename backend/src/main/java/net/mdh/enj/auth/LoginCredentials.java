@@ -7,9 +7,9 @@ import javax.validation.constraints.Size;
  * Bean /auth/login reitin input-JSONille.
  */
 public class LoginCredentials {
-    public static final int MIN_USERNAME_LENGTH = 2;
-    public static final int MAX_USERNAME_LENGTH = 48;
-    public static final int MIN_PASSWORD_LENGTH = 4;
+    private static final int MIN_USERNAME_LENGTH = 2;
+    private static final int MAX_USERNAME_LENGTH = 48;
+    private static final int MIN_PASSWORD_LENGTH = 4;
     @NotNull
     @Size(min = MIN_USERNAME_LENGTH, max = MAX_USERNAME_LENGTH)
     private String username;
@@ -31,7 +31,7 @@ public class LoginCredentials {
         this.password = password;
     }
 
-    public void nuke() {
+    void nuke() {
         this.password = new char[this.password.length];
     }
 

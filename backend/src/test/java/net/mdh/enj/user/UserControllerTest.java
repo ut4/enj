@@ -47,7 +47,6 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         User user = response.readEntity(new GenericType<User>() {});
         Assert.assertNotNull("Pitäisi palauttaa käyttäjä", user);
         Assert.assertEquals(TestData.TEST_USER_ID, user.getId());
-        Assert.assertNull("Pitäisi asettaa passwordHash-arvoksi null", user.getPasswordHash());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -58,10 +57,10 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void PUTUserMePäivittääYhdenKäyttäjänTiedotTietokantaan() {
         User userData = this.getTestUser();
-        Assert.assertNotNull("Sanity check", userData);
         // Muuta jotain tietoja & lähetä pyyntö
         userData.setBodyWeight(userData.getBodyWeight() + 10);
         userData.setIsMale(0);
+        userData.setSignature("fos");
         Response response = this.newPutRequest("user/me", userData);
         // Päivittyikö?
         Assert.assertEquals(200, response.getStatus());
@@ -73,6 +72,9 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         );
         Assert.assertEquals("Pitäisi päivittää isMale (null -> 0)", userData.getIsMale(),
             updatedData.getIsMale()
+        );
+        Assert.assertEquals("Pitäisi päivittää signature (null -> \"fos\")", userData.getSignature(),
+            updatedData.getSignature()
         );
     }
 
