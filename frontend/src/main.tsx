@@ -9,13 +9,8 @@ asyncBoot.then(() => render(
     <Router history={ iocFactories.history() }>
         <Route component={ Layout }>
             <Route path="/" component={ views.HomeView }/>
-            <Route path="statistiikka" component={ views.StatView }>
-                <Route path="/kehitys" component={ views.StatProgressView }/>
-                <Route path="/voima" component={ views.StatStrengthView }/>
-                <Route path="/yleista" component={ views.StatOverviewView }/>
-            </Route>
-            <Redirect from="/statistiikka" to="/statistiikka/voima"/>
-            <Route path="treenit" component={ views.WorkoutsView }/>
+            <Route path="badges" component={ views.BadgesView }/>
+
             <Route path="treeni/:id" component={ views.WorkoutView }/>
             <Route path="ohjelmat" component={ views.ProgramView }/>
             <Route path="ohjelmat/luo-uusi" component={ views.ProgramCreateView }/>
@@ -26,15 +21,14 @@ asyncBoot.then(() => render(
             <Route path="liikkeet/poista/:id" component={ views.ExerciseDeleteView }/>
             <Route path="liikevariantti/luo-uusi" component={ views.ExerciseVariantCreateView }/>
             <Route path="liikevariantti/muokkaa/:id" component={ views.ExerciseVariantEditView }/>
-            <Route path="ravinto/:id" component={ views.NutritionView }>
-                <Route path="/merkinta/lisaa" component={ views.NutritionMealAddView }/>
-                <Route path="/merkinta/muokkaa/:id" component={ views.NutritionMealEditView }/>
-                <Route path="/merkinta/poista/:id"  component={ views.NutritionMealDeleteView }/>
+
+            <Route path="statistiikka" component={ views.StatView }>
+                <Route path="/kehitys" component={ views.StatProgressView }/>
+                <Route path="/voima" component={ views.StatStrengthView }/>
+                <Route path="/yleista" component={ views.StatOverviewView }/>
             </Route>
-            <Route path="ruokatuotteet" component={ views.ProduceView }/>
-            <Route path="ruokatuotteet/luo-uusi" component={ views.ProduceCreateView }/>
-            <Route path="ruokatuotteet/muokkaa/:id" component={ views.ProduceEditView }/>
-            <Route path="ruokatuotteet/poista/:id" component={ views.ProduceDeleteView }/>
+            <Redirect from="/statistiikka" to="/statistiikka/voima"/>
+            <Route path="treenihistoria" component={ views.HistoryView }/>
 
             <Route path="kirjaudu" component={ views.AuthLoginView }/>
             <Route path="profiili" component={ views.UserProfileView }/>

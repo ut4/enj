@@ -1,11 +1,11 @@
-# Enj: Treeni + ravintopäiväkirja
+# Enj: Treenipäiväkirja
 
 Inferno + TSX, serviceWorker, Jersey
 
 ## Riippuvuudet
 
 * Backend: Java 8, maven, MariaDb
-* Dev-ympäristö: Node v6+
+* Dev-ympäristö: Node.js v6+
 
 ## Frontend
 
@@ -20,11 +20,12 @@ Inferno + TSX, serviceWorker, Jersey
 
 * Test:
     * `mvn test`
-* Build:
-    * `mvn compile`
 * Run:
     * `mvn exec:java`
+* Build:
+    * `mvn clean compile assembly:single`
 
 ## MariaDb
 
-* TODO
+* `mysql mydb < backend/schema.mariadb.sql`
+* `mysql mydb < backend/default-data.sql`

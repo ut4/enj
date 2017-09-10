@@ -434,7 +434,7 @@ table.crud-table td:only-child {
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: 16px auto;
+    background-size: 19px auto;
     width: 40px;
     position: absolute;
     left: 12px;
@@ -556,13 +556,13 @@ table .input-set .text-error {
 /* ==== App ====
 ==============================================================================*/
 header {
-    background: url("polygons.png") #30636E;
-    padding-bottom: 19px;
+    background: url(polygons.png), linear-gradient(to bottom, #30636E, #1f454e);
+    padding-bottom: 16px;
 }
 
 /* -- main-menu ---------- */
 header {
-    font: 14px "Fira sans heavy";
+    font: 11px "Fira sans light";
 }
 header nav,
 header nav ul {
@@ -608,23 +608,25 @@ header nav a {
     display: inline-block;
     height: 18px;
     min-width: 30px;
-    padding: 12px 26px;
+    padding: 37px 26px 10px;
     position: relative;
     text-decoration: none;
     vertical-align: bottom;
 }
+#main-menu > ul > li > a {
+    background-size: 26px auto;
+    background-position: 52% 9px;
+}
 #main-menu > ul > li:first-of-type > a {
-    background-image: url("icon-sprite.svg#diagram");
-    color: transparent;
+    background-image: url(icon-sprite.svg#dashboard);
+    background-size: 29px auto;
 }
 #main-menu > ul > li:nth-of-type(2) > a {
-    background-image: url("icon-sprite.svg#dumb-bell");
-    color: transparent;
+    background-image: url(icon-sprite.svg#dumb-bell);
 }
 #main-menu > ul > li:last-of-type > a {
-    background-image: url("icon-sprite.svg#meal");
-    background-size: 21px auto;
-    color: transparent;
+    background-image: url(icon-sprite.svg#diagram);
+    background-position: center 8px;
 }
 #main-menu .sub-ul {
     display: none;
@@ -660,7 +662,7 @@ header nav a {
 }
 
 #user-menu {
-    margin: 10px auto;
+    margin: 6px auto;
     padding: 4px;
     max-width: 420px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
@@ -676,7 +678,7 @@ header nav a {
     margin-right: 15px;
 }
 #user-menu a {
-    padding: 0px;
+    padding: 6px 0 4px;
 }
 .sub-nav {
     margin-bottom: 30px;

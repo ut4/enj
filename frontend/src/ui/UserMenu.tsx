@@ -33,15 +33,15 @@ class UserMenu extends Component<any, any> {
         return (<nav id="user-menu">
             <ul>
                 { this.state.offlineIsEnabled &&
-                    <li><a href="/#palauta-online">Go online</a></li>
+                    <li><a href="#/palauta-online">Go online</a></li>
                 }
                 { (!this.state.offlineIsEnabled && !this.state.maybeIsLoggedIn) &&
-                    <li><a href="/#kirjaudu">Kirjaudu sisään</a></li>
+                    <li><a href="#/kirjaudu">Kirjaudu sisään</a></li>
                 }
                 { (!this.state.offlineIsEnabled && this.state.maybeIsLoggedIn) && [
-                    <li><a href="/#profiili">Profiili</a></li>,
+                    <li><a href="#/profiili">Profiili</a></li>,
                     <li><a href="" onClick={ this.test.bind(this) }>Kirjaudu ulos</a></li>,
-                    <li><a href="/#aloita-offline">Go offline</a></li>
+                    <li><a href="#/aloita-offline">Go offline</a></li>
                 ] }
             </ul>
         </nav>);

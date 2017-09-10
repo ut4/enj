@@ -1,5 +1,4 @@
 import Component from 'inferno-component';
-import { Link, IndexLink } from 'inferno-router';
 import UserMenu from 'src/ui/UserMenu';
 
 class MainMenu extends Component<any, any> {
@@ -13,22 +12,22 @@ class MainMenu extends Component<any, any> {
     public render() {
         return (<nav id="main-menu" className={ this.state.isMenuOpen ? 'open' : '' }>
             <ul>
-                <li><IndexLink>Koti</IndexLink>
+                <li>
+                    <a href="#/">Koti</a>
                     <ul class="sub-ul">
-                        <li><Link to="/statistiikka">Tilastoja</Link></li>
-                        <li><Link to="/treenit">Treenit</Link></li>
+                        <li><a href="#/badges">Badges</a></li>
                     </ul>
                 </li>
                 <li>
-                    <Link to="/treeni/tanaan" id="link-treeni">Treeni</Link>
+                    <a href="#/treeni/tanaan">Treeni</a>
                     <ul class="sub-ul">
-                        <li><Link to="/ohjelmat">Ohjelmat</Link></li>
-                        <li><Link to="/liikkeet">Liikkeet</Link></li>
+                        <li><a href="#/ohjelmat">Ohjelmat</a></li>
+                        <li><a href="#/liikkeet">Liikkeet</a></li>
                     </ul>
                 </li>
-                <li><Link to="/ravinto/tanaan" id="link-ruoka">Ruoka</Link>
+                <li><a href="#/statistiikka">Kehitys</a>
                     <ul class="sub-ul">
-                        <li><Link to="/ruokatuotteet">Tuotepankki</Link></li>
+                        <li><a href="#/treenihistoria">Historia</a></li>
                     </ul>
                 </li>
             </ul>
