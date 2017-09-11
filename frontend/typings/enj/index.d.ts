@@ -75,8 +75,10 @@ declare module Enj {
         }
         interface UserRecord {
             id: AAGUID;
+            username: string;
             bodyWeight: number;
             isMale: number;
+            signature?: string;
         }
         // REST-vastauswrapperit
         interface InsertResponse {

@@ -25,7 +25,7 @@ CREATE TABLE `user` (
     lastLogin INT UNSIGNED DEFAULT NULL,
     currentToken VARCHAR(255) DEFAULT NULL,
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
-    isMale TINYINT(1) DEFAULT NULL,
+    isMale TINYINT(1) DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
     signature VARCHAR(255) DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;

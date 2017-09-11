@@ -6,31 +6,37 @@ import iocFactories from 'src/ioc';
 /**
  * Komponentti urlille #/profiili
  */
-class UserProfileView extends ValidatingComponent<any, any> {
+class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord}> {
     private userInputs: BasicUserInputs;
+    protected propertyToValidate: string = 'user';
     public constructor(props, context) {
         super(props, context);
+        this.props.allowUnknownValidities = true;
         this.evaluators = {
-            username: [(input: any) => input && input.length >= 2 && input.length <= 42]
+            username: [(input: any) => input.length >= 2 && input.length <= 42],
+            signature: [(input: any) => !input.length || input.length <= 255]
         };
         this.state = {
-            validity: true
+            validity: true,
+            user: null
         };
     }
     public componentWillMount() {
         iocFactories.userBackend().get().then(
-            user => this.setState({user, username: (user as any).username}),
-            () => iocFactories.notify()('Tietojen haku epäonnstui', 'error')
+            user => this.setState({ user }),
+            () => iocFactories.notify()('Tietojen haku epäonnistui', 'error')
         );
     }
     private confirm() {
-        const newData = Object.assign(this.state.user,
-            {username: this.state.username},
-            this.userInputs.getValues()
-        );
+        const newData = Object.assign(this.state.user, this.userInputs.getValues());
         return iocFactories.userBackend().update(newData, '/me')
             .then(
-                updateCount => null, // FormButtons hoitaa ohjauksen edelliseen näkymään
+                updateCount => {
+                    if (updateCount) {
+                        iocFactories.notify()('Tiedot tallennettu', 'success');
+                        this.setState({user: newData});
+                    }
+                },
                 () => iocFactories.notify()('Tietojen tallennus epäonnistui', 'error')
             );
     }
@@ -40,22 +46,23 @@ class UserProfileView extends ValidatingComponent<any, any> {
             { this.state.user && [
                 <div class="row">
                     <div class="col-3">
-                        <div class="profile-pic"><img src={ 'theme/user-icon-sprite.svg#' + (this.state.user.isMale === false ? 'female' : 'male') }/></div>
+                        <div class="profile-pic"><img src={ 'theme/user-icon-sprite.svg#' + (this.state.user.isMale === 0 ? 'female' : 'male') }/></div>
                     </div>
                     <div class="col-9">
                         <label class="input-set">
                             <span>Käyttäjänimi</span>
-                            <input name="username" value={ this.state.username } onInput={ e => this.receiveInputValue(e) }/>
+                            <input name="username" value={ this.state.user.username } onInput={ e => this.receiveInputValue(e) }/>
                             { validationMessage(this.evaluators.username[0], templates => templates.lengthBetween('Käyttäjänimi', 2, 42)) }
                         </label>
                         <label class="input-set">
-                            <span>Kuvaus</span>
-                            <textarea disabled="disabled" name="description"></textarea>
+                            <span>Allekirjoitus</span>
+                            <textarea name="signature" value={ this.state.user.signature } onInput={ e => this.receiveInputValue(e) }></textarea>
+                            { validationMessage(this.evaluators.signature[0], templates => templates.maxLength('Allekirjoitus', 255)) }
                         </label>
                     </div>
                 </div>,
                 <BasicUserInputs user={ this.state.user } ref={ cmp => { this.userInputs = cmp; } }/>,
-                <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || this.userInputs.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
+                <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || this.userInputs.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
             ] }
         </div>;
     }

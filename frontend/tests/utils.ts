@@ -1,7 +1,8 @@
 import * as itu from 'inferno-test-utils';
+import ValidatingComponent from 'src/ui/ValidatingComponent';
 
 const utils = {
-    fakeSWScope: (cacheName: string) => {
+    fakeSWScope(cacheName: string) {
         const scope: any = window;
         scope.CACHE_NAME = cacheName;
         // monkeypatch CacheStorage.match
@@ -17,31 +18,47 @@ const utils = {
         scope.skipWaiting = () => null;
         return scope;
     },
-    triggerEvent: (type: string, el: Element) => {
+    triggerEvent(type: string, el: Element) {
         const event = document.createEvent('HTMLEvents');
         event.initEvent(type, false, true);
         el.dispatchEvent(event);
     },
-    findButtonByContent: (rendered, content: string): HTMLButtonElement => {
-        return findButton(rendered, btn => btn.textContent === content);
+    findButtonByContent(rendered, content: string): HTMLButtonElement {
+        return findElement<HTMLButtonElement>(rendered, 'button', btn => btn.textContent === content);
     },
-    findButtonByAttribute: (rendered, attribute: string, content: string): HTMLButtonElement => {
-        return findButton(rendered, btn => btn.getAttribute(attribute) === content);
+    findButtonByAttribute(rendered, attribute: string, content: string): HTMLButtonElement {
+        return findElement<HTMLButtonElement>(rendered, 'button', btn => btn.getAttribute(attribute) === content);
+    },
+    findInputByName(rendered, name: string): HTMLInputElement {
+        return this.findElementByAttribute(rendered, 'input', 'name', name);
+    },
+    findElementByAttribute<T extends Element>(rendered, tag: string, attribute: string, content: string): T {
+        return findElement<T>(rendered, tag, btn => btn.getAttribute(attribute) === content);
     },
     getValidToken: (): string => '<header>.eyJzdWIiOjF9.<sig>'//btoa(JSON.stringify({sub: 1}));
 };
 
-function findButton(rendered, predicate: Function): HTMLButtonElement {
-    const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, 'button');
-    return Array.from(allButtons).find(el => predicate(el)) as HTMLButtonElement;
+function findElement<T extends Element>(rendered, tag: string, predicate: Function): T {
+    const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, tag);
+    return Array.from(allButtons).find(el => predicate(el)) as T;
+}
+
+interface ConcreteValidatingComponent {
+    new (...args: any[]): ValidatingComponent<any, any>;
 }
 
 const validationTestUtils = {
     isSubmitButtonClickable(rendered) {
-        return utils.findButtonByContent(rendered, 'Ok').disabled === false;
+        return (
+            itu.findRenderedDOMElementWithClass(rendered, 'nice-button-primary') as HTMLButtonElement
+        ).disabled === false;
     },
     getRenderedValidationErrors(rendered) {
         return itu.scryRenderedDOMElementsWithClass(rendered, 'text-error');
+    },
+    isValid(rendered, Component: ConcreteValidatingComponent) {
+        const cmp = itu.findRenderedVNodeWithType(rendered, Component).children as any;
+        return cmp.state.validity;
     }
 };
 

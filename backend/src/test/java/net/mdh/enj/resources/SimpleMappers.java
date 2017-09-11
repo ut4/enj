@@ -72,7 +72,7 @@ public class SimpleMappers {
             user.setId(rs.getString("id"));
             user.setUsername(rs.getString("username"));
             user.setBodyWeight(rs.getDouble("bodyWeight"));
-            user.setIsMale(rs.getInt("isMale"));
+            user.setIsMale(rs.getObject("isMale", Integer.class));
             user.setSignature(rs.getString("signature"));
             return user;
         }

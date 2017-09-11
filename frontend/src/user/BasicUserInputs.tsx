@@ -13,7 +13,7 @@ class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, a
             bodyWeight: [(input: any) => !input || input >= 20]
         };
         this.state = {
-            bodyWeight: props.user.bodyWeight,
+            bodyWeight: props.user.bodyWeight > 0 ? props.user.bodyWeight : null,
             isMale: props.user.isMale,
             validity: true
         };
@@ -21,17 +21,17 @@ class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, a
     public getValues(): {bodyWeight: number; isMale: number} {
         return {
             bodyWeight: this.state.bodyWeight ? parseFloat(this.state.bodyWeight) : null,
-            isMale: this.state.isMale !== 'null' ? parseInt(this.state.isMale, 10) : null
+            isMale: this.state.isMale
         };
     }
     public render() {
         return <div>
             <label class="input-set">
                 <span>Olen</span>
-                <select name="isMale" value={ this.state.isMale } onChange={ e => this.receiveInputValue(e, true) }>
+                <select name="isMale" value={ this.state.isMale } onChange={ e => this.receiveGenderSelection(e) }>
                     <option value={ null }> - </option>
-                    <option value="1">Mies</option>
-                    <option value="0">Nainen</option>
+                    <option value={ 1 }>Mies</option>
+                    <option value={ 0 }>Nainen</option>
                 </select>
             </label>
             <label class="input-set">
@@ -40,6 +40,9 @@ class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, a
                 { validationMessage(this.evaluators.bodyWeight[0], templates => templates.min('Paino', 20)) }
             </label>
         </div>;
+    }
+    private receiveGenderSelection(e) {
+        this.setState({isMale: e.target.value !== '' ? parseInt(e.target.value, 10) : null});
     }
 }
 

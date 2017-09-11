@@ -57,6 +57,7 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void PUTUserMePäivittääYhdenKäyttäjänTiedotTietokantaan() {
         User userData = this.getTestUser();
+        Assert.assertNull(userData.getIsMale());
         // Muuta jotain tietoja & lähetä pyyntö
         userData.setBodyWeight(userData.getBodyWeight() + 10);
         userData.setIsMale(0);
@@ -81,7 +82,6 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void PUTUserMeKäyttääAinaKirjautuneenKäyttäjänIdtä() {
         User user = this.getTestUser();
-        Assert.assertNotNull("Sanity check", user);
         //
         user.setId(UUID.randomUUID().toString());
         user.setBodyWeight(20.0);

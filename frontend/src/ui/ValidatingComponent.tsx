@@ -3,6 +3,7 @@ import Component from 'inferno-component';
 interface Props {
     onValidityChange?: (newValidity: boolean) => void;
     setEvaluatorValiditiesOnMount?: boolean;
+    allowUnknownValidities?: boolean;
 }
 
 interface State {
@@ -17,9 +18,17 @@ interface evaluator {
 
 abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State> {
     /**
+     * Jos halutaan validoida this.state[propertyName].foo, eikä this.state.foo
+     */
+    protected propertyToValidate?: string;
+    /**
      * key = input-elementin name-attribuutti, value = taulukko evaluaattoreita
      */
     protected evaluators: {[key: string]: Array<evaluator>};
+    /**
+     * Komponentin renderöinti on perijän vastuulla.
+     */
+    public abstract render(): string;
     /**
      * Asettaa validiteettiarvot lomakeeseen, sekä kaikkien inputien kaikkiin
      * evaluaattoreihin, ellei props.setEvaluatorValiditiesOnMount ole false.
@@ -28,7 +37,7 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
         let overallValidity = true;
         Object.keys(this.evaluators).forEach(inputName => {
             this.evaluators[inputName].forEach(evaluator => {
-                const validity = evaluator(this.state[inputName] || '');
+                const validity = evaluator(this.getValue(inputName) || '');
                 //
                 if (this.props.setEvaluatorValiditiesOnMount !== false) {
                     evaluator.validity = validity;
@@ -48,9 +57,9 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
      * @param {Object} e event
      * @param {boolean=} skipValidation
      */
-    protected receiveInputValue(e, skipValidation?) {
+    protected receiveInputValue(e, skipValidation?: boolean) {
         // Päivitä inputin uusi arvo aina stateen.
-        const newState = {[e.target.name]: e.target.value} as any;
+        const newState = this.getNewState(e);
         if (skipValidation !== true) {
             // Päivitä inputin kaikkien evaluaattorien validiteetit
             this.evaluators[e.target.name].forEach(evaluator => {
@@ -58,7 +67,12 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
             });
             // Päivitä kokonaisvaliditeetin arvo stateen vain jos se muuttui
             const newValidity = !Object.keys(this.evaluators).some(inputName =>
-                this.evaluators[inputName].some(ev => ev.validity !== true)
+                this.evaluators[inputName].some(ev =>
+                    // Jos allowUnknownValidities == true, vain false on invalid
+                    (this.props.allowUnknownValidities && ev.validity === false) ||
+                    // Jos allowUnknownValidities != true, myös undefined on invalid
+                    (!this.props.allowUnknownValidities && ev.validity !== true)
+                )
             );
             if (newValidity !== this.state.validity) {
                 this.props.onValidityChange && this.props.onValidityChange(newValidity);
@@ -68,14 +82,25 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
         this.setState(newState);
     }
     /**
-     * Komponentin renderöinti on perijän vastuulla.
+     * Palauttaa this.state[inputName] tai this.state[this.propertyToValidate][inputName].
      */
-    public abstract render(): string;
+    protected getValue(inputName: string): any {
+        return !this.propertyToValidate ? this.state[inputName] : this.state[this.propertyToValidate][inputName];
+    }
+    protected getNewState(e): any {
+        if (!this.propertyToValidate) {
+            return {[e.target.name]: e.target.value};
+        }
+        const prop = this.state[this.propertyToValidate];
+        prop[e.target.name] = e.target.value;
+        return {[this.propertyToValidate]: prop};
+    }
 }
 
 const templates = {
     minLength: (field, min) => `${field} tulisi olla vähintään ${min} merkkiä pitkä`,
     lengthBetween: (field, min, max) => `${field} tulisi olla ${min} - ${max} merkkiä pitkä`,
+    maxLength: (field, max) => `${field} tulisi olla enintään ${max} merkkiä pitkä`,
     min: (field, min) => `${field} tulisi olla vähintään ${min}`,
     between: (field, min, max) => `${field} tulisi olla arvo väliltä ${min} - ${max}`,
     number: (field) => `${field} tulisi olla numero`
