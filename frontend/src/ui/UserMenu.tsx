@@ -22,12 +22,15 @@ class UserMenu extends Component<any, any> {
         };
         this.userState.getState().then(receiveUserState);
         // userState triggeröityy receiveUserState:n aina, kun käyttäjän
-        // offlineIsEnabled, tai token arvo muuttuu
+        // offlineIsEnabled-, tai token-arvo muuttuu
         this.userState.subscribe(receiveUserState);
     }
-    public test(e) {
-        this.userState.setToken('');
+    public logout(e) {
         e && e.preventDefault();
+        iocFactories.authService().logout().then(
+            () => iocFactories.history().push('/'),
+            () => iocFactories.notify()('Uloskirjautuminen epäonnistui', 'error')
+        );
     }
     public render() {
         return (<nav id="user-menu">
@@ -40,7 +43,7 @@ class UserMenu extends Component<any, any> {
                 }
                 { (!this.state.offlineIsEnabled && this.state.maybeIsLoggedIn) && [
                     <li><a href="#/profiili">Profiili</a></li>,
-                    <li><a href="" onClick={ this.test.bind(this) }>Kirjaudu ulos</a></li>,
+                    <li><a href="" onClick={ e => this.logout(e) }>Kirjaudu ulos</a></li>,
                     <li><a href="#/aloita-offline">Go offline</a></li>
                 ] }
             </ul>

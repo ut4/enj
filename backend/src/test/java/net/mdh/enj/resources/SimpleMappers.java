@@ -1,6 +1,7 @@
 package net.mdh.enj.resources;
 
 import net.mdh.enj.user.User;
+import net.mdh.enj.auth.AuthUser;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
@@ -74,6 +75,18 @@ public class SimpleMappers {
             user.setBodyWeight(rs.getDouble("bodyWeight"));
             user.setIsMale(rs.getObject("isMale", Integer.class));
             user.setSignature(rs.getString("signature"));
+            return user;
+        }
+    }
+    public static class AuthUserMapper implements RowMapper<AuthUser> {
+        @Override
+        public AuthUser mapRow(ResultSet rs, int i) throws SQLException {
+            AuthUser user = new AuthUser();
+            user.setId(rs.getString("id"));
+            user.setUsername(rs.getString("username"));
+            user.setPasswordHash(rs.getString("passwordHash"));
+            user.setLastLogin(rs.getObject("lastLogin", Long.class));
+            user.setCurrentToken(rs.getString("currentToken"));
             return user;
         }
     }

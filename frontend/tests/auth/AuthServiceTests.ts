@@ -23,11 +23,25 @@ QUnit.module('auth/AuthService', hooks => {
         const done = assert.async();
         authService.login(testCredentials).then(() => {
             // Backend POST
-            assert.ok(loginCallWatch.calledOnce, 'Pitäisi postata dataa backendiin');
+            assert.ok(loginCallWatch.calledOnce, 'Pitäisi POSTata dataa backendiin');
             assert.deepEqual(loginCallWatch.firstCall.args, [testCredentials], 'Pitäisi postata lomakkeen tiedot backendiin');
             // Userstaten päivitys
             assert.ok(userStateUpdateWatch.calledAfter(loginCallWatch), 'Pitäisi päivittää token');
             assert.deepEqual(userStateUpdateWatch.firstCall.args, [mockLoginResponse.token], 'Pitäisi tallentaa token');
+            done();
+        });
+    });
+    QUnit.test('logout postaa logout-pyynnön backendiin, ja poistaa tokenin selaintietokannasta', assert => {
+        const logoutCallWatch = sinon.stub(shallowAuthBackend, 'logout').returns(Promise.resolve(undefined));
+        const tokenClearWatch = sinon.stub(shallowUserState, 'setToken').returns(Promise.resolve());
+        //
+        const testCredentials = {username:'fyy', password: 'bars'};
+        //
+        const done = assert.async();
+        authService.logout().then(() => {
+            assert.ok(logoutCallWatch.calledOnce, 'Pitäisi POSTata logout-pyyntö backendiin');
+            assert.ok(tokenClearWatch.calledAfter(logoutCallWatch), 'Pitäisi päivittää token');
+            assert.deepEqual(tokenClearWatch.firstCall.args, [''], 'Pitäisi clearata token');
             done();
         });
     });

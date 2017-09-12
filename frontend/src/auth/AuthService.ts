@@ -23,6 +23,17 @@ class AuthService {
             this.userState.setToken(res.token)
         );
     }
+    /**
+     * Lähettää logout-pyynnön backendiin, ja poistaa tokenin selaintietokannasta
+     * mikäli backendin vastaus oli ok.
+     *
+     * @returns {Promise} -> ({any} void, {any} error)
+     */
+    public logout(): Promise<any> {
+        return this.authBackend.logout().then(res => {
+            this.userState.setToken('');
+        });
+    }
 }
 
 export default AuthService;

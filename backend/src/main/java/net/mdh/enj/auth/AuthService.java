@@ -61,6 +61,17 @@ public class AuthService {
     }
 
     /**
+     * Poistaa JWT:n, ja lastLogin-timestampin tietokannasta.
+     */
+    int logout(String userId) {
+        AuthUser cleared = new AuthUser();
+        cleared.setId(userId);
+        cleared.setLastLogin(null);
+        cleared.setCurrentToken(null);
+        return this.authUserRepository.update(cleared);
+    }
+
+    /**
      * Uusii tokenin jos se on vanhentunut (mutta validi), tai palauttaa sen
      * sellaisenaan jos uusimista ei tarvita. Palauttaa null, jos tokenin parsiminen
      * ei onnistunut, tai käyttäjän viimeisestä kirjautumisesta on yli 2kk.

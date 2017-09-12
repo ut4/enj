@@ -2,21 +2,27 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as infernoUtils from 'inferno-test-utils';
 import UserState from 'src/user/UserState';
+import AuthService from 'src/auth/AuthService';
 import UserMenu from 'src/ui/UserMenu';
 import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 const mockToken: string = utils.getValidToken();
 
 QUnit.module('ui/UserMenu', hooks => {
-    let userStateIocFactoryOverride;
     let shallowUserState: UserState;
+    let userStateIocFactoryOverride;
+    let shallowAuthService: AuthService;
+    let authServiceIocFactoryOverride;
     hooks.beforeEach(() => {
         shallowUserState = Object.create(UserState.prototype);
         (shallowUserState as any).subscribers = [];
         userStateIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(shallowUserState);
+        shallowAuthService = Object.create(AuthService.prototype);
+        authServiceIocFactoryOverride = sinon.stub(iocFactories, 'authService').returns(shallowAuthService);
     });
     hooks.afterEach(() => {
         userStateIocFactoryOverride.restore();
+        authServiceIocFactoryOverride.restore();
     });
     QUnit.test('mount näyttää vain kirjautumislinkin, jos käyttäjä ei kirjautunut+online', assert => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
@@ -34,9 +40,9 @@ QUnit.module('ui/UserMenu', hooks => {
             done();
         });
         function assertOnlyLogInItemIsVisible() {
-            const visibleUserMenuListItems = getVisibleUserMenuItems(rendered);
+            const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
             assert.equal(visibleUserMenuListItems.length, 1);
-            assert.equal(visibleUserMenuListItems[0].children[0].innerHTML, 'Kirjaudu sisään');
+            assert.equal(visibleUserMenuListItems[0].innerHTML, 'Kirjaudu sisään');
         }
     });
     QUnit.test('mount näyttää vain "go-online"-linkin, jos käyttäjä offline', assert => {
@@ -50,9 +56,9 @@ QUnit.module('ui/UserMenu', hooks => {
         //
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
-            const visibleUserMenuListItems = getVisibleUserMenuItems(rendered);
+            const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
             assert.equal(visibleUserMenuListItems.length, 1);
-            assert.equal(visibleUserMenuListItems[0].children[0].innerHTML, 'Go online');
+            assert.equal(visibleUserMenuListItems[0].innerHTML, 'Go online');
             done();
         });
     });
@@ -66,7 +72,7 @@ QUnit.module('ui/UserMenu', hooks => {
         //
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
-            const visibleUserMenuListItems = getVisibleUserMenuItems(rendered);
+            const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
             assert.equal(visibleUserMenuListItems.length, 3);
             assert.ok(visibleUserMenuListItems.some(el => /Profiili/.test(el.innerHTML)));
             assert.ok(visibleUserMenuListItems.some(el => /Kirjaudu ulos/.test(el.innerHTML)));
@@ -85,7 +91,7 @@ QUnit.module('ui/UserMenu', hooks => {
         //
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
-            const visibleMenuItemsBefore = getVisibleUserMenuItems(rendered);
+            const visibleMenuItemsBefore = getVisibleUserMenuLinks(rendered);
             assert.ok(visibleMenuItemsBefore.some(el => /Go offline/.test(el.innerHTML)));
             assert.ok(visibleMenuItemsBefore.some(el => /Profiili/.test(el.innerHTML)));
             // Simuloi offline-tilan muutos isEnabled false -> true
@@ -94,7 +100,7 @@ QUnit.module('ui/UserMenu', hooks => {
                 isOffline: true, // <----------- Tämä muuttuu false -> true
                 token: mockToken
             } as Enj.OfflineDbSchema.UserStateRecord);
-            const visibleMenuItemsAfter = getVisibleUserMenuItems(rendered);
+            const visibleMenuItemsAfter = getVisibleUserMenuLinks(rendered);
             assert.notOk(visibleMenuItemsAfter.some(el => /Go offline/.test(el.innerHTML)));
             assert.notOk(visibleMenuItemsAfter.some(el => /Profiili/.test(el.innerHTML)));
             assert.ok(visibleMenuItemsAfter.some(el => /Go online/.test(el.innerHTML)));
@@ -112,20 +118,37 @@ QUnit.module('ui/UserMenu', hooks => {
         //
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
-            const visibleMenuItemsBefore = getVisibleUserMenuItems(rendered);
-            assert.equal(visibleMenuItemsBefore[0].children[0].innerHTML, 'Kirjaudu sisään');
+            const visibleMenuItemsBefore = getVisibleUserMenuLinks(rendered);
+            assert.equal(visibleMenuItemsBefore[0].innerHTML, 'Kirjaudu sisään');
             // Simuloi userStaten-tilan muutos token '' -> <validToken>
             const actualSubscribeFn = subscribeRegistration.firstCall.args[0];
             actualSubscribeFn({
                 isOffline: false,
                 token: mockToken // <----------- Tämä muuttuu '' -> <token>
             } as Enj.OfflineDbSchema.UserStateRecord);
-            const visibleMenuItemsAfter = getVisibleUserMenuItems(rendered);
-            assert.notEqual(visibleMenuItemsAfter[0].children[0].innerHTML, 'Kirjaudu sisään');
+            const visibleMenuItemsAfter = getVisibleUserMenuLinks(rendered);
+            assert.notEqual(visibleMenuItemsAfter[0].innerHTML, 'Kirjaudu sisään');
             done();
         });
     });
-    function getVisibleUserMenuItems(rendered): Array<Element> {
-        return infernoUtils.scryRenderedDOMElementsWithTag(rendered, 'li');
+    QUnit.test('Kirjaudu ulos -linkin klikkaus kirjaa käyttäjän ulos', assert => {
+        const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
+            isOffline: false,
+            token: mockToken
+        } as Enj.OfflineDbSchema.UserStateRecord));
+        const logoutCallStub = sinon.stub(shallowAuthService, 'logout').returns(Promise.resolve(undefined));
+        const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
+        const done = assert.async();
+        onMountUserStateRead.firstCall.returnValue.then(() => {
+            // Klikkaa uloskirjautumislinkkiä
+            const logoutLink = getVisibleUserMenuLinks(rendered)[1];
+            logoutLink.click();
+            // Kirjasiko ulos?
+            assert.ok(logoutCallStub.calledOnce, 'Pitäisi kirjata käyttäjä ulos');
+            done();
+        });
+    });
+    function getVisibleUserMenuLinks(rendered): Array<HTMLAnchorElement> {
+        return infernoUtils.scryRenderedDOMElementsWithTag(rendered, 'a') as Array<HTMLAnchorElement>;
     }
 });

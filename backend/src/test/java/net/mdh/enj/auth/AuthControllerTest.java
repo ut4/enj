@@ -4,13 +4,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.junit.BeforeClass;
+import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.resources.TestData;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.resources.DbTestUtils;
+import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.AppConfigProvider;
 import net.mdh.enj.resources.MockHashingProvider;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.validation.ValidationError;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
@@ -23,17 +27,16 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     private final static char[] correctPassword = "bars".toCharArray();
     private static TokenService tokenService;
     private static HashingProvider mockHasherSpy;
+    private static DbTestUtils utils;
     private static AuthUser testUser;
+    private static String mockCurrentToken = "mocktokne";
+    private static Long mockLastLogin = 3L;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         AuthControllerTest.tokenService = new TokenService(AppConfigProvider.getInstance());
         AuthControllerTest.mockHasherSpy = Mockito.spy(new MockHashingProvider());
-        DbTestUtils utils = new DbTestUtils(rollbackingDSFactory);
-        testUser = new AuthUser();
-        testUser.setUsername(correctUsername);
-        testUser.setPasswordHash(String.valueOf(correctPassword));
-        utils.insertAuthUser(testUser);
+        utils = new DbTestUtils(rollbackingDSFactory);
     }
 
     @Override
@@ -45,6 +48,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(AuthUserRepository.class).to(AuthUserRepository.class);
+                    bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(mockHasherSpy).to(HashingProvider.class);
                     bind(AuthControllerTest.tokenService).to(TokenService.class);
                     bind(AuthService.class).to(AuthService.class);
@@ -101,6 +105,7 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
 
     @Test
     public void POSTloginHylkääPyynnönJosSalasanaOnVäärä() {
+        setupTestUser();
         Response responseForWrongPassword;
         char[] wrongPassword = "dars".toCharArray();
         // Rakenna input
@@ -120,7 +125,46 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         correctData.setPassword(correctPassword);
         Response response = this.newPostRequest("auth/login", correctData);
         Assert.assertEquals(200, response.getStatus());
-        LoginResponse loginResponse = response.readEntity(new GenericType<LoginResponse>() {});
+        Responses.LoginResponse loginResponse = response.readEntity(
+            new GenericType<Responses.LoginResponse>() {}
+        );
         Assert.assertTrue(AuthControllerTest.tokenService.isValid(loginResponse.getToken()));
+    }
+
+    @Test
+    public void POSTLogoutPoistaaKirjautumistiedotTietokannasta() {
+        setupTestUser();
+        // Tsekkaa kirjautumistiedot ennen logoutia
+        AuthUser loginData = this.getLoginData();
+        Assert.assertEquals(loginData.getLastLogin(), mockLastLogin);
+        Assert.assertEquals(loginData.getCurrentToken(), mockCurrentToken);
+        // Lähetä logout-pyyntö
+        Response response = this.newPostRequest("auth/logout", null);
+        Assert.assertEquals(200, response.getStatus());
+        // Poistiko kirjautumistiedot?
+        AuthUser loginDataAfter = this.getLoginData();
+        Assert.assertNull(loginDataAfter.getLastLogin());
+        Assert.assertNull(loginDataAfter.getCurrentToken());
+    }
+
+    private void setupTestUser() {
+        if (testUser == null) {
+            testUser = new AuthUser();
+            testUser.setId(TestData.TEST_USER_ID);
+            testUser.setUsername(correctUsername);
+            testUser.setPasswordHash(String.valueOf(correctPassword));
+            testUser.setLastLogin(mockLastLogin);
+            testUser.setCurrentToken(mockCurrentToken);
+            utils.update("UPDATE `user` SET " +
+                "lastLogin = :lastLogin, currentToken = :currentToken " +
+            "WHERE id = :id", testUser);
+        }
+    }
+
+    private AuthUser getLoginData() {
+        return (AuthUser) utils.selectOneWhere("SELECT * FROM `user` WHERE id = :id",
+            new BeanPropertySqlParameterSource(testUser),
+            new SimpleMappers.AuthUserMapper()
+        );
     }
 }

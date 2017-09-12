@@ -55,6 +55,9 @@ public class DbTestUtils {
     public List<?> selectAllWhere(String query, SqlParameterSource params, RowMapper<?> mapper) {
         return this.getQueryTemplate().query(query, params, mapper);
     }
+    public int update(final String q, final DbEntity data) {
+        return this.getQueryTemplate().update(q, new BeanPropertySqlParameterSource(data));
+    }
     public int delete(final String from, final String... ids) {
         MapSqlParameterSource ps = new MapSqlParameterSource();
         for (int i = 0; i < ids.length; i++) {

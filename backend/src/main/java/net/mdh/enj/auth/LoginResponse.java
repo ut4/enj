@@ -1,15 +1,29 @@
 package net.mdh.enj.auth;
 
-public class LoginResponse {
-    private String tokenHash;
-    public LoginResponse() {}
-    public LoginResponse(String tokenHash) {
-        this.setToken(tokenHash);
+abstract class Responses {
+    static class LoginResponse {
+        private String tokenHash;
+        public LoginResponse() {}
+        public LoginResponse(String tokenHash) {
+            this.setToken(tokenHash);
+        }
+        public void setToken(String tokenHash) {
+            this.tokenHash = tokenHash;
+        }
+        public String getToken() {
+            return tokenHash;
+        }
     }
-    public void setToken(String tokenHash) {
-        this.tokenHash = tokenHash;
-    }
-    public String getToken() {
-        return tokenHash;
+    static class LogoutResponse {
+        private boolean ok;
+        public LogoutResponse() {
+            this.ok = true;
+        }
+        public boolean isOk() {
+            return this.ok;
+        }
+        public void setOk(boolean ok) {
+            this.ok = ok;
+        }
     }
 }
