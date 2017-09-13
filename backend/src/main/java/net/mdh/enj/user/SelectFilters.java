@@ -8,6 +8,7 @@ public class SelectFilters implements SelectQueryFilters {
     private String id;
     private String username;
     private String currentToken;
+    private Integer isActivated = 1;
 
     public String getId() {
         return this.id;
@@ -30,9 +31,19 @@ public class SelectFilters implements SelectQueryFilters {
         this.currentToken = currentToken;
     }
 
+    public Integer getIsActivated() {
+        return this.isActivated;
+    }
+    public void setIsActivated(Integer isActivated) {
+        this.isActivated = isActivated;
+    }
+
     @Override
     public boolean hasRules() {
-        return this.id != null || this.username != null || this.currentToken != null;
+        return this.id != null ||
+            this.username != null ||
+            this.currentToken != null ||
+            this.isActivated != null;
     }
 
     @Override
@@ -46,6 +57,9 @@ public class SelectFilters implements SelectQueryFilters {
         }
         if (this.currentToken != null) {
             out.add("userCurrentToken = :currentToken");
+        }
+        if (this.isActivated != null) {
+            out.add("userIsActivated = :isActivated");
         }
         return String.join(" AND ", out);
     }

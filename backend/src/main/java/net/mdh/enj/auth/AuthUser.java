@@ -11,6 +11,7 @@ public class AuthUser extends DbEntity {
     private String currentToken;
     private int isActivated;
     private String activationKey;
+    private UpdateFilters filters;
 
     public String getUsername() {
         return this.username;
@@ -66,6 +67,13 @@ public class AuthUser extends DbEntity {
     }
     public void setActivationKey(String activationKey) {
         this.activationKey = activationKey;
+    }
+
+    public UpdateFilters getFilters() {
+        return this.filters;
+    }
+    public void setFilters(UpdateFilters filters) {
+        this.filters = filters;
     }
 
     @Override

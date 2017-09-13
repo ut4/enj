@@ -1,15 +1,18 @@
 package net.mdh.enj.auth;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.validation.Valid;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.NotAuthorizedException;
-import javax.annotation.security.PermitAll;
+import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
+import javax.annotation.security.PermitAll;
 import net.mdh.enj.api.RequestContext;
 
 /**
@@ -82,5 +85,25 @@ public class AuthController {
     public Responses.Ok register(@Valid @NotNull RegistrationCredentials credentials) {
         this.authService.register(credentials);
         return new Responses.Ok();
+    }
+
+    /**
+     * Aktivoi käyttäjän tilin, mikäli parametrissä saatu email & key löytyi
+     * tietokannasta, ja aktivointi tapahtuu hyväksyttävän ajan sisällä (24h)
+     * tilin luomisesta.
+     *
+     * @return Viesti käyttäjälle
+     */
+    @GET
+    @PermitAll
+    @Path("/activate")
+    public Object activate(
+        @QueryParam("key") @NotNull @Size(min = AuthService.ACTIVATION_KEY_LENGTH) String key,
+        @QueryParam("email") @NotNull @Size(min = 4) String base64mail
+    ) {
+        this.authService.activate(base64mail, key);
+        return "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" content=\"noindex, nofollow\">" +
+            "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan osoitteessa " +
+            "<a href=\"https://foo.com/app/#/kirjaudu\">https://foo.com/app/#/kirjaudu</a>";
     }
 }

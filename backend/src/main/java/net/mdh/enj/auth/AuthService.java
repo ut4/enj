@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class AuthService {
 
-    static final Integer LOGIN_EXPIRATION = 5259600; // ~2kk
+    static final int LOGIN_EXPIRATION = 5259600;        // ~2kk
+    static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
+    static final int ACTIVATION_KEY_LENGTH = 32;
 
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
@@ -97,13 +99,13 @@ public class AuthService {
         user.setCreatedAt(System.currentTimeMillis() / 1000L);
         user.setPasswordHash(this.hashingProvider.hash(credentials.getPassword()));
         user.setIsActivated(0);
-        user.setActivationKey(this.tokenService.generateRandomString(32));
+        user.setActivationKey(this.tokenService.generateRandomString(ACTIVATION_KEY_LENGTH));
         if (this.authUserRepository.insert(user) < 1) {
             throw new RuntimeException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
         }
         // 2. Lähetä aktivointi-email
         String link = String.format(
-            "https://treenikirja.com/api/auth/activate?key=%s&email=%s",
+            "https://foo.com/api/auth/activate?key=%s&email=%s",
             user.getActivationKey(),
             TextCodec.BASE64URL.encode(user.getEmail())
         );
@@ -111,7 +113,7 @@ public class AuthService {
                 user.getEmail(),
                 "Tilin aktivointi",
                 String.format(
-                    "Moi %s,<br><br>kiitos rekisteröitymisestä treenikirjaan, tässä aktivointilinkki:" +
+                    "Moi %s,<br><br>kiitos rekisteröitymisestä {appName}aan, tässä aktivointilinkki:" +
                     "<a href=\"%s\">%s</a>. Mukavia treenejä!",
                     user.getUsername(),
                     link,
@@ -124,11 +126,34 @@ public class AuthService {
     }
 
     /**
-     * Aktivoi käyttäjän {username}, tai heittää poikkeuksen jos käyttäjää ei
-     * löytynyt, tai aktivointiavain ei ollut validi.
+     * Aktivoi käyttäjän, tai heittää poikkeuksen jos email, tai aktivointiavain
+     * ei ollut validi, tai avain oli liian vanha.
      */
-    void activate(String username, String activationKey) {
-        throw new RuntimeException("TODO");
+    void activate(String base64email, String activationKey) {
+        // Päivitettävät kentät
+        AuthUser activated = new AuthUser();
+        activated.setIsActivated(1);
+        activated.setActivationKey(null);
+        // WHERE-osioon tulevat kentät
+        UpdateFilters filters = new UpdateFilters();
+        filters.setEmail(TextCodec.BASE64URL.decodeToString(base64email));
+        filters.setMinCreatedAt(System.currentTimeMillis() / 1000L - ACTIVATION_KEY_EXPIRATION);
+        filters.setActivationKey(activationKey);
+        activated.setFilters(filters);
+        if (this.authUserRepository.update(
+            activated,
+            new AuthUserRepository.UpdateColumn[]{
+                AuthUserRepository.UpdateColumn.IS_ACTIVATED,
+                AuthUserRepository.UpdateColumn.ACTIVATION_KEY,
+            },
+            new AuthUserRepository.FilterColumn[]{
+                AuthUserRepository.FilterColumn.EMAIL,
+                AuthUserRepository.FilterColumn.MIN_CREATED_AT,
+                AuthUserRepository.FilterColumn.ACTIVATION_KEY
+            }
+        ) < 1) {
+            throw new RuntimeException("Käyttäjän aktivointi epäonnistui");
+        }
     }
 
     /**

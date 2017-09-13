@@ -1,5 +1,6 @@
 package net.mdh.enj.auth;
 
+import net.mdh.enj.Mailer;
 import org.junit.Test;
 import org.junit.Assert;
 import org.glassfish.jersey.test.JerseyTest;
@@ -46,6 +47,7 @@ public class AuthenticationFilterTest extends JerseyTest {
                     bind(mockAuthUserRepository).to(AuthUserRepository.class);
                     bind(spyingTokenService).to(TokenService.class);
                     bind(Mockito.mock(HashingProvider.class)).to(HashingProvider.class);
+                    bind(Mockito.mock(Mailer.class)).to(Mailer.class);
                 }
             });
     }

@@ -8,13 +8,39 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import javax.inject.Inject;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthUserRepository extends BasicRepository<AuthUser> {
 
-    private final String[] updateColumns = new String[]{
-        "lastLogin = :lastLogin",
-        "currentToken = :currentToken"
-    };
+    enum UpdateColumn {
+        LAST_LOGIN("lastLogin = :lastLogin"),
+        CURRENT_TOKEN("currentToken = :currentToken"),
+        IS_ACTIVATED("isActivated = :isActivated"),
+        ACTIVATION_KEY("activationKey = :activationKey");
+        private final String pair;
+        UpdateColumn(final String pair) {
+            this.pair = pair;
+        }
+        @Override
+        public String toString() {
+            return pair;
+        }
+    }
+
+    enum FilterColumn {
+        EMAIL("email = :filters.email"),
+        MIN_CREATED_AT("createdAt > :filters.minCreatedAt"),
+        ACTIVATION_KEY("activationKey = :filters.activationKey");
+        private final String text;
+        FilterColumn(final String text) {
+            this.text = text;
+        }
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
 
     @Inject
     AuthUserRepository(DataSourceFactory dsFactory) {
@@ -23,23 +49,42 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
 
     AuthUser selectOne(SelectFilters filters) {
         return super.selectOne(
-            "SELECT * FROM authUserView WHERE userIsActivated = 1" +
-                (filters.hasRules() ? " AND " + filters.toSql() : ""),
+            "SELECT * FROM authUserView" + (filters.hasRules() ? " WHERE " + filters.toSql() : ""),
             filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
             new AuthUserMapper()
         );
     }
 
     int update(AuthUser user) {
-        return super.update(this.newUpdateQ(this.updateColumns), user);
+        return super.update(this.newUpdateQ(UpdateColumn.values(), null), user);
+    }
+
+    int update(AuthUser user, UpdateColumn[] columns, FilterColumn[] where) {
+        return super.update(this.newUpdateQ(columns, where), user);
     }
 
     int updateToken(AuthUser user) {
-        return super.update(this.newUpdateQ(this.updateColumns[1]), user);
+        return super.update(this.newUpdateQ(new UpdateColumn[]{UpdateColumn.CURRENT_TOKEN}, null), user);
     }
 
-    private String newUpdateQ(String... columns) {
-        return String.format("UPDATE `user` SET %s WHERE id = :id", String.join(", ", columns));
+    private String newUpdateQ(UpdateColumn[] columns, FilterColumn[] where) {
+        List<String> pairs = new ArrayList<>();
+        for (UpdateColumn pair: columns) {
+            pairs.add(pair.toString());
+        }
+        List<String> wherePairs = new ArrayList<>();
+        if (where == null) {
+            wherePairs.add("id = :id");
+        } else {
+            for (FilterColumn pair2: where) {
+                wherePairs.add(pair2.toString());
+            }
+        }
+        return String.format(
+            "UPDATE `user` SET %s WHERE %s",
+            String.join(", ", pairs),
+            String.join(" AND ", wherePairs)
+        );
     }
 
     private static class AuthUserMapper implements RowMapper<AuthUser> {

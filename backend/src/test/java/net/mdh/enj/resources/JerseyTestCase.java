@@ -44,7 +44,7 @@ public class JerseyTestCase extends JerseyTest implements HttpClient {
         if (additionalSetup != null) {
             target = additionalSetup.apply(target);
         }
-        return target.request().header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER).get();
+        return target.request(MediaType.APPLICATION_JSON_TYPE).header(AuthenticationFilter.AUTH_HEADER_NAME, TestData.MOCK_AUTH_HEADER).get();
     }
     protected List<ValidationError> getValidationErrors(Response response) {
         List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});

@@ -16,13 +16,12 @@ import net.mdh.enj.resources.AppConfigProvider;
 import net.mdh.enj.resources.MockHashingProvider;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import java.util.Collections;
 
 public class AuthControllerTest extends RollbackingDBJerseyTest {
 
@@ -34,6 +33,9 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     private static DbTestUtils utils;
     private static AuthUser testUser;
     private static String mockCurrentToken = "mocktokne";
+    private static String mockActicavationKey = String.join("", Collections.nCopies(
+        AuthService.ACTIVATION_KEY_LENGTH, "a"
+    ));
     private static Long mockLastLogin = 3L;
 
     @BeforeClass
@@ -61,39 +63,6 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
             });
-    }
-
-    @Test
-    public void POSTloginValidoiInputDatan() {
-        Response responseForEmptyInput;
-        List<ValidationError> errorsForEmptyInput;
-        Response responseForBadInput;
-        List<ValidationError> errorsForBadInput;
-
-        // Tyhjä/null request data
-        this.assertRequestFailsOnNullInput("auth/login", "AuthController.login");
-
-        // Bean-validaatio, null
-        LoginCredentials emptyData = new LoginCredentials();
-        responseForEmptyInput = this.newPostRequest("auth/login", emptyData);
-        Assert.assertEquals(400, responseForEmptyInput.getStatus());
-        errorsForEmptyInput = this.getValidationErrors(responseForEmptyInput);
-        Assert.assertEquals("AuthController.login.arg0.password", errorsForEmptyInput.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errorsForEmptyInput.get(0).getMessageTemplate());
-        Assert.assertEquals("AuthController.login.arg0.username", errorsForEmptyInput.get(1).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errorsForEmptyInput.get(1).getMessageTemplate());
-
-        // Bean-validaatio, liian lyhyet username&password-arvot
-        LoginCredentials badData = new LoginCredentials();
-        badData.setUsername("f");
-        badData.setPassword(new char[]{'f', 'o', 'o'});
-        responseForBadInput = this.newPostRequest("auth/login", badData);
-        Assert.assertEquals(400, responseForBadInput.getStatus());
-        errorsForBadInput = this.getValidationErrors(responseForBadInput);
-        Assert.assertEquals("AuthController.login.arg0.password", errorsForBadInput.get(0).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Size.message}", errorsForBadInput.get(0).getMessageTemplate());
-        Assert.assertEquals("AuthController.login.arg0.username", errorsForBadInput.get(1).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Size.message}", errorsForBadInput.get(1).getMessageTemplate());
     }
 
     @Test
@@ -176,23 +145,6 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void POSTRegisterValidoiInputDatan() {
-        RegistrationCredentials badData = new RegistrationCredentials();
-        badData.setUsername("f");
-        badData.setPassword(new char[]{'f', 'o'});
-        badData.setEmail("fus");
-        Response response = this.newPostRequest("auth/register", badData);
-        Assert.assertEquals(400, response.getStatus());
-        List<ValidationError> errors = this.getValidationErrors(response);
-        Assert.assertEquals("AuthController.register.arg0.email", errors.get(0).getPath());
-        Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("AuthController.register.arg0.password", errors.get(1).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(1).getMessageTemplate());
-        Assert.assertEquals("AuthController.register.arg0.username", errors.get(2).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(2).getMessageTemplate());
-    }
-
-    @Test
     public void POSTRegisterLisääKäyttäjänTietokantaanJaLähettääAktivointiEmailin() {
         RegistrationCredentials credentials = this.getValidRegistrationCredentials();
         AuthUser expectedNewUser = new AuthUser();
@@ -218,7 +170,9 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         Assert.assertNull(actualUser.getLastLogin());
         Assert.assertNull(actualUser.getCurrentToken());
         Assert.assertEquals(actualUser.getIsActivated(), 0);
-        Assert.assertEquals(actualUser.getActivationKey().length(), 32);
+        Assert.assertEquals(actualUser.getActivationKey().length(),
+            AuthService.ACTIVATION_KEY_LENGTH
+        );
         // Lähettikö mailin?
         final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
@@ -258,6 +212,47 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
         );
     }
 
+    @Test
+    public void GETActivatePäivittääKäyttäjänAktiiviseksi() {
+        // Rekisteröi jokin käyttäjä
+        AuthUser testUser = insertNewUnactivatedUser("someuser", null);
+        // Lähetä GET /auth/activate?key={key}&email={email}
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains("Tilisi on nyt aktivoitu"));
+        // Päivittikö tiedot?
+        AuthUser testUserAfter = this.getUserFromDb(testUser);
+        Assert.assertEquals(testUserAfter.getIsActivated(), 1);
+        Assert.assertNull(testUserAfter.getActivationKey());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosKäyttäjääEiLöydy() {
+        // Lähetä aktivointipyyntö, jossa väärä email
+        Response response = this.newGetRequest("auth/activate", t ->
+            t.queryParam("key", mockActicavationKey).queryParam("email", "Zm9vQGJhci5jb20=") // foo@bar.com
+        );
+        Assert.assertEquals(500, response.getStatus());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosAvainEiTäsmää() {
+        AuthUser testUser = insertNewUnactivatedUser("dr.pepper", null);
+        testUser.setActivationKey(mockActicavationKey);
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(500, response.getStatus());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosAktivointiavainOnLiianVanha() {
+        AuthUser testUser = insertNewUnactivatedUser(
+            "mr.jackson",
+            System.currentTimeMillis() / 1000 - AuthService.ACTIVATION_KEY_EXPIRATION - 100
+        );
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(500, response.getStatus());
+    }
+
     private void setupTestUser() {
         if (testUser == null) {
             testUser = new AuthUser();
@@ -292,6 +287,24 @@ public class AuthControllerTest extends RollbackingDBJerseyTest {
             "SELECT * FROM `user` WHERE " + (user == null ? "id = :id" : "username = :username"),
             new BeanPropertySqlParameterSource(user == null ? testUser : user),
             new SimpleMappers.AuthUserMapper()
+        );
+    }
+
+    private AuthUser insertNewUnactivatedUser(String username, Long createdAt) {
+        RegistrationCredentials credentials = this.getValidRegistrationCredentials(username);
+        AuthUser testUser = new AuthUser();
+        testUser.setUsername(credentials.getUsername());
+        testUser.setEmail(credentials.getEmail());
+        testUser.setCreatedAt(createdAt == null ? System.currentTimeMillis() / 1000L : createdAt);
+        testUser.setPasswordHash("foo");
+        testUser.setActivationKey(tokenService.generateRandomString(AuthService.ACTIVATION_KEY_LENGTH));
+        utils.insertAuthUser(testUser);
+        return testUser;
+    }
+    private Response sendActivationRequest(AuthUser testUser) {
+        return this.newGetRequest("auth/activate", t ->
+            t.queryParam("key", testUser.getActivationKey())
+                .queryParam("email", TextCodec.BASE64URL.encode(testUser.getEmail()))
         );
     }
 }
