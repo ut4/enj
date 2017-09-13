@@ -14,9 +14,9 @@ abstract class Responses {
             return tokenHash;
         }
     }
-    static class LogoutResponse {
+    static class Ok {
         private boolean ok;
-        public LogoutResponse() {
+        public Ok() {
             this.ok = true;
         }
         public boolean isOk() {

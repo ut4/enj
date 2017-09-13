@@ -7,7 +7,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.validation.Valid;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,10 @@ public class AuthController {
     private final RequestContext requestContext;
 
     @Inject
-    public AuthController(AuthService authService, RequestContext requestContext) {
+    public AuthController(
+        AuthService authService,
+        RequestContext requestContext
+    ) {
         this.authService = authService;
         this.requestContext = requestContext;
     }
@@ -33,7 +35,7 @@ public class AuthController {
      * Palauttaa uuden JsonWebTokenin, tai heittää NotAuthorizedExceptionin jos
      * käyttäjää ei löytynyt tai salasana meni väärin.
      *
-     * @param loginCredentials {"username": "foo", "password": "bar"}
+     * @param loginCredentials {"username": "foo", "password": "bars"}
      * @return LoginResponse
      * @throws NotAuthorizedException Jos käyttäjää ei löydy, tai salasana menee väärin
      */
@@ -55,17 +57,30 @@ public class AuthController {
      * Poistaa kirjautuneen käyttäjän kirjautumistiedot (lastLogin, currentToken)
      * tietokannasta, tai ei tee mitään jos käyttäjä ei ole kirjautunut.
      *
-     * @return LogoutResponse
-     * @throws ProcessingException Jos kirjautumistietojen poisto tietokannasta epäonnistuu.
+     * @return Responses.Ok
      */
     @POST
     @Path("/logout")
-    public Responses.LogoutResponse logout() {
+    public Responses.Ok logout() {
         if (this.requestContext.getUserId() != null) {
-            if (this.authService.logout(this.requestContext.getUserId()) < 1) {
-                throw new ProcessingException("Tietokantaan kirjoitus epäonnistui");
-            }
+            this.authService.logout(this.requestContext.getUserId());
         }
-        return new Responses.LogoutResponse();
+        return new Responses.Ok();
+    }
+
+    /**
+     * Insertoi käyttäjän tietokantaan, ja lähettää tilin aktivointilinkin käyttäjän
+     * e-mailiin mikäli toiminto onnistui.
+     *
+     * @param credentials {"username": "foo", "email": "email", "password": "bars"}
+     * @return Responses.Ok
+     */
+    @POST
+    @PermitAll
+    @Path("/register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok register(@Valid @NotNull RegistrationCredentials credentials) {
+        this.authService.register(credentials);
+        return new Responses.Ok();
     }
 }

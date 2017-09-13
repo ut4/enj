@@ -27,6 +27,7 @@ class InjectionBinder extends AbstractBinder {
         bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
         bind(SimpleDataSourceFactory.class).to(DataSourceFactory.class);
         bind(TokenService.class).to(TokenService.class);
+        bind(Mailer.class).to(Mailer.class);
         // Sync
         bind(new SyncRouteRegister()).to(SyncRouteRegister.class);
         bind(new AppResourceHttpClient()).to(HttpClient.class);

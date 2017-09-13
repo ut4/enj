@@ -16,10 +16,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.mdh.enj.AppConfig;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Map;
 
 public class TokenService {
+
+    private final JwtParser jwtParser;
+    private final ObjectMapper objectMapper;
+    private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static SecureRandom random = new SecureRandom();
+
     final byte[] JWT_KEY;
     /**
      * Aika, jonka token on validi luomisen jälkeen. Yksikkö millisekunteina.
@@ -27,8 +34,6 @@ public class TokenService {
     static final long JWT_AGE_IN_MS = 1800000; // 30min
     final SignatureAlgorithm SIGNATURE_ALGO = SignatureAlgorithm.HS512; // HMAC using SHA-512
     final JwtBuilder jwtBuilder;
-    private final JwtParser jwtParser;
-    private final ObjectMapper objectMapper;
 
     @Inject
     TokenService(AppConfig appConfig) throws Exception {
@@ -59,6 +64,17 @@ public class TokenService {
             .setExpiration(new Date(System.currentTimeMillis() + JWT_AGE_IN_MS))
             .signWith(SIGNATURE_ALGO, JWT_KEY)
             .compact();
+    }
+
+    /**
+     * https://stackoverflow.com/a/157202
+     */
+    String generateRandomString(int len) {
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            sb.append(AB.charAt(random.nextInt(AB.length())));
+        }
+        return sb.toString();
     }
 
     /**

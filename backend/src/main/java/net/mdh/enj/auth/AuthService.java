@@ -9,8 +9,10 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.Application;
+import net.mdh.enj.Mailer;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.transaction.annotation.Transactional;
 
 public class AuthService {
 
@@ -19,17 +21,20 @@ public class AuthService {
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
     private final HashingProvider hashingProvider;
+    private final Mailer mailer;
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
     AuthService(
         TokenService tokenService,
         AuthUserRepository authUserRepository,
-        HashingProvider hashingProvider
+        HashingProvider hashingProvider,
+        Mailer mailer
     ) {
         this.tokenService = tokenService;
         this.authUserRepository = authUserRepository;
         this.hashingProvider = hashingProvider;
+        this.mailer = mailer;
     }
 
     /**
@@ -62,13 +67,66 @@ public class AuthService {
 
     /**
      * Poistaa JWT:n, ja lastLogin-timestampin tietokannasta.
+     *
+     * @throws RuntimeException Jos tietojen kirjoitus tietokantaan epäonnistuu.
      */
-    int logout(String userId) {
+    void logout(String userId) {
         AuthUser cleared = new AuthUser();
         cleared.setId(userId);
         cleared.setLastLogin(null);
         cleared.setCurrentToken(null);
-        return this.authUserRepository.update(cleared);
+        if (this.authUserRepository.update(cleared) < 1) {
+            throw new RuntimeException("Tietokantaan kirjoitus epäonnistui");
+        }
+    }
+
+    /**
+     * Lisää uuden käyttäjän tietokantaan uuden aktivointiavaimen kera, ja lähettää
+     * aktivointilinkin sähköpostilla käyttäjälle. Hylkää transactionin mikäli
+     * sähköpostin lähetys, tai tietojen kirjoitus tietokantaan epäonnistui.
+     *
+     * @throws RuntimeException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
+     */
+    @Transactional
+    void register(RegistrationCredentials credentials) {
+        // 1. Lisää käyttäjä
+        AuthUser user = new AuthUser();
+        user.setUsername(credentials.getUsername());
+        user.setEmail(credentials.getEmail());
+        user.setPasswordHash(this.hashingProvider.hash(credentials.getPassword()));
+        user.setIsActivated(0);
+        user.setActivationKey(this.tokenService.generateRandomString(32));
+        if (this.authUserRepository.insert(user) < 1) {
+            throw new RuntimeException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
+        }
+        // 2. Lähetä aktivointi-email
+        String link = String.format(
+            "https://treenikirja.com/api/auth/activate?token=%s&email=%s",
+            user.getActivationKey(),
+            user.getEmail()
+        );
+        if (!this.mailer.sendWrapped(
+                user.getEmail(),
+                "Tilin aktivointi",
+                String.format(
+                    "Moi %s,<br><br>kiitos rekisteröitymisestä treenikirjaan, tässä aktivointilinkki:" +
+                    "<a href=\"%s\">%s</a>. Mukavia treenejä!",
+                    user.getUsername(),
+                    link,
+                    link
+                )
+            )) {
+            throw new RuntimeException("Aktivointimailin lähetys epäonnistui");
+        }
+        // Kaikki ok
+    }
+
+    /**
+     * Aktivoi käyttäjän {username}, tai heittää poikkeuksen jos käyttäjää ei
+     * löytynyt, tai aktivointiavain ei ollut validi.
+     */
+    void activate(String username, String activationKey) {
+        throw new RuntimeException("TODO");
     }
 
     /**

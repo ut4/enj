@@ -21,12 +21,17 @@ DROP TABLE   IF EXISTS `user`;
 CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
+    email VARCHAR(256) NOT NULL,
+    -- Autentikaatioon liittyvät
     passwordHash VARCHAR(255) NOT NULL,
     lastLogin INT UNSIGNED DEFAULT NULL,
     currentToken VARCHAR(255) DEFAULT NULL,
+    isActivated TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+    activationKey VARCHAR(64) DEFAULT NULL,
+    -- Vapaaehtoiset kentät
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
-    isMale TINYINT(1) DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
-    signature VARCHAR(255) DEFAULT NULL,
+    isMale TINYINT(1) UNSIGNED DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
+    signature VARCHAR(255) DEFAULT NULL
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -43,9 +48,12 @@ CREATE VIEW authUserView AS
     SELECT
         u.id           AS userId,
         u.username     AS userUsername,
+        u.email        AS userEmail,
         u.passwordHash AS userPasswordHash,
         u.lastLogin    AS userLastLogin,
-        u.currentToken AS userCurrentToken
+        u.currentToken AS userCurrentToken,
+        u.isActivated  AS userIsActivated,
+        u.activationKey AS userActivationKey
     FROM `user` AS u;
 
 -- == Exercise ====

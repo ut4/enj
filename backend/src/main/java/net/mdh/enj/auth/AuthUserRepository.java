@@ -23,7 +23,8 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
 
     AuthUser selectOne(SelectFilters filters) {
         return super.selectOne(
-            "SELECT * FROM authUserView" + (filters.hasRules() ? " WHERE " + filters.toSql() : ""),
+            "SELECT * FROM authUserView WHERE userIsActivated = 1" +
+                (filters.hasRules() ? " AND " + filters.toSql() : ""),
             filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
             new AuthUserMapper()
         );
@@ -47,9 +48,12 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
             AuthUser user = new AuthUser();
             user.setId(rs.getString("userId"));
             user.setUsername(rs.getString("userUsername"));
+            user.setEmail(rs.getString("userEmail"));
             user.setPasswordHash(rs.getString("userPasswordHash"));
             user.setLastLogin(rs.getObject("userLastLogin", Long.class));
             user.setCurrentToken(rs.getString("userCurrentToken"));
+            user.setIsActivated(rs.getInt("userIsActivated"));
+            user.setActivationKey(rs.getString("userActivationKey"));
             return user;
         }
     }

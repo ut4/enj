@@ -12,10 +12,10 @@ public class LoginCredentials {
     private static final int MIN_PASSWORD_LENGTH = 4;
     @NotNull
     @Size(min = MIN_USERNAME_LENGTH, max = MAX_USERNAME_LENGTH)
-    private String username;
+    protected String username;
     @NotNull
     @Size(min = MIN_PASSWORD_LENGTH)
-    private char[] password;
+    protected char[] password;
 
     public String getUsername() {
         return this.username;
