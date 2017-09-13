@@ -48,31 +48,35 @@ public class Mailer {
     }
 
     /**
-     * Lähettää viestin {content} osoitteeseen {to}.
+     * Lähettää viestin {content} paketoituna <!DOCTYPE html><html><head>...-
+     * markupiin osoitteeseen {to}.
      *
      * @return Onnistuiko mailin lähetys, true = kyllä, false = ei.
      */
-    public boolean send(String to, String subject, String content) {
+    public boolean sendMail(String to, String subject, String content) {
+        return this.sendMail(to, subject, content, true);
+    }
+
+    /**
+     * Lähettää viestin {content} osoitteeseen {to}.
+     */
+    public boolean sendMail(String to, String subject, String content, boolean wrapContentToDefaultTemplate) {
         try {
             Session emailSession = this.getSession();
             Message msg = new MimeMessage(emailSession);
             msg.setFrom(new InternetAddress(this.fromAddress, this.fromPersonal));
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             msg.setSubject(subject);
-            msg.setContent(content, this.contentType);
+            msg.setContent(
+                wrapContentToDefaultTemplate ? this.newHtmlTemplate(content) : content,
+                this.contentType
+            );
             Transport.send(msg);
             return true;
         } catch (MessagingException | UnsupportedEncodingException e) {
             logger.error(e.getLocalizedMessage());
             return false;
         }
-    }
-
-    /**
-     * Lähettää viestin {content} paketoituna <!DOCTYPE html><html><head>...markupiin.
-     */
-    public boolean sendWrapped(String to, String subject, String content) {
-        return this.send(to, subject, this.newHtmlTemplate(content));
     }
 
     private Session getSession() {

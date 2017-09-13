@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.Application;
 import net.mdh.enj.Mailer;
@@ -93,6 +94,7 @@ public class AuthService {
         AuthUser user = new AuthUser();
         user.setUsername(credentials.getUsername());
         user.setEmail(credentials.getEmail());
+        user.setCreatedAt(System.currentTimeMillis() / 1000L);
         user.setPasswordHash(this.hashingProvider.hash(credentials.getPassword()));
         user.setIsActivated(0);
         user.setActivationKey(this.tokenService.generateRandomString(32));
@@ -101,11 +103,11 @@ public class AuthService {
         }
         // 2. Lähetä aktivointi-email
         String link = String.format(
-            "https://treenikirja.com/api/auth/activate?token=%s&email=%s",
+            "https://treenikirja.com/api/auth/activate?key=%s&email=%s",
             user.getActivationKey(),
-            user.getEmail()
+            TextCodec.BASE64URL.encode(user.getEmail())
         );
-        if (!this.mailer.sendWrapped(
+        if (!this.mailer.sendMail(
                 user.getEmail(),
                 "Tilin aktivointi",
                 String.format(

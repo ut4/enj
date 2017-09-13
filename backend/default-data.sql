@@ -1,7 +1,7 @@
 -- username asd, password asdf
-INSERT INTO `user` VALUES
-('69891648-07bb-4991-8035-7fbc89fb6035', 'asd', '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', NULL, NULL, NULL, NULL),
-('c90aa48a-d296-4103-97c2-0c0b1701c50e', 'zxc', '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', NULL, NULL, NULL, NULL);
+INSERT INTO `user` (id, username, email, createdAt, passwordHash) VALUES
+('69891648-07bb-4991-8035-7fbc89fb6035', 'asd', 'asd@asd.com', 1505368449, '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', NULL, NULL, NULL, NULL),
+('c90aa48a-d296-4103-97c2-0c0b1701c50e', 'zxc', 'zxc@asd.com', 1505368449, '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', NULL, NULL, NULL, NULL);
 
 INSERT INTO exercise (id, `name`) VALUES
     ('c5b8ede5-4859-4f0e-a2c8-df09948886d4', 'Maastaveto'),

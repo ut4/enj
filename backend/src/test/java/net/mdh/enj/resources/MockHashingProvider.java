@@ -9,7 +9,10 @@ public class MockHashingProvider implements HashingProvider {
     }
     @Override
     public String hash(char[] password) {
-        return "";
+        return genMockHash(password);
+    }
+    public static String genMockHash(char[] password) {
+        return String.valueOf(password) + "hash";
     }
     @Override
     public boolean verify(char[] plain, String hashed) {

@@ -5,6 +5,7 @@ import net.mdh.enj.mapping.DbEntity;
 public class AuthUser extends DbEntity {
     private String username;
     private String email;
+    private long createdAt;
     private String passwordHash;
     private Long lastLogin;
     private String currentToken;
@@ -23,6 +24,13 @@ public class AuthUser extends DbEntity {
     }
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public long getCreatedAt() {
+        return this.createdAt;
+    }
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getPasswordHash() {

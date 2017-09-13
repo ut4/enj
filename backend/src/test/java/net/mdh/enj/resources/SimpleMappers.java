@@ -84,9 +84,13 @@ public class SimpleMappers {
             AuthUser user = new AuthUser();
             user.setId(rs.getString("id"));
             user.setUsername(rs.getString("username"));
+            user.setEmail(rs.getString("email"));
+            user.setCreatedAt(rs.getLong("createdAt"));
             user.setPasswordHash(rs.getString("passwordHash"));
             user.setLastLogin(rs.getObject("lastLogin", Long.class));
             user.setCurrentToken(rs.getString("currentToken"));
+            user.setIsActivated(rs.getInt("isActivated"));
+            user.setActivationKey(rs.getString("activationKey"));
             return user;
         }
     }

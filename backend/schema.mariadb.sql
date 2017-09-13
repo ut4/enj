@@ -22,6 +22,7 @@ CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
     email VARCHAR(256) NOT NULL,
+    createdAt INT UNSIGNED NOT NULL,
     -- Autentikaatioon liittyvät
     passwordHash VARCHAR(255) NOT NULL,
     lastLogin INT UNSIGNED DEFAULT NULL,
@@ -49,6 +50,7 @@ CREATE VIEW authUserView AS
         u.id           AS userId,
         u.username     AS userUsername,
         u.email        AS userEmail,
+        u.createdAt    AS userCreatedAt,
         u.passwordHash AS userPasswordHash,
         u.lastLogin    AS userLastLogin,
         u.currentToken AS userCurrentToken,

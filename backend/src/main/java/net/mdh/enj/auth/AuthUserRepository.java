@@ -49,6 +49,7 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
             user.setId(rs.getString("userId"));
             user.setUsername(rs.getString("userUsername"));
             user.setEmail(rs.getString("userEmail"));
+            user.setCreatedAt(rs.getLong("userCreatedAt"));
             user.setPasswordHash(rs.getString("userPasswordHash"));
             user.setLastLogin(rs.getObject("userLastLogin", Long.class));
             user.setCurrentToken(rs.getString("userCurrentToken"));
