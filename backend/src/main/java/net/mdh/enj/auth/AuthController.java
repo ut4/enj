@@ -1,6 +1,7 @@
 package net.mdh.enj.auth;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.inject.Inject;
@@ -48,6 +49,7 @@ public class AuthController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.LoginResponse login(@Valid @NotNull LoginCredentials loginCredentials) {
         AuthUser user = this.authService.getUser(loginCredentials);
+        loginCredentials.nuke();
         // Jos käyttäjää ei löydy, tai salasana menee väärin -> 401
         if (user == null) {
             throw new NotAuthorizedException("Invalid credentials");
@@ -105,5 +107,25 @@ public class AuthController {
         return "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" content=\"noindex, nofollow\">" +
             "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan osoitteessa " +
             "<a href=\"https://foo.com/app/#/kirjaudu\">https://foo.com/app/#/kirjaudu</a>";
+    }
+
+    /**
+     * Päivittää kirjautuneen käyttäjän tiedot
+     *
+     * @param newCredentials {"email": "e@m.c", "password": "bars", "newPassword": "furs"}
+     * @return Responses.Ok
+     */
+    @PUT
+    @Path("/update-credentials")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok updateCredentials(@Valid @NotNull UpdateCredentials newCredentials) {
+        newCredentials.setUserId(this.requestContext.getUserId());
+        // Salasana menee väärin, tai tapahtuu jotain muuta outoa
+        AuthUser user = this.authService.getUser(newCredentials);
+        if (user == null) {
+            throw new NotAuthorizedException("Kirjautunutta käyttäjää ei löytynyt");
+        }
+        this.authService.updateCredentials(user, newCredentials);
+        return new Responses.Ok();
     }
 }

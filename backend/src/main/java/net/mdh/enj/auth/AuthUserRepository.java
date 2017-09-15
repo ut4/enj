@@ -14,6 +14,8 @@ import java.util.List;
 public class AuthUserRepository extends BasicRepository<AuthUser> {
 
     enum UpdateColumn {
+        EMAIL("email = :email"),
+        PASSWORD_HASH("passwordHash = :passwordHash"),
         LAST_LOGIN("lastLogin = :lastLogin"),
         CURRENT_TOKEN("currentToken = :currentToken"),
         IS_ACTIVATED("isActivated = :isActivated"),
@@ -55,8 +57,8 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
         );
     }
 
-    int update(AuthUser user) {
-        return super.update(this.newUpdateQ(UpdateColumn.values(), null), user);
+    int update(AuthUser user, UpdateColumn[] columns) {
+        return super.update(this.newUpdateQ(columns, null), user);
     }
 
     int update(AuthUser user, UpdateColumn[] columns, FilterColumn[] where) {

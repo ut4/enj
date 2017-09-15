@@ -1,19 +1,22 @@
 package net.mdh.enj.auth;
 
-import javax.inject.Inject;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.impl.TextCodec;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.impl.TextCodec;
+import org.springframework.transaction.annotation.Transactional;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.Application;
 import net.mdh.enj.Mailer;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import org.springframework.transaction.annotation.Transactional;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AuthService {
 
@@ -43,9 +46,13 @@ public class AuthService {
     /**
      * Palauttaa käyttäjän tietokannasta, joka täsmää {credentials}eihin.
      */
-    AuthUser getUser(LoginCredentials credentials) {
+    AuthUser getUser(Credentials credentials) {
         SelectFilters selectFilters = new SelectFilters();
-        selectFilters.setUsername(credentials.getUsername());
+        if (credentials instanceof LoginCredentials) {
+            selectFilters.setUsername(((LoginCredentials) credentials).getUsername());
+        } else if (credentials instanceof UpdateCredentials) {
+            selectFilters.setId(((UpdateCredentials) credentials).getUserId());
+        }
         AuthUser user = this.authUserRepository.selectOne(selectFilters);
         if (user == null || !this.hashingProvider.verify(
             credentials.getPassword(),
@@ -53,7 +60,6 @@ public class AuthService {
         )) {
             user = null;
         }
-        credentials.nuke();
         return user;
     }
 
@@ -64,7 +70,10 @@ public class AuthService {
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setLastLogin(System.currentTimeMillis() / 1000L);
         user.setCurrentToken(tokenHash);
-        this.authUserRepository.update(user);
+        this.authUserRepository.update(user, new AuthUserRepository.UpdateColumn[]{
+            AuthUserRepository.UpdateColumn.LAST_LOGIN,
+            AuthUserRepository.UpdateColumn.CURRENT_TOKEN
+        });
         return tokenHash;
     }
 
@@ -78,7 +87,10 @@ public class AuthService {
         cleared.setId(userId);
         cleared.setLastLogin(null);
         cleared.setCurrentToken(null);
-        if (this.authUserRepository.update(cleared) < 1) {
+        if (this.authUserRepository.update(cleared, new AuthUserRepository.UpdateColumn[]{
+            AuthUserRepository.UpdateColumn.LAST_LOGIN,
+            AuthUserRepository.UpdateColumn.CURRENT_TOKEN,
+        }) < 1) {
             throw new RuntimeException("Tietokantaan kirjoitus epäonnistui");
         }
     }
@@ -157,6 +169,28 @@ public class AuthService {
     }
 
     /**
+     * Päivittää käyttäjän {user} emailin, ja luo uuden salasanan mikäli se
+     * vaihtui.
+     */
+    void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
+        List<AuthUserRepository.UpdateColumn> cols = new ArrayList<>();
+        // Aseta email aina
+        user.setEmail(newCredentials.getEmail());
+        cols.add(AuthUserRepository.UpdateColumn.EMAIL);
+        // Luo uusi salasana vain, jos se vaihtui
+        if (!Arrays.equals(newCredentials.getNewPassword(), newCredentials.getPassword())) {
+            user.setPasswordHash(this.hashingProvider.hash(newCredentials.getNewPassword()));
+            cols.add(AuthUserRepository.UpdateColumn.PASSWORD_HASH);
+        }
+        newCredentials.nuke();
+        if (this.authUserRepository.update(user, cols.toArray(
+            new AuthUserRepository.UpdateColumn[cols.size()]
+        )) < 1) {
+            throw new RuntimeException("Tietojen päivitys epäonnistui");
+        }
+    }
+
+    /**
      * Uusii tokenin jos se on vanhentunut (mutta validi), tai palauttaa sen
      * sellaisenaan jos uusimista ei tarvita. Palauttaa null, jos tokenin parsiminen
      * ei onnistunut, tai käyttäjän viimeisestä kirjautumisesta on yli 2kk.
@@ -213,7 +247,10 @@ public class AuthService {
     private void invalidateLogin(AuthUser user) {
         user.setLastLogin(null);
         user.setCurrentToken(null);
-        this.authUserRepository.update(user);
+        this.authUserRepository.update(user, new AuthUserRepository.UpdateColumn[]{
+            AuthUserRepository.UpdateColumn.LAST_LOGIN,
+            AuthUserRepository.UpdateColumn.CURRENT_TOKEN
+        });
     }
 
     // -------------------------------------------------------------------------

@@ -13,6 +13,10 @@ public class RollbackingDBJerseyTest extends JerseyTestCase {
 
     @AfterClass
     public static void afterClass() throws SQLException {
+        rollback();
+    }
+
+    protected static void rollback() throws SQLException {
         if (rollbackingDSFactory.isConnected()) {
             rollbackingDSFactory.getDataSource().getConnection().rollback();
         }

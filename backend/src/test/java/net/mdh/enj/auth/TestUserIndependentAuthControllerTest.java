@@ -1,0 +1,138 @@
+package net.mdh.enj.auth;
+
+import org.junit.Test;
+import org.junit.Assert;
+import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import io.jsonwebtoken.impl.TextCodec;
+import net.mdh.enj.resources.MockHashingProvider;
+import javax.ws.rs.core.Response;
+import java.util.Collections;
+
+/**
+ * Testaa AuthControllerin reitit /register, ja /activate.
+ */
+public class TestUserIndependentAuthControllerTest extends AuthControllerTestCase {
+
+    private static String mockActicavationKey = String.join("", Collections.nCopies(
+        AuthService.ACTIVATION_KEY_LENGTH, "a"
+    ));
+
+    @Test
+    public void POSTRegisterLisääKäyttäjänTietokantaanJaLähettääAktivointiEmailin() {
+        RegistrationCredentials credentials = this.getValidRegistrationCredentials();
+        AuthUser expectedNewUser = new AuthUser();
+        expectedNewUser.setUsername(credentials.getUsername());
+        expectedNewUser.setEmail(credentials.getEmail());
+        expectedNewUser.setCreatedAt(System.currentTimeMillis() / 1000L);
+        expectedNewUser.setPasswordHash(MockHashingProvider.genMockHash(credentials.getPassword()));
+        //
+        Mockito.when(mockMailer.sendMail(
+            Mockito.eq(expectedNewUser.getEmail()),
+            Mockito.anyString(),
+            Mockito.anyString()
+        )).thenReturn(true);
+        // Lähetä register-pyyntö
+        Response response = this.newPostRequest("auth/register", credentials);
+        Assert.assertEquals(200, response.getStatus());
+        // Lisäsikö käyttäjän?
+        AuthUser actualUser = this.getUserFromDb(expectedNewUser, true);
+        Assert.assertEquals(actualUser.getUsername(), expectedNewUser.getUsername());
+        Assert.assertTrue(actualUser.getCreatedAt() >= expectedNewUser.getCreatedAt());
+        Assert.assertEquals(actualUser.getEmail(), expectedNewUser.getEmail());
+        Assert.assertEquals(actualUser.getPasswordHash(), expectedNewUser.getPasswordHash());
+        Assert.assertNull(actualUser.getLastLogin());
+        Assert.assertNull(actualUser.getCurrentToken());
+        Assert.assertEquals(actualUser.getIsActivated(), 0);
+        Assert.assertEquals(actualUser.getActivationKey().length(),
+            AuthService.ACTIVATION_KEY_LENGTH
+        );
+        // Lähettikö mailin?
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
+            Mockito.eq(credentials.getEmail()),
+            Mockito.anyString(), // subject
+            captor.capture()     // content
+        );
+        Assert.assertTrue("Email pitäis alkaa näin",
+            captor.getValue().startsWith("Moi " + credentials.getUsername() +
+                ",<br><br>kiitos rekisteröitymisestä"
+            )
+        );
+        Assert.assertTrue("Email pitäisi sisältää tilin aktivointilinkki",
+            captor.getValue().matches(".+/api/auth/activate\\?key=.+&email=" +
+                (TextCodec.BASE64URL.encode(credentials.getEmail())) + ".+"
+            )
+        );
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void POSTRegisterEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
+        String username = "bos";
+        // Tilanne, jossa mailer palauttaa false
+        Mockito.when(mockMailer.sendMail(
+            Mockito.anyString(),
+            Mockito.anyString(),
+            Mockito.anyString()
+        )).thenReturn(false);
+        // Lähetä register-pyyntö
+        Response response = this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
+        Assert.assertEquals(500, response.getStatus());
+        // Lisäsikö käyttäjän?
+        AuthUser notExpectedUser = new AuthUser();
+        notExpectedUser.setUsername(username);
+        Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
+            this.getUserFromDb(notExpectedUser, true)
+        );
+    }
+
+    @Test
+    public void GETActivatePäivittääKäyttäjänAktiiviseksi() {
+        // Rekisteröi jokin käyttäjä
+        AuthUser testUser = insertNewUser("someuser", null, 0);
+        // Lähetä GET /auth/activate?key={key}&email={email}
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains("Tilisi on nyt aktivoitu"));
+        // Päivittikö tiedot?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(testUserAfter.getIsActivated(), 1);
+        Assert.assertNull(testUserAfter.getActivationKey());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosKäyttäjääEiLöydy() {
+        // Rekisteröi jokin käyttäjä
+        AuthUser testUser = insertNewUser("afoo", null, 0);
+        // Lähetä aktivointipyyntö, jossa väärä email
+        testUser.setEmail("foaa@mail.com");
+        Response response = this.sendActivationRequest(testUser);
+        Assert.assertEquals(500, response.getStatus());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosAvainEiTäsmää() {
+        AuthUser testUser = insertNewUser("dr.pepper", null, 0);
+        testUser.setActivationKey(mockActicavationKey);
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(500, response.getStatus());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void GETActivateEiKirjoitaTietokantaanMitäänJosAktivointiavainOnLiianVanha() {
+        AuthUser testUser = insertNewUser(
+            "mr.jackson",
+            System.currentTimeMillis() / 1000 - AuthService.ACTIVATION_KEY_EXPIRATION - 100,
+            0
+        );
+        Response response = sendActivationRequest(testUser);
+        Assert.assertEquals(500, response.getStatus());
+    }
+
+    private Response sendActivationRequest(AuthUser testUser) {
+        return this.newGetRequest("auth/activate", t ->
+            t.queryParam("key", testUser.getActivationKey())
+                .queryParam("email", TextCodec.BASE64URL.encode(testUser.getEmail()))
+        );
+    }
+}
