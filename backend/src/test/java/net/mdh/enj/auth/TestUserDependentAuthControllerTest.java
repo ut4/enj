@@ -19,6 +19,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
 
     private final static String correctUsername = "foo";
     private final static char[] correctPassword = "bars".toCharArray();
+    private final static char[] inCorrectPassword = "dars".toCharArray();
     private static String mockCurrentToken = "mocktokne";
     private static Long mockLastLogin = 3L;
     private static AuthUser testUser;
@@ -63,15 +64,14 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     @Test
     public void POSTLoginHylkääPyynnönJosSalasanaOnVäärä() {
         Response responseForWrongPassword;
-        char[] wrongPassword = "dars".toCharArray();
         // Rakenna input
         LoginCredentials dataWithWrongPassword = new LoginCredentials();
         dataWithWrongPassword.setUsername(correctUsername);
-        dataWithWrongPassword.setPassword(wrongPassword);
+        dataWithWrongPassword.setPassword(inCorrectPassword);
         // Tee pyyntö, ja assertoi että tsekkasi salasanan
         responseForWrongPassword = this.newPostRequest("auth/login", dataWithWrongPassword);
         Assert.assertEquals(401, responseForWrongPassword.getStatus());
-        Mockito.verify(mockHasherSpy, Mockito.times(1)).verify(wrongPassword, testUser.getPasswordHash());
+        Mockito.verify(mockHasherSpy, Mockito.times(1)).verify(inCorrectPassword, testUser.getPasswordHash());
     }
 
     @Test
@@ -139,5 +139,30 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         Assert.assertEquals(MockHashingProvider.genMockHash(newPassword),
             testUserAfter.getPasswordHash()
         );
+    }
+
+    @Test
+    public void PUTUpdateCredentialsPäivittääKirjautuneenKäyttäjänEmailinTietokantaan() {
+        UpdateCredentials newCredentials = new UpdateCredentials();
+        // note. ei userId:tä eikä newPassword:iä
+        newCredentials.setEmail("new2@email.com");
+        newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
+        // Lähetä PUT /auth/update-credentials
+        Response response = this.newPutRequest("auth/update-credentials", newCredentials);
+        Assert.assertEquals(200, response.getStatus());
+        // Päivittikö tiedot?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, true);
+        Assert.assertEquals(newCredentials.getEmail(), testUserAfter.getEmail());
+        Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
+    }
+
+    @Test
+    public void PUTUpdateCredentialsHylkääPyynnönJosCredentialsitEiTäsmää() {
+        UpdateCredentials newCredentials = new UpdateCredentials();
+        newCredentials.setPassword(inCorrectPassword);
+        newCredentials.setUserId(testUser.getId());
+        newCredentials.setEmail(testUser.getEmail());
+        Response response = this.newPutRequest("auth/update-credentials", newCredentials);
+        Assert.assertEquals(400, response.getStatus());
     }
 }

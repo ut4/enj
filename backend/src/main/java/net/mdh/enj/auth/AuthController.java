@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.validation.Valid;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
@@ -123,7 +124,7 @@ public class AuthController {
         // Salasana menee väärin, tai tapahtuu jotain muuta outoa
         AuthUser user = this.authService.getUser(newCredentials);
         if (user == null) {
-            throw new NotAuthorizedException("Kirjautunutta käyttäjää ei löytynyt");
+            throw new BadRequestException("Invalid credentials");
         }
         this.authService.updateCredentials(user, newCredentials);
         return new Responses.Ok();

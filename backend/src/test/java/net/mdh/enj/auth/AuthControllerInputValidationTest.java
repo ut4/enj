@@ -92,9 +92,9 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         //
         List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("AuthController.activate.arg0", errors.get(0).getPath());
+        Assert.assertEquals("AuthController.activate.arg0", errors.get(0).getPath()); // key
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("AuthController.activate.arg1", errors.get(1).getPath());
+        Assert.assertEquals("AuthController.activate.arg1", errors.get(1).getPath()); // email
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
     }
 
@@ -108,9 +108,9 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         //
         List<ValidationError> errors = super.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("AuthController.activate.arg0", errors.get(0).getPath());
+        Assert.assertEquals("AuthController.activate.arg0", errors.get(0).getPath()); // key
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("AuthController.activate.arg1", errors.get(1).getPath());
+        Assert.assertEquals("AuthController.activate.arg1", errors.get(1).getPath()); // email
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(1).getMessageTemplate());
     }
 
@@ -119,16 +119,15 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         UpdateCredentials nulls = new UpdateCredentials();
         nulls.setEmail(null);
         nulls.setPassword(null);
-        nulls.setNewPassword(null);
+        nulls.setNewPassword(null); // tämä on ok, uusi salasana ei pakollinen
         Response response = this.newPutRequest("auth/update-credentials", nulls);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(2, errors.size());
         Assert.assertEquals("AuthController.updateCredentials.arg0.currentPassword", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.updateCredentials.arg0.email", errors.get(1).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
-        Assert.assertEquals("AuthController.updateCredentials.arg0.newPassword", errors.get(2).getPath());
-        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(2).getMessageTemplate());
     }
 
     @Test
@@ -140,6 +139,7 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         Response response = this.newPutRequest("auth/update-credentials", badNewCredentials);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
         Assert.assertEquals("AuthController.updateCredentials.arg0.currentPassword", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.updateCredentials.arg0.email", errors.get(1).getPath());

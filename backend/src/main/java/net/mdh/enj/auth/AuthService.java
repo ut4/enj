@@ -178,7 +178,8 @@ public class AuthService {
         user.setEmail(newCredentials.getEmail());
         cols.add(AuthUserRepository.UpdateColumn.EMAIL);
         // Luo uusi salasana vain, jos se vaihtui
-        if (!Arrays.equals(newCredentials.getNewPassword(), newCredentials.getPassword())) {
+        if (newCredentials.getNewPassword() != null &&
+            !Arrays.equals(newCredentials.getNewPassword(), newCredentials.getPassword())) {
             user.setPasswordHash(this.hashingProvider.hash(newCredentials.getNewPassword()));
             cols.add(AuthUserRepository.UpdateColumn.PASSWORD_HASH);
         }
