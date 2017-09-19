@@ -7,30 +7,40 @@ QUnit.module('auth/CredentialsForm', hooks => {
     let rendered: any;
     let testCredentials: Enj.API.Credentials;
     let credentialsFormInstance: CredentialsForm;
+    let usernameInputEl: HTMLInputElement;
     let emailInputEl: HTMLInputElement;
     let currentPasswordInputEl: HTMLInputElement;
     let newPasswordInputEl: HTMLInputElement;
     let newPasswordConfirmationInputEl: HTMLInputElement;
     hooks.beforeEach(() => {
-        testCredentials = {email: 'test@email.com', password: 'test'};
+        testCredentials = {username: 'test', email: 'test@email.com', password: 'pass'};
         rendered = itu.renderIntoDocument(
             <CredentialsForm credentials={ testCredentials } onValidityChange={ () => {} }/>
         );
         credentialsFormInstance = rendered.props.children.children;
         const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        emailInputEl = inputEls[0] as HTMLInputElement;
-        currentPasswordInputEl = inputEls[1] as HTMLInputElement;
-        newPasswordInputEl = inputEls[2] as HTMLInputElement;
-        newPasswordConfirmationInputEl = inputEls[3] as HTMLInputElement;
+        usernameInputEl = inputEls[0] as HTMLInputElement;
+        emailInputEl = inputEls[1] as HTMLInputElement;
+        currentPasswordInputEl = inputEls[2] as HTMLInputElement;
+        newPasswordInputEl = inputEls[3] as HTMLInputElement;
+        newPasswordConfirmationInputEl = inputEls[4] as HTMLInputElement;
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa invalid', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);
         assert.equal(initialErrorMessages.length, 0);
         assert.equal(credentialsFormInstance.state.validity, false);
-        // Asettiko initial arvon?
+        // Asettiko initial arvot?
+        assert.equal(usernameInputEl.value, testCredentials.username);
         assert.equal(emailInputEl.value, testCredentials.email);
         //
         const asserter = new FormValidityAsserter(credentialsFormInstance, rendered, assert);
+        usernameInputEl.value = 'a';
+        utils.triggerEvent('input', usernameInputEl);
+        asserter.assertIsValid(false, 1);
+        usernameInputEl.value = 'foo';
+        utils.triggerEvent('input', usernameInputEl);
+        asserter.assertIsValid(false, 0);
+        //
         emailInputEl.value = '@test.com';
         utils.triggerEvent('input', emailInputEl);
         asserter.assertIsValid(false, 1);

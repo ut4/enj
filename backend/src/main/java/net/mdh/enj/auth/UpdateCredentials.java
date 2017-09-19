@@ -5,16 +5,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * Bean /auth/credentials-reitin input-JSONille.
+ * Bean PUT /auth/credentials-reitin input-JSONille.
  */
-public class UpdateCredentials implements Credentials {
+public class UpdateCredentials extends LoginCredentials {
     private String userId;
     @Email
     @NotNull
     private String email;
-    @NotNull
-    @Size(min = LoginCredentials.MIN_PASSWORD_LENGTH)
-    private char[] currentPassword;
     @Size(min = LoginCredentials.MIN_PASSWORD_LENGTH)
     private char[] newPassword;
 
@@ -32,15 +29,6 @@ public class UpdateCredentials implements Credentials {
         this.email = email;
     }
 
-    @Override
-    public char[] getPassword() {
-        return this.currentPassword;
-    }
-    @Override
-    public void setPassword(char[] currentPassword) {
-        this.currentPassword = currentPassword;
-    }
-
     public char[] getNewPassword() {
         return this.newPassword;
     }
@@ -50,7 +38,7 @@ public class UpdateCredentials implements Credentials {
 
     @Override
     public void nuke() {
-        this.currentPassword = new char[this.currentPassword.length];
+        super.nuke();
         if (this.newPassword != null) {
             this.newPassword = new char[this.newPassword.length];
         }

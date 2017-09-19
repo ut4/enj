@@ -14,6 +14,7 @@ import java.util.List;
 public class AuthUserRepository extends BasicRepository<AuthUser> {
 
     enum UpdateColumn {
+        USERNAME("username = :username"),
         EMAIL("email = :email"),
         PASSWORD_HASH("passwordHash = :passwordHash"),
         LAST_LOGIN("lastLogin = :lastLogin"),

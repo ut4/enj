@@ -17,9 +17,11 @@ public class LoginCredentials implements Credentials {
     @Size(min = MIN_PASSWORD_LENGTH)
     protected char[] password;
 
+    @Override
     public String getUsername() {
         return this.username;
     }
+    @Override
     public void setUsername(String username) {
         this.username = username;
     }

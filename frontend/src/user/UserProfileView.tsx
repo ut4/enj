@@ -14,7 +14,6 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
         super(props, context);
         this.props.allowUnknownValidities = true;
         this.evaluators = {
-            username: [(input: any) => input.length >= 2 && input.length <= 42],
             signature: [(input: any) => !input.length || input.length <= 255]
         };
         this.state = {
@@ -46,7 +45,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
             <h2>Profiili</h2>
             { this.state.user && [
                 <SubMenu>
-                    <a href="#/profiili/muokkaa">Muokkaa tiliä</a>
+                    <a href="#/tili/muokkaa">Muokkaa tiliä</a>
                 </SubMenu>,
                 <div class="row">
                     <div class="col-3">
@@ -55,8 +54,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
                     <div class="col-9">
                         <label class="input-set">
                             <span>Käyttäjänimi</span>
-                            <input name="username" value={ this.state.user.username } onInput={ e => this.receiveInputValue(e) }/>
-                            { validationMessage(this.evaluators.username[0], templates => templates.lengthBetween('Käyttäjänimi', 2, 42)) }
+                            <div class="text-heavy">{ this.state.user.username }</div>
                         </label>
                         <label class="input-set">
                             <span>Allekirjoitus</span>

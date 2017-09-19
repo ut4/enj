@@ -104,6 +104,9 @@ body.loading:after {
 .text-small {
     font-size: .8em;
 }
+.text-heavy {
+    font-family: "Fira sans heavy";
+}
 .heading .text-small {
     font-size: .7em;
     font-family: "Fira sans light";

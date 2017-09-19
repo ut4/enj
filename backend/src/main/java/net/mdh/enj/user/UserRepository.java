@@ -24,8 +24,8 @@ public class UserRepository extends BasicRepository<User> {
     }
 
     int update(User user) {
-        return super.update("UPDATE `user` SET username = :username, " +
-            "bodyWeight = :bodyWeight, isMale = :isMale, signature = :signature WHERE id = :id", user);
+        return super.update("UPDATE `user` SET bodyWeight = :bodyWeight, " +
+            "isMale = :isMale, signature = :signature WHERE id = :id", user);
     }
 
     private static class UserMapper implements RowMapper<User> {

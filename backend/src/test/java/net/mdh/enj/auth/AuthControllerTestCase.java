@@ -18,15 +18,18 @@ import org.mockito.Mockito;
 
 public class AuthControllerTestCase extends RollbackingDBJerseyTest {
 
+    final HashingProvider mockHasherSpy;
     static TokenService tokenService;
-    static HashingProvider mockHasherSpy;
     static Mailer mockMailer;
     static DbTestUtils utils;
+
+    AuthControllerTestCase() {
+        mockHasherSpy = Mockito.spy(new MockHashingProvider());
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         tokenService = new TokenService(AppConfigProvider.getInstance());
-        mockHasherSpy = Mockito.spy(new MockHashingProvider());
         mockMailer = Mockito.mock(Mailer.class);
         utils = new DbTestUtils(rollbackingDSFactory);
     }

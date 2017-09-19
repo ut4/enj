@@ -8,7 +8,7 @@ import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
 QUnit.module('auth/CredentialsEditView', hooks => {
-    let testCredentials = {email: 'e@mail.com', password: 'bars'};
+    let testUser = {username: 'neo', email: 'e@mail.com'};
     let shallowAuthBackend: AuthBackend;
     let authBackendIocOverride: sinon.SinonStub;
     let shallowUserBackend: UserBackend;
@@ -34,11 +34,11 @@ QUnit.module('auth/CredentialsEditView', hooks => {
         notifyIocOverride.restore();
     });
     QUnit.test('confirm kutsuu updateCredentials ja ohjaa takaisin profiiliin', assert => {
-        const credentialsFetchStub = sinon.stub(shallowUserBackend, 'get')
-            .returns(Promise.resolve({email: testCredentials.email}));
+        const credentialsFetchStub = sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const credentialsUpdateStub = sinon.stub(shallowAuthBackend, 'updateCredentials').returns(Promise.resolve(1));
         const confirmSpy = sinon.spy(CredentialsEditView.prototype, 'confirm');
-        const newCredentials = {password: 'fars'};
+        const currentPassword = 'bars';
+        const newCredentials = {username: 'neu', email: 'neu@mail.com', password: 'fars'};
         // Renderöi view
         const rendered = itu.renderIntoDocument(<CredentialsEditView/>);
         // Odota että latautuu
@@ -48,10 +48,16 @@ QUnit.module('auth/CredentialsEditView', hooks => {
             assert.ok(confirmButton.disabled, 'Submit-painike pitäisi olla aluksi disabled');
             // Täytä password & newPassword & newPasswordConfirmation & lähetä lomake
             const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-            const passwordInputEl = inputEls[1] as HTMLInputElement;
-            const newPasswordInputEl = inputEls[2] as HTMLInputElement;
-            const newPasswordConfirmationInputEl = inputEls[3] as HTMLInputElement;
-            passwordInputEl.value = testCredentials.password;
+            const usernameInputEl = inputEls[0] as HTMLInputElement;
+            const emailInputEl = inputEls[1] as HTMLInputElement;
+            const passwordInputEl = inputEls[2] as HTMLInputElement;
+            const newPasswordInputEl = inputEls[3] as HTMLInputElement;
+            const newPasswordConfirmationInputEl = inputEls[4] as HTMLInputElement;
+            usernameInputEl.value = newCredentials.username;
+            utils.triggerEvent('input', usernameInputEl);
+            emailInputEl.value = newCredentials.email;
+            utils.triggerEvent('input', emailInputEl);
+            passwordInputEl.value = currentPassword;
             utils.triggerEvent('input', passwordInputEl);
             newPasswordInputEl.value = newCredentials.password;
             utils.triggerEvent('input', newPasswordInputEl);
@@ -64,8 +70,9 @@ QUnit.module('auth/CredentialsEditView', hooks => {
             // Assertoi backendiin POST
             assert.ok(credentialsUpdateStub.calledOnce, 'Pitäisi postata dataa backendiin');
             assert.deepEqual(credentialsUpdateStub.firstCall.args, [{
-                email: testCredentials.email,
-                password: testCredentials.password,
+                username: newCredentials.username,
+                email: newCredentials.email,
+                password: currentPassword,
                 newPassword: newCredentials.password
             }], 'Pitäisi passata lomakkeen tiedot updateCredentialsille');
             // Redirect

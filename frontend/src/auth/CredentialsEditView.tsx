@@ -4,7 +4,7 @@ import CredentialsForm from 'src/auth/CredentialsForm';
 import iocFactories from 'src/ioc';
 
 /**
- * Näkymä #/profiili/muokkaa
+ * Näkymä #/tili/muokkaa
  */
 class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentials; goodToGo: boolean}> {
     private credentialsForm: CredentialsForm;
@@ -14,8 +14,12 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
     }
     public componentWillMount() {
         iocFactories.userBackend().get().then(
-             user => this.setState({credentials: {email: user.email, password: ''}}),
-             () => iocFactories.notify()('Tilitietojen haku epäonnistui', 'error')
+            user => this.setState({credentials: {
+                username: user.username,
+                email: user.email,
+                password: ''
+            }}),
+            () => iocFactories.notify()('Tilitietojen haku epäonnistui', 'error')
         );
     }
     public render() {

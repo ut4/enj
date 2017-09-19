@@ -26,10 +26,6 @@ QUnit.module('user/UserProfileView', hooks => {
         // Odota, että näkymä latautuu
         const done = assert.async();
         userFetchStub.firstCall.returnValue.then(() => {
-            const usernameInput = utils.findInputByName(rendered, 'username');
-            assert.equal(usernameInput.value, testUser.username,  'Pitäisi asettaa initial-username');
-            assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
-            assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
             // Aseta validi allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
             signatureInput.value = 'abc';
@@ -38,50 +34,36 @@ QUnit.module('user/UserProfileView', hooks => {
             // Aseta invalid allekirjoitus
             signatureInput.value = 'a'.repeat(256);
             utils.triggerEvent('input', signatureInput);
-            assertSignatureErrorIsVisible();
-            // Aseta invalid kättäjänimi
-            usernameInput.value = 'f';
-            utils.triggerEvent('input', usernameInput);
-            assertUsernameErrorIsVisible();
-            // Aseta validit arvot
-            usernameInput.value = 'fois';
-            utils.triggerEvent('input', usernameInput);
+            assert.equal(
+                vtu.getRenderedValidationErrors(rendered)[0].textContent,
+                templates.maxLength('Allekirjoitus', 255)
+            );
+            assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
+            // Aseta validi allekirjoitus
             signatureInput.value = 'houhou';
             utils.triggerEvent('input', signatureInput);
             assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
             assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla taas klikattava');
             done();
         });
-        function assertUsernameErrorIsVisible() {
-            assert.equal(
-                vtu.getRenderedValidationErrors(rendered)[0].textContent,
-                templates.lengthBetween('Käyttäjänimi', 2, 42)
-            );
-            assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
-        }
-        function assertSignatureErrorIsVisible() {
-            assert.equal(
-                vtu.getRenderedValidationErrors(rendered)[0].textContent,
-                templates.maxLength('Allekirjoitus', 255)
-            );
-            assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
-        }
     });
     QUnit.test('lähettää tiedot backendiin', assert => {
         const updateCallStub = sinon.stub(shallowUserBackend, 'update').returns(Promise.resolve(1));
         const userFetchStub = sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const rendered = itu.renderIntoDocument(<UserProfileView/>);
-        const expectedNewUser = {id: testUser.id, username: 'bfr', signature: 'shiz', bodyWeight: 70, isMale: 0};
+        const expectedNewUser = {
+            id: testUser.id,
+            username: testUser.username,
+            signature: 'shiz',
+            bodyWeight: 70,
+            isMale: 0
+        };
         // Odota, että näkymä latautuu
         const done = assert.async();
         userFetchStub.firstCall.returnValue.then(() => {
             //
             assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'male');
-            // Täytä käyttäjänimi
-            const usernameInput = utils.findInputByName(rendered, 'username');
-            usernameInput.value = expectedNewUser.username;
-            utils.triggerEvent('input', usernameInput);
             // Täytä allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
             signatureInput.value = expectedNewUser.signature;

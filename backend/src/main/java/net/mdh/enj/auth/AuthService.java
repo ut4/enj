@@ -48,10 +48,10 @@ public class AuthService {
      */
     AuthUser getUser(Credentials credentials) {
         SelectFilters selectFilters = new SelectFilters();
-        if (credentials instanceof LoginCredentials) {
-            selectFilters.setUsername(((LoginCredentials) credentials).getUsername());
-        } else if (credentials instanceof UpdateCredentials) {
+        if (credentials instanceof UpdateCredentials) {
             selectFilters.setId(((UpdateCredentials) credentials).getUserId());
+        } else {
+            selectFilters.setUsername(credentials.getUsername());
         }
         AuthUser user = this.authUserRepository.selectOne(selectFilters);
         if (user == null || !this.hashingProvider.verify(
@@ -174,10 +174,12 @@ public class AuthService {
      */
     void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
         List<AuthUserRepository.UpdateColumn> cols = new ArrayList<>();
-        // Aseta email aina
+        // Aseta käyttäjänimi & email aina
+        user.setUsername(newCredentials.getUsername());
+        cols.add(AuthUserRepository.UpdateColumn.USERNAME);
         user.setEmail(newCredentials.getEmail());
         cols.add(AuthUserRepository.UpdateColumn.EMAIL);
-        // Luo uusi salasana vain, jos se vaihtui
+        // Luo uusi salasana vain jos se vaihtui
         if (newCredentials.getNewPassword() != null &&
             !Arrays.equals(newCredentials.getNewPassword(), newCredentials.getPassword())) {
             user.setPasswordHash(this.hashingProvider.hash(newCredentials.getNewPassword()));

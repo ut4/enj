@@ -50,14 +50,13 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
 
     @Test
     public void POSTLoginHylkääPyynnönJosKäyttäjääEiLöydy() {
-        Response responseForWrongUsername;
         // Rakenna input
         LoginCredentials dataWithWrongUsername = new LoginCredentials();
         dataWithWrongUsername.setUsername("doo");
         dataWithWrongUsername.setPassword(correctPassword);
         // Tee pyyntö, ja assertoi ettei edennyt edes salasanan tarkistusvaiheeseen
-        responseForWrongUsername = this.newPostRequest("auth/login", dataWithWrongUsername);
-        Assert.assertEquals(401, responseForWrongUsername.getStatus());
+        Response response = this.newPostRequest("auth/login", dataWithWrongUsername);
+        Assert.assertEquals(401, response.getStatus());
         Mockito.verify(mockHasherSpy, Mockito.times(0)).verify(Mockito.any(), Mockito.any(String.class));
     }
 
@@ -127,6 +126,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         UpdateCredentials newCredentials = new UpdateCredentials();
         char[] newPassword = "newpass".toCharArray();
         newCredentials.setUserId(testUser.getId());
+        newCredentials.setUsername("newusername");
         newCredentials.setEmail("new@email.com");
         newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
         newCredentials.setNewPassword(newPassword);
@@ -134,7 +134,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         Response response = this.newPutRequest("auth/credentials", newCredentials);
         Assert.assertEquals(200, response.getStatus());
         // Päivittikö tiedot?
-        AuthUser testUserAfter = this.getUserFromDb(testUser, true);
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(newCredentials.getUsername(), testUserAfter.getUsername());
         Assert.assertEquals(newCredentials.getEmail(), testUserAfter.getEmail());
         Assert.assertEquals(MockHashingProvider.genMockHash(newPassword),
             testUserAfter.getPasswordHash()
@@ -142,9 +143,10 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPäivittääKirjautuneenKäyttäjänEmailinTietokantaan() {
+    public void PUTUpdateCredentialsEiVaadiUuttaSalasanaa() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         // note. ei userId:tä eikä newPassword:iä
+        newCredentials.setUsername(testUser.getUsername());
         newCredentials.setEmail("new2@email.com");
         newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
         // Lähetä PUT /auth/credentials
@@ -153,7 +155,9 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         // Päivittikö tiedot?
         AuthUser testUserAfter = this.getUserFromDb(testUser, true);
         Assert.assertEquals(newCredentials.getEmail(), testUserAfter.getEmail());
+        // Säilyikö muuttumattomat kentät ennallaan?
         Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
+        Assert.assertEquals(testUser.getUsername(), testUserAfter.getUsername());
     }
 
     @Test

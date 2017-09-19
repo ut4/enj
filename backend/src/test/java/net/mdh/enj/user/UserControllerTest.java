@@ -64,6 +64,7 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         userData.setBodyWeight(userData.getBodyWeight() + 10);
         userData.setIsMale(0);
         userData.setSignature("fos");
+        userData.setUsername("newUsername");
         userData.setEmail("new@mail.com");
         Response response = this.newPutRequest("user/me", userData);
         // Päivittyikö?
@@ -79,6 +80,9 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         );
         Assert.assertEquals("Pitäisi päivittää signature (null -> \"fos\")", userData.getSignature(),
             updatedData.getSignature()
+        );
+        Assert.assertNotEquals("Ei pitäisi päivittää usernamea", userData.getUsername(),
+            updatedData.getUsername()
         );
         Assert.assertNotEquals("Ei pitäisi päivittää emailia", userData.getEmail(),
             updatedData.getEmail()

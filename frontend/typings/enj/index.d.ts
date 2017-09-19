@@ -22,6 +22,7 @@ declare module Enj {
             password: string;
         }
         interface Credentials {
+            username: string;
             email: string;
             password: string;
             newPassword?: string;

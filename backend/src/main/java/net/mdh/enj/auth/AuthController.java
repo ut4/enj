@@ -111,9 +111,9 @@ public class AuthController {
     }
 
     /**
-     * Päivittää kirjautuneen käyttäjän tiedot
+     * Päivittää kirjautuneen käyttäjän tilitiedot
      *
-     * @param newCredentials {"email": "e@m.c", "password": "bars", "newPassword": "furs"}
+     * @param newCredentials {"username": "emc", "email": "e@m.c", "password": "bars", "newPassword": "furs"}
      * @return Responses.Ok
      */
     @PUT

@@ -1,6 +1,7 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 
 interface State {
+    username: string;
     email: string;
     currentPassword: string;
     newPassword: string;
@@ -11,12 +12,14 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
     public constructor(props, context) {
         super(props, context);
         this.evaluators = {
+            username: [(input: any) => input.length >= 2 && input.length <= 42],
             email: [(input: string) => /\S+@\S+/.test(input)],
             currentPassword: [(input: string) => input.length >= 4],
             newPassword: this.newNewPasswordEvaluators('newPasswordConfirmation'),
             newPasswordConfirmation: this.newNewPasswordEvaluators('newPassword')
         };
         this.state = {
+            username: props.credentials.username || '',
             email: props.credentials.email || '',
             currentPassword: '',
             newPassword: '',
@@ -26,6 +29,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
     }
     public getValues(): Enj.API.Credentials {
         return {
+            username: this.state.username,
             email: this.state.email,
             password: this.state.currentPassword,
             newPassword: this.state.newPassword || null
@@ -33,6 +37,11 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
     }
     public render() {
         return (<div>
+            <label class="input-set">
+                <span>Käyttäjänimi</span>
+                <input name="username" value={ this.state.username } onInput={ e => this.receiveInputValue(e) }/>
+                { validationMessage(this.evaluators.username[0], templates => templates.lengthBetween('Käyttäjänimi', 2, 42)) }
+            </label>
             <label class="input-set">
                 <span>E-mail</span>
                 <input type="text" name="email" value={ this.state.email } onInput={ e => this.receiveInputValue(e) }/>
