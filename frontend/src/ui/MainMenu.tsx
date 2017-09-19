@@ -10,7 +10,7 @@ class MainMenu extends Component<any, any> {
         this.setState({isMenuOpen: !this.state.isMenuOpen});
     }
     public render() {
-        return (<nav id="main-menu" className={ this.state.isMenuOpen ? 'open' : '' }>
+        return (<nav id="main-menu" class={ this.state.isMenuOpen ? 'open' : '' }>
             <ul>
                 <li>
                     <a href="#/">Koti</a>

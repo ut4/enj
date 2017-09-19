@@ -14,6 +14,7 @@ interface State {
 interface evaluator {
     (input: string): boolean;
     validity?: boolean;
+    touched?: boolean;
 }
 
 abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State> {
@@ -37,6 +38,7 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
         let overallValidity = true;
         Object.keys(this.evaluators).forEach(inputName => {
             this.evaluators[inputName].forEach(evaluator => {
+                evaluator.touched = false;
                 const validity = evaluator(this.getValue(inputName) || '');
                 //
                 if (this.props.setEvaluatorValiditiesOnMount !== false) {
@@ -61,9 +63,10 @@ abstract class ValidatingComponent<P, S> extends Component<P & Props, S & State>
         // Päivitä inputin uusi arvo aina stateen.
         const newState = this.getNewState(e);
         if (skipValidation !== true) {
-            // Päivitä inputin kaikkien evaluaattorien validiteetit
+            // Päivitä inputin kaikkien evaluaattorien validiteetti
             this.evaluators[e.target.name].forEach(evaluator => {
                 evaluator.validity = evaluator(e.target.value);
+                evaluator.touched = true;
             });
             // Päivitä kokonaisvaliditeetin arvo stateen vain jos se muuttui
             const newValidity = !Object.keys(this.evaluators).some(inputName =>
@@ -103,16 +106,18 @@ const templates = {
     maxLength: (field, max) => `${field} tulisi olla enintään ${max} merkkiä pitkä`,
     min: (field, min) => `${field} tulisi olla vähintään ${min}`,
     between: (field, min, max) => `${field} tulisi olla arvo väliltä ${min} - ${max}`,
-    number: (field) => `${field} tulisi olla numero`
+    number: (field) => `${field} tulisi olla numero`,
+    valid: (field) => `${field} ei kelpaa`
 };
 
 /**
  * Funktionaalinen komponentti, joka renderöi messageFn:n palauttaman virheviestin,
  * jos evaluator.validity = false.
  */
-const validationMessage = (evaluator: evaluator, messageFn: Function) => evaluator.validity === false && <span class="text-error">
-    { messageFn(templates) }
-</span>;
+const validationMessage = (evaluator: evaluator, messageFn: Function) =>
+    evaluator.validity === false && evaluator.touched && <span class="text-error text-small">
+        { messageFn(templates) }
+    </span>;
 
 export default ValidatingComponent;
 export { validationMessage, templates };

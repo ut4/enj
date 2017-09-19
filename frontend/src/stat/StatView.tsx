@@ -41,7 +41,7 @@ class StatsView extends Component<any, any> {
     }
     public render() {
         return <div class="stats-view">
-            <div class="sub-nav">
+            <div class="tab-menu">
                 <a class={ this.makeLinkClass('kehitys') } href="#/statistiikka/kehitys">Kehitys</a>
                 <a class={ this.makeLinkClass('voima') } href="#/statistiikka/voima">Voimatasoni</a>
                 <a class={ this.makeLinkClass('yleista') } href="#/statistiikka/yleista">Yleistietoja</a>

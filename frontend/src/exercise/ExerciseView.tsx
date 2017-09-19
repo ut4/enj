@@ -1,4 +1,5 @@
 import Component from 'inferno-component';
+import SubMenu from 'src/ui/SubMenu';
 import iocFactories from 'src/ioc';
 
 /**
@@ -22,10 +23,10 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
     public render() {
         return <div class="exercise-view">
             <h2>Liikkeet</h2>
-            <div class="sub-nav left-aligned minor-group">
+            <SubMenu>
                 <a href="#/liikkeet/luo-uusi">Luo uusi liike</a>
                 <a href="#/liikevariantti/luo-uusi">Luo uusi liikevariantti</a>
-            </div>
+            </SubMenu>
             { this.state.exercises && (
                 this.state.exercises.length > 0 ?
                 <table class="striped crud-table responsive"><tbody>{ this.state.exercises.map(exercise => {

@@ -110,7 +110,7 @@ body.loading:after {
     margin-left: 4px;
 }
 a {
-    color: #8AAB33;
+    color: #325e68;
 }
 h2 {
     font-family: "Fira sans heavy";
@@ -242,6 +242,9 @@ a.icon-button.with-text:hover {
     background-size: 22px auto;
 }
 
+.icon-button.secondary-menu-black {
+    background-image: url("icon-sprite.svg#secondary-menu-black");
+}
 .icon-button.add {
     background-image: url("icon-sprite.svg#add");
 }
@@ -493,6 +496,10 @@ input[type="date"] {
     width: auto;
     margin: 0 6px 6px 0;
 }
+.input-set .text-error {
+    display: inline-block;
+    width: 100%;
+}
 .form-buttons {
     text-align: left;
 }
@@ -512,7 +519,7 @@ table .input-set input {
 }
 table .input-set .text-error {
     font-size: 12px;
-    position: absolute;
+    float: left;
 }
 
 /* -- Modal ---------- */
@@ -680,8 +687,39 @@ header nav a {
 #user-menu a {
     padding: 6px 0 4px;
 }
-.sub-nav {
+.tab-menu {
     margin-bottom: 30px;
+}
+.sub-menu {
+    position: absolute;
+    right: 0;
+    top: 7px;
+    text-align: left;
+}
+.sub-menu > .secondary-menu-black {
+    float: right;
+    background-size: 26px auto;
+    opacity: 0.7;
+    background-position: center 4px;
+}
+.sub-menu > nav {
+    display: none;
+    background-color: #fff;
+    box-shadow: 2px 2px 1px rgba(0,0,0,0.1);
+    padding: 15px 20px;
+    clear: both;
+    border: 1px solid rgba(44, 82, 90, 0.12);
+}
+.sub-menu.open > nav {
+    display: block;
+}
+.sub-menu > nav > a {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+.sub-menu > nav > a:last-of-type {
+    margin-bottom: 0;
 }
 
 /* -- footer ---------- */
@@ -713,8 +751,14 @@ footer a {
 #view h2:first-of-type {
     margin-top: 0;
 }
+#view > div {
+    position: relative;
+}
 #view img {
     width: 100%;
+}
+#view a:hover {
+    opacity: 0.85;
 }
 
 /* -- Treeninäkymät ---------- */
