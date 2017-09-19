@@ -46,6 +46,8 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         Response response = this.newGetRequest("user/me");
         User user = response.readEntity(new GenericType<User>() {});
         Assert.assertNotNull("Pitäisi palauttaa käyttäjä", user);
+        Assert.assertNotNull(user.getUsername());
+        Assert.assertNotNull(user.getEmail());
         Assert.assertEquals(TestData.TEST_USER_ID, user.getId());
     }
 
@@ -62,6 +64,7 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         userData.setBodyWeight(userData.getBodyWeight() + 10);
         userData.setIsMale(0);
         userData.setSignature("fos");
+        userData.setEmail("new@mail.com");
         Response response = this.newPutRequest("user/me", userData);
         // Päivittyikö?
         Assert.assertEquals(200, response.getStatus());
@@ -76,6 +79,9 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
         );
         Assert.assertEquals("Pitäisi päivittää signature (null -> \"fos\")", userData.getSignature(),
             updatedData.getSignature()
+        );
+        Assert.assertNotEquals("Ei pitäisi päivittää emailia", userData.getEmail(),
+            updatedData.getEmail()
         );
     }
 

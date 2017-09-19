@@ -1,12 +1,11 @@
 package net.mdh.enj.auth;
 
-import net.mdh.enj.validation.UUID;
 import org.hibernate.validator.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * Bean /auth/update-credentials-reitin input-JSONille.
+ * Bean /auth/credentials-reitin input-JSONille.
  */
 public class UpdateCredentials implements Credentials {
     private String userId;

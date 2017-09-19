@@ -120,7 +120,7 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         nulls.setEmail(null);
         nulls.setPassword(null);
         nulls.setNewPassword(null); // tämä on ok, uusi salasana ei pakollinen
-        Response response = this.newPutRequest("auth/update-credentials", nulls);
+        Response response = this.newPutRequest("auth/credentials", nulls);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
@@ -136,7 +136,7 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         badNewCredentials.setEmail("not-valid-email");
         badNewCredentials.setPassword(new char[]{'f', 'u'});
         badNewCredentials.setNewPassword(new char[]{'s'});
-        Response response = this.newPutRequest("auth/update-credentials", badNewCredentials);
+        Response response = this.newPutRequest("auth/credentials", badNewCredentials);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals(3, errors.size());

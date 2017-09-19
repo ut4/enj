@@ -10,6 +10,9 @@ class AuthBackend extends RESTBackend<any> {
     public logout() {
         return this.post(null, '/logout');
     }
+    public updateCredentials(credentials: Enj.API.Credentials) {
+        return this.update(credentials, '/credentials');
+    }
 }
 
 export default AuthBackend;

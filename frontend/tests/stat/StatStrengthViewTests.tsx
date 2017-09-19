@@ -31,7 +31,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         userBackendIocOverride.restore();
     });
     QUnit.test('laskee parhaista voimanostoista kokonaistulokset', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', bodyWeight: 45, isMale: 1};
+        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', email: 's', bodyWeight: 45, isMale: 1};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const [rendered, componentInstance] = renderComponent();
@@ -56,7 +56,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('näyttää tulokset, vaikkei kaikkia voimanostoliikkeitä ole saatavilla', assert => {
-        const testUser = {id: 'uid', username: 'fo', bodyWeight: null, isMale: null};
+        const testUser = {id: 'uid', username: 'fo', email: 'fo', bodyWeight: null, isMale: null};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const [rendered, componentInstance] = renderComponent();
@@ -82,7 +82,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Laskee tulokset uudelleen Asetukset-lomakkeen arvoilla', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', bodyWeight: 50, isMale: 1};
+        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', email: 'fo', bodyWeight: 50, isMale: 1};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateSpy = sinon.spy(shallowUserBackend, 'update');
         //
@@ -117,7 +117,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Tallentaa uudet Asetukset-lomakkeen arvot, jos checkbox on valittuna', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'ud', username: 'fo', bodyWeight: 30, isMale: null};
+        const testUser: Enj.API.UserRecord = {id: 'ud', username: 'fo', email: 'fo', bodyWeight: 30, isMale: null};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateStub = sinon.stub(shallowUserBackend, 'update')
             .returns(Promise.resolve(1));

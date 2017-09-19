@@ -34,6 +34,7 @@ public class UserRepository extends BasicRepository<User> {
             User user = new User();
             user.setId(rs.getString("userId"));
             user.setUsername(rs.getString("userUsername"));
+            user.setEmail(rs.getString("userEmail"));
             user.setBodyWeight(rs.getDouble("userBodyWeight"));
             user.setIsMale(rs.getObject("userIsMale", Integer.class));
             user.setSignature(rs.getString("userSignature"));

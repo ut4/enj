@@ -117,7 +117,7 @@ public class AuthController {
      * @return Responses.Ok
      */
     @PUT
-    @Path("/update-credentials")
+    @Path("/credentials")
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.Ok updateCredentials(@Valid @NotNull UpdateCredentials newCredentials) {
         newCredentials.setUserId(this.requestContext.getUserId());

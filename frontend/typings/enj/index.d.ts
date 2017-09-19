@@ -21,6 +21,11 @@ declare module Enj {
             username: string;
             password: string;
         }
+        interface Credentials {
+            email: string;
+            password: string;
+            newPassword?: string;
+        }
         interface WorkoutRecord {
             id: AAGUID;
             start: number;
@@ -76,6 +81,7 @@ declare module Enj {
         interface UserRecord {
             id: AAGUID;
             username: string;
+            email: string;
             bodyWeight: number;
             isMale: number;
             signature?: string;

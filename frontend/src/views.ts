@@ -17,6 +17,7 @@ import StatOverviewView          from 'src/stat/StatOverviewView';
 import HistoryView               from 'src/stat/HistoryView';
 import AuthLoginView             from 'src/auth/LoginView';
 import UserProfileView           from 'src/user/UserProfileView';
+import UserCredentialsEditView   from 'src/auth/CredentialsEditView';
 import OfflineStartView          from 'src/offline/OfflineStartView';
 import OfflineEndView            from 'src/offline/OfflineEndView';
 
@@ -43,6 +44,7 @@ export {
 
     AuthLoginView,
     UserProfileView,
+    UserCredentialsEditView,
     OfflineStartView,
     OfflineEndView
 };

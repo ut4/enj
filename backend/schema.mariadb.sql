@@ -40,6 +40,7 @@ CREATE VIEW userView AS
     SELECT
         u.id         AS userId,
         u.username   AS userUsername,
+        u.email      AS userEmail,
         u.isActivated AS userIsActivated,
         u.bodyWeight AS userBodyWeight,
         u.isMale     AS userIsMale,

@@ -1,6 +1,7 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 import BasicUserInputs from 'src/user/BasicUserInputs';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import SubMenu from 'src/ui/SubMenu';
 import iocFactories from 'src/ioc';
 
 /**
@@ -44,6 +45,9 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
         return <div>
             <h2>Profiili</h2>
             { this.state.user && [
+                <SubMenu>
+                    <a href="#/profiili/muokkaa">Muokkaa tiliä</a>
+                </SubMenu>,
                 <div class="row">
                     <div class="col-3">
                         <div class="profile-pic"><img src={ 'theme/user-icon-sprite.svg#' + (this.state.user.isMale === 0 ? 'female' : 'male') }/></div>

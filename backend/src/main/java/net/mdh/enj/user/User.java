@@ -4,6 +4,7 @@ import net.mdh.enj.mapping.DbEntity;
 
 public class User extends DbEntity {
     private String username;
+    private String email;
     private Double bodyWeight;
     private Integer isMale;
     private String signature;
@@ -13,6 +14,13 @@ public class User extends DbEntity {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Double getBodyWeight() {
@@ -46,6 +54,7 @@ public class User extends DbEntity {
         return "User{" +
             "id=" + this.getId() +
             ", username=" + this.getUsername() +
+            ", email=" + this.getEmail() +
             ", bodyWeight=" + this.getBodyWeight() +
             ", isMale=" + this.getIsMale() +
             ", signature=" + this.getSignature() +

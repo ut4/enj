@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 
 /**
- * Testaa AuthControllerin reitit /login, /logout, ja /update-credentials.
+ * Testaa AuthControllerin reitit /login, /logout, ja PUT /credentials.
  */
 public class TestUserDependentAuthControllerTest extends AuthControllerTestCase {
 
@@ -130,8 +130,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         newCredentials.setEmail("new@email.com");
         newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
         newCredentials.setNewPassword(newPassword);
-        // Lähetä PUT /auth/update-credentials
-        Response response = this.newPutRequest("auth/update-credentials", newCredentials);
+        // Lähetä PUT /auth/credentials
+        Response response = this.newPutRequest("auth/credentials", newCredentials);
         Assert.assertEquals(200, response.getStatus());
         // Päivittikö tiedot?
         AuthUser testUserAfter = this.getUserFromDb(testUser, true);
@@ -147,8 +147,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         // note. ei userId:tä eikä newPassword:iä
         newCredentials.setEmail("new2@email.com");
         newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
-        // Lähetä PUT /auth/update-credentials
-        Response response = this.newPutRequest("auth/update-credentials", newCredentials);
+        // Lähetä PUT /auth/credentials
+        Response response = this.newPutRequest("auth/credentials", newCredentials);
         Assert.assertEquals(200, response.getStatus());
         // Päivittikö tiedot?
         AuthUser testUserAfter = this.getUserFromDb(testUser, true);
@@ -162,7 +162,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         newCredentials.setPassword(inCorrectPassword);
         newCredentials.setUserId(testUser.getId());
         newCredentials.setEmail(testUser.getEmail());
-        Response response = this.newPutRequest("auth/update-credentials", newCredentials);
+        Response response = this.newPutRequest("auth/credentials", newCredentials);
         Assert.assertEquals(400, response.getStatus());
     }
 }
