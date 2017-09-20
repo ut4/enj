@@ -1,19 +1,32 @@
 package net.mdh.enj.stat;
 
-import net.mdh.enj.workout.Workout;
-import net.mdh.enj.resources.TestData;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import net.mdh.enj.workout.WorkoutControllerTestCase;
-import javax.ws.rs.core.Response;
+import net.mdh.enj.resources.TestData;
+import net.mdh.enj.workout.Workout;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
 import java.util.function.Predicate;
 import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class StatControllerTest extends WorkoutControllerTestCase {
+
+    @Before
+    public void beforeEach() {
+        utils.delete(
+            "DELETE bestSet FROM bestSet" +
+            " JOIN workoutExerciseSet wes ON (wes.id = bestSet.workoutExerciseSetId)" +
+            " JOIN workoutExercise we ON (we.id = wes.workoutExerciseId)" +
+            " WHERE we.exerciseId = :exerciseId",
+            new MapSqlParameterSource("exerciseId", testExercise.getId())
+        );
+    }
 
     @Test
     public void GETBestSetsEiPalautaTreenilleParhaitaSarjojaJosNiitäEiOle() {
@@ -27,7 +40,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
      */
     @Test
     public void GETBestSetsSisältääTreeninParhaatSarjat() {
-        Workout.Exercise we = this.insertWorkoutExercise(null);
+        Workout.Exercise we = this.insertWorkoutExercise(testWorkout.getId());
         // Insertoi ennätys #1 (laskettu 1RM 92) -------------------------------
         Workout.Exercise.Set set1 = new Workout.Exercise.Set();
         set1.setWeight(80);
@@ -101,6 +114,76 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         );
     }
 
+    @Test
+    public void GETProgressPalauttaaLiikkeenTuloksetValitullaTaiOletuskaavallaLaskettuna() {
+        Workout.Exercise we = this.insertWorkoutExercise(testWorkout.getId());
+        // Ennätys #1
+        Workout.Exercise.Set set1 = new Workout.Exercise.Set();
+        set1.setWeight(60);
+        set1.setReps(8);
+        set1.setWorkoutExerciseId(we.getId());
+        utils.insertWorkoutExerciseSet(set1);
+        // Ennätys #2 samaan treeniin
+        Workout.Exercise.Set set2 = new Workout.Exercise.Set();
+        set2.setWeight(65);
+        set2.setReps(8);
+        set2.setWorkoutExerciseId(we.getId());
+        utils.insertWorkoutExerciseSet(set2);
+        // Oletuskaava (O'connor et al.)
+        List<ProgressSetMapper.ProgressSet> progressSets = this.assertContainsProgressSets(
+            newGetRequest("stat/progress", t -> t.queryParam("exerciseId", testExercise.getId())),
+            set2.getWeight() * (set2.getReps() / 40.0 + 1),
+            set1.getWeight() * (set1.getReps() / 40.0 + 1)
+        );
+        Assert.assertEquals(String.valueOf(set2.getWeight()), String.valueOf(progressSets.get(0).getWeight()));
+        Assert.assertEquals(set2.getReps(), progressSets.get(0).getReps());
+        Assert.assertNotNull(progressSets.get(0).getLiftedAt());
+        Assert.assertEquals(testExercise.getName(), progressSets.get(0).getExerciseName());
+        // Parametriin määritelty kaava (total-lifted)
+        this.assertContainsProgressSets(
+            newGetRequest("stat/progress", t ->
+                t.queryParam("exerciseId", testExercise.getId())
+                    .queryParam("formula", StatRepository.FORMULA_TOTAL_LIFTED)
+            ),
+            set2.getWeight() * set2.getReps(),
+            set1.getWeight() * set1.getReps()
+        );
+    }
+
+    @Test
+    public void GETProgressPalauttaaEnnenTimetampiaSuoritetutSarjat() {
+        // Eilisen treenissä syntyy ensimmäinen ennätys
+        Workout yesterdaysTestWorkout = new Workout();
+        yesterdaysTestWorkout.setStart(System.currentTimeMillis() / 1000L - 86400);
+        yesterdaysTestWorkout.setUserId(TestData.TEST_USER_ID);
+        yesterdaysTestWorkout.setExercises(new ArrayList<>());
+        utils.insertWorkout(yesterdaysTestWorkout);
+        Workout.Exercise we = this.insertWorkoutExercise(yesterdaysTestWorkout.getId());
+        Workout.Exercise.Set set = new Workout.Exercise.Set();
+        set.setWeight(60);
+        set.setReps(7);
+        set.setWorkoutExerciseId(we.getId());
+        utils.insertWorkoutExerciseSet(set);
+        // ... tämän päivän treenissä toinen
+        Workout.Exercise we2 = this.insertWorkoutExercise(testWorkout.getId());
+        Workout.Exercise.Set set2 = new Workout.Exercise.Set();
+        set2.setWeight(60);
+        set2.setReps(8);
+        set2.setWorkoutExerciseId(we2.getId());
+        utils.insertWorkoutExerciseSet(set2);
+        // Hakeeko vain nykyistä treeniä edellisen treenin?
+        Response response = newGetRequest("stat/progress", t ->
+            t.queryParam("exerciseId", testExercise.getId())
+                .queryParam("before", testWorkout.getStart())
+        );
+        Assert.assertEquals(200, response.getStatus());
+        List<ProgressSetMapper.ProgressSet> progressSets = response.readEntity(
+            new GenericType<List<ProgressSetMapper.ProgressSet>>(){}
+        );
+        Assert.assertEquals(1, progressSets.size());
+        Assert.assertEquals(set.getReps(), progressSets.get(0).getReps());
+    }
+
     private List<BestSetMapper.BestSet> fetchBestSets() {
         Response response = target("stat/best-sets").request().get();
         Assert.assertEquals(200, response.getStatus());
@@ -123,7 +206,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
 
     private Workout.Exercise insertWorkoutExercise(String workoutId) {
         Workout.Exercise we = new Workout.Exercise();
-        we.setWorkoutId(workoutId == null ? testWorkout.getId() : workoutId);
+        we.setWorkoutId(workoutId);
         we.setExerciseId(testExercise.getId());
         utils.insertWorkoutExercise(we);
         return we;
@@ -131,5 +214,26 @@ public class StatControllerTest extends WorkoutControllerTestCase {
 
     private String getImprovementCounts(List<BestSetMapper.BestSet> bestSets) {
         return Arrays.toString(bestSets.stream().mapToInt(BestSetMapper.BestSet::getTimesImproved).toArray());
+    }
+
+    private List<ProgressSetMapper.ProgressSet> assertContainsProgressSets(
+        Response progressResponse,
+        Double expectedCalculatedValue1,
+        Double expectedCalculatedValue2
+    ) {
+        List<ProgressSetMapper.ProgressSet> progressSets = progressResponse.readEntity(
+            new GenericType<List<ProgressSetMapper.ProgressSet>>(){}
+        );
+        progressSets.sort(Comparator.comparingDouble(ProgressSetMapper.ProgressSet::getWeight).reversed());
+        Assert.assertEquals(2, progressSets.size());
+        Assert.assertEquals(
+            String.valueOf(expectedCalculatedValue1),
+            String.valueOf(progressSets.get(0).getCalculatedResult())
+        );
+        Assert.assertEquals(
+            String.valueOf(expectedCalculatedValue2),
+            String.valueOf(progressSets.get(1).getCalculatedResult())
+        );
+        return progressSets;
     }
 }

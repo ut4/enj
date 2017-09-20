@@ -1,3 +1,4 @@
+DROP VIEW    IF EXISTS setProgressView;
 DROP VIEW    IF EXISTS bestSetView;
 DROP VIEW    IF EXISTS workoutExerciseView;
 DROP VIEW    IF EXISTS workoutView;
@@ -184,8 +185,8 @@ FOR EACH ROW BEGIN
         JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
         -- https://en.wikipedia.org/wiki/One-repetition_maximum#O.27Conner_et_al.
         WHERE bs.exerciseId = @exerciseId AND
-            IF(wes.reps > 1, wes.weight*(wes.reps+1/40), wes.weight) >=
-            IF(NEW.reps > 1, NEW.weight*(NEW.reps+1/40), NEW.weight)
+            IF(wes.reps > 1, wes.weight*(wes.reps/40+1), wes.weight) >=
+            IF(NEW.reps > 1, NEW.weight*(NEW.reps/40+1), NEW.weight)
     )) THEN
         INSERT INTO bestSet (workoutExerciseSetId, exerciseId)
             VALUES (NEW.id, @exerciseId);
@@ -235,3 +236,16 @@ CREATE VIEW bestSetView AS
     JOIN exercise e ON (e.id = bs.exerciseId)
     JOIN workout w ON (w.id = (SELECT workoutId FROM workoutExercise WHERE id = wes.workoutExerciseId))
     GROUP BY bs.exerciseId;
+
+CREATE VIEW setProgressView AS
+    SELECT
+        wes.weight AS weight,
+        wes.reps   AS reps,
+        w.`start`  AS liftedAt,
+        e.id       AS exerciseId,
+        e.`name`   AS exerciseName,
+        w.userId   AS userId
+    FROM bestSet bs
+    JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
+    JOIN exercise e ON (e.id = bs.exerciseId)
+    JOIN workout w ON (w.id = (SELECT workoutId FROM workoutExercise WHERE id = wes.workoutExerciseId));

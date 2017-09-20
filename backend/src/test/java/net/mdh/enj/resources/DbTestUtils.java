@@ -58,7 +58,10 @@ public class DbTestUtils {
     public int update(final String q, final DbEntity data) {
         return this.getQueryTemplate().update(q, new BeanPropertySqlParameterSource(data));
     }
-    public int delete(final String from, final String... ids) {
+    public int delete(final String query, SqlParameterSource params) {
+        return this.getQueryTemplate().update(query, params);
+    }
+    public int delete(final String fromTable, final String... ids) {
         MapSqlParameterSource ps = new MapSqlParameterSource();
         for (int i = 0; i < ids.length; i++) {
             ps.addValue("id" + (i + 1), ids[i]);
@@ -67,7 +70,7 @@ public class DbTestUtils {
         return this.getQueryTemplate().update(
             String.format("DELETE FROM `%s` WHERE id IN (:" +
                 String.join(", :", ps.getValues().keySet())
-            + ")", from), ps);
+            + ")", fromTable), ps);
     }
 
     private NamedParameterJdbcTemplate getQueryTemplate() {
