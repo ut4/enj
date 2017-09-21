@@ -17,6 +17,7 @@ module.exports = {
         history: 'History',
         dexie: 'Dexie',
         pikaday: 'Pikaday',
+        chartist: 'Chartist',
         sw: 'SWManager',
         // -- Testiriippuvuudet -----------------
         'inferno-test-utils': 'Inferno.TestUtils',

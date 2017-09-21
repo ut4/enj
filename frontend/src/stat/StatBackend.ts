@@ -11,6 +11,20 @@ class StatBackend {
     public getBestSets(): Promise<Array<Enj.API.BestSet>> {
         return this.http.get('stat/best-sets');
     }
+    public getProgress(
+        exerciseId: AAGUID,
+        formula?: string,
+        before?: number
+    ): Promise<Array<Enj.API.ProgressSet>> {
+        const params = ['exerciseId=' + exerciseId];
+        if (formula) {
+            params.push('formula=' + formula);
+        }
+        if (before) {
+            params.push('before=' + before);
+        }
+        return this.http.get('stat/progress?' + params.join('&'));
+    }
     public getStats(): Promise<Enj.API.Statistics> {
         return Promise.resolve({
             totalWorkoutCount: 34,
@@ -57,8 +71,8 @@ const formulae = {
         // http://www.exrx.net/Testing/WeightLifting/SquatStandards.html
         // http://www.exrx.net/Testing/WeightLifting/BenchStandards.html
         // http://www.exrx.net/Testing/WeightLifting/DeadliftStandards.html
-        if (lift === 'squat' && isMale) {
-            return [
+        if (lift === 'squat') {
+            return isMale ? [
                 // [0] == paino, [1] == untrained-taso, [2] == novicetaso ...
                 [51.71,36.29,65.77,79.38,108.86,145.15],
                 [55.79,38.56,70.31,86.18,117.93,156.49],
@@ -72,10 +86,7 @@ const formulae = {
                 [124.74,63.5,117.93,145.15,197.31,258.55],
                 [144.7,65.77,122.47,147.42,201.85,263.08],
                 [145.15,68.04,124.74,149.69,206.38,269.89]
-            ];
-        }
-        if (lift === 'squat' && !isMale) {
-            return [
+            ] : [
                 [44,20.41,38.56,45.36,58.97,74.84],
                 [47.63,22.68,40.82,47.63,63.5,79.38],
                 [51.71,24.95,45.36,52.16,68.04,86.18],
@@ -88,8 +99,8 @@ const formulae = {
                 [90.26,38.56,72.57,83.91,108.86,138.35]
             ];
         }
-        if (lift === 'bench' && isMale) {
-            return [
+        if (lift === 'bench') {
+            return isMale ? [
                 [51.71,38.56,49.9,58.97,81.65,99.79],
                 [55.79,40.82,52.16,63.5,88.45,108.86],
                 [59.87,45.36,56.7,70.31,95.25,117.93],
@@ -102,10 +113,7 @@ const formulae = {
                 [124.74,68.04,88.45,108.86,147.42,183.7],
                 [144.7,70.31,90.72,111.13,151.95,188.24],
                 [145.15,72.57,92.99,113.4,154.22,192.78]
-            ];
-        }
-        if (lift === 'bench' && !isMale) {
-            return [
+            ] : [
                 [44,22.68,29.48,34.02,43.09,52.16],
                 [47.63,24.95,31.75,36.29,45.36,56.7],
                 [51.71,27.22,34.02,38.56,49.9,61.23],
@@ -118,8 +126,8 @@ const formulae = {
                 [90.26,43.09,54.43,63.5,79.38,99.79]
             ];
         }
-        if (lift === 'deadlift' && isMale) {
-            return [
+        if (lift === 'deadlift') {
+            return isMale ? [
                 [51.71,43.09,81.65,92.99,136.08,174.63],
                 [55.79,47.63,88.45,99.79,145.15,188.24],
                 [59.87,52.16,95.25,108.86,154.22,199.58],
@@ -132,10 +140,7 @@ const formulae = {
                 [124.74,79.38,147.42,170.1,226.8,272.16],
                 [144.7,81.65,151.95,172.37,229.06,276.69],
                 [145.15,83.91,154.22,176.9,231.33,278.96]
-            ];
-        }
-        if (lift === 'deadlift' && !isMale) {
-            return [
+            ] : [
                 [44,24.95,47.63,54.43,79.38,104.33],
                 [47.63,27.22,52.16,58.97,86.18,108.86],
                 [51.71,29.48,54.43,63.5,90.72,115.67],

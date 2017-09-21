@@ -563,6 +563,14 @@ table .input-set .text-error {
     color: #676269;
 }
 
+/* Chartist */
+.ct-grid.ct-horizontal { stroke: rgba(0,0,0,.1); stroke-dasharray: none; stroke-width: 1px; }
+.ct-grid.ct-vertical { stroke: rgba(0,0,0,0.15); stroke-dasharray: .5px; stroke-width: .8px; }
+.ct-label { color: rgba(0,0,0,0.7); font-size: .8rem; }
+/* ylimmäinen pointlabel */.ct-series .ct-label[y="10"] { display: none; }
+.ct-series .ct-line, .ct-series .ct-point { stroke-width: 2px; stroke: #30636E; }
+.ct-series .ct-area { fill: #30636E; fill-opacity: 0.05; }
+
 /* ==== App ====
 ==============================================================================*/
 header {
@@ -809,6 +817,8 @@ footer a {
 .stats-overview-view .box:nth-of-type(2) .score { font-size: 52px; line-height: 56px; }
 .stats-overview-view .box:nth-of-type(3) .score { font-size: 40px; line-height: 44px; }
 .stats-overview-view .box:nth-of-type(3) .score > span { font-size: 24px; }
+
+.line-chart { height: 300px; margin-left: -12px; }
 
 /* -- Käyttäjänäkymät ---------- */
 .profile-pic { margin-right: 15px; height: 140px; background-color: #e0e0e0;

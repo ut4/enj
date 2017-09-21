@@ -58,6 +58,13 @@ declare module Enj {
             timesImproved: number;
             exerciseName: string;
         }
+        interface ProgressSet {
+            weight: number;
+            reps: number;
+            calculatedResult: number;
+            liftedAt: number;
+            exerciseName: string;
+        }
         interface Statistics {
             totalWorkoutCount: number;
             totalWorkoutTime: number;
