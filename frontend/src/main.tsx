@@ -28,7 +28,7 @@ asyncBoot.then(() => render(
                 <Route path="/yleista" component={ views.StatOverviewView }/>
             </Route>
             <Redirect from="/statistiikka" to="/statistiikka/voima"/>
-            <Route path="treenihistoria/:exerciseId?/:formula?/:before?" component={ views.HistoryView }/>
+            <Route path="treenihistoria/:exerciseId?/:formula?/:page?/:before?/:after?" component={ views.StatHistoryView }/>
 
             <Route path="kirjaudu" component={ views.AuthLoginView }/>
             <Route path="profiili" component={ views.UserProfileView }/>

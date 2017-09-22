@@ -20,6 +20,8 @@ public class ProgressSelectFilters implements SelectQueryFilters {
     private String formula;
     @QueryParam("before")
     private Long before;
+    @QueryParam("after")
+    private Long after;
 
     public String getExerciseId() {
         return this.exerciseId;
@@ -33,6 +35,13 @@ public class ProgressSelectFilters implements SelectQueryFilters {
     }
     public void setBefore(Long before) {
         this.before = before;
+    }
+
+    public Long getAfter() {
+        return this.after;
+    }
+    public void setAfter(Long after) {
+        this.after = after;
     }
 
     public String getUserId() {
@@ -62,6 +71,9 @@ public class ProgressSelectFilters implements SelectQueryFilters {
         }
         if (this.before != null) {
             out.add("liftedAt < :before");
+        }
+        if (this.after != null) {
+            out.add("liftedAt > :after");
         }
         return String.join(" AND ", out);
     }

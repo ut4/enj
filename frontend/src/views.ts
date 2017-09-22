@@ -14,7 +14,7 @@ import StatView                  from 'src/stat/StatView';
 import StatProgressView          from 'src/stat/StatProgressView';
 import StatStrengthView          from 'src/stat/StatStrengthView';
 import StatOverviewView          from 'src/stat/StatOverviewView';
-import HistoryView               from 'src/stat/HistoryView';
+import StatHistoryView           from 'src/stat/StatHistoryView';
 import AuthLoginView             from 'src/auth/LoginView';
 import UserProfileView           from 'src/user/UserProfileView';
 import UserCredentialsEditView   from 'src/auth/CredentialsEditView';
@@ -40,7 +40,7 @@ export {
     StatProgressView,
     StatStrengthView,
     StatOverviewView,
-    HistoryView,
+    StatHistoryView,
 
     AuthLoginView,
     UserProfileView,

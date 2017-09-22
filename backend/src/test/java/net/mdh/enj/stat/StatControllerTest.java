@@ -151,7 +151,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
     }
 
     @Test
-    public void GETProgressPalauttaaEnnenTimetampiaSuoritetutSarjat() {
+    public void GETProgressPalauttaaEnnenTimetampiaTaiSenJälkeenSuoritetutSarjat() {
         // Eilisen treenissä syntyy ensimmäinen ennätys
         Workout yesterdaysTestWorkout = new Workout();
         yesterdaysTestWorkout.setStart(System.currentTimeMillis() / 1000L - 86400);
@@ -182,6 +182,17 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         );
         Assert.assertEquals(1, progressSets.size());
         Assert.assertEquals(set.getReps(), progressSets.get(0).getReps());
+        // Hakeeko vain nykyisen treenin?
+        Response response2 = newGetRequest("stat/progress", t ->
+            t.queryParam("exerciseId", testExercise.getId())
+                .queryParam("after", yesterdaysTestWorkout.getStart())
+        );
+        Assert.assertEquals(200, response2.getStatus());
+        List<ProgressSetMapper.ProgressSet> progressSets2 = response2.readEntity(
+            new GenericType<List<ProgressSetMapper.ProgressSet>>(){}
+        );
+        Assert.assertEquals(1, progressSets2.size());
+        Assert.assertEquals(set2.getReps(), progressSets2.get(0).getReps());
     }
 
     private List<BestSetMapper.BestSet> fetchBestSets() {

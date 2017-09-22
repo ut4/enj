@@ -57,9 +57,10 @@ public class StatRepository {
         }
         return String.format(
             "SELECT *, (%s) AS calculatedResult FROM setProgressView WHERE %s" +
-                " ORDER BY liftedAt DESC LIMIT 20",
+                " ORDER BY liftedAt %s LIMIT 10",
             formula,
-            filters.toSql()
+            filters.toSql(),
+            filters.getAfter() == null ? "DESC" : "ASC"
         );
     }
 }

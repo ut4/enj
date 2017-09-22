@@ -14,7 +14,8 @@ class StatBackend {
     public getProgress(
         exerciseId: AAGUID,
         formula?: string,
-        before?: number
+        before?: number,
+        after?: number
     ): Promise<Array<Enj.API.ProgressSet>> {
         const params = ['exerciseId=' + exerciseId];
         if (formula) {
@@ -23,7 +24,14 @@ class StatBackend {
         if (before) {
             params.push('before=' + before);
         }
-        return this.http.get('stat/progress?' + params.join('&'));
+        if (after) {
+            params.push('after=' + after);
+        }
+        return this.http.get<Array<Enj.API.ProgressSet>>('stat/progress?' + params.join('&'))
+            .then(items => {
+                items.length && items.reverse();
+                return items;
+            });
     }
     public getStats(): Promise<Enj.API.Statistics> {
         return Promise.resolve({
