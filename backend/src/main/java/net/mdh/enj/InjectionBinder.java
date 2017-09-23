@@ -10,7 +10,7 @@ import net.mdh.enj.auth.TokenService;
 import net.mdh.enj.auth.HashingProvider;
 import net.mdh.enj.auth.Argon2HashingProvider;
 import net.mdh.enj.db.DataSourceFactory;
-import net.mdh.enj.db.SimpleDataSourceFactory;
+import net.mdh.enj.db.ConfigAwareDataSourceFactory;
 import net.mdh.enj.exercise.ExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
@@ -18,6 +18,7 @@ import net.mdh.enj.exercise.ExerciseVariantRepository;
 import net.mdh.enj.workout.WorkoutExerciseSetRepository;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
+import javax.inject.Singleton;
 
 class InjectionBinder extends AbstractBinder {
     @Override
@@ -25,9 +26,13 @@ class InjectionBinder extends AbstractBinder {
         // Common
         bind(new AppConfig().selfload()).to(AppConfig.class);
         bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
-        bind(SimpleDataSourceFactory.class).to(DataSourceFactory.class);
-        bind(TokenService.class).to(TokenService.class);
+        bind(ConfigAwareDataSourceFactory.class).to(DataSourceFactory.class).in(Singleton.class);
         bind(Mailer.class).to(Mailer.class);
+        // Auth
+        bind(TokenService.class).to(TokenService.class);
+        bind(Argon2HashingProvider.class).to(HashingProvider.class);
+        bind(AuthService.class).to(AuthService.class);
+        bind(AuthUserRepository.class).to(AuthUserRepository.class);
         // Sync
         bind(new SyncRouteRegister()).to(SyncRouteRegister.class);
         bind(new AppResourceHttpClient()).to(HttpClient.class);
@@ -43,8 +48,5 @@ class InjectionBinder extends AbstractBinder {
         // ...
         // User
         bind(UserRepository.class).to(UserRepository.class);
-        bind(Argon2HashingProvider.class).to(HashingProvider.class);
-        bind(AuthService.class).to(AuthService.class);
-        bind(AuthUserRepository.class).to(AuthUserRepository.class);
     }
 }

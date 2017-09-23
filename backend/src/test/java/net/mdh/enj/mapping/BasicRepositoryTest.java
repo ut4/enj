@@ -212,7 +212,7 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     private static class SimpleExerciseRepository extends BasicRepository<SimpleExerciseEntity> {
         private static final String UPDATE_Q = "UPDATE exercise SET `name` = :name WHERE id = :id";
         SimpleExerciseRepository(DataSourceFactory dataSourceFac) {
-            super(dataSourceFac, "exercise", BasicRepository.DEFAULT_ID);
+            super(dataSourceFac, "exercise");
         }
         int update(SimpleExerciseEntity item) {
             return super.update(UPDATE_Q, item);

@@ -1,7 +1,6 @@
 package net.mdh.enj.sync;
 
 import net.mdh.enj.HttpClient;
-import net.mdh.enj.SyncRouteCollector;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.db.DataSourceFactory;

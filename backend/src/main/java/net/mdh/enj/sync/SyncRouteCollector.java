@@ -1,8 +1,5 @@
-package net.mdh.enj;
+package net.mdh.enj.sync;
 
-import net.mdh.enj.sync.Syncable;
-import net.mdh.enj.sync.SyncRoute;
-import net.mdh.enj.sync.SyncRouteRegister;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.monitoring.RequestEvent;

@@ -8,32 +8,25 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.RowMapper;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.List;
 import java.util.UUID;
-import java.util.Map;
 
 /**
  * Luokka, joka sisältää yleisimmät CRUD-toiminnallisuudet (insert, selectAll jne).
  */
 public abstract class BasicRepository<T extends DbEntity> {
 
-    public final static String DEFAULT_ID = "id";
-    protected final NamedParameterJdbcTemplate qTemplate;
-    protected final SimpleJdbcInsert inserter;
-    protected final String tableName;
+    private final NamedParameterJdbcTemplate qTemplate;
+    private final SimpleJdbcInsert inserter;
+    private final String tableName;
 
-    public BasicRepository(DataSourceFactory dataSourceFac, String tableName, String idColumn) {
+    public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource()).withTableName(tableName);
         this.tableName = tableName;
-    }
-
-    public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
-        this(dataSourceFac, tableName, DEFAULT_ID);
     }
 
     /**
@@ -49,21 +42,6 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public int insert(List<T> items) {
         return IntStream.of(this.inserter.executeBatch(this.createInsertBatch(items))).sum();
-    }
-
-    /**
-     * Insertoi {transformer}:n palauttaman datan tietokantaan.
-     */
-    public int insert(T data, Function<T, Map<String, ?>> transformer) {
-        this.ensureId(data);
-        return this.inserter.execute(transformer.apply(data));
-    }
-
-    /**
-     * Insertoi {transformer}:n palauttaman datan tietokantaan.
-     */
-    public int insert(List<T> items, Function<T, Map<String, ?>> transformer) {
-        return IntStream.of(this.inserter.executeBatch(this.createInsertBatch(items, transformer))).sum();
     }
 
     /**
@@ -154,14 +132,5 @@ public abstract class BasicRepository<T extends DbEntity> {
             out.add(new BeanPropertySqlParameterSource(data));
         }
         return out.toArray(new BeanPropertySqlParameterSource[0]);
-    }
-
-    private Map[] createInsertBatch(List<T> itemsToInsert, Function<T, Map<String, ?>> transformer) {
-        List<Map<String, ?>> out = new ArrayList<>();
-        for (T data: itemsToInsert) {
-            this.ensureId(data);
-            out.add(transformer.apply(data));
-        }
-        return out.toArray(new Map[0]);
     }
 }

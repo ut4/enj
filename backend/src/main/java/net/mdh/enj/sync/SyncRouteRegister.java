@@ -4,7 +4,7 @@ import java.util.HashSet;
 
 /**
  * Sisältää kaikki applikaatiossa määritellyt @Syncable REST-reitit. Täytetään
- * net.mdh.enj.SyncRouteCollector:in toimesta applikaation käynnistymisen yhteydessä.
+ * net.mdh.enj.sync.SyncRouteCollector:in toimesta applikaation käynnistymisen yhteydessä.
  */
 public class SyncRouteRegister extends HashSet<SyncRoute> {
     /**
