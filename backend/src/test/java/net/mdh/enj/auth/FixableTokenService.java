@@ -9,7 +9,7 @@ import java.util.Date;
  */
 class FixableTokenService extends TokenService {
 
-    FixableTokenService(AppConfig appConfig) throws Exception {
+    FixableTokenService(AppConfig appConfig) {
         super(Jwts.builder(), Jwts.parser(), appConfig);
     }
 

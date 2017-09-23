@@ -21,10 +21,17 @@ import org.glassfish.jersey.process.internal.RequestScoped;
 import javax.inject.Singleton;
 
 class InjectionBinder extends AbstractBinder {
+
+    private final AppConfig properties;
+
+    InjectionBinder(AppConfig properties) {
+        this.properties = properties;
+    }
+
     @Override
     protected void configure() {
         // Common
-        bind(new AppConfig().selfload()).to(AppConfig.class);
+        bind(this.properties).to(AppConfig.class);
         bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
         bind(ConfigAwareDataSourceFactory.class).to(DataSourceFactory.class).in(Singleton.class);
         bind(Mailer.class).to(Mailer.class);

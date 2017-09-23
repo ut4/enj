@@ -36,15 +36,11 @@ public class TokenService {
     final JwtBuilder jwtBuilder;
 
     @Inject
-    TokenService(AppConfig appConfig) throws Exception {
+    TokenService(AppConfig appConfig) {
         this(Jwts.builder(), Jwts.parser(), appConfig);
     }
-    TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser, AppConfig appConfig) throws Exception {
-        String secretKeyConfigValue = appConfig.getProperty("auth.tokenSigningKey");
-        if (secretKeyConfigValue == null) {
-            throw new Exception("auth.tokenSigningKey configuration property not found.");
-        }
-        this.JWT_KEY = secretKeyConfigValue.getBytes();
+    TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser, AppConfig appConfig) {
+        this.JWT_KEY = appConfig.authTokenSigningKey.getBytes();
         this.objectMapper = new ObjectMapper();
         this.jwtBuilder = jwtBuilder;
         this.jwtParser = jwtParser;

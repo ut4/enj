@@ -6,7 +6,7 @@ public class AppConfigProvider {
     private static AppConfig appConfig;
     public static AppConfig getInstance() {
         if (appConfig == null) {
-            appConfig = new AppConfig().selfload();
+            appConfig = new AppConfig();
         }
         return appConfig;
     }

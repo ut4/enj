@@ -25,26 +25,10 @@ public class Mailer {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
-    Mailer(AppConfig appConfig) throws IllegalArgumentException {
-        this(
-            appConfig.getProperty("mail.host"),
-            appConfig.getProperty("mail.fromAddress"),
-            appConfig.getProperty("mail.fromPersonal")
-        );
-    }
-    Mailer(String host, String fromAddress, String fromPersonal) throws IllegalArgumentException {
-        if (host == null) {
-            throw new IllegalArgumentException("host cannot be null.");
-        }
-        if (fromAddress == null) {
-            throw new IllegalArgumentException("fromAddress cannot be null.");
-        }
-        if (fromPersonal == null) {
-            throw new IllegalArgumentException("fromPersonal cannot be null.");
-        }
-        this.host = host;
-        this.fromAddress = fromAddress;
-        this.fromPersonal = fromPersonal;
+    Mailer(AppConfig appConfig)  {
+        this.host = appConfig.mailHost;
+        this.fromAddress = appConfig.mailFromAddress;
+        this.fromPersonal = appConfig.mailFromPersonal;
     }
 
     /**

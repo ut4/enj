@@ -32,10 +32,10 @@ public class TokenServiceTest {
     @BeforeClass
     public static void beforeAll() {
         appConfig = AppConfigProvider.getInstance();
-        expectedSigningKey = appConfig.getProperty("auth.tokenSigningKey").getBytes();
+        expectedSigningKey = appConfig.authTokenSigningKey.getBytes();
     }
     @Before
-    public void beforeEach() throws Exception {
+    public void beforeEach() {
         this.tokenService = new TokenService(mockJwtBuilder, mockJwtParser, appConfig);
     }
     /**

@@ -4,6 +4,7 @@ import net.mdh.enj.auth.ResponseFilter;
 import net.mdh.enj.sync.SyncRouteCollector;
 import net.mdh.enj.auth.AuthenticationFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -20,6 +21,8 @@ public class Application {
      * HTTP-serveriä.
      */
     public static void main(String[] args) throws IOException, InterruptedException {
+        // Lataa & validoi app.properties
+        AppConfig appProperties = new AppConfig();
         // Rekisteröi sorsat & configuroi jersey
         final ResourceConfig applicationConfig = new ResourceConfig();
         applicationConfig.packages("net.mdh.enj");
@@ -28,7 +31,10 @@ public class Application {
         applicationConfig.register(AuthenticationFilter.class);
         applicationConfig.register(ResponseFilter.class);
         applicationConfig.register(SyncRouteCollector.class);
-        applicationConfig.register(new InjectionBinder());
+        applicationConfig.register(new InjectionBinder(appProperties));
+        if (!appProperties.envIsProduction()) {
+            applicationConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+        }
         // Luo & käynnistä serveri
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(
             URI.create(BASE_URI),

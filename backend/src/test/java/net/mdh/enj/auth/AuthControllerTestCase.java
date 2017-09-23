@@ -28,7 +28,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
     }
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         tokenService = new TokenService(AppConfigProvider.getInstance());
         mockMailer = Mockito.mock(Mailer.class);
         utils = new DbTestUtils(rollbackingDSFactory);

@@ -26,7 +26,7 @@ public class AuthenticationFilterTest extends JerseyTest {
     private AuthUserRepository mockAuthUserRepository;
     private FixableTokenService spyingTokenService;
 
-    public AuthenticationFilterTest() throws Exception {
+    public AuthenticationFilterTest() {
         super();
         this.mockAuthUserRepository = Mockito.mock(AuthUserRepository.class);
         this.spyingTokenService = Mockito.spy(new FixableTokenService(AppConfigProvider.getInstance()));
@@ -78,7 +78,7 @@ public class AuthenticationFilterTest extends JerseyTest {
      * Testaa että validaatio menee läpi jos Authentication-header on validi JWT.
      */
     @Test
-    public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() throws Exception {
+    public void hyväksyyPyynnönJaAsettaaTokenSubjektinRequestContextiinMikäliHeaderOnValidi() {
         String mockUuid = "uuid34";
         String testToken = this.spyingTokenService.generateNew(mockUuid);
         Response response = target(this.normalUrl).request().header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + testToken).get();
@@ -89,7 +89,7 @@ public class AuthenticationFilterTest extends JerseyTest {
      * Testaa, että uusii automaattisesti vanhentuneen tokenin.
      */
     @Test
-    public void uusiiHeaderinVanhentuneenTokenin() throws Exception {
+    public void uusiiHeaderinVanhentuneenTokenin()  {
         String mockUuid = "uuid78";
         AuthUser userWithValidLogin = new AuthUser();
         userWithValidLogin.setId(mockUuid);
@@ -117,7 +117,7 @@ public class AuthenticationFilterTest extends JerseyTest {
         Assert.assertEquals(AuthenticationFilterTestController.NORMAL_RESPONSE + mockUuid, response.readEntity(String.class));
     }
     @Test
-    public void eiUusiTokeniaJosViimeisestäKirjautumisestaOnLiianKauan() throws Exception {
+    public void eiUusiTokeniaJosViimeisestäKirjautumisestaOnLiianKauan() {
         String mockUuid = "uuid79";
         AuthUser userWithInvalidLogin = new AuthUser();
         userWithInvalidLogin.setId(mockUuid);
@@ -143,7 +143,7 @@ public class AuthenticationFilterTest extends JerseyTest {
         Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).update(Mockito.eq(invalidated), Mockito.any());
     }
     @Test
-    public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() throws Exception {
+    public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() {
         // Simuloi tilanne, jossa headerin tokeni ei täsmää tietokantaan tallennettuan
         // tokeniin (selectOne palauttaa null)
         Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(null);

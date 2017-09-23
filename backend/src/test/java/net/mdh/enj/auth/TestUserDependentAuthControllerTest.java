@@ -25,7 +25,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     private static AuthUser testUser;
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         AuthControllerTestCase.beforeClass();
     }
 

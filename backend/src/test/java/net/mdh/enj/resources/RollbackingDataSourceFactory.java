@@ -25,9 +25,9 @@ public class RollbackingDataSourceFactory implements DataSourceFactory {
             AppConfig appConfig = AppConfigProvider.getInstance();
             dataSource = new RollbackingDS();
             dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
-            dataSource.setUrl(appConfig.getProperty("db.url"));
-            dataSource.setUsername(appConfig.getProperty("db.username"));
-            dataSource.setPassword(appConfig.getProperty("db.password"));
+            dataSource.setUrl(appConfig.dbUrl);
+            dataSource.setUsername(appConfig.dbUsername);
+            dataSource.setPassword(appConfig.dbPassword);
             isConnected = true;
         }
         return dataSource;

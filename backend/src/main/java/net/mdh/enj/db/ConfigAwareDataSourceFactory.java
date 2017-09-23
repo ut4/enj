@@ -18,35 +18,18 @@ public class ConfigAwareDataSourceFactory implements DataSourceFactory {
 
     @Inject
     ConfigAwareDataSourceFactory(AppConfig config) {
-        String env = config.getProperty("app.env");
-        String jdbcUrl = config.getProperty("db.url");
-        String username = config.getProperty("db.username");
-        String password = config.getProperty("db.password");
-        String message = "-propertyä ei määritelty @resources/app.properties";
-        if (env == null) {
-            throw new RuntimeException("app.env" + message);
-        }
-        if (jdbcUrl == null) {
-            throw new RuntimeException("db.url" + message);
-        }
-        if (username == null) {
-            throw new RuntimeException("db.username" + message);
-        }
-        if (password == null) {
-            throw new RuntimeException("app.password" + message);
-        }
-        if (env.startsWith("prod")) {
+        if (config.envIsProduction()) {
             HikariDataSource ds = new HikariDataSource();
-            ds.setJdbcUrl(jdbcUrl);
-            ds.setUsername(username);
-            ds.setPassword(password);
+            ds.setJdbcUrl(config.dbUrl);
+            ds.setUsername(config.dbUsername);
+            ds.setPassword(config.dbPassword);
             this.dataSource = ds;
         } else {
             SimpleDriverDataSource ds = new SimpleDriverDataSource();
             ds.setDriver(new Driver());
-            ds.setUrl(jdbcUrl);
-            ds.setUsername(username);
-            ds.setPassword(password);
+            ds.setUrl(config.dbUrl);
+            ds.setUsername(config.dbUsername);
+            ds.setPassword(config.dbPassword);
             this.dataSource = ds;
         }
     }
