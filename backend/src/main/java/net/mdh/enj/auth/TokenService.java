@@ -82,14 +82,14 @@ public class TokenService {
         return this.jwtParser.setSigningKey(JWT_KEY).parseClaimsJws(token);
     }
 
-    Claims getClaimsFromExpiredToken(String expiredButValidToken) {
+    Claims getClaimsFromExpiredToken(String expiredButValidToken) throws RuntimeException {
         try {
             return new DefaultClaims(this.objectMapper.readValue(
                 TextCodec.BASE64URL.decodeToString(expiredButValidToken.split("\\.")[1]),
                 Map.class
             ));
         } catch (IOException e) {
-            return null;
+            throw new RuntimeException("JWT:n lukeminen epäonnistui");
         }
     }
 

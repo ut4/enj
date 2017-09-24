@@ -7,16 +7,11 @@ import org.mockito.ArgumentCaptor;
 import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.resources.MockHashingProvider;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
 
 /**
  * Testaa AuthControllerin reitit /register, ja /activate.
  */
 public class TestUserIndependentAuthControllerTest extends AuthControllerTestCase {
-
-    private static String mockActicavationKey = String.join("", Collections.nCopies(
-        AuthService.ACTIVATION_KEY_LENGTH, "a"
-    ));
 
     @Test
     public void POSTRegisterLisääKäyttäjänTietokantaanJaLähettääAktivointiEmailin() {
@@ -29,28 +24,31 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         //
         Mockito.when(mockMailer.sendMail(
             Mockito.eq(expectedNewUser.getEmail()),
+            Mockito.eq(expectedNewUser.getUsername()),
             Mockito.anyString(),
             Mockito.anyString()
         )).thenReturn(true);
+        String mockActivationKey = "fake-random-chars";
+        Mockito.when(mockTokenService.generateRandomString(AuthService.ACTIVATION_KEY_LENGTH))
+            .thenReturn(mockActivationKey);
         // Lähetä register-pyyntö
         Response response = this.newPostRequest("auth/register", credentials);
         Assert.assertEquals(200, response.getStatus());
         // Lisäsikö käyttäjän?
         AuthUser actualUser = this.getUserFromDb(expectedNewUser, true);
-        Assert.assertEquals(actualUser.getUsername(), expectedNewUser.getUsername());
+        Assert.assertEquals(expectedNewUser.getUsername(), actualUser.getUsername());
         Assert.assertTrue(actualUser.getCreatedAt() >= expectedNewUser.getCreatedAt());
-        Assert.assertEquals(actualUser.getEmail(), expectedNewUser.getEmail());
-        Assert.assertEquals(actualUser.getPasswordHash(), expectedNewUser.getPasswordHash());
+        Assert.assertEquals(expectedNewUser.getEmail(), actualUser.getEmail());
+        Assert.assertEquals(expectedNewUser.getPasswordHash(), actualUser.getPasswordHash());
         Assert.assertNull(actualUser.getLastLogin());
         Assert.assertNull(actualUser.getCurrentToken());
-        Assert.assertEquals(actualUser.getIsActivated(), 0);
-        Assert.assertEquals(actualUser.getActivationKey().length(),
-            AuthService.ACTIVATION_KEY_LENGTH
-        );
+        Assert.assertEquals(0, actualUser.getIsActivated());
+        Assert.assertEquals(mockActivationKey, actualUser.getActivationKey());
         // Lähettikö mailin?
         final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
             Mockito.eq(credentials.getEmail()),
+            Mockito.eq(credentials.getUsername()),
             Mockito.anyString(), // subject
             captor.capture()     // content
         );
@@ -59,21 +57,26 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
                 ",<br><br>kiitos rekisteröitymisestä"
             )
         );
-        Assert.assertTrue("Email pitäisi sisältää tilin aktivointilinkki",
-            captor.getValue().matches(".+/api/auth/activate\\?key=.+&email=" +
-                (TextCodec.BASE64URL.encode(credentials.getEmail())) + ".+"
-            )
+        Assert.assertTrue(
+            "Email pitäisi sisältää tilin aktivointilinkki",
+            captor.getValue().contains(String.format(
+                "%s/auth/activate?key=%s&email=%s",
+                appConfig.appPublicUrl,
+                mockActivationKey,
+                (TextCodec.BASE64URL.encode(credentials.getEmail()))
+            ))
         );
     }
 
     @Test(expected = RuntimeException.class)
     public void POSTRegisterEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
         String username = "bos";
-        // Tilanne, jossa mailer palauttaa false
+        // Tilanne, jossa mailer epäonnistuu
         Mockito.when(mockMailer.sendMail(
-            Mockito.anyString(),
-            Mockito.anyString(),
-            Mockito.anyString()
+            Mockito.anyString(), // toAddress
+            Mockito.anyString(), // toPersonal
+            Mockito.anyString(), // subject
+            Mockito.anyString()  // content
         )).thenReturn(false);
         // Lähetä register-pyyntö
         Response response = this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
@@ -87,17 +90,23 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
     }
 
     @Test
-    public void GETActivatePäivittääKäyttäjänAktiiviseksi() {
+    public void GETActivatePäivittääKäyttäjänAktiiviseksiJaTulostaaViestin() {
         // Rekisteröi jokin käyttäjä
         AuthUser testUser = insertNewUser("someuser", null, 0);
         // Lähetä GET /auth/activate?key={key}&email={email}
         Response response = sendActivationRequest(testUser);
         Assert.assertEquals(200, response.getStatus());
-        Assert.assertTrue(response.readEntity(String.class).contains("Tilisi on nyt aktivoitu"));
         // Päivittikö tiedot?
         AuthUser testUserAfter = this.getUserFromDb(testUser, false);
-        Assert.assertEquals(testUserAfter.getIsActivated(), 1);
+        Assert.assertEquals(1, testUserAfter.getIsActivated());
         Assert.assertNull(testUserAfter.getActivationKey());
+        // Palauttiko viestin?
+        String message = response.readEntity(String.class);
+        Assert.assertTrue(message.contains("Tilisi on nyt aktivoitu"));
+        Assert.assertTrue(message.contains(String.format(
+            "%s#/kirjaudu",
+            appConfig.appPublicUrl.replace("/api", "/app")
+        )));
     }
 
     @Test(expected = RuntimeException.class)
@@ -113,7 +122,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
     @Test(expected = RuntimeException.class)
     public void GETActivateEiKirjoitaTietokantaanMitäänJosAvainEiTäsmää() {
         AuthUser testUser = insertNewUser("dr.pepper", null, 0);
-        testUser.setActivationKey(mockActicavationKey);
+        testUser.setActivationKey(mockActicavationKey.replace('a', 'b'));
         Response response = sendActivationRequest(testUser);
         Assert.assertEquals(500, response.getStatus());
     }

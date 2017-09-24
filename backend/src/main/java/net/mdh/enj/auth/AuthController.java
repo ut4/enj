@@ -27,6 +27,15 @@ public class AuthController {
     private final AuthService authService;
     private final RequestContext requestContext;
 
+    private static final String ACTIVATION_EMAIL_TEMPLATE = (
+        "Moi %s,<br><br>kiitos rekisteröitymisestä Treenikirjaan, tässä aktivointilinkkisi:" +
+            "<a href=\"%s\">%s</a>. Tervetuloa mukaan!"
+    );
+    private static final String REGISTER_SUCCESS_TEMPLATE = (
+        "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan " +
+            "osoitteessa <a href=\"%s\">%s</a>"
+    );
+
     @Inject
     public AuthController(
         AuthService authService,
@@ -86,7 +95,7 @@ public class AuthController {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.Ok register(@Valid @NotNull RegistrationCredentials credentials) {
-        this.authService.register(credentials);
+        this.authService.register(credentials, ACTIVATION_EMAIL_TEMPLATE);
         return new Responses.Ok();
     }
 
@@ -100,14 +109,17 @@ public class AuthController {
     @GET
     @PermitAll
     @Path("/activate")
-    public Object activate(
+    public String activate(
         @QueryParam("key") @NotNull @Size(min = AuthService.ACTIVATION_KEY_LENGTH) String key,
         @QueryParam("email") @NotNull @Size(min = 4) String base64mail
     ) {
-        this.authService.activate(base64mail, key);
-        return "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" content=\"noindex, nofollow\">" +
-            "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan osoitteessa " +
-            "<a href=\"https://foo.com/app/#/kirjaudu\">https://foo.com/app/#/kirjaudu</a>";
+        String loginLink = this.authService.activate(base64mail, key);
+        return String.format(
+            "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" " +
+                "content=\"noindex, nofollow\">" + REGISTER_SUCCESS_TEMPLATE,
+            loginLink,
+            loginLink
+        );
     }
 
     /**

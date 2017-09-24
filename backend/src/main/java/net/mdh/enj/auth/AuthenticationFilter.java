@@ -65,9 +65,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             return;
         }
         String token = authHeader.substring(AUTH_TOKEN_PREFIX.length());
-        AuthService.TokenData alwaysFreshTokenData = this.authService.parseOrRenewToken(token);
+        AuthService.TokenData alwaysFreshTokenData;
+        try {
+            alwaysFreshTokenData = this.authService.parseOrRenewToken(token);
         // -- Token oli virheellinen, tai sen uusiminen epäonnistui -> hylkää pyyntö
-        if (alwaysFreshTokenData == null) {
+        } catch (Exception e) {
             requestContext.abortWith(this.newUnauthorizedResponse());
             return;
         }

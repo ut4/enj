@@ -37,19 +37,28 @@ public class Mailer {
      *
      * @return Onnistuiko mailin lähetys, true = kyllä, false = ei.
      */
-    public boolean sendMail(String to, String subject, String content) {
-        return this.sendMail(to, subject, content, true);
+    public boolean sendMail(String toAddress, String toPersonal, String subject, String content) {
+        return this.sendMail(toAddress, toPersonal, subject, content, true);
     }
 
     /**
      * Lähettää viestin {content} osoitteeseen {to}.
      */
-    public boolean sendMail(String to, String subject, String content, boolean wrapContentToDefaultTemplate) {
+    public boolean sendMail(
+        String toAddress,
+        String toPersonal,
+        String subject,
+        String content,
+        boolean wrapContentToDefaultTemplate
+    ) {
         try {
             Session emailSession = this.getSession();
             Message msg = new MimeMessage(emailSession);
             msg.setFrom(new InternetAddress(this.fromAddress, this.fromPersonal));
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            msg.addRecipient(
+                Message.RecipientType.TO,
+                new InternetAddress(toAddress, toPersonal)
+            );
             msg.setSubject(subject);
             msg.setContent(
                 wrapContentToDefaultTemplate ? this.newHtmlTemplate(content) : content,

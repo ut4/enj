@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class AppConfig {
-    private final String env;
+    private final String appEnv;
+    public final String appPublicUrl;
     public final String dbUrl;
     public final String dbUsername;
     public final String dbPassword;
@@ -24,7 +25,8 @@ public class AppConfig {
         } catch (IOException e) {
             throw new RuntimeException("resources/app.properties:n lukeminen epäonnistui");
         }
-        this.env                 = this.getValue("app.env", props);
+        this.appEnv              = this.getValue("app.env", props);
+        this.appPublicUrl        = this.getValue("app.publicUrl", props);
         this.dbUrl               = this.getValue("db.url", props);
         this.dbUsername          = this.getValue("db.username", props);
         this.dbPassword          = this.getValue("db.password", props);
@@ -35,7 +37,7 @@ public class AppConfig {
     }
 
     public boolean envIsProduction() {
-        return this.env.startsWith("prod");
+        return this.appEnv.startsWith("prod");
     }
 
     private String getValue(String key, Properties props) {

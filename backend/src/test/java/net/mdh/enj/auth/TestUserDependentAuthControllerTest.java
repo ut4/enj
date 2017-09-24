@@ -90,6 +90,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
 
     @Test
     public void POSTLoginOnnistuessaanPäivittääUudenJsonWebTokeninTietokantaanJaPalauttaaSenLoginResponsessa() {
+        String mockToken = "fake-jwt";
+        Mockito.when(mockTokenService.generateNew(testUser.getId())).thenReturn(mockToken);
         LoginCredentials correctData = new LoginCredentials();
         correctData.setUsername(correctUsername);
         correctData.setPassword(correctPassword);
@@ -98,12 +100,12 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         // Päivittikö timestampin ja tokenin kantaan?
         AuthUser userDataAfter = this.getUserFromDb(testUser, false);
         Assert.assertNotEquals(testUser.getLastLogin(), userDataAfter.getLastLogin());
-        Assert.assertNotEquals(testUser.getCurrentToken(), userDataAfter.getCurrentToken());
+        Assert.assertEquals(mockToken, userDataAfter.getCurrentToken());
         // Palauttiko tokenin responsessa?
         Responses.LoginResponse loginResponse = response.readEntity(
             new GenericType<Responses.LoginResponse>() {}
         );
-        Assert.assertTrue(TestUserDependentAuthControllerTest.tokenService.isValid(loginResponse.getToken()));
+        Assert.assertEquals(mockToken, loginResponse.getToken());
     }
 
     @Test

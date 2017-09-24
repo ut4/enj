@@ -22,7 +22,7 @@ DROP TABLE   IF EXISTS `user`;
 CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
-    email VARCHAR(256) NOT NULL,
+    email VARCHAR(256) NOT NULL UNIQUE,
     createdAt INT UNSIGNED NOT NULL,
     -- Autentikaatioon liittyvät
     passwordHash VARCHAR(255) NOT NULL,

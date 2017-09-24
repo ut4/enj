@@ -1,6 +1,7 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.Mailer;
+import net.mdh.enj.AppConfig;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.db.DataSourceFactory;
@@ -13,25 +14,37 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
+import java.util.Collections;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
+import org.junit.After;
 
 public class AuthControllerTestCase extends RollbackingDBJerseyTest {
 
     final HashingProvider mockHasherSpy;
-    static TokenService tokenService;
-    static Mailer mockMailer;
+    final AppConfig appConfig;
+    Mailer mockMailer;
+    static TokenService mockTokenService;
     static DbTestUtils utils;
+    static String mockActicavationKey = String.join("", Collections.nCopies(
+        AuthService.ACTIVATION_KEY_LENGTH, "a"
+    ));
 
     AuthControllerTestCase() {
         mockHasherSpy = Mockito.spy(new MockHashingProvider());
+        appConfig = AppConfigProvider.getInstance();
+        mockMailer = Mockito.mock(Mailer.class);
     }
 
     @BeforeClass
     public static void beforeClass() {
-        tokenService = new TokenService(AppConfigProvider.getInstance());
-        mockMailer = Mockito.mock(Mailer.class);
+        mockTokenService = Mockito.mock(TokenService.class);
         utils = new DbTestUtils(rollbackingDSFactory);
+    }
+
+    @After
+    public void beforeEach() {
+        mockMailer = Mockito.mock(Mailer.class);
     }
 
     @Override
@@ -43,10 +56,11 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(AuthUserRepository.class).to(AuthUserRepository.class);
+                    bind(appConfig).to(AppConfig.class);
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(mockHasherSpy).to(HashingProvider.class);
                     bind(mockMailer).to(Mailer.class);
-                    bind(tokenService).to(TokenService.class);
+                    bind(mockTokenService).to(TokenService.class);
                     bind(AuthService.class).to(AuthService.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                 }
@@ -69,7 +83,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
         testUser.setCreatedAt(createdAt == null ? System.currentTimeMillis() / 1000L : createdAt);
         testUser.setPasswordHash("foo");
         testUser.setIsActivated(isActivated);
-        testUser.setActivationKey(tokenService.generateRandomString(AuthService.ACTIVATION_KEY_LENGTH));
+        testUser.setActivationKey(mockActicavationKey);
         utils.insertAuthUser(testUser);
         return testUser;
     }

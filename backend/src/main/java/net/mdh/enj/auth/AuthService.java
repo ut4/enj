@@ -5,19 +5,19 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.TextCodec;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import net.mdh.enj.db.UnaffectedOperationException;
 import org.springframework.transaction.annotation.Transactional;
 import net.mdh.enj.user.SelectFilters;
-import net.mdh.enj.Application;
+import net.mdh.enj.AppConfig;
 import net.mdh.enj.Mailer;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Suorittaa autentikointiin liittyvän raskaan työn.
+ */
 public class AuthService {
 
     static final int LOGIN_EXPIRATION = 5259600;        // ~2kk
@@ -27,19 +27,21 @@ public class AuthService {
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
     private final HashingProvider hashingProvider;
+    private final AppConfig appConfig;
     private final Mailer mailer;
-    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
     AuthService(
         TokenService tokenService,
         AuthUserRepository authUserRepository,
         HashingProvider hashingProvider,
+        AppConfig appConfig,
         Mailer mailer
     ) {
         this.tokenService = tokenService;
         this.authUserRepository = authUserRepository;
         this.hashingProvider = hashingProvider;
+        this.appConfig = appConfig;
         this.mailer = mailer;
     }
 
@@ -91,7 +93,7 @@ public class AuthService {
             AuthUserRepository.UpdateColumn.LAST_LOGIN,
             AuthUserRepository.UpdateColumn.CURRENT_TOKEN,
         }) < 1) {
-            throw new RuntimeException("Tietokantaan kirjoitus epäonnistui");
+            throw new UnaffectedOperationException("Tietokantaan kirjoitus epäonnistui");
         }
     }
 
@@ -103,7 +105,7 @@ public class AuthService {
      * @throws RuntimeException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
      */
     @Transactional
-    void register(RegistrationCredentials credentials) {
+    void register(RegistrationCredentials credentials, String successEmailTemplate) throws RuntimeException {
         // 1. Lisää käyttäjä
         AuthUser user = new AuthUser();
         user.setUsername(credentials.getUsername());
@@ -113,24 +115,20 @@ public class AuthService {
         user.setIsActivated(0);
         user.setActivationKey(this.tokenService.generateRandomString(ACTIVATION_KEY_LENGTH));
         if (this.authUserRepository.insert(user) < 1) {
-            throw new RuntimeException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
+            throw new UnaffectedOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
         }
         // 2. Lähetä aktivointi-email
         String link = String.format(
-            "https://foo.com/api/auth/activate?key=%s&email=%s",
+            "%s/auth/activate?key=%s&email=%s",
+            appConfig.appPublicUrl,
             user.getActivationKey(),
             TextCodec.BASE64URL.encode(user.getEmail())
         );
         if (!this.mailer.sendMail(
                 user.getEmail(),
+                user.getUsername(),
                 "Tilin aktivointi",
-                String.format(
-                    "Moi %s,<br><br>kiitos rekisteröitymisestä {appName}aan, tässä aktivointilinkki:" +
-                    "<a href=\"%s\">%s</a>. Mukavia treenejä!",
-                    user.getUsername(),
-                    link,
-                    link
-                )
+                String.format(successEmailTemplate, user.getUsername(), link, link)
             )) {
             throw new RuntimeException("Aktivointimailin lähetys epäonnistui");
         }
@@ -139,9 +137,9 @@ public class AuthService {
 
     /**
      * Aktivoi käyttäjän, tai heittää poikkeuksen jos email, tai aktivointiavain
-     * ei ollut validi, tai avain oli liian vanha.
+     * ei ollut validi, tai avain oli liian vanha. Palauttaa kirjautumislinkin.
      */
-    void activate(String base64email, String activationKey) {
+    String activate(String base64email, String activationKey) throws RuntimeException {
         // Päivitettävät kentät
         AuthUser activated = new AuthUser();
         activated.setIsActivated(1);
@@ -164,8 +162,9 @@ public class AuthService {
                 AuthUserRepository.FilterColumn.ACTIVATION_KEY
             }
         ) < 1) {
-            throw new RuntimeException("Käyttäjän aktivointi epäonnistui");
+            throw new UnaffectedOperationException("Käyttäjän aktivointi epäonnistui");
         }
+        return String.format("%s#/kirjaudu", appConfig.appPublicUrl.replace("/api", "/app"));
     }
 
     /**
@@ -189,7 +188,7 @@ public class AuthService {
         if (this.authUserRepository.update(user, cols.toArray(
             new AuthUserRepository.UpdateColumn[cols.size()]
         )) < 1) {
-            throw new RuntimeException("Tietojen päivitys epäonnistui");
+            throw new UnaffectedOperationException("Tietojen päivitys epäonnistui");
         }
     }
 
@@ -202,20 +201,12 @@ public class AuthService {
         try {
             Jws<Claims> parsed = this.tokenService.parse(tokenHash);
             return new TokenData(parsed.getBody().getSubject(), tokenHash);
-        } catch (MalformedJwtException | SignatureException | UnsupportedJwtException e) {
-            return null;
         } catch (ExpiredJwtException e) { // vanhentunut, mutta muutoin validi
             Claims claims = this.tokenService.getClaimsFromExpiredToken(tokenHash);
-            if (claims == null) {
-                return null;
-            }
             String userId = claims.getSubject();
-            String newTokenHash = this.renewToken(tokenHash, userId);
-            if (newTokenHash == null) {
-                return null;
-            }
-            return new TokenData(userId, newTokenHash);
+            return new TokenData(userId, this.renewToken(tokenHash, userId));
         }
+        // MalformedJwtException | SignatureException | UnsupportedJwtException heitetään
     }
 
     /**
@@ -223,26 +214,25 @@ public class AuthService {
      * expiredToken ei täsmännyt viimeisimpään tietokantaan tallennettuun tokeniin,
      * tai käyttäjän viimeisimmästä kirjautumisesta on yli 2kk.
      */
-    private String renewToken(String expiredToken, String userId) {
+    private String renewToken(String expiredToken, String userId) throws RuntimeException {
         SelectFilters filters = new SelectFilters();
         filters.setId(userId);
         filters.setCurrentToken(expiredToken);
         AuthUser user = this.authUserRepository.selectOne(filters);
         // id, tai token ei täsmännyt
         if (user == null || user.getLastLogin() == null) {
-            return null;
+            throw new SignatureException("Access-token virheellinen");
         }
         // Kirjautuminen yli 2kk vanha, poista se tietokannasta kokonaan
         if (System.currentTimeMillis() / 1000L >= user.getLastLogin() + LOGIN_EXPIRATION) {
             this.invalidateLogin(user);
-            return null;
+            throw new ExpiredJwtException(null, null, "Refresh-token vanhentui");
         }
         // Kaikki ok, luo uusi token & tallenna se kantaan
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setCurrentToken(tokenHash);
         if (this.authUserRepository.updateToken(user) < 1) {
-            logger.error("Uusitun tokenin tallennus epäonnistui");
-            return null;
+            throw new UnaffectedOperationException("Uusitun tokenin tallennus epäonnistui");
         }
         return tokenHash;
     }
