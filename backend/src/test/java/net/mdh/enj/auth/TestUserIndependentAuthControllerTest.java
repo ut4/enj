@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 import org.mockito.ArgumentCaptor;
 import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.resources.MockHashingProvider;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -68,7 +69,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         );
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void POSTRegisterEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
         String username = "bos";
         // Tilanne, jossa mailer epäonnistuu
@@ -79,14 +80,21 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
             Mockito.anyString()  // content
         )).thenReturn(false);
         // Lähetä register-pyyntö
-        Response response = this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
-        Assert.assertEquals(500, response.getStatus());
-        // Lisäsikö käyttäjän?
-        AuthUser notExpectedUser = new AuthUser();
-        notExpectedUser.setUsername(username);
-        Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
-            this.getUserFromDb(notExpectedUser, true)
-        );
+        try {
+            this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
+            Assert.fail("Olisi pitänyt heittää poikkeus");
+        } catch (ProcessingException e) {
+            Assert.assertEquals(
+                "Aktivointimailin lähetys epäonnistui",
+                e.getCause().getMessage()
+            );
+            // Peruuttiko käyttäjän lisäyksen?
+            AuthUser notExpectedUser = new AuthUser();
+            notExpectedUser.setUsername(username);
+            Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
+                this.getUserFromDb(notExpectedUser, true)
+            );
+        }
     }
 
     @Test
@@ -109,33 +117,51 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         )));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void GETActivateEiKirjoitaTietokantaanMitäänJosKäyttäjääEiLöydy() {
         // Rekisteröi jokin käyttäjä
         AuthUser testUser = insertNewUser("afoo", null, 0);
         // Lähetä aktivointipyyntö, jossa väärä email
         testUser.setEmail("foaa@mail.com");
-        Response response = this.sendActivationRequest(testUser);
-        Assert.assertEquals(500, response.getStatus());
+        try {
+            this.sendActivationRequest(testUser);
+            Assert.fail("Olisi pitänyt heittää poikkeus");
+        } catch (ProcessingException e) {
+            Assert.assertEquals(0,
+                this.getUserFromDb(testUser, true).getIsActivated()
+            );
+        }
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void GETActivateEiKirjoitaTietokantaanMitäänJosAvainEiTäsmää() {
         AuthUser testUser = insertNewUser("dr.pepper", null, 0);
         testUser.setActivationKey(mockActicavationKey.replace('a', 'b'));
-        Response response = sendActivationRequest(testUser);
-        Assert.assertEquals(500, response.getStatus());
+        try {
+            this.sendActivationRequest(testUser);
+            Assert.fail("Olisi pitänyt heittää poikkeus");
+        } catch (ProcessingException e) {
+            Assert.assertEquals(0,
+                this.getUserFromDb(testUser, true).getIsActivated()
+            );
+        }
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void GETActivateEiKirjoitaTietokantaanMitäänJosAktivointiavainOnLiianVanha() {
         AuthUser testUser = insertNewUser(
             "mr.jackson",
             System.currentTimeMillis() / 1000 - AuthService.ACTIVATION_KEY_EXPIRATION - 100,
             0
         );
-        Response response = sendActivationRequest(testUser);
-        Assert.assertEquals(500, response.getStatus());
+        try {
+            this.sendActivationRequest(testUser);
+            Assert.fail("Olisi pitänyt heittää poikkeus");
+        } catch (ProcessingException e) {
+            Assert.assertEquals(0,
+                this.getUserFromDb(testUser, true).getIsActivated()
+            );
+        }
     }
 
     private Response sendActivationRequest(AuthUser testUser) {

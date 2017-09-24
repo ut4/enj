@@ -2,11 +2,15 @@ package net.mdh.enj.mapping;
 
 import net.mdh.enj.db.DataSourceFactory;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.jdbc.core.RowMapper;
 import java.util.stream.IntStream;
 import java.util.ArrayList;
@@ -19,14 +23,32 @@ import java.util.UUID;
  */
 public abstract class BasicRepository<T extends DbEntity> {
 
+    private final DataSourceFactory dataSourceFactory;
     private final NamedParameterJdbcTemplate qTemplate;
     private final SimpleJdbcInsert inserter;
     private final String tableName;
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
+        this.dataSourceFactory = dataSourceFac;
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource()).withTableName(tableName);
         this.tableName = tableName;
+    }
+
+    public void runInTransaction(Runnable fn) {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(
+            this.dataSourceFactory.getDataSource()
+        );
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        TransactionStatus status = transactionManager.getTransaction(def);
+        try {
+            fn.run();
+        } catch (Throwable e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
+        transactionManager.commit(status);
     }
 
     /**

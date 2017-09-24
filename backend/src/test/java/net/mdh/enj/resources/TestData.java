@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class TestData {
-    public static final String TEST_USER_ID = "69891648-07bb-4991-8035-7fbc89fb6035";
+    public static final String TEST_USER_ID = "22835778-556d-4386-93bf-a356f0d160db";
+    public static final String TEST_USER_NAME = "bar";
+    public static final String TEST_USER_PASS = "bars";
     public static final String TEST_USER_ID2 = "c90aa48a-d296-4103-97c2-0c0b1701c50e";
     public static final String TEST_WORKOUT_ID = "4d98360a-a077-4410-8bf1-e98532714683";
     public static final String TEST_WORKOUT_EXERCISE_ID = "cbbcefe7-00e7-45c4-9b89-75dd70bd23f4";

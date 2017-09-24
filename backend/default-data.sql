@@ -1,6 +1,7 @@
 -- username asd, password asdf
 INSERT INTO `user` (id, username, email, createdAt, passwordHash, isActivated) VALUES
 ('69891648-07bb-4991-8035-7fbc89fb6035', 'asd', 'asd@asd.com', 1505368449, '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', 1),
+('22835778-556d-4386-93bf-a356f0d160db', 'bar', 'bar@bar.com', 1505368449, '$argon2i$v=19$m=65536,t=2,p=1$Fh6i5SaSjhStWgZ9AaagAg$r//av3CswlbnKt6HQDvPU+MeU+yBPzhbBcCScfQU2yY', 1),
 ('c90aa48a-d296-4103-97c2-0c0b1701c50e', 'zxc', 'zxc@asd.com', 1505368449, '$argon2i$v=19$m=65536,t=2,p=1$KSyt5XCibxRx6hj0Ji8kgA$W3jMt/0aQH97gCzXotb4MMSFo+XZ2VJItOj4gX9+8Pw', 1);
 
 INSERT INTO exercise (id, `name`) VALUES

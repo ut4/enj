@@ -14,7 +14,6 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.Comparator;
@@ -30,7 +29,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     private static Exercise testExercise;
 
     @BeforeClass
-    public static void beforeClass() throws SQLException {
+    public static void beforeClass() {
         utils = new DbTestUtils(rollbackingDSFactory);
         testExercise = insertTestExercise("foo", null);
     }
@@ -130,7 +129,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         ).collect(Collectors.toList());
         exercises.sort(Comparator.comparing(Exercise::getName));
         testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
-        Assert.assertEquals(2, exercises.size());
+        Assert.assertEquals(3, exercises.size());
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
         Assert.assertEquals(2, exercises.get(1).getVariants().size());
         Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());

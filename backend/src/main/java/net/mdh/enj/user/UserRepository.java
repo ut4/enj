@@ -11,8 +11,8 @@ import java.sql.ResultSet;
 public class UserRepository extends BasicRepository<User> {
 
     @Inject
-    UserRepository(DataSourceFactory dsFactory) {
-        super(dsFactory, "user");
+    UserRepository(DataSourceFactory dataSourceFac) {
+        super(dataSourceFac, "user");
     }
 
     User selectOne(SelectFilters filters) {

@@ -6,7 +6,6 @@ import io.jsonwebtoken.impl.TextCodec;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
 import net.mdh.enj.db.UnaffectedOperationException;
-import org.springframework.transaction.annotation.Transactional;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.AppConfig;
 import net.mdh.enj.Mailer;
@@ -21,6 +20,7 @@ import java.util.List;
 public class AuthService {
 
     static final int LOGIN_EXPIRATION = 5259600;        // ~2kk
+    static final int TOKEN_EXPIRATION = 1800;           // 30min
     static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
     static final int ACTIVATION_KEY_LENGTH = 32;
 
@@ -104,7 +104,6 @@ public class AuthService {
      *
      * @throws RuntimeException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
      */
-    @Transactional
     void register(RegistrationCredentials credentials, String successEmailTemplate) throws RuntimeException {
         // 1. Lisää käyttäjä
         AuthUser user = new AuthUser();
@@ -114,24 +113,26 @@ public class AuthService {
         user.setPasswordHash(this.hashingProvider.hash(credentials.getPassword()));
         user.setIsActivated(0);
         user.setActivationKey(this.tokenService.generateRandomString(ACTIVATION_KEY_LENGTH));
-        if (this.authUserRepository.insert(user) < 1) {
-            throw new UnaffectedOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
-        }
-        // 2. Lähetä aktivointi-email
-        String link = String.format(
-            "%s/auth/activate?key=%s&email=%s",
-            appConfig.appPublicUrl,
-            user.getActivationKey(),
-            TextCodec.BASE64URL.encode(user.getEmail())
-        );
-        if (!this.mailer.sendMail(
+        this.authUserRepository.runInTransaction(() -> {
+            if (this.authUserRepository.insert(user) < 1) {
+                throw new UnaffectedOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
+            }
+            // 2. Lähetä aktivointi-email
+            String link = String.format(
+                "%s/auth/activate?key=%s&email=%s",
+                appConfig.appPublicUrl,
+                user.getActivationKey(),
+                TextCodec.BASE64URL.encode(user.getEmail())
+            );
+            if (!this.mailer.sendMail(
                 user.getEmail(),
                 user.getUsername(),
                 "Tilin aktivointi",
                 String.format(successEmailTemplate, user.getUsername(), link, link)
             )) {
-            throw new RuntimeException("Aktivointimailin lähetys epäonnistui");
-        }
+                throw new RuntimeException("Aktivointimailin lähetys epäonnistui");
+            }
+        });
         // Kaikki ok
     }
 

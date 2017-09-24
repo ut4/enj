@@ -28,10 +28,7 @@ public class TokenService {
     private static SecureRandom random = new SecureRandom();
 
     final byte[] JWT_KEY;
-    /**
-     * Aika, jonka token on validi luomisen jälkeen. Yksikkö millisekunteina.
-     */
-    static final long JWT_AGE_IN_MS = 1800000; // 30min
+    final static long JWT_AGE_IN_MS = AuthService.TOKEN_EXPIRATION * 1000;
     final SignatureAlgorithm SIGNATURE_ALGO = SignatureAlgorithm.HS512; // HMAC using SHA-512
     final JwtBuilder jwtBuilder;
 

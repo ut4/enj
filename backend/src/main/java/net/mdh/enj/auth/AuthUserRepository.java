@@ -46,8 +46,8 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
     }
 
     @Inject
-    AuthUserRepository(DataSourceFactory dsFactory) {
-        super(dsFactory, "user");
+    AuthUserRepository(DataSourceFactory dataSourceFac) {
+        super(dataSourceFac, "user");
     }
 
     AuthUser selectOne(SelectFilters filters) {

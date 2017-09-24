@@ -43,7 +43,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
     }
 
     @After
-    public void beforeEach() {
+    public void afterEach() {
         mockMailer = Mockito.mock(Mailer.class);
     }
 

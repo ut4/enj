@@ -1,6 +1,5 @@
 package net.mdh.enj.auth;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,15 +9,14 @@ import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.MockHashingProvider;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
 
 /**
  * Testaa AuthControllerin reitit /login, /logout, ja PUT /credentials.
  */
 public class TestUserDependentAuthControllerTest extends AuthControllerTestCase {
 
-    private final static String correctUsername = "foo";
-    private final static char[] correctPassword = "bars".toCharArray();
+    private final static String correctUsername = TestData.TEST_USER_NAME;
+    private final static char[] correctPassword = TestData.TEST_USER_PASS.toCharArray();
     private final static char[] inCorrectPassword = "dars".toCharArray();
     private static String mockCurrentToken = "mocktokne";
     private static Long mockLastLogin = 3L;
@@ -41,11 +39,6 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
             "lastLogin = :lastLogin, currentToken = :currentToken," +
             "username = :username, passwordhash = :passwordHash, isActivated = 1 " +
             "WHERE id = :id", testUser);
-    }
-
-    @After
-    public void afterEach() throws SQLException {
-        rollback();
     }
 
     @Test

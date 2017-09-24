@@ -12,7 +12,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
 import java.util.UUID;
 import org.junit.BeforeClass;
 import org.junit.Assert;
@@ -23,7 +22,7 @@ public class UserControllerTest extends RollbackingDBJerseyTest {
     private static DbTestUtils utils;
 
     @BeforeClass
-    public static void beforeClass() throws SQLException {
+    public static void beforeClass() {
         utils = new DbTestUtils(rollbackingDSFactory);
     }
 
