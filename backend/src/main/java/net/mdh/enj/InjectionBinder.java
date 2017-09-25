@@ -13,6 +13,7 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.db.ConfigAwareDataSourceFactory;
 import net.mdh.enj.exercise.ExerciseRepository;
 import net.mdh.enj.workout.WorkoutRepository;
+import net.mdh.enj.program.ProgramRepository;
 import net.mdh.enj.workout.WorkoutExerciseRepository;
 import net.mdh.enj.exercise.ExerciseVariantRepository;
 import net.mdh.enj.workout.WorkoutExerciseSetRepository;
@@ -52,7 +53,7 @@ class InjectionBinder extends AbstractBinder {
         bind(ExerciseRepository.class).to(ExerciseRepository.class);
         bind(ExerciseVariantRepository.class).to(ExerciseVariantRepository.class);
         // Program
-        // ...
+        bind(ProgramRepository.class).to(ProgramRepository.class);
         // User
         bind(UserRepository.class).to(UserRepository.class);
     }

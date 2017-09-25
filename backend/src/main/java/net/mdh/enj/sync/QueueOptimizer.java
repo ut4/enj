@@ -1,10 +1,6 @@
 package net.mdh.enj.sync;
 
-import javax.ws.rs.HttpMethod;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 class QueueOptimizer {

@@ -3,6 +3,7 @@ package net.mdh.enj.resources;
 import net.mdh.enj.user.User;
 import net.mdh.enj.auth.AuthUser;
 import net.mdh.enj.workout.Workout;
+import net.mdh.enj.program.Program;
 import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
@@ -92,6 +93,19 @@ public class SimpleMappers {
             user.setIsActivated(rs.getInt("isActivated"));
             user.setActivationKey(rs.getString("activationKey"));
             return user;
+        }
+    }
+    public static class ProgramMapper implements RowMapper<Program> {
+        @Override
+        public Program mapRow(ResultSet rs, int i) throws SQLException {
+            Program program = new Program();
+            program.setId(rs.getString("id"));
+            program.setName(rs.getString("name"));
+            program.setStart(rs.getLong("start"));
+            program.setEnd(rs.getLong("end"));
+            program.setDescription(rs.getString("description"));
+            program.setUserId(rs.getString("userId"));
+            return program;
         }
     }
 }

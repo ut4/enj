@@ -249,3 +249,16 @@ CREATE VIEW setProgressView AS
     JOIN workoutExerciseSet wes ON (wes.id = bs.workoutExerciseSetId)
     JOIN exercise e ON (e.id = bs.exerciseId)
     JOIN workout w ON (w.id = (SELECT workoutId FROM workoutExercise WHERE id = wes.workoutExerciseId));
+
+-- == Program ====
+-- =============================================================================
+CREATE TABLE program (
+    id CHAR(36) NOT NULL,
+    `name` VARCHAR(64) NOT NULL,
+    `start` INT UNSIGNED NOT NULL,
+    `end` INT UNSIGNED NOT NULL,
+    description VARCHAR(128) DEFAULT NULL,
+    userId CHAR(36) NOT NULL,
+    FOREIGN KEY (userId) REFERENCES `user`(id),
+    PRIMARY KEY (id)
+) DEFAULT CHARSET = utf8mb4;
