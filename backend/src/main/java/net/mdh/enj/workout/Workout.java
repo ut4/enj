@@ -56,6 +56,11 @@ public class Workout extends DbEntity {
     }
 
     @Override
+    public String toUpdateFields() {
+        return "`start` = :start, `end` = :end, `notes` = :notes";
+    }
+
+    @Override
     public String toString() {
         return "Workout{" +
             "id=" + this.getId() +
@@ -133,6 +138,13 @@ public class Workout extends DbEntity {
         }
 
         @Override
+        public String toUpdateFields() {
+            return "ordinal = :ordinal" +
+                ", exerciseId = :exerciseId" +
+                ", exerciseVariantId = :exerciseVariantId";
+        }
+
+        @Override
         public String toString() {
             return "Workout.Exercise{" +
                 "id=" + this.getId() +
@@ -183,6 +195,11 @@ public class Workout extends DbEntity {
             }
             public void setWorkoutExerciseId(String workoutExerciseId) {
                 this.workoutExerciseId = workoutExerciseId;
+            }
+
+            @Override
+            public String toUpdateFields() {
+                return "weight = :weight, reps = :reps, ordinal = :ordinal";
             }
 
             @Override

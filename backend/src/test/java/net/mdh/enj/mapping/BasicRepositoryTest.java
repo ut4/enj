@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.List;
 
@@ -208,6 +209,22 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
     }
 
     @Test
+    public void updateLuoKyselynKäyttäenBeaninToUpdateFieldsMetodinArvoa() {
+        this.testRepo = Mockito.spy(this.testRepo);
+        //
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
+        //
+        String where = "name = 'fyy'";
+        this.testRepo.update(data, where);
+        //
+        Mockito.verify(this.testRepo, Mockito.times(1)).update(
+            String.format("UPDATE `exercise` SET %s WHERE %s", data.toUpdateFields(), where),
+            data
+        );
+    }
+
+    @Test
     public void updateManyPäivittääKaikkiBeanitJaPalauttaaPäivitettyjenRivienLukumäärän() {
         //
         SimpleExerciseEntity data = new SimpleExerciseEntity();
@@ -234,6 +251,25 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         );
         Assert.assertEquals("Pitäisi päivittää data", newName, updated.get(0).getName());
         Assert.assertEquals("Pitäisi päivittää data", newName2, updated.get(1).getName());
+    }
+
+    @Test
+    public void updateManyLuoKyselynKäyttäenBeaninToUpdateFieldsMetodinArvoa() {
+        this.testRepo = Mockito.spy(this.testRepo);
+        //
+        SimpleExerciseEntity data = new SimpleExerciseEntity();
+        data.setName("foo");
+        SimpleExerciseEntity data2 = new SimpleExerciseEntity();
+        data.setName("bar");
+        List<SimpleExerciseEntity> list = Arrays.asList(data, data2);
+        //
+        String where = "name = 'fyy'";
+        this.testRepo.updateMany(list, where);
+        //
+        Mockito.verify(this.testRepo, Mockito.times(1)).updateMany(
+            String.format("UPDATE `exercise` SET %s WHERE %s", data.toUpdateFields(), where),
+            list
+        );
     }
 
     @Test
@@ -295,6 +331,10 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         }
         public void setName(String name) {
             this.name = name;
+        }
+        @Override
+        public String toUpdateFields() {
+            return "name = :name";
         }
     }
     private static class TestFilters implements SelectQueryFilters {

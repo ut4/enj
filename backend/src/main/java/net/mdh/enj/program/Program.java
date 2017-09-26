@@ -54,6 +54,11 @@ public class Program extends DbEntity {
     }
 
     @Override
+    public String toUpdateFields() {
+        return "`name` = :name, `start` = :start, `end` = :end, description = :description";
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof Program && obj.toString().equals(this.toString());
     }

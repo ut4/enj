@@ -41,6 +41,11 @@ public class Exercise extends DbEntity {
     }
 
     @Override
+    public String toUpdateFields() {
+        return "name = :name";
+    }
+
+    @Override
     public String toString() {
         return "Exercise{" +
             "id=" + this.getId() +
@@ -77,6 +82,11 @@ public class Exercise extends DbEntity {
         }
         public void setUserId(String userId) {
             this.userId = userId;
+        }
+
+        @Override
+        public String toUpdateFields() {
+            return "`content` = :content, exerciseId = :exerciseId";
         }
 
         @Override

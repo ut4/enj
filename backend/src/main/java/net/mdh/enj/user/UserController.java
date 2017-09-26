@@ -46,6 +46,6 @@ public class UserController {
     public UpdateResponse update(User user) {
         // Yliaja id:ksi aina kirjautuneen käyttäjän id.
         user.setId(this.requestContext.getUserId());
-        return new UpdateResponse(this.userRepository.update(user));
+        return new UpdateResponse(this.userRepository.update(user, "id = :id"));
     }
 }

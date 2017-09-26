@@ -85,6 +85,38 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         );
     }
 
+    @Test
+    public void PUTPäivittääOhjelmanTietokantaan() {
+        // Luo ensin testiohjelma.
+        Program program = this.makeNewProgramEntity("Inserted");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        // Muokkaa sen tietoja
+        program.setName("Updated");
+        program.setStart(program.getStart() + 1);
+        program.setEnd(program.getEnd() + 1);
+        program.setDescription(null);
+        program.setUserId(TestData.TEST_USER_ID2); // Ei pitäisi tallentaa tätä
+        // PUTtaa muokatut tiedot
+        Response response = this.newPutRequest("program/" + program.getId(), program);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 1", (Integer)1, responseBody.updateCount);
+        // Päivittikö muokatut tiedot kantaan?
+        Program actualProgram = (Program) utils.selectOneWhere(
+            "SELECT * FROM program WHERE id = :id",
+            new MapSqlParameterSource("id", program.getId()),
+            new SimpleMappers.ProgramMapper()
+        );
+        Assert.assertEquals(program.getName(), actualProgram.getName());
+        Assert.assertEquals(program.getStart(), actualProgram.getStart());
+        Assert.assertEquals(program.getEnd(), actualProgram.getEnd());
+        Assert.assertNull(actualProgram.getDescription());
+        Assert.assertEquals("Ei pitäisi tallentaa muokattua userId:tä",
+            TestData.TEST_USER_ID, actualProgram.getUserId()
+        );
+    }
+
     private Program makeNewProgramEntity(String name) {
         Program program = new Program();
         program.setName(name);

@@ -1,15 +1,19 @@
 package net.mdh.enj.program;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.UpdateResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
+import net.mdh.enj.validation.UUID;
 import javax.validation.Valid;
 import javax.inject.Inject;
 import java.util.List;
@@ -52,5 +56,23 @@ public class ProgramController {
     @Path("/mine")
     public List<Program> getMyPrograms() {
         return this.programRepository.selectAll(new SelectFilters(this.requestContext.getUserId()));
+    }
+
+    /**
+     * Lisää uuden ohjelman tietokantaan kirjautuneelle käyttäjälle.
+     */
+    @PUT
+    @Path("/{programId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse update(
+        @PathParam("programId") @UUID String programId,
+        @Valid @NotNull Program program
+    ) {
+        program.setId(programId);
+        program.setUserId(this.requestContext.getUserId());
+        return new UpdateResponse(
+            this.programRepository.update(program, "id = :id AND userId = :userId")
+        );
     }
 }

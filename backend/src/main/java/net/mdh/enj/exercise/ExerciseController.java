@@ -105,7 +105,9 @@ public class ExerciseController {
     ) {
         exercise.setId(exerciseId);
         exercise.setUserId(this.requestContext.getUserId());
-        return new Responses.UpdateResponse(this.exerciseRepository.update(exercise));
+        return new Responses.UpdateResponse(
+            this.exerciseRepository.update(exercise, "id = :id AND userId = :userId")
+        );
     }
 
     /**

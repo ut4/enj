@@ -18,11 +18,6 @@ public class UserRepository extends BasicRepository<User> {
         return super.selectOne(filters, new UserMapper());
     }
 
-    int update(User user) {
-        return super.update("UPDATE `user` SET bodyWeight = :bodyWeight, " +
-            "isMale = :isMale, signature = :signature WHERE id = :id", user);
-    }
-
     private static class UserMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {

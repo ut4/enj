@@ -23,8 +23,8 @@ import java.util.UUID;
  */
 public abstract class BasicRepository<T extends DbEntity> {
 
-    private final DataSourceFactory dataSourceFactory;
     private final NamedParameterJdbcTemplate qTemplate;
+    private final DataSourceFactory dataSourceFactory;
     private final SimpleJdbcInsert inserter;
     private final String tableName;
     private String viewName;
@@ -45,7 +45,7 @@ public abstract class BasicRepository<T extends DbEntity> {
             this.dataSourceFactory.getDataSource()
         );
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_NESTED);
         TransactionStatus status = transactionManager.getTransaction(def);
         try {
             fn.run();
@@ -141,6 +141,10 @@ public abstract class BasicRepository<T extends DbEntity> {
         return this.qTemplate.update(q, new BeanPropertySqlParameterSource(data));
     }
 
+    public int update(T bean, String where) {
+        return this.update(this.newUpdateQ(bean, where), bean);
+    }
+
     /**
      * Ajaa tietokantakyselyn {q} jokaisesta batchin {data} itemistä.
      *
@@ -148,6 +152,10 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public int updateMany(String q, List<T> data) {
         return IntStream.of(this.qTemplate.batchUpdate(q, SqlParameterSourceUtils.createBatch(data.toArray()))).sum();
+    }
+
+    public int updateMany(List<T> data, String where) {
+        return this.updateMany(this.newUpdateQ(data.get(0), where), data);
     }
 
     /**
@@ -170,6 +178,17 @@ public abstract class BasicRepository<T extends DbEntity> {
             "SELECT * FROM %sView%s",
             this.viewName == null ? this.tableName : this.viewName,
             filters.hasRules() ? " WHERE " + filters.toSql() : ""
+        );
+    }
+
+    /**
+     * UPDATE {this.tableName} SET {data.toUpdateFields()} WHERE {where}
+     */
+    private String newUpdateQ(T bean, String where) {
+        return String.format("UPDATE `%s` SET %s WHERE %s",
+            tableName,
+            bean.toUpdateFields(),
+            where
         );
     }
 

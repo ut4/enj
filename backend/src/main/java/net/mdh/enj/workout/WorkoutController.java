@@ -86,7 +86,7 @@ public class WorkoutController {
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateMany(@Valid @NotNull List<Workout> workouts) {
-        return new UpdateResponse(this.workoutRepository.updateMany(workouts));
+        return new UpdateResponse(this.workoutRepository.updateMany(workouts, "id = :id"));
     }
 
     /**
@@ -132,7 +132,7 @@ public class WorkoutController {
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
-        return new UpdateResponse(this.workoutExerciseRepository.updateMany(workoutExercises));
+        return new UpdateResponse(this.workoutExerciseRepository.updateMany(workoutExercises, "id = :id"));
     }
 
     /**
@@ -178,7 +178,7 @@ public class WorkoutController {
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
-        return new UpdateResponse(this.workoutExerciseSetRepository.updateMany(workoutExerciseSets));
+        return new UpdateResponse(this.workoutExerciseSetRepository.updateMany(workoutExerciseSets, "id = :id"));
     }
 
     /**

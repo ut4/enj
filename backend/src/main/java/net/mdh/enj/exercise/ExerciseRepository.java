@@ -27,17 +27,6 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     /**
-     * Päivittää liikkeen {exercise} tietokantaan, ja palauttaa päivitettyjen
-     * rivien lukumäärän.
-     */
-    int update(Exercise exercise) {
-        return super.update(
-            String.format("UPDATE %s SET `name` = :name WHERE id = :id AND userId = :userId", TABLE_NAME),
-            exercise
-        );
-    }
-
-    /**
      * Luo Exercise-beaneja resultSet-rivin tiedoilla.
      */
     private static final class ExerciseMapper extends NoDupeRowMapper<Exercise> {

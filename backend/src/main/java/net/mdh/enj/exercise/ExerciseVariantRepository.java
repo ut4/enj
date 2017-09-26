@@ -14,10 +14,6 @@ public class ExerciseVariantRepository extends BasicRepository<Exercise.Variant>
     }
 
     int update(Exercise.Variant exerciseVariant) {
-        return super.update(
-            String.format("UPDATE %s SET `content` = :content, exerciseId = :exerciseId " +
-                "WHERE id = :id AND userId = :userId", TABLE_NAME),
-            exerciseVariant
-        );
+        return super.update(exerciseVariant, "id = :id AND userId = :userId");
     }
 }

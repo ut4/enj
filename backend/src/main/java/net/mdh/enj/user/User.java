@@ -45,6 +45,11 @@ public class User extends DbEntity {
     }
 
     @Override
+    public String toUpdateFields() {
+        return "bodyWeight = :bodyWeight, isMale = :isMale, signature = :signature";
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof User && obj.toString().equals(this.toString());
     }

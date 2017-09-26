@@ -8,4 +8,8 @@ public abstract class DbEntity {
     public String getId() {
         return this.id;
     }
+    /**
+     * UPDATE-kyselyn fields/columns, esim. "foo = :foo, bar = someBeanProperty"
+     */
+    public abstract String toUpdateFields();
 }
