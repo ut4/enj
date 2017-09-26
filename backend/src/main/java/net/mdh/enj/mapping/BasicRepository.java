@@ -27,12 +27,17 @@ public abstract class BasicRepository<T extends DbEntity> {
     private final NamedParameterJdbcTemplate qTemplate;
     private final SimpleJdbcInsert inserter;
     private final String tableName;
+    private String viewName;
 
     public BasicRepository(DataSourceFactory dataSourceFac, String tableName) {
         this.dataSourceFactory = dataSourceFac;
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         this.inserter = new SimpleJdbcInsert(dataSourceFac.getDataSource()).withTableName(tableName);
         this.tableName = tableName;
+    }
+    public BasicRepository(DataSourceFactory dataSourceFac, String tableName, String viewName) {
+        this(dataSourceFac, tableName);
+        this.viewName = viewName;
     }
 
     public void runInTransaction(Runnable fn) {
@@ -90,6 +95,14 @@ public abstract class BasicRepository<T extends DbEntity> {
         return this.selectAll(query, null, mapper);
     }
 
+    protected List<T> selectAll(SelectQueryFilters filters, RowMapper<T> mapper) {
+        return this.selectAll(
+            this.newSelectQ(filters),
+            filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
+            mapper
+        );
+    }
+
     /**
      * Kutsuu this.selectAll, ja palauttaa sen paluuarvotaulukosta ensimmäisen
      * arvon :D
@@ -109,6 +122,14 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public T selectOne(String query, RowMapper<T> mapper) {
         return this.selectOne(query, null, mapper);
+    }
+
+    protected T selectOne(SelectQueryFilters filters, RowMapper<T> mapper) {
+        return this.selectOne(
+            this.newSelectQ(filters),
+            filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
+            mapper
+        );
     }
 
     /**
@@ -138,6 +159,17 @@ public abstract class BasicRepository<T extends DbEntity> {
         return this.qTemplate.update(
             String.format("DELETE FROM `%s` WHERE id = :id", this.tableName),
             new MapSqlParameterSource("id", id)
+        );
+    }
+
+    /**
+     * SELECT * FROM {this.viewName || this.tableName}View{filters.toSql()}
+     */
+    protected String newSelectQ(SelectQueryFilters filters) {
+        return String.format(
+            "SELECT * FROM %sView%s",
+            this.viewName == null ? this.tableName : this.viewName,
+            filters.hasRules() ? " WHERE " + filters.toSql() : ""
         );
     }
 

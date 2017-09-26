@@ -1,5 +1,6 @@
 package net.mdh.enj.program;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
@@ -11,6 +12,7 @@ import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
 import javax.validation.Valid;
 import javax.inject.Inject;
+import java.util.List;
 
 /**
  * Vastaa /api/program REST-pyynnöistä
@@ -41,5 +43,14 @@ public class ProgramController {
         program.setUserId(this.requestContext.getUserId());
         int insertCount = this.programRepository.insert(program);
         return new InsertResponse(insertCount, program.getId());
+    }
+
+    /**
+     * Palauttaa kaikki kirjautuneelle käyttäjälle kuuluvat ohjelmat tietokannasta.
+     */
+    @GET
+    @Path("/mine")
+    public List<Program> getMyPrograms() {
+        return this.programRepository.selectAll(new SelectFilters(this.requestContext.getUserId()));
     }
 }

@@ -146,12 +146,14 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Response response = target("exercise/mine").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
-        Assert.assertTrue("Ei pitäisi sisältää globaalia liikettä", exercises.indexOf(e1) < 0);
-        Assert.assertTrue("Pitäisi sisältää globaali liike, jos sillä on käyttäjän variantt[i/eja]",
-            exercises.indexOf(e2) > -1
+        Assert.assertFalse("Ei pitäisi sisältää globaalia liikettä",
+            exercises.stream().anyMatch(e -> e.getId().equals(e1.getId()))
         );
-        Assert.assertTrue("Ei pitäisi sisältää toiselle käyttäjälle kuuluvaa liikettä",
-            exercises.indexOf(e3) < 0
+        Assert.assertTrue("Pitäisi sisältää globaali liike, jos sillä on käyttäjän variantt[i/eja]",
+            exercises.stream().anyMatch(e -> e.getId().equals(e2.getId()))
+        );
+        Assert.assertFalse("Ei pitäisi sisältää toiselle käyttäjälle kuuluvaa liikettä",
+            exercises.stream().anyMatch(e -> e.getId().equals(e3.getId()))
         );
     }
 

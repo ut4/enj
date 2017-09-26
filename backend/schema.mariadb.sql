@@ -1,3 +1,5 @@
+DROP VIEW    IF EXISTS programView;
+DROP TABLE   IF EXISTS program;
 DROP VIEW    IF EXISTS setProgressView;
 DROP VIEW    IF EXISTS bestSetView;
 DROP VIEW    IF EXISTS workoutExerciseView;
@@ -262,3 +264,13 @@ CREATE TABLE program (
     FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
+
+CREATE VIEW programView AS
+    SELECT
+        p.id          AS programId,
+        p.`name`      AS programName,
+        p.`start`     AS programStart,
+        p.`end`       AS programEnd,
+        p.description AS programDescription,
+        p.userId      AS programUserId
+    FROM program p;

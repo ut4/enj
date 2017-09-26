@@ -4,7 +4,6 @@ import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import javax.inject.Inject;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -47,15 +46,11 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
 
     @Inject
     AuthUserRepository(DataSourceFactory dataSourceFac) {
-        super(dataSourceFac, "user");
+        super(dataSourceFac, "user", "authUser");
     }
 
     AuthUser selectOne(SelectFilters filters) {
-        return super.selectOne(
-            "SELECT * FROM authUserView" + (filters.hasRules() ? " WHERE " + filters.toSql() : ""),
-            filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
-            new AuthUserMapper()
-        );
+        return super.selectOne(filters, new AuthUserMapper());
     }
 
     int update(AuthUser user, UpdateColumn[] columns) {

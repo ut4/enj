@@ -60,7 +60,9 @@ public class ExerciseController {
     @GET
     @Path("/{exerciseId}")
     public Exercise get(@PathParam("exerciseId") @UUID String id) {
-        return this.exerciseRepository.selectOne(id, this.requestContext.getUserId());
+        SelectFilters filters = new SelectFilters(this.requestContext.getUserId());
+        filters.setExerciseId(id);
+        return this.exerciseRepository.selectOne(filters);
     }
 
     /**
@@ -70,7 +72,9 @@ public class ExerciseController {
      */
     @GET
     public List<Exercise> getAll() {
-        return this.exerciseRepository.selectAll(this.requestContext.getUserId());
+        return this.exerciseRepository.selectAll(
+            new SelectFilters(this.requestContext.getUserId())
+        );
     }
 
     /**
@@ -83,7 +87,9 @@ public class ExerciseController {
     @GET
     @Path("/mine")
     public List<Exercise> getMyExercises() {
-        return this.exerciseRepository.selectMyExercises(this.requestContext.getUserId());
+        return this.exerciseRepository.selectAll(
+            new SelectFilters(this.requestContext.getUserId(), true)
+        );
     }
 
     /**

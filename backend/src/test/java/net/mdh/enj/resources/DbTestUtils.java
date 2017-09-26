@@ -1,6 +1,7 @@
 package net.mdh.enj.resources;
 
 import net.mdh.enj.auth.AuthUser;
+import net.mdh.enj.program.Program;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.exercise.Exercise;
@@ -41,6 +42,9 @@ public class DbTestUtils {
     }
     public void insertAuthUser(AuthUser u) {
         this.insert(this.getInserter("user"), u);
+    }
+    public void insertProgram(Program p) {
+        this.insert(this.getInserter("program"), p);
     }
     public Object selectOne(String query, RowMapper<?> mapper) {
         return this.getQueryTemplate().queryForObject(query, (Map<String, ?>) null, mapper);

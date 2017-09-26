@@ -3,7 +3,6 @@ package net.mdh.enj.user;
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import java.sql.SQLException;
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -16,11 +15,7 @@ public class UserRepository extends BasicRepository<User> {
     }
 
     User selectOne(SelectFilters filters) {
-        return super.selectOne(
-            "SELECT * FROM userView" + (filters.hasRules() ? " WHERE " + filters.toSql() : ""),
-            filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
-            new UserMapper()
-        );
+        return super.selectOne(filters, new UserMapper());
     }
 
     int update(User user) {

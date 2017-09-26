@@ -16,6 +16,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 public class ProgramControllerTest extends RollbackingDBJerseyTest {
 
@@ -42,13 +43,9 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void POSTProgramInsertoiUudenOhjelmanTietokantaanKirjautuneelleKäyttäjälle() {
+    public void POSTInsertoiUudenOhjelmanTietokantaanKirjautuneelleKäyttäjälle() {
         // Luo testiohjelma. NOTE - ei userId:tä
-        Program program = new Program();
-        program.setName("test");
-        program.setStart(123L);
-        program.setEnd(456L);
-        program.setDescription("...");
+        Program program = this.makeNewProgramEntity("My program");
         //
         Response response = this.newPostRequest("program", program);
         Assert.assertEquals(200, response.getStatus());
@@ -62,5 +59,38 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         program.setId(responseBody.insertId);
         program.setUserId(TestData.TEST_USER_ID);
         Assert.assertEquals(program.toString(), actualProgram.toString());
+    }
+
+    @Test
+    public void GETMinePalauttaaKirjautuneelleKäyttäjälleKuuluvatOhjelmat() {
+        // Insertoi kaksi ohjelmaa, joista toinen kuuluu toiselle käyttäjälle
+        Program myProgram = this.makeNewProgramEntity("My program");
+        myProgram.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(myProgram);
+        Program notMyProgram = this.makeNewProgramEntity("Not my program");
+        notMyProgram.setUserId(TestData.TEST_USER_ID2);
+        utils.insertProgram(notMyProgram);
+        //
+        Response response = newGetRequest("program/mine");
+        Assert.assertEquals(200, response.getStatus());
+        List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
+        // Palauttiko vain kirjautuneen käyttäjän ohjelmat?
+        Assert.assertTrue(
+            "Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
+            actualMyPrograms.stream().anyMatch(p -> p.getId().equals(myProgram.getId()))
+        );
+        Assert.assertFalse(
+            "Ei pitäisi sisältää toisen käyttäjän ohjelmaa",
+            actualMyPrograms.stream().anyMatch(p -> p.getId().equals(notMyProgram.getId()))
+        );
+    }
+
+    private Program makeNewProgramEntity(String name) {
+        Program program = new Program();
+        program.setName(name);
+        program.setStart(123L);
+        program.setEnd(456L);
+        program.setDescription("...");
+        return program;
     }
 }

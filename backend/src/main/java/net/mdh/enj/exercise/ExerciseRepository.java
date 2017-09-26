@@ -4,63 +4,26 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
 import net.mdh.enj.mapping.NoDupeRowMapper;
 import net.mdh.enj.mapping.SubCollector;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ExerciseRepository extends BasicRepository<Exercise> {
 
     private final static String TABLE_NAME = "exercise";
-    private final List<String> baseFilters;
 
     @Inject
     public ExerciseRepository(DataSourceFactory dSFactory) {
         super(dSFactory, TABLE_NAME);
-        this.baseFilters = Arrays.asList(
-            "(exerciseUserId IS NULL OR exerciseUserId = :userId)",
-            "(exerciseVariantUserId IS NULL OR exerciseVariantUserId = :userId)"
-        );
     }
 
-    /**
-     * Palauttaa käyttäjän {userId} liikkeen {id}.
-     */
-    Exercise selectOne(String exerciseId, String userId) {
-        List<String> filters = new ArrayList<>(this.baseFilters);
-        filters.add("exerciseId = :id");
-        return super.selectOne(
-            this.newSelectQ(String.join(" AND ", filters)),
-            new MapSqlParameterSource("id", exerciseId).addValue("userId", userId),
-            new ExerciseMapper()
-        );
+    Exercise selectOne(SelectFilters filters) {
+        return super.selectOne(filters, new ExerciseMapper());
     }
 
-    /**
-     * Palauttaa kaikki globaalit, sekä {userId}-käyttäjälle kuuluvat liikkeet.
-     */
-    List<Exercise> selectAll(String userId) {
-        return super.selectAll(
-            this.newSelectQ(String.join(" AND ", this.baseFilters)),
-            new MapSqlParameterSource("userId", userId),
-            new ExerciseMapper()
-        );
-    }
-
-    /**
-     * Palauttaa kaikki liikkeet, joiden userId, tai variant.userId = {userId}.
-     */
-    List<Exercise> selectMyExercises(String userId) {
-        return super.selectAll(
-            this.newSelectQ("exerciseUserId = :userId OR (" +
-                "exerciseUserId IS NULL AND exerciseVariantUserId = :userId" +
-            ")"),
-            new MapSqlParameterSource("userId", userId),
-            new ExerciseMapper()
-        );
+    List<Exercise> selectAll(SelectFilters filters) {
+        return super.selectAll(filters, new ExerciseMapper());
     }
 
     /**
@@ -72,10 +35,6 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
             String.format("UPDATE %s SET `name` = :name WHERE id = :id AND userId = :userId", TABLE_NAME),
             exercise
         );
-    }
-
-    private String newSelectQ(String where) {
-        return String.format("SELECT * FROM %sView WHERE (%s)", TABLE_NAME, where);
     }
 
     /**

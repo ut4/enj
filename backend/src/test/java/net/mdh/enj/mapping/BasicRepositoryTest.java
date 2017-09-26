@@ -8,6 +8,7 @@ import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.validation.UUIDValidator;
 import net.mdh.enj.resources.RollbackingDBUnitTest;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -89,6 +90,30 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         Assert.assertEquals(someBean, results.get(0));
     }
 
+    @Test
+    public void selectAllFiltersLisääFiltteritKyselyyn() {
+        this.testRepo = Mockito.spy(this.testRepo);
+        //
+        TestFilters filters = new TestFilters();
+        filters.setProp("foo");
+        TestFilters emptyFilters = new TestFilters();
+        emptyFilters.setProp(null);
+        //
+        this.testRepo.selectAll(filters, new ExerciseViewMapper());
+        this.testRepo.selectAll(emptyFilters, new ExerciseViewMapper());
+        //
+        Mockito.verify(this.testRepo, Mockito.times(1)).selectAll(
+            Mockito.eq("SELECT * FROM exerciseView WHERE exerciseId = :prop"),
+            Mockito.any(BeanPropertySqlParameterSource.class),
+            Mockito.any(ExerciseViewMapper.class)
+        );
+        Mockito.verify(this.testRepo, Mockito.times(1)).selectAll(
+            Mockito.eq("SELECT * FROM exerciseView"),
+            Mockito.eq(null),
+            Mockito.any(ExerciseViewMapper.class)
+        );
+    }
+
     /**
      * Testaa, että selectAll handlaa tilanteen, jossa tietokanta ei palauta
      * yhtään riviä.
@@ -118,6 +143,30 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         Assert.assertNotNull(result);
         Assert.assertEquals("mockuuid", result.getId());
         Assert.assertEquals("nam", result.getName());
+    }
+
+    @Test
+    public void selectOneFiltersLisääFiltteritKyselyyn() {
+        this.testRepo = Mockito.spy(this.testRepo);
+        //
+        TestFilters filters = new TestFilters();
+        filters.setProp("foo");
+        TestFilters emptyFilters = new TestFilters();
+        emptyFilters.setProp(null);
+        //
+        this.testRepo.selectOne(filters, new ExerciseViewMapper());
+        this.testRepo.selectOne(emptyFilters, new ExerciseViewMapper());
+        //
+        Mockito.verify(this.testRepo, Mockito.times(1)).selectOne(
+            Mockito.eq("SELECT * FROM exerciseView WHERE exerciseId = :prop"),
+            Mockito.any(BeanPropertySqlParameterSource.class),
+            Mockito.any(ExerciseViewMapper.class)
+        );
+        Mockito.verify(this.testRepo, Mockito.times(1)).selectOne(
+            Mockito.eq("SELECT * FROM exerciseView"),
+            Mockito.eq(null),
+            Mockito.any(ExerciseViewMapper.class)
+        );
     }
 
     /**
@@ -230,6 +279,15 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
             return simpleExercise;
         }
     }
+    private static class ExerciseViewMapper implements RowMapper<SimpleExerciseEntity> {
+        @Override
+        public SimpleExerciseEntity mapRow(ResultSet resultSet, int i) throws SQLException {
+            SimpleExerciseEntity simpleExercise = new SimpleExerciseEntity();
+            simpleExercise.setId(resultSet.getString("exerciseId"));
+            simpleExercise.setName(resultSet.getString("exerciseName"));
+            return simpleExercise;
+        }
+    }
     private static class SimpleExerciseEntity extends DbEntity {
         private String name;
         public String getName() {
@@ -237,6 +295,19 @@ public class BasicRepositoryTest extends RollbackingDBUnitTest {
         }
         public void setName(String name) {
             this.name = name;
+        }
+    }
+    private static class TestFilters implements SelectQueryFilters {
+        private String prop;
+        public String getProp() { return this.prop; }
+        public void setProp(String prop) { this.prop = prop; }
+        @Override
+        public boolean hasRules() {
+            return this.prop != null;
+        }
+        @Override
+        public String toSql() {
+            return this.prop != null ? "exerciseId = :prop" : "";
         }
     }
 }
