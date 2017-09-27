@@ -107,7 +107,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
             done();
         });
     });
-    QUnit.test('Käyttää urlissa passattua before-timestampia datan hakuun', assert => {
+    QUnit.test('Käyttää urlissa passattua before-unixTimea datan hakuun', assert => {
         const done = assert.async();
         const params = {before: 1456992647};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
@@ -181,7 +181,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
                 before: testProgressSets[2].liftedAt,
                 after: 0
             };
-            assert.ok(redirectSpy.calledOnce, 'Pitäisi päivittää urliin before-timestamp');
+            assert.ok(redirectSpy.calledOnce, 'Pitäisi päivittää urliin before-unixTime');
             assert.deepEqual(redirectSpy.firstCall.args,
                 [
                     [
@@ -207,7 +207,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
                 before: testProgressSets[0].liftedAt,
                 after: 0
             });
-            assert.ok(redirectSpy.calledTwice, 'Pitäisi päivittää urliin before, ja after-timestamp');
+            assert.ok(redirectSpy.calledTwice, 'Pitäisi päivittää urliin before, ja after-unixTime');
             assert.deepEqual(redirectSpy.secondCall.args,
                 [
                     [
@@ -267,8 +267,8 @@ QUnit.module('stat/StatHistoryView', hooks => {
     function getRenderedDropdowns(rendered): Array<HTMLSelectElement> {
         return itu.scryRenderedDOMElementsWithTag(rendered, 'select') as Array<HTMLSelectElement>;
     }
-    function getExpectedLabelContent(timestamp: number) {
-        const d = new Date(timestamp * 1000);
+    function getExpectedLabelContent(unixTime: number) {
+        const d = new Date(unixTime * 1000);
         return `${d.getDate()}.${d.getMonth() + 1}`;
     }
 });

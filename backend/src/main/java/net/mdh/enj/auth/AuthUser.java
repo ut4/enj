@@ -1,6 +1,8 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.mapping.DbEntity;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthUser extends DbEntity {
     private String username;
@@ -11,7 +13,27 @@ public class AuthUser extends DbEntity {
     private String currentToken;
     private int isActivated;
     private String activationKey;
+
     private UpdateFilters filters;
+    private UpdateColumn[] updateColumns;
+
+    enum UpdateColumn {
+        USERNAME("username = :username"),
+        EMAIL("email = :email"),
+        PASSWORD_HASH("passwordHash = :passwordHash"),
+        LAST_LOGIN("lastLogin = :lastLogin"),
+        CURRENT_TOKEN("currentToken = :currentToken"),
+        IS_ACTIVATED("isActivated = :isActivated"),
+        ACTIVATION_KEY("activationKey = :activationKey");
+        private final String pair;
+        UpdateColumn(final String pair) {
+            this.pair = pair;
+        }
+        @Override
+        public String toString() {
+            return pair;
+        }
+    }
 
     public String getUsername() {
         return this.username;
@@ -74,6 +96,19 @@ public class AuthUser extends DbEntity {
     }
     public void setFilters(UpdateFilters filters) {
         this.filters = filters;
+    }
+
+    public void setUpdateColumns(UpdateColumn[] updateColumns) {
+        this.updateColumns = updateColumns;
+    }
+
+    @Override
+    public String toUpdateFields() {
+        List<String> pairs = new ArrayList<>();
+        for (UpdateColumn pair: this.updateColumns) {
+            pairs.add(pair.toString());
+        }
+        return String.join(", ", pairs);
     }
 
     @Override

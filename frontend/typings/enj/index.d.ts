@@ -94,6 +94,14 @@ declare module Enj {
             isMale: number;
             signature?: string;
         }
+        interface ProgramRecord {
+            id: AAGUID;
+            name: string;
+            start: number;
+            end: number;
+            description?: string;
+            userId: AAGUID
+        }
         // REST-vastauswrapperit
         interface InsertResponse {
             insertCount: number;

@@ -72,10 +72,7 @@ public class AuthService {
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setLastLogin(System.currentTimeMillis() / 1000L);
         user.setCurrentToken(tokenHash);
-        this.authUserRepository.update(user, new AuthUserRepository.UpdateColumn[]{
-            AuthUserRepository.UpdateColumn.LAST_LOGIN,
-            AuthUserRepository.UpdateColumn.CURRENT_TOKEN
-        });
+        this.authUserRepository.updateLogin(user);
         return tokenHash;
     }
 
@@ -89,10 +86,7 @@ public class AuthService {
         cleared.setId(userId);
         cleared.setLastLogin(null);
         cleared.setCurrentToken(null);
-        if (this.authUserRepository.update(cleared, new AuthUserRepository.UpdateColumn[]{
-            AuthUserRepository.UpdateColumn.LAST_LOGIN,
-            AuthUserRepository.UpdateColumn.CURRENT_TOKEN,
-        }) < 1) {
+        if (this.authUserRepository.updateLogin(cleared) < 1) {
             throw new UnaffectedOperationException("Tietokantaan kirjoitus epäonnistui");
         }
     }
@@ -145,24 +139,17 @@ public class AuthService {
         AuthUser activated = new AuthUser();
         activated.setIsActivated(1);
         activated.setActivationKey(null);
+        activated.setUpdateColumns(new AuthUser.UpdateColumn[]{
+            AuthUser.UpdateColumn.IS_ACTIVATED,
+            AuthUser.UpdateColumn.ACTIVATION_KEY,
+        });
         // WHERE-osioon tulevat kentät
         UpdateFilters filters = new UpdateFilters();
         filters.setEmail(TextCodec.BASE64URL.decodeToString(base64email));
         filters.setMinCreatedAt(System.currentTimeMillis() / 1000L - ACTIVATION_KEY_EXPIRATION);
         filters.setActivationKey(activationKey);
         activated.setFilters(filters);
-        if (this.authUserRepository.update(
-            activated,
-            new AuthUserRepository.UpdateColumn[]{
-                AuthUserRepository.UpdateColumn.IS_ACTIVATED,
-                AuthUserRepository.UpdateColumn.ACTIVATION_KEY,
-            },
-            new AuthUserRepository.FilterColumn[]{
-                AuthUserRepository.FilterColumn.EMAIL,
-                AuthUserRepository.FilterColumn.MIN_CREATED_AT,
-                AuthUserRepository.FilterColumn.ACTIVATION_KEY
-            }
-        ) < 1) {
+        if (this.authUserRepository.update(activated) < 1) {
             throw new UnaffectedOperationException("Käyttäjän aktivointi epäonnistui");
         }
         return String.format("%s#/kirjaudu", appConfig.appPublicUrl.replace("/api", "/app"));
@@ -173,22 +160,21 @@ public class AuthService {
      * vaihtui.
      */
     void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
-        List<AuthUserRepository.UpdateColumn> cols = new ArrayList<>();
+        List<AuthUser.UpdateColumn> cols = new ArrayList<>();
         // Aseta käyttäjänimi & email aina
         user.setUsername(newCredentials.getUsername());
-        cols.add(AuthUserRepository.UpdateColumn.USERNAME);
+        cols.add(AuthUser.UpdateColumn.USERNAME);
         user.setEmail(newCredentials.getEmail());
-        cols.add(AuthUserRepository.UpdateColumn.EMAIL);
+        cols.add(AuthUser.UpdateColumn.EMAIL);
         // Luo uusi salasana vain jos se vaihtui
         if (newCredentials.getNewPassword() != null &&
             !Arrays.equals(newCredentials.getNewPassword(), newCredentials.getPassword())) {
             user.setPasswordHash(this.hashingProvider.hash(newCredentials.getNewPassword()));
-            cols.add(AuthUserRepository.UpdateColumn.PASSWORD_HASH);
+            cols.add(AuthUser.UpdateColumn.PASSWORD_HASH);
         }
         newCredentials.nuke();
-        if (this.authUserRepository.update(user, cols.toArray(
-            new AuthUserRepository.UpdateColumn[cols.size()]
-        )) < 1) {
+        user.setUpdateColumns(cols.toArray(new AuthUser.UpdateColumn[cols.size()]));
+        if (this.authUserRepository.update(user) < 1) {
             throw new UnaffectedOperationException("Tietojen päivitys epäonnistui");
         }
     }
@@ -241,10 +227,7 @@ public class AuthService {
     private void invalidateLogin(AuthUser user) {
         user.setLastLogin(null);
         user.setCurrentToken(null);
-        this.authUserRepository.update(user, new AuthUserRepository.UpdateColumn[]{
-            AuthUserRepository.UpdateColumn.LAST_LOGIN,
-            AuthUserRepository.UpdateColumn.CURRENT_TOKEN
-        });
+        this.authUserRepository.updateLogin(user);
     }
 
     // -------------------------------------------------------------------------

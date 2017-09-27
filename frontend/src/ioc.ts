@@ -1,5 +1,6 @@
 import IocContainer    from 'src/common/IocContainer';
 import Db              from 'src/common/Db';
+import dateUtils       from 'src/common/dateUtils';
 import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
@@ -7,6 +8,7 @@ import { createHashHistory } from 'history';
 import StatBackend     from 'src/stat/StatBackend';
 import WorkoutBackend  from 'src/workout/WorkoutBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
+import ProgramBackend  from 'src/program/ProgramBackend';
 import UserState       from 'src/user/UserState';
 import AuthBackend     from 'src/auth/AuthBackend';
 import AuthService     from 'src/auth/AuthService';
@@ -34,6 +36,9 @@ class IocFactories extends IocContainer {
     public history(): any {
         return routerHistory;
     }
+    public dateUtils() {
+        return dateUtils;
+    }
 
     // == Stat =================================================================
     public statBackend(): StatBackend {
@@ -49,18 +54,13 @@ class IocFactories extends IocContainer {
     }
 
     // == Program ==============================================================
-    public programBackend(): any {
-        return null;
+    public programBackend(): ProgramBackend {
+        return this.memoize('programBackend', () => new ProgramBackend(this.http(), 'program'));
     }
 
     // == Exercise =============================================================
     public exerciseBackend(): ExerciseBackend {
         return this.memoize('exerciseBackend', () => new ExerciseBackend(this.http(), 'exercise'));
-    }
-
-    // == Nutrition ============================================================
-    public nutritionBackend(): any {
-        return null;
     }
 
     // == User =================================================================

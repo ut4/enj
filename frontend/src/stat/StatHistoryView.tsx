@@ -7,8 +7,8 @@ interface Params {
     exerciseId?: AAGUID;
     formula?: string;
     page?: number;   // 0 = uusimmat, -1 sitä aiemmat, -2 sitä edelliset ...
-    before?: number; // timestamp, jota vanhempia sarjoja haetaan
-    after?: number;  // timestamp, jota uudempia sarjoja haetaan
+    before?: number; // unixTime, jota vanhempia sarjoja haetaan
+    after?: number;  // unixTime, jota uudempia sarjoja haetaan
 }
 
 interface ChartData {
@@ -127,8 +127,8 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
                 labelInterpolationFnc: weight => weight + 'kg'
             })],
             axisX: {
-                labelInterpolationFnc: stamp => {
-                    const d = new Date(stamp * 1000);
+                labelInterpolationFnc: unixTime => {
+                    const d = new Date(unixTime * 1000);
                     return d.getDate() + '.' + (d.getMonth() + 1);
                 }
             }

@@ -140,7 +140,7 @@ public class AuthenticationFilterTest extends JerseyTest {
         invalidated.setId(userWithInvalidLogin.getId());
         invalidated.setLastLogin(null);
         invalidated.setCurrentToken(null);
-        Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).update(Mockito.eq(invalidated), Mockito.any());
+        Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).updateLogin(Mockito.eq(invalidated));
     }
     @Test
     public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() {

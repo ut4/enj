@@ -55,8 +55,8 @@ class StatsOverviewView extends Component<any, any> {
     }
 }
 
-function readableTime(stamp: number) {
-    const d = new Date(stamp * 1000);
+function readableTime(unixTime: number) {
+    const d = new Date(unixTime * 1000);
     return [
         d.getUTCHours(), <span>h</span>,
         d.getUTCMinutes(), <span>m</span>,

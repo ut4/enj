@@ -90,7 +90,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
 }
 
 function toFinDate(date: Date): string {
-    return date.getDate() + '.' + date.getMonth() + ' ' + date.getFullYear();
+    return iocFactories.dateUtils().getLocaleDateString(date);
 }
 
 function isToday(date: Date): boolean {

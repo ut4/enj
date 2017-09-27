@@ -14,7 +14,7 @@ QUnit.module('workout/WorkoutBackend', hooks => {
         shallowUserState = Object.create(UserState.prototype);
         workoutBackend = new WorkoutBackend(shallowHttp, 'workout', shallowUserState);
     });
-    QUnit.test('getDaysWorkouts hakee treenit timestamp rangella', assert => {
+    QUnit.test('getDaysWorkouts hakee treenit unixTime rangella', assert => {
         const httpCallStub = sinon.stub(shallowHttp, 'get').returns('foo');
         //
         workoutBackend.getDaysWorkouts();
@@ -23,20 +23,20 @@ QUnit.module('workout/WorkoutBackend', hooks => {
         workoutBackend.getDaysWorkouts(yesterday);
         //
         assert.ok(httpCallStub.calledTwice);
-        const expectedFromTimestamp = getDayStartTimestamp();
-        const expectedToTimestamp = expectedFromTimestamp + SECONDS_IN_DAY - 1;
+        const expectedFromUnixTime = getDayStartUnixTime();
+        const expectedToUnixTime = expectedFromUnixTime + SECONDS_IN_DAY - 1;
         assert.deepEqual(
             httpCallStub.firstCall.args[0].split('?')[1],
-            `startFrom=${expectedFromTimestamp}&startTo=${expectedToTimestamp}`
+            `startFrom=${expectedFromUnixTime}&startTo=${expectedToUnixTime}`
         );
-        const expectedFromTimestamp2 = getDayStartTimestamp(yesterday);
-        const expectedToTimestamp2 = expectedFromTimestamp2 + SECONDS_IN_DAY - 1;
+        const expectedFromUnixTime2 = getDayStartUnixTime(yesterday);
+        const expectedToUnixTime2 = expectedFromUnixTime2 + SECONDS_IN_DAY - 1;
         assert.deepEqual(
             httpCallStub.secondCall.args[0].split('?')[1],
-            `startFrom=${expectedFromTimestamp2}&startTo=${expectedToTimestamp2}`
+            `startFrom=${expectedFromUnixTime2}&startTo=${expectedToUnixTime2}`
         );
     });
-    function getDayStartTimestamp(date?: Date): number {
+    function getDayStartUnixTime(date?: Date): number {
         const d = date || new Date();
         const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 1);
         return Math.floor(dayStart.getTime() / 1000);
