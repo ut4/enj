@@ -5,7 +5,7 @@ import utils from 'tests/utils';
 import ProgramBackend from 'src/program/ProgramBackend';
 import ProgramCreateView from 'src/program/ProgramCreateView';
 import iocFactories from 'src/ioc';
-import programTestUtils from 'tests/program/utils';
+import ptu from 'tests/program/utils';
 
 QUnit.module('program/ProgramCreateView', hooks => {
     let programBackendIocOverride: sinon.SinonStub;
@@ -19,16 +19,18 @@ QUnit.module('program/ProgramCreateView', hooks => {
     });
     QUnit.test('lähettää tiedot backendiin', assert => {
         const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.resolve(1));
-        //
-        const rendered = itu.renderIntoDocument(<ProgramCreateView/>);
         const expectedNewProgram = {
             name: 'foo',
             start: getExpectedStart(),
             end: getExpectedEnd(),
             description: 'asd'
         };
+        // Renderöi näkymä & assertoi initial-arvot
+        const rendered = itu.renderIntoDocument(<ProgramCreateView/>);
+        const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
+        assert.equal(startInputEl.value, getExpectedInitialStartDateStr());
+        assert.equal(endInputEl.value, getExpectedInitialEndDateStr());
         // Täytä & lähetä lomake
-        const [nameInputEl, startInputEl, endInputEl] = getInputs(rendered);
         utils.setInputValue(expectedNewProgram.name, nameInputEl);
         utils.selectDatepickerDate(5, startInputEl);
         utils.selectDatepickerDate(5, endInputEl);
@@ -38,12 +40,15 @@ QUnit.module('program/ProgramCreateView', hooks => {
         submitButton.click();
         // Lähettikö?
         assert.ok(insertCallStub.calledOnce, 'Pitäisi lähettää pyyntö backediin');
-        console.log(new Date(expectedNewProgram.end*1000));
-        console.log(new Date(insertCallStub.firstCall.args[0].end*1000));
         assert.deepEqual(insertCallStub.firstCall.args, [expectedNewProgram]);
     });
-    function getInputs(rendered): Array<HTMLInputElement> {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+    function getExpectedInitialStartDateStr(): string {
+        return ptu.getExpectedDateStr(Math.floor(new Date().getTime() / 1000));
+    }
+    function getExpectedInitialEndDateStr(): string {
+        const date = new Date();
+        date.setMonth(date.getMonth() + 2);
+        return ptu.getExpectedDateStr(Math.floor(date.getTime() / 1000));
     }
     function getExpectedStart(): number {
         const date = new Date();

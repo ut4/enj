@@ -11,9 +11,9 @@ QUnit.module('auth/LoginForm', hooks => {
     hooks.beforeEach(() => {
         rendered = itu.renderIntoDocument(<LoginForm onValidityChange={ () => {} }/>);
         loginFormInstance = rendered.props.children.children;
-        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        usernameInputEl = inputEls[0] as HTMLInputElement;
-        passwordInputEl = inputEls[1] as HTMLInputElement;
+        const inputEls = utils.getInputs(rendered);
+        usernameInputEl = inputEls[0];
+        passwordInputEl = inputEls[1];
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa invalid', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);

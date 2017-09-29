@@ -18,12 +18,12 @@ QUnit.module('auth/CredentialsForm', hooks => {
             <CredentialsForm credentials={ testCredentials } onValidityChange={ () => {} }/>
         );
         credentialsFormInstance = rendered.props.children.children;
-        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        usernameInputEl = inputEls[0] as HTMLInputElement;
-        emailInputEl = inputEls[1] as HTMLInputElement;
-        currentPasswordInputEl = inputEls[2] as HTMLInputElement;
-        newPasswordInputEl = inputEls[3] as HTMLInputElement;
-        newPasswordConfirmationInputEl = inputEls[4] as HTMLInputElement;
+        const inputEls = utils.getInputs(rendered);
+        usernameInputEl = inputEls[0];
+        emailInputEl = inputEls[1];
+        currentPasswordInputEl = inputEls[2];
+        newPasswordInputEl = inputEls[3];
+        newPasswordConfirmationInputEl = inputEls[4];
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa invalid', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);

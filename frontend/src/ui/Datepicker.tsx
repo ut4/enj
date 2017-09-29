@@ -5,6 +5,8 @@ interface Props {
     onSelect: (date: Date) => any;
     displayFormatFn?: (date: Date, format?: string) => string;
     defaultDate?: Date;
+    minDate?: Date;
+    maxDate?: Date;
     showInput?: boolean;
 }
 
@@ -14,6 +16,9 @@ class Datepicker extends Component<Props, any> {
     private pikaday: any;
     public componentDidMount() {
         this.pikaday = new Pikaday(this.makeSettings());
+    }
+    public componentWillReceiveProps(props) {
+        this.updateBounds(props);
     }
     public open() {
         this.pikaday.show();
@@ -43,7 +48,21 @@ class Datepicker extends Component<Props, any> {
             settings.defaultDate = this.props.defaultDate;
             settings.setDefaultDate = true;
         }
+        if (this.props.minDate) {
+            settings.minDate = this.props.minDate;
+        }
+        if (this.props.maxDate) {
+            settings.maxDate = this.props.maxDate;
+        }
         return settings;
+    }
+    private updateBounds(props) {
+        if (props.minDate) {
+            this.pikaday.setMinDate(props.minDate);
+        }
+        if (props.maxDate) {
+            this.pikaday.setMaxDate(props.maxDate);
+        }
     }
 }
 

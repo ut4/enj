@@ -47,11 +47,23 @@ class ProgramForm extends ValidatingComponent<Props, State> {
             </label>
             <label class="input-set">
                 <span>Alkaa</span>
-                <Datepicker inputName="start" onSelect={ date => this.receiveDateSelection(date, 'start') } defaultDate={ new Date(this.state.program.start * 1000) } showInput={ true } displayFormatFn={ datepickerFormatter }/>
+                <Datepicker
+                    inputName="start"
+                    onSelect={ date => this.receiveDateSelection(date, 'start') }
+                    defaultDate={ new Date(this.state.program.start * 1000) }
+                    maxDate={ new Date((this.state.program.end + 86400) * 1000) }
+                    showInput={ true }
+                    displayFormatFn={ datepickerFormatter }/>
             </label>
             <label class="input-set">
                 <span>Loppuu</span>
-                <Datepicker inputName="end" onSelect={ date => this.receiveDateSelection(date, 'end') } defaultDate={ new Date(this.state.program.end * 1000) } showInput={ true } displayFormatFn={ datepickerFormatter }/>
+                <Datepicker
+                    inputName="end"
+                    onSelect={ date => this.receiveDateSelection(date, 'end') }
+                    defaultDate={ new Date(this.state.program.end * 1000) }
+                    minDate={ new Date((this.state.program.start + 86400) * 1000) }
+                    showInput={ true }
+                    displayFormatFn={ datepickerFormatter }/>
             </label>
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
@@ -59,7 +71,7 @@ class ProgramForm extends ValidatingComponent<Props, State> {
     private confirm() {
         return (this.isInsert
             ? iocFactories.programBackend().insert(this.state.program)
-            : Promise.reject('Not implemented yet')
+            : iocFactories.programBackend().update(this.state.program, '/' + this.state.program.id)
         ).then(
             () => {
                 this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.program);

@@ -47,12 +47,12 @@ QUnit.module('auth/CredentialsEditView', hooks => {
             const confirmButton = getConfirmButton(rendered);
             assert.ok(confirmButton.disabled, 'Submit-painike pitäisi olla aluksi disabled');
             // Täytä password & newPassword & newPasswordConfirmation & lähetä lomake
-            const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-            const usernameInputEl = inputEls[0] as HTMLInputElement;
-            const emailInputEl = inputEls[1] as HTMLInputElement;
-            const passwordInputEl = inputEls[2] as HTMLInputElement;
-            const newPasswordInputEl = inputEls[3] as HTMLInputElement;
-            const newPasswordConfirmationInputEl = inputEls[4] as HTMLInputElement;
+            const inputEls = utils.getInputs(rendered);
+            const usernameInputEl = inputEls[0];
+            const emailInputEl = inputEls[1];
+            const passwordInputEl = inputEls[2];
+            const newPasswordInputEl = inputEls[3];
+            const newPasswordConfirmationInputEl = inputEls[4];
             utils.setInputValue(newCredentials.username, usernameInputEl);
             utils.setInputValue(newCredentials.email, emailInputEl);
             utils.setInputValue(currentPassword, passwordInputEl);

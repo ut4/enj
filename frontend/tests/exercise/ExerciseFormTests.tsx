@@ -22,7 +22,7 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         const rendered = itu.renderIntoDocument(
             <ExerciseForm exercise={ testExercise } afterInsert={ () => {} }/>
         );
-        const inputs = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+        const inputs = utils.getInputs(rendered);
         assert.equal(inputs[0].value, testExercise.name,  'Pitäisi asettaa initial-name');
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
@@ -45,9 +45,8 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         const newExercise = {name: '', userId: 'u'};
         const rendered = itu.renderIntoDocument(<ExerciseForm exercise={ newExercise } afterInsert={ afterInsertSpy }/>);
         // Täytä & lähetä lomake
-        const inputs = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
         const newExerciseName = 'some exercise';
-        utils.setInputValue(newExerciseName, inputs[0]);
+        utils.setInputValue(newExerciseName, utils.getInputs(rendered)[0]);
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lähettikö?

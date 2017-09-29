@@ -24,7 +24,7 @@ QUnit.module('program/ProgramForm', hooks => {
             <ProgramForm program={ testProgram } afterInsert={ () => {} }/>
         );
         // Asettiko initial arvot?
-        const [nameInputEl, startInputEl, endInputEl] = getInputs(rendered);
+        const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
         const descriptionEl = itu.findRenderedDOMElementWithTag(rendered, 'textarea') as HTMLTextAreaElement;
         assert.equal(nameInputEl.value, testProgram.name,  'Pitäisi asettaa initial-name');
         assert.equal(startInputEl.value, ptu.getExpectedDateStr(testProgram.start),  'Pitäisi asettaa initial-start');
@@ -56,7 +56,7 @@ QUnit.module('program/ProgramForm', hooks => {
         const newProgram = ptu.getSomeTestPrograms()[0];
         const rendered = itu.renderIntoDocument(<ProgramForm program={ newProgram } afterInsert={ afterInsertSpy }/>);
         // Täytä & lähetä lomake
-        const [nameInputEl, startInputEl, endInputEl] = getInputs(rendered);
+        const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
         const newProgramName = 'some program';
         utils.setInputValue(newProgramName, nameInputEl);
         // Aseta start&end datepickerista & lähetä lomake
@@ -79,8 +79,5 @@ QUnit.module('program/ProgramForm', hooks => {
     });
     function getFirstValidationError(rendered): string {
         return vtu.getRenderedValidationErrors(rendered)[0].textContent;
-    }
-    function getInputs(rendered): Array<HTMLInputElement> {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
     }
 });

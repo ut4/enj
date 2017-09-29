@@ -23,6 +23,7 @@ import 'tests/offline/OfflineStartViewTests';
 import 'tests/offline/OfflineTests';
 import 'tests/offline/SyncBackendTests';
 import 'tests/program/ProgramCreateViewTests';
+import 'tests/program/ProgramEditViewTests';
 import 'tests/program/ProgramFormTests';
 import 'tests/program/ProgramViewTests';
 import 'tests/serviceworker/SWManagerTests';

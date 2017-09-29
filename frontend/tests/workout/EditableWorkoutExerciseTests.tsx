@@ -132,7 +132,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
         // Päivitä yhden sarjan tietoja modalissa
-        const secondSetWeightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[2];
+        const secondSetWeightInput = utils.getInputs(rendered)[2];
         utils.setInputValue(testWorkoutExercise.sets[1].weight + 5, secondSetWeightInput);
         // Hyväksy lomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
@@ -172,7 +172,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const setListInstance = workoutTestUtils.getMountedSetListInstance(rendered);
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
         // Päivitä yhden sarjan tietoja modalissa
-        const firstSetRepsInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1];
+        const firstSetRepsInput = utils.getInputs(rendered)[1];
         const modifiedSet = setListInstance.state.sets[0];
         utils.setInputValue('90', firstSetRepsInput);
         // Poista yksi sarja listalta
@@ -242,7 +242,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const addSetButton = utils.findButtonByContent(rendered, 'Uusi sarja');
         addSetButton.click();
         // Täytä lomake
-        const [weightInput, repsInput] = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+        const [weightInput, repsInput] = utils.getInputs(rendered);
         assert.equal(weightInput.value, '45', 'Pitäisi poimia weight edellisestä sarjasta');
         assert.equal(repsInput.value, '2', 'Pitäisi poimia reps edellisestä sarjasta');
         utils.setInputValue('46', weightInput);

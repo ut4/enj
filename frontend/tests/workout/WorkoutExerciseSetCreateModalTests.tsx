@@ -10,7 +10,7 @@ QUnit.module('workout/WorkoutExerciseSetCreateModal', hooks => {
         const rendered = itu.renderIntoDocument(
             <WorkoutExerciseSetCreateModal workoutExerciseSet={ testWorkoutExerciseSet }/>
         );
-        const inputs = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+        const inputs = utils.getInputs(rendered);
         assert.equal(inputs[0].value, testWorkoutExerciseSet.weight,  'Pitäisi asettaa initial-paino');
         assert.equal(inputs[1].value, testWorkoutExerciseSet.reps,  'Pitäisi asettaa initial-toistot');
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');

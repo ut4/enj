@@ -40,6 +40,9 @@ const utils = {
     findInputByName(rendered, name: string): HTMLInputElement {
         return this.findElementByAttribute(rendered, 'input', 'name', name);
     },
+    getInputs(rendered): Array<HTMLInputElement> {
+        return itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
+    },
     findElementByAttribute<T extends Element>(rendered, tag: string, attribute: string, content: string): T {
         return findElement<T>(rendered, tag, btn => btn.getAttribute(attribute) === content);
     },

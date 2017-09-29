@@ -110,9 +110,9 @@ QUnit.module('auth/LoginView', hooks => {
         return itu.findRenderedDOMElementWithClass(rendered, 'nice-button-primary') as HTMLButtonElement;
     }
     function fillInputValues(rendered, username, password) {
-        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        const usernameInputEl = inputEls[0] as HTMLInputElement;
-        const passwordInputEl = inputEls[1] as HTMLInputElement;
+        const inputEls = utils.getInputs(rendered);
+        const usernameInputEl = inputEls[0];
+        const passwordInputEl = inputEls[1];
         utils.setInputValue(username, usernameInputEl);
         utils.setInputValue(password, passwordInputEl);
         return {username, password};

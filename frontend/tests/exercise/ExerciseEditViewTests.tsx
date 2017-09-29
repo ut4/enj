@@ -6,7 +6,7 @@ import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import ExerciseEditView from 'src/exercise/ExerciseEditView';
 import iocFactories from 'src/ioc';
 
-QUnit.module('exercise/ExerciseEditVew', hooks => {
+QUnit.module('exercise/ExerciseEditView', hooks => {
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {

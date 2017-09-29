@@ -97,9 +97,9 @@ QUnit.module('ui/ValidatingComponent', hooks => {
         assert.equal(vtu.getRenderedValidationErrors(rendered), 0,
             'Pitäisi renderöidä virheviesti vain, jos inputin arvoa on muutettu'
         );
-        const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
-        const somekeyInputEl = inputEls[0] as HTMLInputElement;
-        const anotherInputEl = inputEls[1] as HTMLInputElement;
+        const inputEls = utils.getInputs(rendered);
+        const somekeyInputEl = inputEls[0];
+        const anotherInputEl = inputEls[1];
         // Triggeröi receiveInput
         utils.setInputValue('ac', somekeyInputEl); // ensimmäinen evaluaattori pitäisi olla ok, toinen ei
         utils.setInputValue('b', anotherInputEl); // pitäisi mennä true:sta falseksi
