@@ -29,9 +29,7 @@ QUnit.module('exercise/ExerciseEditVew', hooks => {
         assert.deepEqual(exerciseFetchStub.firstCall.args, ['/' + testExercise.id], 'Pitäisi hake urlin liike');
         const done = assert.async();
         exerciseFetchStub.firstCall.returnValue.then(() => {
-            const nameInput = itu.findRenderedDOMElementWithTag(rendered, 'input') as HTMLInputElement;
-            nameInput.value = 'Wiggly';
-            utils.triggerEvent('input', nameInput);
+            utils.setInputValue('Wiggly', itu.findRenderedDOMElementWithTag(rendered, 'input'));
             //
             utils.findButtonByContent(rendered, 'Tallenna').click();
             //

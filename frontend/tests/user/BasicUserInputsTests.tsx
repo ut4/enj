@@ -12,8 +12,7 @@ QUnit.module('user/BasicUserInputs', hooks => {
         assert.ok(vtu.isValid(rendered, BasicUserInputs), 'Pitäisi olla validi');
         // Aseta virheellinen paino
         const bodyWeightInput = utils.findInputByName(rendered, 'bodyWeight');
-        bodyWeightInput.value = '10';
-        utils.triggerEvent('input', bodyWeightInput);
+        utils.setInputValue('10', bodyWeightInput);
         assert.equal(
             vtu.getRenderedValidationErrors(rendered)[0].textContent,
             templates.min('Paino', 20)

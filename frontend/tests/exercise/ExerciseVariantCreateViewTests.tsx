@@ -31,8 +31,7 @@ QUnit.module('exercise/ExerciseVariantCreateView', hooks => {
             // Täytä & lähetä lomake
             const variantContentInput = exerciseTestUtils.getContentInput(rendered);
             const newVariantContent = expectedNewVariant.content;
-            variantContentInput.value = newVariantContent;
-            utils.triggerEvent('input', variantContentInput);
+            utils.setInputValue(newVariantContent, variantContentInput);
             exerciseTestUtils.selectExercise(rendered, 1);
             const submitButton = utils.findButtonByContent(rendered, 'Ok');
             submitButton.click();

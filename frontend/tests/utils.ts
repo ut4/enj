@@ -27,6 +27,10 @@ const utils = {
         (el as any).value = value;
         utils.triggerEvent('input', el);
     },
+    setDropdownIndex(index: number, el: HTMLSelectElement) {
+        el.selectedIndex = index;
+        utils.triggerEvent('change', el);
+    },
     findButtonByContent(rendered, content: string): HTMLButtonElement {
         return findElement<HTMLButtonElement>(rendered, 'button', btn => btn.textContent === content);
     },

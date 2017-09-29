@@ -89,13 +89,11 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
             const exerciseSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
             assert.equal(exerciseSelectEl.selectedIndex, 2, 'Nykyinen treeniliike pitäisi olla valittuna');
             const newSelectedExercise = testDropdownExercises[0];
-            exerciseSelectEl.options[1].selected = true; // note 0 == tyhjä option/-, 1 = testDropdownExercises[0] ...
-            utils.triggerEvent('change', exerciseSelectEl);
+            utils.setDropdownIndex(1, exerciseSelectEl); // note 0 == tyhjä option/-, 1 = testDropdownExercises[0] ...
         // Valitse variantti
             const variantSelectEl = itu.scryRenderedDOMElementsWithTag(rendered, 'select')[1] as HTMLSelectElement;
             const newSelectedVariant = newSelectedExercise.variants[0];
-            variantSelectEl.options[1].selected = true;
-            utils.triggerEvent('change', variantSelectEl);
+            utils.setDropdownIndex(1, variantSelectEl);
         // Hyväksy modal
             const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
             const submitButton = utils.findButtonByContent(rendered, 'Ok');
@@ -135,8 +133,7 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
         // Päivitä yhden sarjan tietoja modalissa
         const secondSetWeightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[2];
-        (secondSetWeightInput as any).value = testWorkoutExercise.sets[1].weight + 5;
-        utils.triggerEvent('input', secondSetWeightInput);
+        utils.setInputValue(testWorkoutExercise.sets[1].weight + 5, secondSetWeightInput);
         // Hyväksy lomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
@@ -176,9 +173,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
         // Päivitä yhden sarjan tietoja modalissa
         const firstSetRepsInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1];
-        (firstSetRepsInput as any).value = 90;
         const modifiedSet = setListInstance.state.sets[0];
-        utils.triggerEvent('input', firstSetRepsInput);
+        utils.setInputValue('90', firstSetRepsInput);
         // Poista yksi sarja listalta
         const deletedSet = setListInstance.state.sets[1];
         const secondSetDeleteButton = workoutTestUtils.getSetListDeleteButtons(rendered)[1];
@@ -249,8 +245,8 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
         const [weightInput, repsInput] = itu.scryRenderedDOMElementsWithTag(rendered, 'input') as Array<HTMLInputElement>;
         assert.equal(weightInput.value, '45', 'Pitäisi poimia weight edellisestä sarjasta');
         assert.equal(repsInput.value, '2', 'Pitäisi poimia reps edellisestä sarjasta');
-        weightInput.value = '46'; utils.triggerEvent('input', weightInput);
-        repsInput.value = '3'; utils.triggerEvent('input', repsInput);
+        utils.setInputValue('46', weightInput);
+        utils.setInputValue('3', repsInput);
         // Hyväksy modal
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();

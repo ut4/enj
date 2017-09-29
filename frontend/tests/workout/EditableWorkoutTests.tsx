@@ -116,8 +116,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             .then(() => {
         // Valitse liike listasta
                 const exerciseSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
-                exerciseSelectEl.options[1].selected = true;
-                utils.triggerEvent('change', exerciseSelectEl);
+                utils.setDropdownIndex(1, exerciseSelectEl);
         // Hyväksy modal
                 const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
                 const submitButton = utils.findButtonByContent(rendered, 'Ok');

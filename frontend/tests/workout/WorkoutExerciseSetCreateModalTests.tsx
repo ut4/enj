@@ -17,20 +17,16 @@ QUnit.module('workout/WorkoutExerciseSetCreateModal', hooks => {
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
         const [weightInput, repsInput] = inputs;
         // Aseta jotain invalid arvoja
-        weightInput.value = 'foo';
-        utils.triggerEvent('input', weightInput);
+        utils.setInputValue('foo', weightInput);
         assert.equal(vtu.getRenderedValidationErrors(rendered)[0].textContent, templates.number('Paino'));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
-        repsInput.value = '0';
-        utils.triggerEvent('input', repsInput);
+        utils.setInputValue('0', repsInput);
         assert.equal(vtu.getRenderedValidationErrors(rendered)[1].textContent, templates.between('Toistot', 1, 4000));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta validit arvot
-        weightInput.value = '100';
-        utils.triggerEvent('input', weightInput);
+        utils.setInputValue('100', weightInput);
         assert.notEqual(vtu.getRenderedValidationErrors(rendered)[0].textContent, templates.number('Paino'));
-        repsInput.value = '5';
-        utils.triggerEvent('input', repsInput);
+        utils.setInputValue('5', repsInput);
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla taas klikattava');
     });

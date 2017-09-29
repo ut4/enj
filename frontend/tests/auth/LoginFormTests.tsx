@@ -20,26 +20,22 @@ QUnit.module('auth/LoginForm', hooks => {
         assert.equal(initialErrorMessages.length, 0);
         assert.equal(loginFormInstance.state.validity, false);
         //
-        usernameInputEl.value = 'f';
-        utils.triggerEvent('input', usernameInputEl);
+        utils.setInputValue('f', usernameInputEl);
         const errorMessagesAfterFillingInvalidUsername = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingInvalidUsername.length, 1);
         assert.equal(loginFormInstance.state.validity, false);
         //
-        usernameInputEl.value = 'foo';
-        utils.triggerEvent('input', usernameInputEl);
+        utils.setInputValue('foo', usernameInputEl);
         const errorMessagesAfterFillingUsername = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingUsername.length, 0);
         assert.equal(loginFormInstance.state.validity, false);
         //
-        passwordInputEl.value = 'ba';
-        utils.triggerEvent('input', passwordInputEl);
+        utils.setInputValue('ba', passwordInputEl);
         const errorMessagesAfterFillingInvalidPassword = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingInvalidPassword.length, 1);
         assert.equal(loginFormInstance.state.validity, false);
         //
-        passwordInputEl.value = 'bars';
-        utils.triggerEvent('input', passwordInputEl);
+        utils.setInputValue('bars', passwordInputEl);
         const errorMessagesAfterFillingPassword = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingPassword.length, 0);
         assert.equal(loginFormInstance.state.validity, true);

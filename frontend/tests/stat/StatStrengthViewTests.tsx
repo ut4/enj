@@ -97,8 +97,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
             // Avaa lomake & muuta jotain
             utils.findButtonByContent(rendered, 'Asetukset').click();
             const weightInput = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[0] as HTMLInputElement;
-            weightInput.value = newBodyWeight.toString();
-            utils.triggerEvent('input', weightInput);
+            utils.setInputValue(newBodyWeight.toString(), weightInput);
             // Hyväksy arvot
             const confirmSpy = sinon.spy(itu.findRenderedVNodeWithType(rendered, SettingsForm).children, 'confirm');
             utils.findButtonByContent(rendered, 'Ok').click();
@@ -132,8 +131,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
             // Avaa lomake & muuta isMale null -> 2
             utils.findButtonByContent(rendered, 'Asetukset').click();
             const isMaleSelectlist = itu.scryRenderedDOMElementsWithTag(rendered, 'select')[0] as HTMLSelectElement;
-            isMaleSelectlist.selectedIndex = 2; // 0 = null, 1 = Mies, 2 = Nainen
-            utils.triggerEvent('change', isMaleSelectlist);
+            utils.setDropdownIndex(2, isMaleSelectlist); // 0 = null, 1 = Mies, 2 = Nainen
             const saveValuesCheckbox = itu.scryRenderedDOMElementsWithTag(rendered, 'input')[1] as HTMLInputElement;
             saveValuesCheckbox.checked = true;
             utils.triggerEvent('change', saveValuesCheckbox);

@@ -101,10 +101,8 @@ QUnit.module('ui/ValidatingComponent', hooks => {
         const somekeyInputEl = inputEls[0] as HTMLInputElement;
         const anotherInputEl = inputEls[1] as HTMLInputElement;
         // Triggeröi receiveInput
-        somekeyInputEl.value = 'ac'; // ensimmäinen evaluaattori pitäisi olla ok, toinen ei
-        utils.triggerEvent('input', somekeyInputEl);
-        anotherInputEl.value = 'b'; // pitäisi mennä true:sta falseksi
-        utils.triggerEvent('input', anotherInputEl);
+        utils.setInputValue('ac', somekeyInputEl); // ensimmäinen evaluaattori pitäisi olla ok, toinen ei
+        utils.setInputValue('b', anotherInputEl); // pitäisi mennä true:sta falseksi
         // Asettiko inputien evaluaattoreihin validiteetit?
         assert.equal(componentEvaluators.somekey[0].validity, true);
         assert.equal(componentEvaluators.somekey[1].validity, false);
@@ -116,10 +114,8 @@ QUnit.module('ui/ValidatingComponent', hooks => {
         // Näyttikö ensimmäisen input kummatkin virheviestit?
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 2);
         // Täytä inputit valideilla arvoilla
-        somekeyInputEl.value = 'ab';
-        utils.triggerEvent('input', somekeyInputEl);
-        anotherInputEl.value = 'fors';
-        utils.triggerEvent('input', anotherInputEl);
+        utils.setInputValue('ab', somekeyInputEl);
+        utils.setInputValue('fors', anotherInputEl);
         // Assertoi että kaikki näyttää validia
         assert.equal(componentEvaluators.somekey[0].validity, true);
         assert.equal(componentEvaluators.somekey[1].validity, true);
@@ -133,15 +129,13 @@ QUnit.module('ui/ValidatingComponent', hooks => {
         assert.equal(componentEvaluators.val[0].touched, false);
         // Aseta invalid arvo
         const fooInputEl = itu.findRenderedDOMElementWithTag(rendered, 'input') as HTMLInputElement;
-        fooInputEl.value = 'i';
-        utils.triggerEvent('input', fooInputEl);
+        utils.setInputValue('i', fooInputEl);
         // Päivittikö staten validiteetin lisäksi state.ent:n (state[propertyToValidate])
         assert.equal(componentEvaluators.val[0].validity, false);
         assert.equal(componentEvaluators.val[0].touched, true);
         assert.equal((componentInstance as AnotherComponent).state.ent.val, 'i');
         // Aseta validi arvo
-        fooInputEl.value = 'abc';
-        utils.triggerEvent('input', fooInputEl);
+        utils.setInputValue('abc', fooInputEl);
         assert.equal((componentInstance as AnotherComponent).state.ent.val, 'abc');
         // Assertoi että kaikki näyttää validia
         assert.equal(componentEvaluators.val[0].validity, true);

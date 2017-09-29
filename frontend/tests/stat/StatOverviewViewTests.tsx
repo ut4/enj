@@ -31,7 +31,7 @@ QUnit.module('stat/StatOverviewView', hooks => {
         assert.equal(statBoxes.length, 4, '$("div.box").length');
         assert.equal(statBoxes[0].textContent, getExpectedTotalCount(testStats));
         assert.equal(statBoxes[1].textContent, getExpectedWeightAndReps(testStats));
-        const times = statBoxes[2].querySelectorAll('tr');// otsikko pois
+        const times = statBoxes[2].querySelectorAll('tr'); // otsikko pois
         assert.equal(times[0].textContent, getExpectedTime(testStats, 0));
         assert.equal(times[1].textContent, getExpectedTime(testStats, 1));
         assert.equal(times[2].textContent, getExpectedTime(testStats, 2));

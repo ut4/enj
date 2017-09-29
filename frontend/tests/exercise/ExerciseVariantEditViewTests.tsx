@@ -38,8 +38,7 @@ QUnit.module('exercise/ExerciseVariantEditView', hooks => {
             // Täytä & lähetä lomake
             const variantContentInput = exerciseTestUtils.getContentInput(rendered);
             const newVariantContent = 'bar';
-            variantContentInput.value = newVariantContent;
-            utils.triggerEvent('input', variantContentInput);
+            utils.setInputValue(newVariantContent, variantContentInput);
             exerciseTestUtils.selectExercise(rendered, 1);
             //
             const submitButton = utils.findButtonByContent(rendered, 'Tallenna');

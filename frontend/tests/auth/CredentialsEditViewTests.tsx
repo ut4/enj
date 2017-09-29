@@ -53,16 +53,11 @@ QUnit.module('auth/CredentialsEditView', hooks => {
             const passwordInputEl = inputEls[2] as HTMLInputElement;
             const newPasswordInputEl = inputEls[3] as HTMLInputElement;
             const newPasswordConfirmationInputEl = inputEls[4] as HTMLInputElement;
-            usernameInputEl.value = newCredentials.username;
-            utils.triggerEvent('input', usernameInputEl);
-            emailInputEl.value = newCredentials.email;
-            utils.triggerEvent('input', emailInputEl);
-            passwordInputEl.value = currentPassword;
-            utils.triggerEvent('input', passwordInputEl);
-            newPasswordInputEl.value = newCredentials.password;
-            utils.triggerEvent('input', newPasswordInputEl);
-            newPasswordConfirmationInputEl.value = newCredentials.password;
-            utils.triggerEvent('input', newPasswordConfirmationInputEl);
+            utils.setInputValue(newCredentials.username, usernameInputEl);
+            utils.setInputValue(newCredentials.email, emailInputEl);
+            utils.setInputValue(currentPassword, passwordInputEl);
+            utils.setInputValue(newCredentials.password, newPasswordInputEl);
+            utils.setInputValue(newCredentials.password, newPasswordConfirmationInputEl);
             confirmButton.click();
             //
             return confirmSpy.firstCall.returnValue;

@@ -28,12 +28,10 @@ QUnit.module('user/UserProfileView', hooks => {
         userFetchStub.firstCall.returnValue.then(() => {
             // Aseta validi allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
-            signatureInput.value = 'abc';
-            utils.triggerEvent('input', signatureInput);
+            utils.setInputValue('abc', signatureInput);
             assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
             // Aseta invalid allekirjoitus
-            signatureInput.value = 'a'.repeat(256);
-            utils.triggerEvent('input', signatureInput);
+            utils.setInputValue('a'.repeat(256), signatureInput);
             assert.equal(
                 vtu.getRenderedValidationErrors(rendered)[0].textContent,
                 templates.maxLength('Allekirjoitus', 255)
@@ -41,7 +39,7 @@ QUnit.module('user/UserProfileView', hooks => {
             assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
             // Aseta validi allekirjoitus
             signatureInput.value = 'houhou';
-            utils.triggerEvent('input', signatureInput);
+            utils.setInputValue('houhou', signatureInput);
             assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
             assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla taas klikattava');
             done();
@@ -66,12 +64,10 @@ QUnit.module('user/UserProfileView', hooks => {
             assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'male');
             // Täytä allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
-            signatureInput.value = expectedNewUser.signature;
-            utils.triggerEvent('input', signatureInput);
+            utils.setInputValue(expectedNewUser.signature, signatureInput);
             // Täytä paino
             const weightInput = utils.findInputByName(rendered, 'bodyWeight');
-            weightInput.value = expectedNewUser.bodyWeight.toString();
-            utils.triggerEvent('input', weightInput);
+            utils.setInputValue(expectedNewUser.bodyWeight.toString(), weightInput);
             // Valitse sukupuoli
             selectGender(rendered, 'female');
             // Lähetä lomake
@@ -85,8 +81,7 @@ QUnit.module('user/UserProfileView', hooks => {
     });
     function selectGender(rendered, gender: string) {
         const genderSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
-        genderSelectEl.options[gender === 'male' ? 1 : 2].selected = true; // note 0 == tyhjä option...
-        utils.triggerEvent('change', genderSelectEl);
+        utils.setDropdownIndex(gender === 'male' ? 1 : 2, genderSelectEl); // note 0 == tyhjä option...
     }
     function getRenderedProfilePic(rendered): HTMLImageElement {
         return itu.findRenderedDOMElementWithTag(rendered, 'img') as HTMLImageElement;

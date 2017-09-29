@@ -29,16 +29,14 @@ QUnit.module('exercise/ExerciseVariantForm', hooks => {
             assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
             assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
             // Aseta invalid nimi
-            variantContentInput.value = 'v';
-            utils.triggerEvent('input', variantContentInput);
+            utils.setInputValue('v', variantContentInput);
             assert.equal(
                 vtu.getRenderedValidationErrors(rendered)[0].textContent,
                 templates.lengthBetween('Nimi', 2, 64)
             );
             assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
             // Aseta validi arvo
-            variantContentInput.value = 'uusivariantti';
-            utils.triggerEvent('input', variantContentInput);
+            utils.setInputValue('uusivariantti', variantContentInput);
             assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
             assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
             // Valitse liike

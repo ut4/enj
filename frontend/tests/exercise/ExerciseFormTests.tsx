@@ -27,16 +27,14 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
         // Aseta invalid nimi
-        inputs[0].value = 'f';
-        utils.triggerEvent('input', inputs[0]);
+        utils.setInputValue('f', inputs[0]);
         assert.equal(
             vtu.getRenderedValidationErrors(rendered)[0].textContent,
             templates.lengthBetween('Nimi', 2, 64)
         );
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta validi arvo
-        inputs[0].value = 'jokinliike';
-        utils.triggerEvent('input', inputs[0]);
+        utils.setInputValue('jokinliike', inputs[0]);
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla taas klikattava');
     });
@@ -49,8 +47,7 @@ QUnit.module('exercise/ExerciseForm', hooks => {
         // Täytä & lähetä lomake
         const inputs = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
         const newExerciseName = 'some exercise';
-        (inputs[0] as HTMLInputElement).value = newExerciseName;
-        utils.triggerEvent('input', inputs[0]);
+        utils.setInputValue(newExerciseName, inputs[0]);
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lähettikö?

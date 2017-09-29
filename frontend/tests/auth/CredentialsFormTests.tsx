@@ -34,42 +34,31 @@ QUnit.module('auth/CredentialsForm', hooks => {
         assert.equal(emailInputEl.value, testCredentials.email);
         //
         const asserter = new FormValidityAsserter(credentialsFormInstance, rendered, assert);
-        usernameInputEl.value = 'a';
-        utils.triggerEvent('input', usernameInputEl);
+        utils.setInputValue('a', usernameInputEl);
         asserter.assertIsValid(false, 1);
-        usernameInputEl.value = 'foo';
-        utils.triggerEvent('input', usernameInputEl);
+        utils.setInputValue('foo', usernameInputEl);
         asserter.assertIsValid(false, 0);
         //
-        emailInputEl.value = '@test.com';
-        utils.triggerEvent('input', emailInputEl);
+        utils.setInputValue('@test.com', emailInputEl);
         asserter.assertIsValid(false, 1);
-        emailInputEl.value = 'e@mail.com';
-        utils.triggerEvent('input', emailInputEl);
+        utils.setInputValue('e@mail.com', emailInputEl);
         asserter.assertIsValid(false, 0);
         //
-        currentPasswordInputEl.value = 'ba';
-        utils.triggerEvent('input', currentPasswordInputEl);
+        utils.setInputValue('ba', currentPasswordInputEl);
         asserter.assertIsValid(false, 1);
-        currentPasswordInputEl.value = 'bars';
-        utils.triggerEvent('input', currentPasswordInputEl);
+        utils.setInputValue('bars', currentPasswordInputEl);
         asserter.assertIsValid(true, 0);
         //
-        newPasswordInputEl.value = 'aa';
-        utils.triggerEvent('input', newPasswordInputEl);
+        utils.setInputValue('aa', newPasswordInputEl);
         asserter.assertIsValid(false, 2);
-        newPasswordInputEl.value = 'aaaa';
-        utils.triggerEvent('input', newPasswordInputEl);
+        utils.setInputValue('aaaa', newPasswordInputEl);
         asserter.assertIsValid(false, 1);
         //
-        newPasswordConfirmationInputEl.value = 'aa';
-        utils.triggerEvent('input', newPasswordConfirmationInputEl);
+        utils.setInputValue('aa', newPasswordConfirmationInputEl);
         asserter.assertIsValid(false, 3);
-        newPasswordConfirmationInputEl.value = 'aaab';
-        utils.triggerEvent('input', newPasswordConfirmationInputEl);
+        utils.setInputValue('aaab', newPasswordConfirmationInputEl);
         asserter.assertIsValid(false, 2);
-        newPasswordConfirmationInputEl.value = 'aaaa';
-        utils.triggerEvent('input', newPasswordConfirmationInputEl);
+        utils.setInputValue('aaaa', newPasswordConfirmationInputEl);
         asserter.assertIsValid(true, 0);
     });
     function FormValidityAsserter(form, rendered, assert) {

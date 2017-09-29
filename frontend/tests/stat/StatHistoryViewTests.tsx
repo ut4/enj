@@ -87,7 +87,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const done = assert.async();
         const params = {exerciseId: testDropdownExercises[1].id};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
-            assert.deepEqual(progressFetch.firstCall.args[0], params.exerciseId);// 0=exerciseId, 1=formula, 2=before
+            assert.deepEqual(progressFetch.firstCall.args[0], params.exerciseId); // 0=exerciseId, 1=formula, 2=before
             const exerciseSelectDropdown = getRenderedDropdowns(rendered)[0];
             assert.equal(exerciseSelectDropdown.selectedIndex, 1 + 1,// 0 = -
                 'Pitäisi asettaa exercise-dropdownin selected-arvo'
@@ -99,7 +99,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const done = assert.async();
         const params = {formula: 'wathan'};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
-            assert.deepEqual(progressFetch.firstCall.args[1], params.formula);// 0=exerciseId, 1=formula, 2=before
+            assert.deepEqual(progressFetch.firstCall.args[1], params.formula); // 0=exerciseId, 1=formula, 2=before
             const formulaSelectDropdown = getRenderedDropdowns(rendered)[1];
             assert.equal(formulaSelectDropdown.value, params.formula,
                 'Pitäisi asettaa formula-dropdownin selected-arvo'
@@ -111,7 +111,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const done = assert.async();
         const params = {before: 1456992647};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
-            assert.deepEqual(progressFetch.firstCall.args[2], params.before);// 0=exerciseId, 1=formula, 2=before
+            assert.deepEqual(progressFetch.firstCall.args[2], params.before); // 0=exerciseId, 1=formula, 2=before
             done();
         });
     });

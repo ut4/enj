@@ -113,10 +113,8 @@ QUnit.module('auth/LoginView', hooks => {
         const inputEls = itu.scryRenderedDOMElementsWithTag(rendered, 'input');
         const usernameInputEl = inputEls[0] as HTMLInputElement;
         const passwordInputEl = inputEls[1] as HTMLInputElement;
-        usernameInputEl.value = username;
-        utils.triggerEvent('input', usernameInputEl);
-        passwordInputEl.value = password;
-        utils.triggerEvent('input', passwordInputEl);
+        utils.setInputValue(username, usernameInputEl);
+        utils.setInputValue(password, passwordInputEl);
         return {username, password};
     }
 });

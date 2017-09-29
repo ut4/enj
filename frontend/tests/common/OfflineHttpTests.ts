@@ -8,7 +8,7 @@ QUnit.module('common/OfflineHttp', hooks => {
     let offlineHttp: OfflineHttp;
     hooks.beforeEach(() => {
         OfflineHttp.requestHandlers = {};
-        db = new Db();// oikea instanssi prototyypin sijasta, että voi viitata db.syncQueue etc.
+        db = new Db(); // oikea instanssi prototyypin sijasta, että voi viitata db.syncQueue etc.
         offlineHttp = new OfflineHttp(db);
     });
     QUnit.test('addHandler lisää handerin listaan & getHandler palauttaa sen', assert => {
