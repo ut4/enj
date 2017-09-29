@@ -2,6 +2,7 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
+import ptu from 'tests/program/utils';
 import ProgramBackend from 'src/program/ProgramBackend';
 import ProgramView from 'src/program/ProgramView';
 import iocFactories from 'src/ioc';
@@ -15,10 +16,7 @@ QUnit.module('program/ProgramView', hooks => {
     hooks.beforeEach(() => {
         shallowProgramBackend = Object.create(ProgramBackend.prototype);
         programBackendIocOverride = sinon.stub(iocFactories, 'programBackend').returns(shallowProgramBackend);
-        someTestPrograms = [
-            {id:'uuid1', name: 'foo', start: 323384400, end: 323470800, userId: 'u'},
-            {id:'uuid2', name: 'bar', start: 318204000, end: 318290400, description: '...', userId: 'u'}
-        ];
+        someTestPrograms = ptu.getSomeTestPrograms();
     });
     hooks.afterEach(() => {
         programBackendIocOverride.restore();
@@ -57,9 +55,12 @@ QUnit.module('program/ProgramView', hooks => {
         return itu.scryRenderedDOMElementsWithTag(rendered, 'tr').slice(1); // thead tr pois
     }
     function getExpectedTrContent(p: Enj.API.ProgramRecord): string {
-        return `${p.name}${getExpectedDateStr(p.start)}${getExpectedDateStr(p.end)}${p.description||'-'}MuokkaaPoista`;
-    }
-    function getExpectedDateStr(unixTime: number): string {
-        return iocFactories.dateUtils().getLocaleDateString(new Date(unixTime * 1000));
+        return (
+            p.name +
+            ptu.getExpectedDateStr(p.start) +
+            ptu.getExpectedDateStr(p.end) +
+            (p.description || '-') +
+            'MuokkaaPoista'
+        );
     }
 });

@@ -3,7 +3,9 @@ import Pikaday from 'pikaday';
 
 interface Props {
     onSelect: (date: Date) => any;
+    displayFormatFn?: (date: Date, format?: string) => string;
     defaultDate?: Date;
+    showInput?: boolean;
 }
 
 class Datepicker extends Component<Props, any> {
@@ -17,10 +19,13 @@ class Datepicker extends Component<Props, any> {
         this.pikaday.show();
     }
     public render() {
-        return <span class="datepicker">
-            <input type="hidden" ref={ el => { this.field = el; } }/>
-            <span ref={ el => { this.container = el; } }></span>
-        </span>;
+        return <div class="datepicker">
+            <input
+                type={ !this.props.showInput ? 'hidden' : 'text' }
+                name={ this.props.inputName }
+                ref={ el => { this.field = el; } }/>
+            <div ref={ el => { this.container = el; } }></div>
+        </div>;
     }
     private makeSettings(): Object {
         const settings = {
@@ -31,6 +36,9 @@ class Datepicker extends Component<Props, any> {
             firstDay: 1,
             bound: true
         } as any;
+        if (this.props.displayFormatFn) {
+            settings.toString = this.props.displayFormatFn;
+        }
         if (this.props.defaultDate) {
             settings.defaultDate = this.props.defaultDate;
             settings.setDefaultDate = true;

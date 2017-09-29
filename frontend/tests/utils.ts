@@ -23,6 +23,10 @@ const utils = {
         event.initEvent(type, false, true);
         el.dispatchEvent(event);
     },
+    setInputValue(value: any, el: Element) {
+        (el as any).value = value;
+        utils.triggerEvent('input', el);
+    },
     findButtonByContent(rendered, content: string): HTMLButtonElement {
         return findElement<HTMLButtonElement>(rendered, 'button', btn => btn.textContent === content);
     },
@@ -34,6 +38,12 @@ const utils = {
     },
     findElementByAttribute<T extends Element>(rendered, tag: string, attribute: string, content: string): T {
         return findElement<T>(rendered, tag, btn => btn.getAttribute(attribute) === content);
+    },
+    selectDatepickerDate(date: number, triggerEl: HTMLInputElement) {
+        triggerEl.click();
+        utils.triggerEvent('mousedown', document.querySelector(
+            `[name="${triggerEl.name}"] + div [data-pika-day="${date}"]`
+        ));
     },
     getValidToken: (): string => '<header>.eyJzdWIiOjF9.<sig>'//btoa(JSON.stringify({sub: 1}));
 };

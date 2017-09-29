@@ -503,6 +503,9 @@ input[type="date"] {
     display: inline-block;
     width: 100%;
 }
+.input-set .datepicker > div {
+    position: absolute;
+}
 .form-buttons {
     text-align: left;
 }
@@ -774,7 +777,8 @@ footer a {
 
 /* -- Treeninäkymät ---------- */
 .workout-view h2 .arrow-black { margin: 0 -5px -7px 2px; top: -7px; position: relative; }
-.workout-view .datepicker { position: absolute; transform: translate(-85%, 45px); z-index: 1; }
+.workout-view .datepicker { position: absolute; display: inline-block; transform: translate(-85%, 45px);
+    z-index: 1; }
 .workout-view > div { margin-top: -10px; }
 .workout-timer { float: left; margin-bottom: 10px; }
 .workout-timer + button { float: right; margin-top: -7px; }
