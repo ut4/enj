@@ -36,7 +36,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             props.params.exerciseId = '87f8c098-be1c-41bc-addd-d88b596e430e';
         }
         if (!props.params.formula) {
-            props.params.formula = 'o\'connor';
+            props.params.formula = 'o\'conner';
         }
         if (!props.params.page) {
             props.params.page = 0;
@@ -58,7 +58,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
                     <label class="input-set">
                         <span>Laskukaava</span>
                         <select onChange={ e => this.onFormulaSelect(e.target.value) } value={ this.props.params.formula }>
-                            <option value="o'connor">1RM, O'connor</option>
+                            <option value="o'conner">1RM, O'conner</option>
                             <option value="epley">1RM, Epley</option>
                             <option value="wathan">1RM, Wathan</option>
                             <option value="total-lifted">Nostettu yhteensä</option>

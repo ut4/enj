@@ -25,7 +25,7 @@ class MainMenu extends Component<any, any> {
                         <li><a href="#/liikkeet">Liikkeet</a></li>
                     </ul>
                 </li>
-                <li><a href="#/statistiikka">Kehitys</a>
+                <li><a href="#/statistiikka/voima">Kehitys</a>
                     <ul class="sub-ul">
                         <li><a href="#/treenihistoria">Historia</a></li>
                     </ul>

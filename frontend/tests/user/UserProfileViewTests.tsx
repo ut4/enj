@@ -61,7 +61,7 @@ QUnit.module('user/UserProfileView', hooks => {
         const done = assert.async();
         userFetchStub.firstCall.returnValue.then(() => {
             //
-            assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'male');
+            assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'unknown');
             // Täytä allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
             utils.setInputValue(expectedNewUser.signature, signatureInput);
@@ -76,6 +76,10 @@ QUnit.module('user/UserProfileView', hooks => {
             // Lähettikö?
             assert.ok(updateCallStub.calledOnce, 'Pitäisi PUTata backediin');
             assert.deepEqual(updateCallStub.firstCall.args, [expectedNewUser, '/me']);
+            return updateCallStub.firstCall.returnValue;
+        }).then(() => {
+            // Päivittikö staten?
+            assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'female');
             done();
         });
     });

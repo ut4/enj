@@ -17,7 +17,7 @@ public class StatRepository {
     private final NamedParameterJdbcTemplate qTemplate;
     private final Map<String, String> progressFormulae;
     // https://en.wikipedia.org/wiki/One-repetition_maximum
-    static final String FORMULA_OCONNOR = "o'connor";
+    static final String FORMULA_OCONNER = "o'conner";
     static final String FORMULA_EPLEY = "epley";
     static final String FORMULA_WATHAN = "wathan";
     static final String FORMULA_TOTAL_LIFTED = "total-lifted";
@@ -26,7 +26,7 @@ public class StatRepository {
     public StatRepository(DataSourceFactory dataSourceFac) {
         this.qTemplate = new NamedParameterJdbcTemplate(dataSourceFac.getDataSource());
         progressFormulae = new HashMap<>();
-        progressFormulae.put(FORMULA_OCONNOR,      "weight * (reps / 40 + 1)");
+        progressFormulae.put(FORMULA_OCONNER,      "weight * (reps / 40 + 1)");
         progressFormulae.put(FORMULA_EPLEY,        "weight * (reps / 30 + 1)");
         progressFormulae.put(FORMULA_WATHAN,       "100 * weight / (48.8 + 53.8 * EXP(-0.075 * reps))");
         progressFormulae.put(FORMULA_TOTAL_LIFTED, "weight * reps");

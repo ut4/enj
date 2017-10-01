@@ -13,7 +13,7 @@ class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, a
             bodyWeight: [(input: any) => !input || input >= 20]
         };
         this.state = {
-            bodyWeight: props.user.bodyWeight > 0 ? props.user.bodyWeight : null,
+            bodyWeight: props.user.bodyWeight,
             isMale: props.user.isMale,
             validity: true
         };

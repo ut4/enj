@@ -129,7 +129,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         set2.setReps(8);
         set2.setWorkoutExerciseId(we.getId());
         utils.insertWorkoutExerciseSet(set2);
-        // Oletuskaava (O'connor et al.)
+        // Oletuskaava (O'conner et al.)
         List<ProgressSetMapper.ProgressSet> progressSets = this.assertContainsProgressSets(
             newGetRequest("stat/progress", t -> t.queryParam("exerciseId", testExercise.getId())),
             set2.getWeight() * (set2.getReps() / 40.0 + 1),

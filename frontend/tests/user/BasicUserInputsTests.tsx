@@ -27,7 +27,7 @@ QUnit.module('user/BasicUserInputs', hooks => {
         const bodyWeightInput = utils.findInputByName(rendered, 'bodyWeight');
         assert.equal(bodyWeightInput.value, testUser.bodyWeight.toString());
         //
-        const testUser2 = {isMale: null, bodyWeight: 0};
+        const testUser2 = {isMale: null, bodyWeight: null};
         const rendered2 = itu.renderIntoDocument(<BasicUserInputs user={ testUser2 }/>);
         const isMaleInput2 = utils.findElementByAttribute<HTMLSelectElement>(rendered2, 'select', 'name', 'isMale');
         assert.equal(isMaleInput2.selectedIndex, 0); // -, Mies, Nainen

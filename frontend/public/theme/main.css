@@ -768,9 +768,6 @@ footer a {
 #view > div {
     position: relative;
 }
-#view img {
-    width: 100%;
-}
 #view a:hover {
     opacity: 0.85;
 }
@@ -829,7 +826,7 @@ footer a {
     border-radius: 2px; }
 .profile-pic:before { display: inline-block; height: 100%; vertical-align: middle;
     content: " "; }
-.profile-pic img {  display: inline-block; vertical-align: middle; opacity: 0.1; }
+.profile-pic img { width: 80%; display: inline-block; vertical-align: middle; opacity: 0.1; }
 
 /* ==== Media queries ====
 ==============================================================================*/

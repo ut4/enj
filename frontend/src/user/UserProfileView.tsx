@@ -14,7 +14,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
         super(props, context);
         this.props.allowUnknownValidities = true;
         this.evaluators = {
-            signature: [(input: any) => !input.length || input.length <= 255]
+            signature: [(input: any) => input && input.length <= 255]
         };
         this.state = {
             validity: true,
@@ -49,7 +49,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
                 </SubMenu>,
                 <div class="row">
                     <div class="col-3">
-                        <div class="profile-pic"><img src={ 'theme/user-icon-sprite.svg#' + (this.state.user.isMale === 0 ? 'female' : 'male') }/></div>
+                        <div class="profile-pic"><img src={ 'theme/user-icon-sprite.svg#' + getGender(this.state.user.isMale) }/></div>
                     </div>
                     <div class="col-9">
                         <label class="input-set">
@@ -63,11 +63,21 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
                         </label>
                     </div>
                 </div>,
-                <BasicUserInputs user={ this.state.user } ref={ cmp => { this.userInputs = cmp; } }/>,
-                <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || this.userInputs.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
+                <BasicUserInputs user={ this.state.user } ref={ cmp => { this.userInputs = cmp; } } onValidityChange={ validity => this.setState({validity}) }/>,
+                <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
             ] }
         </div>;
     }
+}
+
+function getGender(isMale: number): 'male' | 'female' | 'unknown' {
+    if (isMale === 0) {
+        return 'female';
+    }
+    if (isMale === 1) {
+        return 'male';
+    }
+    return 'unknown';
 }
 
 export default UserProfileView;

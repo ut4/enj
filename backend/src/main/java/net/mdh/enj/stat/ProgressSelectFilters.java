@@ -16,7 +16,7 @@ public class ProgressSelectFilters implements SelectQueryFilters {
     @QueryParam("exerciseId")
     private String exerciseId;
     @QueryParam("formula")
-    @DefaultValue(StatRepository.FORMULA_OCONNOR)
+    @DefaultValue(StatRepository.FORMULA_OCONNER)
     private String formula;
     @QueryParam("before")
     private Long before;
