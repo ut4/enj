@@ -21,7 +21,7 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
     public static void beforeClass() {
         // Täytä SyncRouteRegister manuaalisesti, jonka net.mdh.enj.SyncRouteCollector
         // normaalisti suorittaa
-        syncRouteRegister = SyncingTestUtils.getManuallyPopulateSyncRouteRegister();
+        syncRouteRegister = SyncingTestUtils.getManuallyPopulatedSyncRouteRegister();
     }
 
     @Override

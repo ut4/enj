@@ -21,7 +21,6 @@ import javax.validation.constraints.NotNull;
 import java.util.function.BiFunction;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.util.Map;
 import javax.validation.Valid;
 import javax.inject.Inject;
@@ -38,6 +37,7 @@ public class SyncController {
 
     private final HttpClient appHttpClient;
     private final RequestContext requestContext;
+    private final SyncRouteRegister syncRouteRegister;
     private final Map<String, Integer> operationPriorities;
     private final Map<String, Integer> methodPriorities;
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
@@ -45,10 +45,12 @@ public class SyncController {
     @Inject
     public SyncController(
         HttpClient appHttpClient,
-        RequestContext requestContext
+        RequestContext requestContext,
+        SyncRouteRegister syncRouteRegister
     ) {
         this.appHttpClient = appHttpClient;
         this.requestContext = requestContext;
+        this.syncRouteRegister = syncRouteRegister;
         // Järjestys, jossa operaatiot tulee suorittaa, key = url, value = priority.
         operationPriorities = new HashMap<>();
         operationPriorities.put("exercise",         0);
@@ -149,15 +151,15 @@ public class SyncController {
      * alkuun.
      */
     void sortQueueByPriority(List<SyncQueueItem> queue) {
-        queue.sort(Comparator.comparingInt(a -> {
-            if (!a.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-                return operationPriorities.get(a.getRoute().getUrl());
-            }
-            String[] parts = a.getRoute().getUrl().split("/");
-            return operationPriorities.get(String.join("/", Arrays.copyOf(parts, parts.length - 1)));
-        }));
         queue.sort(Comparator.comparingInt(a ->
             methodPriorities.get(a.getRoute().getMethod())
         ));
+        queue.sort(Comparator.comparingInt(a -> {
+            SyncRoute route = syncRouteRegister.find(a.getRoute());
+            if (route.getPattern() == null) {
+                return operationPriorities.get(a.getRoute().getUrl());
+            }
+            return operationPriorities.get(route.getUrl().split("/\\{")[0]);
+        }));
     }
 }

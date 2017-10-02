@@ -197,7 +197,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
             );
             // Simuloi routerin normaalisti triggeröimä componentWillReceiveProps
             historyView.componentWillReceiveProps({params: expectedParams});
-            return progressFetch.secondCall.returnValue;
+            return progressFetch.firstCall.returnValue;
         }).then(() => {
             // Klikkaa "< Vanhemmat" -painiketta uudestaan
             prevPaginationButton.click();

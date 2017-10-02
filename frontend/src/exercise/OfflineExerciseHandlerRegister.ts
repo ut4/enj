@@ -22,27 +22,6 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
         );
     }
     /**
-     * Handlaa POST /api/exercise REST-pyynnön.
-     */
-    public insert(exercise: Enj.API.ExerciseRecord) {
-        return this.updateCache(cachedExercises => {
-            // Lisää uusi liike cachetaulukon alkuun (uusin ensin)
-            exercise.id = this.backend.utils.uuidv4();
-            cachedExercises.unshift(exercise);
-            // Palauta feikattu backendin vastaus
-            return {insertCount: 1};
-        });
-    }
-    /**
-     * Handlaa PUT /api/exercise/{exerciseId} REST-pyynnön.
-     */
-    public update(exercise: Enj.API.ExerciseRecord) {
-        return this.updateCache(cachedExercises => {
-            Object.assign(this.findItemById(exercise.id, cachedExercises), exercise);
-            return {updateCount: 1};
-        });
-    }
-    /**
      * Handlaa POST /api/exercise/variant REST-pyynnön.
      */
     public insertVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {

@@ -14,7 +14,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 
 class SyncingTestUtils {
-    static SyncRouteRegister getManuallyPopulateSyncRouteRegister() {
+    static SyncRouteRegister getManuallyPopulatedSyncRouteRegister() {
         // POST /api/workout
         SyncRoute workoutInsertRoute = new SyncRoute();
         workoutInsertRoute.setUrl(TestData.workoutInsertRoute.getUrl());
@@ -28,11 +28,38 @@ class SyncingTestUtils {
         SyncRoute workoutExerciseAddRoute = new SyncRoute();
         workoutExerciseAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl());
         workoutExerciseAddRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
+        // PUT /api/workout/exercise
+        SyncRoute workoutExerciseUpdateRoute = new SyncRoute();
+        workoutExerciseUpdateRoute.setUrl("workout/exercise");
+        workoutExerciseUpdateRoute.setMethod("PUT");
+        // DELETE /api/workout/exercise/{weId}
+        SyncRoute workoutExerciseDeleteRoute = new SyncRoute();
+        workoutExerciseDeleteRoute.setUrl("workout/exercise/{workoutExerciseId}");
+        workoutExerciseDeleteRoute.setMethod("DELETE");
+        workoutExerciseDeleteRoute.setPattern("workout/exercise/([^/]+)(/.*)?");
+        // POST /api/exercise
+        SyncRoute exerciseAddRoute = new SyncRoute();
+        exerciseAddRoute.setUrl("exercise");
+        exerciseAddRoute.setMethod("POST");
+        // PUT /api/exercise/{exsId}
+        SyncRoute exerciseUpdateRoute = new SyncRoute();
+        exerciseUpdateRoute.setUrl("exercise/{exerciseId}");
+        exerciseUpdateRoute.setMethod("PUT");
+        exerciseUpdateRoute.setPattern("exercise/([^/]+)(/.*)?");
+        // POST /api/exercise/variant
+        SyncRoute exerciseVariantAddRoute = new SyncRoute();
+        exerciseVariantAddRoute.setUrl("exercise/variant");
+        exerciseVariantAddRoute.setMethod("POST");
         //
         SyncRouteRegister register = new SyncRouteRegister();
         register.add(workoutInsertRoute);
         register.add(workoutDeleteRoute);
         register.add(workoutExerciseAddRoute);
+        register.add(workoutExerciseUpdateRoute);
+        register.add(workoutExerciseDeleteRoute);
+        register.add(exerciseAddRoute);
+        register.add(exerciseUpdateRoute);
+        register.add(exerciseVariantAddRoute);
         return register;
     }
 

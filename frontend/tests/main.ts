@@ -22,6 +22,8 @@ import 'tests/offline/OfflineEndViewTests';
 import 'tests/offline/OfflineStartViewTests';
 import 'tests/offline/OfflineTests';
 import 'tests/offline/SyncBackendTests';
+import 'tests/program/OfflineHandlerRegisterationTests';
+import 'tests/program/offlineProgramHandlersTests';
 import 'tests/program/ProgramCreateViewTests';
 import 'tests/program/ProgramEditViewTests';
 import 'tests/program/ProgramFormTests';

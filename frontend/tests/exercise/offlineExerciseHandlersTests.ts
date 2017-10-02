@@ -36,9 +36,9 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
             assert.deepEqual(cacheUpdate.firstCall.args, [
                 'exercise',
                 [newExercise].concat(mockCachedExercises as any)
-            ], 'Pitäisi päivittää cache uudella liikkeellä varustettuna');
+            ], 'Pitäisi lisätä uusi liike cacheen');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
-            assert.equal(newExercise.id, mockNewUuid, 'Pitäisi luoda treenille id');
+            assert.equal(newExercise.id, mockNewUuid, 'Pitäisi luoda liikkeelle id');
             done();
         });
     });
@@ -81,7 +81,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
                 })]
             ], 'Pitäisi lisätä uusi variantti liikecachen oikeaan itemiin');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
-            assert.equal(newExerciseVariant.id, mockNewUuid, 'Pitäisi luoda treenille id');
+            assert.equal(newExerciseVariant.id, mockNewUuid, 'Pitäisi luoda variantille id');
             done();
         });
     });

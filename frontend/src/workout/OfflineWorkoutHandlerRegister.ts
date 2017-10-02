@@ -36,18 +36,6 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         );
     }
     /**
-     * Handlaa POST /api/workout REST-pyynnön.
-     */
-    public insert(workout: Enj.API.WorkoutRecord) {
-        return this.updateCache(cachedWorkouts => {
-            // Lisää uusi treeni cachetaulukon alkuun (uusin ensin)
-            workout.id = this.backend.utils.uuidv4();
-            cachedWorkouts.unshift(workout);
-            // Palauta feikattu backendin vastaus
-            return {insertCount: 1};
-        });
-    }
-    /**
      * Handlaa PUT /api/workout REST-pyynnön.
      */
     public updateAll(workoutsToUpdate: Array<Enj.API.WorkoutRecord>) {

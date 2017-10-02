@@ -1,37 +1,43 @@
 package net.mdh.enj.sync;
 
+import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
+import java.util.function.BiFunction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 
-public class MockOptimizedSyncingTest extends QueueOptimizingTestCase{
+public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
 
     private SyncController syncController;
     private SpyingFunction spyingFunction;
 
     @Before
     public void beforeEach() {
-        this.syncController = new SyncController(null, null);
+        this.syncController = new SyncController(
+            null,
+            null,
+            SyncingTestUtils.getManuallyPopulatedSyncRouteRegister()
+        );
         this.spyingFunction = new SpyingFunction();
     }
 
     @Test
-    public void syncQueueUtilSortByPriorityJärjestääQueuen() throws IOException {
+    public void syncControllerSortQueueByPriorityJärjestääQueuen() throws IOException {
         List<SyncQueueItem> queue = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':null}," +
             "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':null}," +
             "{'id':3,'route':{'url':'exercise/variant','method':'POST'},'data':null}," +
             "{'id':4,'route':{'url':'exercise','method':'POST'},'data':null}," +
             "{'id':5,'route':{'url':'workout/exercise/1','method':'DELETE'},'data':null}," +
-            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':null}" +
+            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':null}," +
+            "{'id':7,'route':{'url':'exercise/uuid','method':'PUT'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(queue.get(3));
+        expected.add(queue.get(6));
         expected.add(queue.get(2));
         expected.add(queue.get(0));
         expected.add(queue.get(1));

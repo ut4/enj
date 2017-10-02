@@ -1,8 +1,8 @@
 'use strict';
 
 if (!self || !(self instanceof ServiceWorkerGlobalScope)) {
-    throw new Error('This file is intended to be used as a service worker ' +
-        '(window.navigator.serviceWorker.register(<urlToThisFile>)');
+    throw new Error('Tätä tiedostoa on tarkoitus käyttää vain serviceWorkerinä ' +
+        '(window.navigator.serviceWorker.register(<urlTähänTiedostoon>).');
 }
 
 self.importScripts('vendor/sw-vendor.bundle.js');
@@ -36,6 +36,7 @@ self.CACHE_FILES = [
     // (pidettävä päivitettynä manuaalisesti)
     prefixWithApiNamespace('workout'),
     prefixWithApiNamespace('exercise'),
+    prefixWithApiNamespace('program/mine'),
     // == Teema ==============
     'theme/favicon.ico',
     'theme/favicon.png',
@@ -53,11 +54,17 @@ self.CACHE_FILES = [
 self.DYNAMIC_CACHE = [{
     urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),
     dataGetter: ([startFrom, startTo]) => swManager.findFromCachedArrayBy(
-        {start: {$where: function () { // function () instead of fat-arrow because of "this"
+        {start: {$where: function () { // ei fat-arrow -syntaksia, koska tarvitaan "this"
             return this >= startFrom && this <= startTo
         }}},
         prefixWithApiNamespace('workout')
     )
+}, {
+    urlMatcher: prefixWithApiNamespace('program/(.{36})'),
+    dataGetter: ([programId]) => swManager.findFromCachedArrayBy(
+        {id: {$eq: programId}},
+        prefixWithApiNamespace('program/mine')
+    ).then(array => array[0])
 }];
 
 // == Workerin staten manipulointi ==
@@ -142,11 +149,11 @@ self.addEventListener('activate', event => {
 // =============================================================================
 const apiUrlRegExp = new RegExp(`/${apiNamespace}/`);
 self.addEventListener('fetch', event => {
-    var isApiRequest = apiUrlRegExp.test(event.request.url);
+    const isApiRequest = apiUrlRegExp.test(event.request.url);
     if ((self.devMode && !isApiRequest) || self.isOnline) {
         return;
     }
-    var responder = isApiRequest && swManager.makeResponder(event.request.url);
+    const responder = isApiRequest && swManager.makeResponder(event.request.url);
     event.respondWith(
         responder || self.caches.match(event.request).then(response =>
             response || fetch(event.request)

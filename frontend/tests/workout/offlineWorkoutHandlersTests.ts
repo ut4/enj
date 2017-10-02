@@ -42,7 +42,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
             assert.deepEqual(cacheUpdate.firstCall.args, [
                 'workout',
                 [newWorkout].concat(mockCachedWorkouts as any)
-            ], 'Pitäisi päivittää treenicache uudella treenillä varustettuna');
+            ], 'Pitäisi lisätä uusi treeni cacheen');
             assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkout.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
