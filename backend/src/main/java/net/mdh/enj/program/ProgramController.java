@@ -59,6 +59,17 @@ public class ProgramController {
     }
 
     /**
+     * Palauttaa kirjautuneen käyttäjän ohjelman id:llä {programId}.
+     */
+    @GET
+    @Path("/{programId}")
+    public Program getMyProgram(@PathParam("programId") @UUID String id) {
+        SelectFilters filters = new SelectFilters(this.requestContext.getUserId());
+        filters.setId(id);
+        return this.programRepository.selectOne(filters);
+    }
+
+    /**
      * Lisää uuden ohjelman tietokantaan kirjautuneelle käyttäjälle.
      */
     @PUT

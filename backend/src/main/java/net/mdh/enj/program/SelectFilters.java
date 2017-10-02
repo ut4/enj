@@ -5,10 +5,18 @@ import java.util.ArrayList;
 
 class SelectFilters implements SelectQueryFilters {
 
+    public String id;
     public String userId;
 
     SelectFilters(String userId) {
         this.userId = userId;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {
@@ -27,7 +35,9 @@ class SelectFilters implements SelectQueryFilters {
     public String toSql() {
         ArrayList<String> out = new ArrayList<>();
         out.add("programUserId = :userId");
-        // ...
+        if (this.id != null) {
+            out.add("programId = :id");
+        }
         return String.join(" AND ", out);
     }
 }

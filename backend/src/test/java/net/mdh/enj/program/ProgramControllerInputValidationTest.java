@@ -67,4 +67,16 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("ProgramController.insert.arg0.start", errors.get(2).getPath());
         Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(2).getMessageTemplate());
     }
+
+    @Test
+    public void GETValidoiUrlin() {
+        //
+        Response response = this.newGetRequest("program/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("ProgramController.getMyProgram.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
 }

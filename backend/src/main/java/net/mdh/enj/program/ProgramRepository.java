@@ -21,6 +21,10 @@ public class ProgramRepository extends BasicRepository<Program> {
         return super.selectAll(filters, new ProgramMapper());
     }
 
+    Program selectOne(SelectFilters filters) {
+        return super.selectOne(filters, new ProgramMapper());
+    }
+
     private static final class ProgramMapper implements RowMapper<Program> {
         @Override
         public Program mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -62,7 +62,7 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void GETMinePalauttaaKirjautuneelleKäyttäjälleKuuluvatOhjelmat() {
+    public void GETMineJaGETProgramIdPalauttaaVainKirjautuneelleKäyttäjälleKuuluviaOhjelmia() {
         // Insertoi kaksi ohjelmaa, joista toinen kuuluu toiselle käyttäjälle
         Program myProgram = this.makeNewProgramEntity("My program");
         myProgram.setUserId(TestData.TEST_USER_ID);
@@ -70,19 +70,24 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         Program notMyProgram = this.makeNewProgramEntity("Not my program");
         notMyProgram.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(notMyProgram);
-        //
+        // -- GET program/mine -----------------------------
         Response response = newGetRequest("program/mine");
         Assert.assertEquals(200, response.getStatus());
         List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
         // Palauttiko vain kirjautuneen käyttäjän ohjelmat?
-        Assert.assertTrue(
-            "Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
+        Assert.assertTrue("Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
             actualMyPrograms.stream().anyMatch(p -> p.getId().equals(myProgram.getId()))
         );
-        Assert.assertFalse(
-            "Ei pitäisi sisältää toisen käyttäjän ohjelmaa",
+        Assert.assertFalse("Ei pitäisi sisältää toisen käyttäjän ohjelmaa",
             actualMyPrograms.stream().anyMatch(p -> p.getId().equals(notMyProgram.getId()))
         );
+        // -- GET program/{programId} ----------------------------------
+        Response response2 = newGetRequest("program/" + myProgram.getId());
+        Assert.assertEquals(200, response2.getStatus());
+        Program actualMyProgram = response2.readEntity(new GenericType<Program>() {});
+        Assert.assertEquals(myProgram, actualMyProgram);
+        Response response3 = newGetRequest("program/" + notMyProgram.getId());
+        Assert.assertEquals(204, response3.getStatus());
     }
 
     @Test
