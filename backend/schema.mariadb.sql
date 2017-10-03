@@ -1,4 +1,5 @@
 DROP VIEW    IF EXISTS programView;
+DROP TABLE   IF EXISTS programWorkout;
 DROP TABLE   IF EXISTS program;
 DROP VIEW    IF EXISTS setProgressView;
 DROP VIEW    IF EXISTS bestSetView;
@@ -35,7 +36,7 @@ CREATE TABLE `user` (
     -- Vapaaehtoiset kentät
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) UNSIGNED DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
-    signature VARCHAR(255) DEFAULT NULL
+    signature VARCHAR(255) DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -265,6 +266,16 @@ CREATE TABLE program (
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
+CREATE TABLE programWorkout (
+    id CHAR(36) NOT NULL,
+    `name` VARCHAR(64) NOT NULL,
+    occurrences TEXT NOT NULL, -- csv
+    ordinal TINYINT UNSIGNED NOT NULL,
+    programId CHAR(36) NOT NULL,
+    FOREIGN KEY (programId) REFERENCES program(id),
+    PRIMARY KEY (id)
+) DEFAULT CHARSET = utf8mb4;
+
 CREATE VIEW programView AS
     SELECT
         p.id          AS programId,
@@ -272,5 +283,11 @@ CREATE VIEW programView AS
         p.`start`     AS programStart,
         p.`end`       AS programEnd,
         p.description AS programDescription,
-        p.userId      AS programUserId
-    FROM program p;
+        p.userId      AS programUserId,
+        pw.id         AS programWorkoutId,
+        pw.name       AS programWorkoutName,
+        pw.occurrences AS programWorkoutOccurrences,
+        pw.ordinal    AS programWorkoutOrdinal,
+        pw.programId  AS programWorkoutProgramId
+    FROM program p
+    JOIN programWorkout pw ON (pw.programId = p.id);

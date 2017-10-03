@@ -4,8 +4,6 @@ import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
 import net.mdh.enj.validation.AuthenticatedUserId;
 import javax.validation.constraints.Min;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.Produces;
 import java.util.List;
 
 /**
@@ -75,7 +73,6 @@ public class Workout extends DbEntity {
     /**
      * Treeniliike-entiteetti
      */
-    @Produces(MediaType.APPLICATION_JSON)
     public static class Exercise extends DbEntity {
         private int ordinal;
         @UUID

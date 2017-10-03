@@ -2,10 +2,12 @@ package net.mdh.enj.program;
 
 import net.mdh.enj.db.DataSourceFactory;
 import net.mdh.enj.mapping.BasicRepository;
-import org.springframework.jdbc.core.RowMapper;
+import net.mdh.enj.mapping.NoDupeRowMapper;
+import net.mdh.enj.mapping.SubCollector;
 import javax.inject.Inject;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProgramRepository extends BasicRepository<Program> {
@@ -25,9 +27,17 @@ public class ProgramRepository extends BasicRepository<Program> {
         return super.selectOne(filters, new ProgramMapper());
     }
 
-    private static final class ProgramMapper implements RowMapper<Program> {
+    private static final class ProgramMapper extends NoDupeRowMapper<Program> {
+
+        private final SubCollector<Program.Workout> programWorkoutCollector;
+
+        private ProgramMapper() {
+            super("programId");
+            programWorkoutCollector = new SubCollector<>(new ProgramWorkoutMapper(), "programId");
+        }
+
         @Override
-        public Program mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Program doMapRow(ResultSet rs, int rowNum) throws SQLException {
             Program program = new Program();
             program.setId(rs.getString("programId"));
             program.setName(rs.getString("programName"));
@@ -35,7 +45,40 @@ public class ProgramRepository extends BasicRepository<Program> {
             program.setEnd(rs.getLong("programEnd"));
             program.setDescription(rs.getString("programDescription"));
             program.setUserId(rs.getString("programUserId"));
+            program.setWorkouts(programWorkoutCollector.collect(rs, rowNum, program.getId()));
             return program;
+        }
+
+        private static final class ProgramWorkoutMapper extends NoDupeRowMapper<Program.Workout> {
+
+            private static final String ID_COL = "programWorkoutId";
+
+            private ProgramWorkoutMapper() {
+                super(ID_COL);
+            }
+
+            @Override
+            public Program.Workout doMapRow(ResultSet rs, int rowNum) throws SQLException {
+                Program.Workout programWorkout = new Program.Workout();
+                programWorkout.setId(rs.getString(ID_COL));
+                programWorkout.setName(rs.getString("programWorkoutName"));
+                programWorkout.setOccurrences(this.parseOccurences(rs.getString("programWorkoutOccurrences")));
+                programWorkout.setOrdinal(rs.getInt("programWorkoutOrdinal"));
+                programWorkout.setProgramId(rs.getString("programId"));
+                return programWorkout;
+            }
+
+            private List<Program.Workout.Occurence> parseOccurences(String value) {
+                List<Program.Workout.Occurence> out = new ArrayList<>();
+                for (String pair: value.split("\\|")) {
+                    String[] values = pair.split("\\,");
+                    out.add(new Program.Workout.Occurence(
+                        Integer.valueOf(values[0]),
+                        !values[1].equals("null") ? Integer.valueOf(values[1]) : null
+                    ));
+                }
+                return out;
+            }
         }
     }
 }

@@ -16,6 +16,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ProgramControllerTest extends RollbackingDBJerseyTest {
@@ -63,20 +65,35 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
 
     @Test
     public void GETMineJaGETProgramIdPalauttaaVainKirjautuneelleKäyttäjälleKuuluviaOhjelmia() {
-        // Insertoi kaksi ohjelmaa, joista toinen kuuluu toiselle käyttäjälle
+        // Insertoi kaksi testiohjelmaa, joista toinen kuuluu toiselle käyttäjälle
         Program myProgram = this.makeNewProgramEntity("My program");
         myProgram.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(myProgram);
+        myProgram.setWorkouts(Collections.singletonList(
+            this.makeNewProgramWorkoutEntity("MyProgramWorkout", myProgram.getId()))
+        );
+        utils.insertProgramWorkout(myProgram.getWorkouts().get(0));
         Program notMyProgram = this.makeNewProgramEntity("Not my program");
         notMyProgram.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(notMyProgram);
+        notMyProgram.setWorkouts(Collections.singletonList(
+            this.makeNewProgramWorkoutEntity("NotMyProgramWorkout", notMyProgram.getId()))
+        );
+        utils.insertProgramWorkout(notMyProgram.getWorkouts().get(0));
         // -- GET program/mine -----------------------------
         Response response = newGetRequest("program/mine");
         Assert.assertEquals(200, response.getStatus());
         List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
         // Palauttiko vain kirjautuneen käyttäjän ohjelmat?
-        Assert.assertTrue("Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
-            actualMyPrograms.stream().anyMatch(p -> p.getId().equals(myProgram.getId()))
+        Program actualMyProgramsProgram = actualMyPrograms.stream()
+            .filter(p -> p.getId().equals(myProgram.getId()))
+            .findFirst().orElse(null);
+        Assert.assertNotNull("Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
+            actualMyProgramsProgram
+        );
+        Assert.assertEquals(
+            myProgram.getWorkouts().toString(),
+            actualMyProgramsProgram.getWorkouts().toString()
         );
         Assert.assertFalse("Ei pitäisi sisältää toisen käyttäjän ohjelmaa",
             actualMyPrograms.stream().anyMatch(p -> p.getId().equals(notMyProgram.getId()))
@@ -86,6 +103,10 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(200, response2.getStatus());
         Program actualMyProgram = response2.readEntity(new GenericType<Program>() {});
         Assert.assertEquals(myProgram, actualMyProgram);
+        Assert.assertEquals(
+            myProgram.getWorkouts().toString(),
+            actualMyProgram.getWorkouts().toString()
+        );
         Response response3 = newGetRequest("program/" + notMyProgram.getId());
         Assert.assertEquals(204, response3.getStatus());
     }
@@ -129,5 +150,17 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         program.setEnd(456L);
         program.setDescription("...");
         return program;
+    }
+
+    private Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
+        Program.Workout programWorkout = new Program.Workout();
+        programWorkout.setName(name);
+        // Joka maanantai, ei toistu
+        programWorkout.setOccurrences(
+            Collections.singletonList(new Program.Workout.Occurence(1, null))
+        );
+        programWorkout.setOrdinal(1);
+        programWorkout.setProgramId(programId);
+        return programWorkout;
     }
 }
