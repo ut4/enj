@@ -25,7 +25,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
             entity.id = this.backend.utils.uuidv4();
             cachedEntities.unshift(entity);
             // Palauta feikattu backendin vastaus
-            return {insertCount: 1};
+            return {insertCount: 1, insertId: entity.id};
         }, cacheUrl);
     }
     /**

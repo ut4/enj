@@ -31,7 +31,7 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
             exerciseVariant.id = this.backend.utils.uuidv4();
             parentExerciseRef.variants.push(exerciseVariant);
             //
-            return {insertCount: 1};
+            return {insertCount: 1, insertId: exerciseVariant.id};
         });
     }
     /**

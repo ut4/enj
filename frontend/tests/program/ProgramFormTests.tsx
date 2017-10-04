@@ -6,6 +6,7 @@ import ptu from 'tests/program/utils';
 import { templates } from 'src/ui/ValidatingComponent';
 import ProgramBackend from 'src/program/ProgramBackend';
 import ProgramForm from 'src/program/ProgramForm';
+import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
 QUnit.module('program/ProgramForm', hooks => {
@@ -32,6 +33,7 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.equal(descriptionEl.value, testProgram.description,  'Pitäisi asettaa initial-description');
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
+        assert.equal(itu.scryRenderedDOMElementsWithTag(rendered, 'li').length, 2);
         // Aseta invalid nimi
         utils.setInputValue('f', nameInputEl);
         assert.equal(getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
@@ -48,6 +50,10 @@ QUnit.module('program/ProgramForm', hooks => {
         utils.setInputValue('Dis is my new brogram', descriptionEl);
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi taas olla klikattava');
+        // Simuloi tyhjä ohjelmatreenilista
+        testProgram.workouts = [];
+        (itu.findRenderedVNodeWithType(rendered, ProgramForm).children as any).setState({program: testProgram});
+        assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     QUnit.test('lähettää tiedot backendiin ja kutsuu afterInsert', assert => {
         const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.resolve(1));
@@ -76,6 +82,30 @@ QUnit.module('program/ProgramForm', hooks => {
             );
             done();
         });
+    });
+    QUnit.test('"Lisää treeni"-painikkeesta voi lisätä uuden treenin ohjelmaan', assert => {
+        const newProgram = ptu.getSomeTestPrograms()[0];
+        const programWorkoutLengthBefore = newProgram.workouts.length;
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <ProgramForm program={ newProgram } afterInsert={ () => {} }/>
+        </div>);
+        // Avaa modal klikkaamalla Lisää treeni-painiketta
+        const addWorkoutButton = utils.findButtonByContent(rendered, 'Lisää treeni');
+        addWorkoutButton.click();
+        // Täytä lomake & hyväksy lomake
+        const programWorkoutNameInputEl = utils.findInputByName(rendered, 'name');
+        const testNewProgramWorkoutName = 'Someworkout';
+        utils.setInputValue(testNewProgramWorkoutName, programWorkoutNameInputEl);
+        // TODO occurrences
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        // Lisäsikö treenin?
+        const programWorkoutLengthAfter = newProgram.workouts.length;
+        assert.equal(programWorkoutLengthAfter, programWorkoutLengthBefore + 1);
+        assert.equal(newProgram.workouts[programWorkoutLengthAfter - 1].name,
+            testNewProgramWorkoutName
+        );
     });
     function getFirstValidationError(rendered): string {
         return vtu.getRenderedValidationErrors(rendered)[0].textContent;

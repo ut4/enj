@@ -22,6 +22,7 @@ public class Program extends DbEntity {
     private String description;
     @NotNull
     @Valid
+    @Size(min = 1)
     private List<Workout> workouts;
     private String userId;
 

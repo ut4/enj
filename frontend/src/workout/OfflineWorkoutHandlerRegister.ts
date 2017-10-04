@@ -69,7 +69,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
             workoutExercise.id = this.backend.utils.uuidv4();
             parentWorkoutRef.exercises.push(workoutExercise);
             //
-            return {insertCount: 1};
+            return {insertCount: 1, insertId: workoutExercise.id};
         });
     }
     /**
@@ -107,7 +107,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
             set.id = this.backend.utils.uuidv4();
             workoutRef.exercises[exerciseIndex].sets.push(set);
             //
-            return {insertCount: 1};
+            return {insertCount: 1, insertId: set.id};
         });
     }
     /**

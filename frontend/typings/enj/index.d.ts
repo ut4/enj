@@ -94,18 +94,30 @@ declare module Enj {
             isMale: number;
             signature?: string;
         }
+        interface ProgramWorkoutOccurence {
+            weekDay: number;
+            repeatEvery?: number;
+        }
+        interface ProgramWorkoutRecord {
+            id?: AAGUID;
+            name: string;
+            occurrences: Array<ProgramWorkoutOccurence>;
+            ordinal: number;
+            programId: AAGUID;
+        }
         interface ProgramRecord {
             id: AAGUID;
             name: string;
             start: number;
             end: number;
             description?: string;
-            userId: AAGUID
+            userId: AAGUID;
+            workouts: Array<ProgramWorkoutRecord>;
         }
         // REST-vastauswrapperit
         interface InsertResponse {
             insertCount: number;
-            insertId?: AAGUID;
+            insertId: AAGUID;
         }
         interface UpdateResponse {
             updateCount: number;

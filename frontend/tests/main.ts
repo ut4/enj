@@ -28,6 +28,7 @@ import 'tests/program/ProgramCreateViewTests';
 import 'tests/program/ProgramEditViewTests';
 import 'tests/program/ProgramFormTests';
 import 'tests/program/ProgramViewTests';
+import 'tests/program/ProgramWorkoutModalTests';
 import 'tests/serviceworker/SWManagerTests';
 import 'tests/stat/StatBackendTests';
 import 'tests/stat/StatHistoryViewTests';

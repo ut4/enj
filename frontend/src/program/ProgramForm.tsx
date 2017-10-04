@@ -1,5 +1,6 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import ProgramWorkoutsManager from 'src/program/ProgramWorkoutsManager';
 import Datepicker from 'src/ui/Datepicker';
 import iocFactories from 'src/ioc';
 
@@ -65,7 +66,8 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
             </label>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <ProgramWorkoutsManager program={ this.state.program }/>
+            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || !this.state.program.workouts.length } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
     }
     private confirm() {

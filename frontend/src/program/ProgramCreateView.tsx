@@ -11,7 +11,8 @@ class ProgramCreateView extends Component<any, any> {
             <ProgramForm program={ {
                 name: '',
                 start,
-                end: Math.floor(endDate.getTime() / 1000)
+                end: Math.floor(endDate.getTime() / 1000),
+                workouts: []
             } } afterInsert={ () => null }/>
         </div>;
     }

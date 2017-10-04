@@ -20,7 +20,7 @@ QUnit.module('program/OfflineHandlerRegisteration', hooks => {
     sinon.stub(offlineHttp, 'logRequestToSyncQueue').returns(Promise.resolve());
     //
     hooks.beforeEach(() => {
-        testProgram = {id: 'uuid23', name: 'foo', start: 1, end: 2, description: null, userId: 'y'};
+        testProgram = {id: 'uuid23', name: 'foo', start: 1, end: 2, description: null, workouts: [], userId: 'y'};
         programBackend = new ProgramBackend(new Http(window, offlineHttp, shallowUserState, '/'), 'program');
         programBackend.utils = {uuidv4: () => 'uuid345'};
         const shallowOffline: Offline = Object.create(Offline.prototype);

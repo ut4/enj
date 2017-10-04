@@ -17,7 +17,7 @@ QUnit.module('program/ProgramEditView', hooks => {
         programBackendIocOverride.restore();
     });
     QUnit.test('Tallentaa tiedot backendiin', assert => {
-        const testProgram: Enj.API.ProgramRecord = {id: 'uid', name: 'tyu', start: 86401, end: 86400*2+1, userId: 'u'};
+        const testProgram: Enj.API.ProgramRecord = {id: 'uid', name: 'tyu', start: 86401, end: 86400*2+1, workouts: [], userId: 'u'};
         const programFetchStub = sinon.stub(shallowProgramBackend, 'get')
             .returns(Promise.resolve(testProgram));
         const programSaveStub = sinon.stub(shallowProgramBackend, 'update')
