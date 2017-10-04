@@ -14,10 +14,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProgramControllerTest extends RollbackingDBJerseyTest {
@@ -38,6 +40,7 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(ProgramRepository.class).to(ProgramRepository.class);
+                    bind(ProgramWorkoutRepository.class).to(ProgramWorkoutRepository.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                 }
@@ -45,14 +48,23 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void POSTInsertoiUudenOhjelmanTietokantaanKirjautuneelleKäyttäjälle() {
-        // Luo testiohjelma. NOTE - ei userId:tä
+    public void POSTInsertoiUudenOhjelmanJaOhjelmatreenitTietokantaanKirjautuneelleKäyttäjälle() {
+        // Luo testiohjelma, ja sille yksi ohjelmatreeni. NOTE - ei userId:tä
         Program program = this.makeNewProgramEntity("My program");
+        Program.Workout programWorkout = new Program.Workout();
+        programWorkout.setName("Leg day");
+        programWorkout.setOccurrences(Arrays.asList(
+            new Program.Workout.Occurrence(1, null), // Ma, ei toistu
+            new Program.Workout.Occurrence(3, null) // Pe, ei toistu
+        ));
+        programWorkout.setOrdinal(1);
+        List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
+        program.setWorkouts(programWorkouts);
         //
         Response response = this.newPostRequest("program", program);
         Assert.assertEquals(200, response.getStatus());
         Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
-        //
+        // Insertoiko ohjelman?
         Program actualProgram = (Program) utils.selectOneWhere(
             "SELECT * FROM program WHERE id = :id",
             new MapSqlParameterSource("id", responseBody.insertId),
@@ -60,7 +72,47 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         );
         program.setId(responseBody.insertId);
         program.setUserId(TestData.TEST_USER_ID);
+        program.setWorkouts(null);
         Assert.assertEquals(program.toString(), actualProgram.toString());
+        // Insertoiko ohjelmatreenin?
+        List actualProgramWorkouts = utils.selectAllWhere(
+            "SELECT * FROM programWorkout WHERE programId = :programId",
+            new MapSqlParameterSource("programId", actualProgram.getId()),
+            new SimpleMappers.ProgramWorkoutMapper()
+        );
+        Assert.assertEquals(1, actualProgramWorkouts.size());
+        programWorkouts.get(0).setProgramId(actualProgram.getId());
+        ((Program.Workout) actualProgramWorkouts.get(0)).setId(null);
+        Assert.assertEquals(
+            programWorkouts.get(0).toString(),
+            actualProgramWorkouts.get(0).toString()
+        );
+    }
+
+    @Test
+    public void POSTInsertEiKirjoitaOhjelmaaTietokantaanJosOhjelmatreeninLisäysEpäonnistuu() {
+        //
+        Program program = this.makeNewProgramEntity("Fyy");
+        Program.Workout programWorkout = new Program.Workout();
+        programWorkout.setName("Fyy daa");
+        programWorkout.setOccurrences(Collections.singletonList(
+            new Program.Workout.Occurrence(1, null)
+        ));
+        programWorkout.setOrdinal(256); // Pitäisi aiheuttaa Out of range -error (max 255)
+        List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
+        program.setWorkouts(programWorkouts);
+        //
+        try {
+            this.newPostRequest("program", program);
+            Assert.fail("Olisi pitänyt heittää poikkeus");
+        } catch (ProcessingException e) {
+            // Peruuttiko ohjelman insertoinnin?
+            Assert.assertNull(utils.selectOneWhere(
+                "SELECT * FROM program WHERE `name` = :name",
+                new MapSqlParameterSource("name", program.getName()),
+                new SimpleMappers.ProgramMapper()
+            ));
+        }
     }
 
     @Test
@@ -157,7 +209,7 @@ public class ProgramControllerTest extends RollbackingDBJerseyTest {
         programWorkout.setName(name);
         // Joka maanantai, ei toistu
         programWorkout.setOccurrences(
-            Collections.singletonList(new Program.Workout.Occurence(1, null))
+            Collections.singletonList(new Program.Workout.Occurrence(1, null))
         );
         programWorkout.setOrdinal(1);
         programWorkout.setProgramId(programId);

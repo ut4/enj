@@ -26,14 +26,17 @@ import java.util.List;
 public class ProgramController {
 
     private final ProgramRepository programRepository;
+    private final ProgramWorkoutRepository programWorkoutRepository;
     private final RequestContext requestContext;
 
     @Inject
     public ProgramController(
         ProgramRepository programRepository,
+        ProgramWorkoutRepository programWorkoutRepository,
         RequestContext requestContext
     ) {
         this.programRepository = programRepository;
+        this.programWorkoutRepository = programWorkoutRepository;
         this.requestContext = requestContext;
     }
 
@@ -45,8 +48,16 @@ public class ProgramController {
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Program program) {
         program.setUserId(this.requestContext.getUserId());
-        int insertCount = this.programRepository.insert(program);
-        return new InsertResponse(insertCount, program.getId());
+        this.programRepository.runInTransaction(() -> {
+            // 1. Insertoi ohjelma
+            this.programRepository.insert(program);
+            // 2. Insertoi ohjelmatreenit
+            for (Program.Workout programWorkout: program.getWorkouts()) {
+                programWorkout.setProgramId(program.getId());
+            }
+            this.programWorkoutRepository.insert(program.getWorkouts());
+        });
+        return new InsertResponse(1, program.getId());
     }
 
     /**

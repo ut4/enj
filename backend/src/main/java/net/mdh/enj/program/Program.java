@@ -3,8 +3,10 @@ package net.mdh.enj.program;
 import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.validation.Valid;
 import java.util.List;
 
 public class Program extends DbEntity {
@@ -18,6 +20,8 @@ public class Program extends DbEntity {
     @Min(1)
     private Long end;
     private String description;
+    @NotNull
+    @Valid
     private List<Workout> workouts;
     private String userId;
 
@@ -90,10 +94,14 @@ public class Program extends DbEntity {
      * Ohjelmatreeni-entiteetti.
      */
     public static class Workout extends DbEntity {
+        @NotNull
+        @Size(min = 2, max = 64)
         private String name;
-        private List<Occurence> occurrences;
+        @NotNull
+        @Valid
+        private List<Occurrence> occurrences;
         private int ordinal;
-        @UUID
+        @UUID(allowNull = true)
         private String programId;
 
         public String getName() {
@@ -103,10 +111,10 @@ public class Program extends DbEntity {
             this.name = name;
         }
 
-        public List<Occurence> getOccurrences() {
+        public List<Occurrence> getOccurrences() {
             return this.occurrences;
         }
-        public void setOccurrences(List<Occurence> occurrences) {
+        public void setOccurrences(List<Occurrence> occurrences) {
             this.occurrences = occurrences;
         }
 
@@ -140,11 +148,13 @@ public class Program extends DbEntity {
             "}";
         }
 
-        public static class Occurence {
+        public static class Occurrence {
+            @Min(value = 0)
+            @Max(value = 6)
             private int weekDay;
             private Integer repeatEvery;
-            public Occurence() {}
-            public Occurence(int weekDay, Integer repeatEvery) {
+            public Occurrence() {}
+            public Occurrence(int weekDay, Integer repeatEvery) {
                 this.weekDay = weekDay;
                 this.repeatEvery = repeatEvery;
             }

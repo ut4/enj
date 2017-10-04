@@ -62,23 +62,25 @@ public class ProgramRepository extends BasicRepository<Program> {
                 Program.Workout programWorkout = new Program.Workout();
                 programWorkout.setId(rs.getString(ID_COL));
                 programWorkout.setName(rs.getString("programWorkoutName"));
-                programWorkout.setOccurrences(this.parseOccurences(rs.getString("programWorkoutOccurrences")));
+                programWorkout.setOccurrences(parseOccurences(rs.getString("programWorkoutOccurrences")));
                 programWorkout.setOrdinal(rs.getInt("programWorkoutOrdinal"));
                 programWorkout.setProgramId(rs.getString("programId"));
                 return programWorkout;
             }
-
-            private List<Program.Workout.Occurence> parseOccurences(String value) {
-                List<Program.Workout.Occurence> out = new ArrayList<>();
-                for (String pair: value.split("\\|")) {
-                    String[] values = pair.split("\\,");
-                    out.add(new Program.Workout.Occurence(
-                        Integer.valueOf(values[0]),
-                        !values[1].equals("null") ? Integer.valueOf(values[1]) : null
-                    ));
-                }
-                return out;
-            }
         }
+    }
+
+    public static List<Program.Workout.Occurrence> parseOccurences(String value) {
+        List<Program.Workout.Occurrence> out = new ArrayList<>();
+        // [, ja ] pois
+        String spaceSeparatedPairs = value.substring(1, value.length() - 1);
+        for (String pair: spaceSeparatedPairs.split(" ")) {
+            String[] values = pair.split("\\,");
+            out.add(new Program.Workout.Occurrence(
+                Integer.valueOf(values[0]),
+                !values[1].equals("null") ? Integer.valueOf(values[1]) : null
+            ));
+        }
+        return out;
     }
 }

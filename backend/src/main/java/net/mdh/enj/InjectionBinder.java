@@ -3,6 +3,7 @@ package net.mdh.enj;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthService;
 import net.mdh.enj.auth.AuthUserRepository;
+import net.mdh.enj.program.ProgramWorkoutRepository;
 import net.mdh.enj.stat.StatRepository;
 import net.mdh.enj.sync.SyncRouteRegister;
 import net.mdh.enj.user.UserRepository;
@@ -54,6 +55,7 @@ class InjectionBinder extends AbstractBinder {
         bind(ExerciseVariantRepository.class).to(ExerciseVariantRepository.class);
         // Program
         bind(ProgramRepository.class).to(ProgramRepository.class);
+        bind(ProgramWorkoutRepository.class).to(ProgramWorkoutRepository.class);
         // User
         bind(UserRepository.class).to(UserRepository.class);
     }

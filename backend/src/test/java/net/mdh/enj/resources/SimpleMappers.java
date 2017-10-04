@@ -1,5 +1,6 @@
 package net.mdh.enj.resources;
 
+import net.mdh.enj.program.ProgramRepository;
 import net.mdh.enj.user.User;
 import net.mdh.enj.auth.AuthUser;
 import net.mdh.enj.workout.Workout;
@@ -8,6 +9,7 @@ import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.Arrays;
 
 public class SimpleMappers {
     public static class WorkoutMapper implements RowMapper<Workout> {
@@ -106,6 +108,18 @@ public class SimpleMappers {
             program.setDescription(rs.getString("description"));
             program.setUserId(rs.getString("userId"));
             return program;
+        }
+    }
+    public static class ProgramWorkoutMapper implements RowMapper<Program.Workout> {
+        @Override
+        public Program.Workout mapRow(ResultSet rs, int i) throws SQLException {
+            Program.Workout programWorkout = new Program.Workout();
+            programWorkout.setId(rs.getString("id"));
+            programWorkout.setName(rs.getString("name"));
+            programWorkout.setOccurrences(ProgramRepository.parseOccurences(rs.getString("occurrences")));
+            programWorkout.setOrdinal(rs.getInt("ordinal"));
+            programWorkout.setProgramId(rs.getString("programId"));
+            return programWorkout;
         }
     }
 }
