@@ -1,11 +1,12 @@
 package net.mdh.enj.program;
 
-import net.mdh.enj.mapping.DbEntity;
 import net.mdh.enj.validation.UUID;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Max;
+import net.mdh.enj.mapping.DbEntity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Max;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -94,6 +95,7 @@ public class Program extends DbEntity {
     /**
      * Ohjelmatreeni-entiteetti.
      */
+    @JsonIgnoreProperties({"occurrencesAsString"})
     public static class Workout extends DbEntity {
         @NotNull
         @Size(min = 2, max = 64)
@@ -104,6 +106,7 @@ public class Program extends DbEntity {
         private int ordinal;
         @UUID(allowNull = true)
         private String programId;
+        private Filters filters;
 
         public String getName() {
             return this.name;
@@ -114,6 +117,9 @@ public class Program extends DbEntity {
 
         public List<Occurrence> getOccurrences() {
             return this.occurrences;
+        }
+        public String getOccurrencesAsString() {
+            return this.occurrences.toString();
         }
         public void setOccurrences(List<Occurrence> occurrences) {
             this.occurrences = occurrences;
@@ -135,7 +141,7 @@ public class Program extends DbEntity {
 
         @Override
         public String toUpdateFields() {
-            throw new RuntimeException("Not implemented yet.");
+            return "name = :name, occurrences = :occurrencesAsString, ordinal = :ordinal";
         }
 
         @Override
@@ -147,6 +153,13 @@ public class Program extends DbEntity {
                 ", ordinal=" + this.getOrdinal() +
                 ", programId=" + this.getProgramId() +
             "}";
+        }
+
+        public Filters getFilters() {
+            return this.filters;
+        }
+        public void setFilters(Filters filters) {
+            this.filters = filters;
         }
 
         public static class Occurrence {
@@ -176,6 +189,23 @@ public class Program extends DbEntity {
             @Override
             public String toString() {
                 return this.weekDay + "," + this.repeatEvery;
+            }
+        }
+
+        static class Filters {
+
+            private String userId;
+
+            Filters() {}
+            Filters(String userId) {
+                this.userId = userId;
+            }
+
+            public String getUserId() {
+                return this.userId;
+            }
+            public void setUserId(String userId) {
+                this.userId = userId;
             }
         }
     }

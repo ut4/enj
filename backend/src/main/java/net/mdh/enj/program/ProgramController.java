@@ -8,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.BadRequestException;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
@@ -81,7 +82,7 @@ public class ProgramController {
     }
 
     /**
-     * Lisää uuden ohjelman tietokantaan kirjautuneelle käyttäjälle.
+     * Päivittää kirjautuneen käyttäjän ohjelman {programId} tietokantaan.
      */
     @PUT
     @Path("/{programId}")
@@ -96,5 +97,33 @@ public class ProgramController {
         return new UpdateResponse(
             this.programRepository.update(program, "id = :id AND userId = :userId")
         );
+    }
+
+    /**
+     * Päivittää kirjautuneen käyttäjän ohjelmatreenit tietokantaan.
+     *
+     * @throws BadRequestException Jos päivitettävä ohjelmatreeni ei kuulunut kirjautuneelle käyttäjälle
+     */
+    @PUT
+    @Path("/workout")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse updateAllWorkouts(@Valid @NotNull List<Program.Workout> programWorkouts) {
+        for (Program.Workout programWorkout: programWorkouts) {
+            programWorkout.setFilters(new Program.Workout.Filters(this.requestContext.getUserId()));
+        }
+        int updateCount = this.programWorkoutRepository.updateMany(
+            programWorkouts,
+            "id = :id AND EXISTS(SELECT userId FROM (" +
+                " SELECT p.userId FROM program p" +
+                " JOIN programWorkout pw ON (pw.programId = p.id)" +
+                " WHERE p.userId = :filters.userId AND pw.id = :id" +
+            " ) as cond)"
+        );
+        // userId ei täsmännyt
+        if (updateCount < programWorkouts.size()) {
+            throw new BadRequestException();
+        }
+        return new UpdateResponse(updateCount);
     }
 }

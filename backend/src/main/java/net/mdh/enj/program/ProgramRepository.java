@@ -62,7 +62,7 @@ public class ProgramRepository extends BasicRepository<Program> {
                 Program.Workout programWorkout = new Program.Workout();
                 programWorkout.setId(rs.getString(ID_COL));
                 programWorkout.setName(rs.getString("programWorkoutName"));
-                programWorkout.setOccurrences(parseOccurences(rs.getString("programWorkoutOccurrences")));
+                programWorkout.setOccurrences(parseOccurrences(rs.getString("programWorkoutOccurrences")));
                 programWorkout.setOrdinal(rs.getInt("programWorkoutOrdinal"));
                 programWorkout.setProgramId(rs.getString("programId"));
                 return programWorkout;
@@ -70,10 +70,10 @@ public class ProgramRepository extends BasicRepository<Program> {
         }
     }
 
-    public static List<Program.Workout.Occurrence> parseOccurences(String value) {
+    public static List<Program.Workout.Occurrence> parseOccurrences(String value) {
         List<Program.Workout.Occurrence> out = new ArrayList<>();
         // [, ja ] pois
-        String spaceSeparatedPairs = value.substring(1, value.length() - 1);
+        String spaceSeparatedPairs = value.replaceAll("[\\[\\]]", "");
         for (String pair: spaceSeparatedPairs.split(" ")) {
             String[] values = pair.split("\\,");
             out.add(new Program.Workout.Occurrence(
