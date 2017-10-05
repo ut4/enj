@@ -3,6 +3,7 @@ package net.mdh.enj.program;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
@@ -12,11 +13,14 @@ import javax.ws.rs.BadRequestException;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
+import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.validation.UUID;
 import javax.validation.Valid;
 import javax.inject.Inject;
+import java.util.function.Supplier;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -100,30 +104,52 @@ public class ProgramController {
     }
 
     /**
-     * Päivittää kirjautuneen käyttäjän ohjelmatreenit tietokantaan.
-     *
-     * @throws BadRequestException Jos päivitettävä ohjelmatreeni ei kuulunut kirjautuneelle käyttäjälle
+     * Päivittää kirjautuneen käyttäjän ohjelmatreenit {programWorkouts} tietokantaan.
      */
     @PUT
     @Path("/workout")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public UpdateResponse updateAllWorkouts(@Valid @NotNull List<Program.Workout> programWorkouts) {
+    public UpdateResponse updateAllWorkouts(@Valid @NotNull Program.Workout... programWorkouts) {
+        return new UpdateResponse(this.alterAllWorkouts(
+            () -> this.programWorkoutRepository.updateMany(Arrays.asList(programWorkouts)),
+            programWorkouts
+        ));
+    }
+
+    /**
+     * Poistaa kirjautuneen käyttäjän ohjelmatreenin id:llä {programWorkoutId} tietokannasta.
+     */
+    @DELETE
+    @Path("/workout/{programWorkoutId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse deleteWorkout(@PathParam("programWorkoutId") @UUID String id) {
+        Program.Workout programWorkout = new Program.Workout();
+        programWorkout.setId(id);
+        return new DeleteResponse(this.alterAllWorkouts(
+            () -> this.programWorkoutRepository.delete(programWorkout),
+            programWorkout
+        ));
+    }
+
+    /**
+     * Ajaa päivitys-, tai poistokyselyn {updateOrDeleteQueryExecutor}, ja palauttaa
+     * päivitettyjen/poistettujen rivien lukumäärän, tai heittää poikkeuksen jos
+     * jokin ohjelmatreeneistä ei kuulunut kirjautuneelle käyttäjälle.
+     *
+     * @throws BadRequestException Jos poistettava ohjelmatreeni ei kuulunut kirjautuneelle käyttäjälle
+     */
+    private int alterAllWorkouts(Supplier<Integer> updateOrDeleteQueryExecutor, Program.Workout... programWorkouts) {
+        // Aseta kirjautuneen käyttäjän id filters.userId:ksi
         for (Program.Workout programWorkout: programWorkouts) {
             programWorkout.setFilters(new Program.Workout.Filters(this.requestContext.getUserId()));
         }
-        int updateCount = this.programWorkoutRepository.updateMany(
-            programWorkouts,
-            "id = :id AND EXISTS(SELECT userId FROM (" +
-                " SELECT p.userId FROM program p" +
-                " JOIN programWorkout pw ON (pw.programId = p.id)" +
-                " WHERE p.userId = :filters.userId AND pw.id = :id" +
-            " ) as cond)"
-        );
+        int rowCount = updateOrDeleteQueryExecutor.get();
         // userId ei täsmännyt
-        if (updateCount < programWorkouts.size()) {
+        if (rowCount < programWorkouts.length) {
             throw new BadRequestException();
         }
-        return new UpdateResponse(updateCount);
+        return rowCount;
     }
 }

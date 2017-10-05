@@ -165,8 +165,15 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     public int delete(String id) {
         return this.qTemplate.update(
-            String.format("DELETE FROM `%s` WHERE id = :id", this.tableName),
+            this.newDeleteQ("id = :id"),
             new MapSqlParameterSource("id", id)
+        );
+    }
+
+    public int delete(T data, String where) {
+        return this.qTemplate.update(
+            this.newDeleteQ(where),
+            new BeanPropertySqlParameterSource(data)
         );
     }
 
@@ -186,10 +193,17 @@ public abstract class BasicRepository<T extends DbEntity> {
      */
     private String newUpdateQ(T bean, String where) {
         return String.format("UPDATE `%s` SET %s WHERE %s",
-            tableName,
+            this.tableName,
             bean.toUpdateFields(),
             where
         );
+    }
+
+    /**
+     * DELETE FROM {this.tableName} WHERE {where}
+     */
+    private String newDeleteQ(String where) {
+        return String.format("DELETE FROM `%s` WHERE %s", this.tableName, where);
     }
 
     private void ensureId(T data) {

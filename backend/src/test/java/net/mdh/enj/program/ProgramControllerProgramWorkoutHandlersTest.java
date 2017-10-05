@@ -67,4 +67,45 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         );
         Assert.assertEquals(originalProgramWorkoutName, actualProgramWorkout.getName());
     }
+
+    @Test
+    public void DELETEWorkoutPoistaaOhjelmatreeninTietokannasta() {
+        // Luo testidata.
+        Program program = this.makeNewProgramEntity("Another testprogram");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity("Another testprogramworkout", program.getId());
+        utils.insertProgramWorkout(programWorkout);
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/workout/" + programWorkout.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Poistiko ohjelmatreenin kannasta?
+        Assert.assertNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkout WHERE id = :id",
+            new MapSqlParameterSource("id", programWorkout.getId()),
+            new SimpleMappers.ProgramWorkoutMapper()
+        ));
+    }
+
+    @Test
+    public void DELETEWorkoutEiPoistaToiselleKäyttäjälleKuuluvaaOhjelmatreeniä() {
+        // Luo testidata.
+        Program program = this.makeNewProgramEntity("Another notMyProgram");
+        program.setUserId(TestData.TEST_USER_ID2);
+        utils.insertProgram(program);
+        String originalProgramWorkoutName = "Another notMyProgramworkout";
+        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity(originalProgramWorkoutName, program.getId());
+        utils.insertProgramWorkout(programWorkout);
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/workout/" + programWorkout.getId());
+        Assert.assertEquals(400, response.getStatus());
+        // Jättikö tiedot rauhaan?
+        Assert.assertNotNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkout WHERE id = :id",
+            new MapSqlParameterSource("id", programWorkout.getId()),
+            new SimpleMappers.ProgramWorkoutMapper()
+        ));
+    }
 }

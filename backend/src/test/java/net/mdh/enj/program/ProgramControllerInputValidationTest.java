@@ -38,17 +38,7 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
 
     @Test
     public void POSTInsertValidoiInputDatan() {
-        Program badData = new Program();
-        badData.setName("s");
-        badData.setStart(-1L);
-        badData.setEnd(-1L);
-        Program.Workout badProgramWorkout = new Program.Workout();
-        badProgramWorkout.setName("s");
-        Program.Workout.Occurrence badOccurrence = new Program.Workout.Occurrence();
-        badOccurrence.setWeekDay(9);
-        badProgramWorkout.setOccurrences(Collections.singletonList(badOccurrence));
-        badProgramWorkout.setProgramId("not-valid-uuid");
-        badData.setWorkouts(Collections.singletonList(badProgramWorkout));
+        Program badData = this.makeNewInvalidProgram();
         Response response = this.newPostRequest("program", badData);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
@@ -97,7 +87,48 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
     }
 
     @Test
-    public void PUTValidoiInputTaulukon() {
+    public void PUTValidoiInputin() {
+        Program badData = this.makeNewInvalidProgram();
+        String ignoreThis = TestData.TEST_USER_ID;
+        Response response = this.newPutRequest("program/" + ignoreThis, badData);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(6, errors.size());
+        Assert.assertEquals("ProgramController.update.arg1.end", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.name", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.start", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(2).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].name", errors.get(3).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(3).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].occurrences[0].weekDay", errors.get(4).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Max.message}", errors.get(4).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].programId", errors.get(5).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(5).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTEiHyväksyNullArvoja() {
+        Response response = this.newPutRequest("program/invaliduuid", "{}");
+        Assert.assertEquals(400, response.getStatus());
+        // Testaa että sisältää validaatiovirheet
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(5, errors.size());
+        Assert.assertEquals("ProgramController.update.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.end", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.name", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(2).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.start", errors.get(3).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(3).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts", errors.get(4).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(4).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTWorkoutValidoiInputTaulukon() {
         // Luo virheellinen input
         Program.Workout badProgramWorkout = new Program.Workout();
         badProgramWorkout.setName("w");
@@ -115,5 +146,32 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(1).getMessageTemplate());
         Assert.assertEquals("ProgramController.updateAllWorkouts.arg0[0].programId", errors.get(2).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
+    }
+
+    @Test
+    public void DELETEWorkoutValidoiUrlin() {
+        //
+        Response response = this.newDeleteRequest("program/workout/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("ProgramController.deleteWorkout.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
+
+    private Program makeNewInvalidProgram() {
+        Program badData = new Program();
+        badData.setName("s");
+        badData.setStart(-1L);
+        badData.setEnd(-1L);
+        Program.Workout badProgramWorkout = new Program.Workout();
+        badProgramWorkout.setName("s");
+        Program.Workout.Occurrence badOccurrence = new Program.Workout.Occurrence();
+        badOccurrence.setWeekDay(9);
+        badProgramWorkout.setOccurrences(Collections.singletonList(badOccurrence));
+        badProgramWorkout.setProgramId("not-valid-uuid");
+        badData.setWorkouts(Collections.singletonList(badProgramWorkout));
+        return badData;
     }
 }
