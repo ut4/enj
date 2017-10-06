@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.BadRequestException;
 import javax.validation.constraints.NotNull;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.MultiInsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
 import static net.mdh.enj.api.Responses.DeleteResponse;
 import net.mdh.enj.api.RequestContext;
@@ -104,14 +105,35 @@ public class ProgramController {
     }
 
     /**
+     * Lisää kirjautuneen käyttäjän ohjelmatreenit {programWorkouts} tietokantaan.
+     *
+     * @throws BadRequestException Jos lisättävän ohjelmatreenin viittaama ohjelma ei kuulunut kirjautuneelle käyttäjälle
+     */
+    @POST
+    @Path("/workout/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllProgramWorkouts(@Valid @NotNull List<Program.Workout> programWorkouts) {
+        // Tarkista, kuuluuko {programWorkouts}in viittaama ohjelma kirjautuneelle käyttäjälle
+        if (!this.programWorkoutRepository.belongsToUser(
+            programWorkouts,
+            this.requestContext.getUserId()
+        )) {
+            throw new BadRequestException();
+        }
+        int insertCount = this.programWorkoutRepository.insert(programWorkouts);
+        return new MultiInsertResponse(insertCount, programWorkouts);
+    }
+
+    /**
      * Päivittää kirjautuneen käyttäjän ohjelmatreenit {programWorkouts} tietokantaan.
      */
     @PUT
     @Path("/workout")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public UpdateResponse updateAllWorkouts(@Valid @NotNull Program.Workout... programWorkouts) {
-        return new UpdateResponse(this.alterAllWorkouts(
+    public UpdateResponse updateAllProgramWorkouts(@Valid @NotNull Program.Workout... programWorkouts) {
+        return new UpdateResponse(this.alterProgramWorkouts(
             () -> this.programWorkoutRepository.updateMany(Arrays.asList(programWorkouts)),
             programWorkouts
         ));
@@ -124,10 +146,10 @@ public class ProgramController {
     @Path("/workout/{programWorkoutId}")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public DeleteResponse deleteWorkout(@PathParam("programWorkoutId") @UUID String id) {
+    public DeleteResponse deleteProgramWorkout(@PathParam("programWorkoutId") @UUID String id) {
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setId(id);
-        return new DeleteResponse(this.alterAllWorkouts(
+        return new DeleteResponse(this.alterProgramWorkouts(
             () -> this.programWorkoutRepository.delete(programWorkout),
             programWorkout
         ));
@@ -140,7 +162,7 @@ public class ProgramController {
      *
      * @throws BadRequestException Jos poistettava ohjelmatreeni ei kuulunut kirjautuneelle käyttäjälle
      */
-    private int alterAllWorkouts(Supplier<Integer> updateOrDeleteQueryExecutor, Program.Workout... programWorkouts) {
+    private int alterProgramWorkouts(Supplier<Integer> updateOrDeleteQueryExecutor, Program.Workout... programWorkouts) {
         // Aseta kirjautuneen käyttäjän id filters.userId:ksi
         for (Program.Workout programWorkout: programWorkouts) {
             programWorkout.setFilters(new Program.Workout.Filters(this.requestContext.getUserId()));

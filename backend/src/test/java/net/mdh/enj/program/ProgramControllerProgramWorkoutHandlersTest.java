@@ -6,11 +6,67 @@ import net.mdh.enj.resources.SimpleMappers;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Assert;
+import java.util.List;
 import org.junit.Test;
 
 public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControllerTestCase {
+
+    @Test
+    public void POSTWorkoutAllInsertoiKirjautuneenKäyttäjänOhjelmatreenitTietokantaan() {
+        // Insertoi ohjelma, johon testattavat treenit lisätään
+        Program program = this.makeNewProgramEntity("My cool prog");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        // Luo insertoitavat ohjelmatreenit
+        List<Program.Workout> programWorkouts = Collections.singletonList(
+            this.makeNewProgramWorkoutEntity("My cool prog workout", program.getId())
+        );
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("program/workout/all", programWorkouts);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        Assert.assertEquals("MultiInsertResponse.insertCount pitäisi olla 1", (Integer)1, responseBody.insertCount);
+        // Insertoiko ohjelmatreenin?
+        List actualProgramWorkouts = utils.selectAllWhere(
+            "SELECT * FROM programWorkout WHERE id = :id",
+            new MapSqlParameterSource("id", responseBody.insertIds.get(0)),
+            new SimpleMappers.ProgramWorkoutMapper()
+        );
+        Assert.assertEquals(1, actualProgramWorkouts.size());
+        programWorkouts.get(0).setId(responseBody.insertIds.get(0));
+        Assert.assertEquals(
+            programWorkouts.get(0).toString(),
+            actualProgramWorkouts.get(0).toString()
+        );
+    }
+
+    @Test
+    public void POSTWorkoutAllEiInsertoiTreenejäToisenKäyttäjänOhjelmaan() {
+        // Insertoi pari ohjelmaa, joista toinen kuuluu toiselle käyttäjälle
+        Program program = this.makeNewProgramEntity("My program");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        Program notMyProgram = this.makeNewProgramEntity("Not My program");
+        notMyProgram.setUserId(TestData.TEST_USER_ID2);
+        utils.insertProgram(notMyProgram);
+        // Luo insertoitavat ohjelmatreenit, joista jälkimmäinen kuuluu toiselle käyttäjälle
+        List<Program.Workout> programWorkouts = Arrays.asList(
+            this.makeNewProgramWorkoutEntity("My cool prog workout", program.getId()),
+            this.makeNewProgramWorkoutEntity("Some other users cool prog workout", notMyProgram.getId())
+        );
+        //
+        Response response = this.newPostRequest("program/workout/all", programWorkouts);
+        Assert.assertEquals(400, response.getStatus());
+        // Jättikö insertoimatta?
+        Assert.assertEquals(0, utils.selectAllWhere(
+            "SELECT * FROM programWorkout WHERE programId IN(:programId1, :programId2)",
+            new MapSqlParameterSource("programId1", program.getId()).addValue("programId2", notMyProgram.getId()),
+            new SimpleMappers.ProgramWorkoutMapper()
+        ).size());
+    }
 
     @Test
     public void PUTWorkoutPäivittääOhjelmatreeninTietokantaan() {
