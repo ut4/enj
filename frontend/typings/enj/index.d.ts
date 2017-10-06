@@ -119,6 +119,10 @@ declare module Enj {
             insertCount: number;
             insertId: AAGUID;
         }
+        interface MultiInsertResponse {
+            insertCount: number;
+            insertIds: Array<AAGUID>;
+        }
         interface UpdateResponse {
             updateCount: number;
         }

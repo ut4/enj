@@ -20,6 +20,8 @@ interface State {
 class ProgramForm extends ValidatingComponent<Props, State> {
     private isInsert: boolean;
     private unixTimeNow: number;
+    private programWorkoutsManager?: ProgramWorkoutsManager;
+    private initialSerializedProgram: string;
     protected propertyToValidate: string = 'program';
     public constructor(props, context) {
         super(props, context);
@@ -27,8 +29,9 @@ class ProgramForm extends ValidatingComponent<Props, State> {
         this.isInsert = this.props.hasOwnProperty('afterInsert');
         this.evaluators = {
             name: [(input: any) => input.length >= 2 && input.length <= 64],
-            description: [(input: any) => input && input.length <= 128]
+            description: [(input: any) => input.length <= 128]
         };
+        this.initialSerializedProgram = serializeProgram(this.props.program);
         this.state = {
             program: props.program,
             validity: true
@@ -66,14 +69,20 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
             </label>
-            <ProgramWorkoutsManager program={ this.state.program }/>
+            <ProgramWorkoutsManager program={ this.state.program } ref={ cmp => { this.programWorkoutsManager = cmp; } }/>
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || !this.state.program.workouts.length } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
     }
-    private confirm() {
+    private confirm(): Promise<any> {
         return (this.isInsert
             ? iocFactories.programBackend().insert(this.state.program)
-            : iocFactories.programBackend().update(this.state.program, '/' + this.state.program.id)
+            // Päivittää ohjelman ja ohjelmatreenit, tai ei tee mitään jos mikään ei muuttunut
+            : Promise.all([
+                this.saveProgram(),
+                this.saveInsertedWorkouts(),
+                this.saveModifiedWorkouts(),
+                this.saveDeletedWorkouts()
+            ]) as any
         ).then(
             () => {
                 this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.program);
@@ -82,6 +91,31 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                 iocFactories.notify()('Ohjelman ' + (this.isInsert ? 'lisä' : 'päivit') + 'ys epäonnistui', 'error');
             }
         );
+    }
+    private saveProgram(): Promise<any> {
+        if (serializeProgram(this.state.program) === this.initialSerializedProgram) {
+            return;
+        }
+        return iocFactories.programBackend().update(this.state.program, '/' + this.state.program.id);
+    }
+    private saveInsertedWorkouts() {
+        const inserted = this.programWorkoutsManager.getInsertedWorkouts();
+        if (inserted.length) {
+            return iocFactories.programBackend().insertWorkouts(inserted);
+        }
+    }
+    private saveModifiedWorkouts() {
+        const modified = this.programWorkoutsManager.getModifiedWorkouts();
+        if (modified.length) {
+            return iocFactories.programBackend().updateWorkout(modified);
+        }
+    }
+    private saveDeletedWorkouts() {
+        const deleted = this.programWorkoutsManager.getDeletedWorkouts();
+        if (deleted.length) {
+            const programBackend = iocFactories.programBackend();
+            return Promise.all(deleted.map(programWorkout => programBackend.deleteWorkout(programWorkout)));
+        }
     }
     private receiveDateSelection(date: Date, prop: 'start' | 'end') {
         const program = this.state.program;
@@ -92,6 +126,15 @@ class ProgramForm extends ValidatingComponent<Props, State> {
 
 function datepickerFormatter(date: Date): string {
     return iocFactories.dateUtils().getLocaleDateString(date);
+}
+
+function serializeProgram(program: Enj.API.ProgramRecord): string {
+    return '{' +
+        'name:' + program.name +
+        ', start:' + program.start +
+        ', end:' + program.end +
+        ', description:' + program.description +
+    '}';
 }
 
 export default ProgramForm;

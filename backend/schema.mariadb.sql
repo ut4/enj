@@ -25,7 +25,7 @@ DROP TABLE   IF EXISTS `user`;
 CREATE TABLE `user` (
     id CHAR(36) NOT NULL,
     username VARCHAR(42) NOT NULL UNIQUE,
-    email VARCHAR(256) NOT NULL UNIQUE,
+    email VARCHAR(191) NOT NULL UNIQUE, -- 191 * 4 = 767 bytes = max key length
     createdAt INT UNSIGNED NOT NULL,
     -- Autentikaatioon liittyvät
     passwordHash VARCHAR(255) NOT NULL,

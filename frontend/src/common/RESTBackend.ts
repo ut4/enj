@@ -39,14 +39,28 @@ class RESTBackend<T extends {id?: AAGUID}> {
         return this.http.get<Array<T>>(this.completeUrl(url));
     }
     /**
-     * Postaa backendiin datan <T> urlilla <this.urlNamespace>[<url>],
-     * ja palauttaa backendin palauttaman insertCount-arvon.
+     * Postaa backendiin datan <T> urlilla <this.urlNamespace>[<url>], asettaa
+     * dataan backendin generoiman insertId:n (mikäli sitä ei ole), ja palauttaa
+     * lopuksi insertCount-arvon.
      *
      * @returns Promise -> ({number} insertId, {any} error)
      */
     public insert(data: T, url?: string): Promise<number> {
         return this.http.post<Enj.API.InsertResponse>(this.completeUrl(url), data).then(response => {
             !data.id && (data.id = response.insertId);
+            return response.insertCount;
+        });
+    }
+    /**
+     * Postaa backendiin datan Array<T> urlilla <this.urlNamespace>[<url>], asettaa
+     * datan jokaiseen itemiin backendin sille generoiman insertId:n (mikäli sitä
+     * ei ole), ja palauttaa lopuksi insertCount-arvon.
+     *
+     * @returns Promise -> ({number} insertId, {any} error)
+     */
+    public insertAll(data: Array<T>, url?: string): Promise<number> {
+        return this.http.post<Enj.API.MultiInsertResponse>(this.completeUrl(url), data).then(response => {
+            data.map((item, i) => { !item.id && (item.id = response.insertIds[i]); });
             return response.insertCount;
         });
     }
