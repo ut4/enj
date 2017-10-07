@@ -7,6 +7,16 @@ Inferno + TSX, serviceWorker, Jersey
 * Backend: Java 8, maven, MariaDb
 * Dev-ympäristö: Node.js v6+
 
+## Applikaation ajaminen
+
+* Asenna yllä listatut riippuvuudet
+* Käynnistä MariaDb-serveri
+* Luo tietokanta ks. [komennot](#mariadb)
+* Kopioi backend/src/main/resources/app.sample.properties -> backend/src/main/resources/app.properties
+* Täytä app.propertiesin db.*-kohdat
+* Asenna ja käynnistä backend `mvn compile` & `mvn exec:java`
+* Asenna ja käynnistä frontend `npm install` & `npm start`
+
 ## Frontend
 
 * Run:
