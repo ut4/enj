@@ -43,7 +43,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                 'workout',
                 [newWorkout].concat(mockCachedWorkouts as any)
             ], 'Pitäisi lisätä uusi treeni cacheen');
-            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkout.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
         });
@@ -102,7 +102,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                     exercises: mockCachedWorkouts[1].exercises.concat([newWorkoutExercise])
                 }), mockCachedWorkouts[2]]
             ], 'Pitäisi lisätä uusi liike treenicachen oikeaan treeniin');
-            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkoutExercise.id, mockNewUuid, 'Pitäisi luoda treenille id');
             done();
         });
@@ -199,7 +199,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                     ]
                 })]
             ], 'Pitäisi pushata uusi liike treenicachen oikean treenin oikean liikkeen liikelistaan');
-            assert.equal(result, JSON.stringify({insertCount: 1}), 'Pitäisi palauttaa insertCount');
+            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertCount');
             assert.equal(newWorkoutExerciseSet.id, mockNewUuid, 'Pitäisi luoda sarjalle id');
             done();
         });

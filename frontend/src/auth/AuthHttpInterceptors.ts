@@ -32,7 +32,11 @@ class AuthHttpInterceptors {
      * mitään jos responsesta ei löytynyt em. headeria.
      */
     public response(response: Response) {
-        response.headers.has('new-token') && this.userState.setToken(response.headers.get('new-token'));
+        if (response.headers.has('new-token')) {
+            this.userState.setToken(response.headers.get('new-token'));
+        } else if (response.headers.has('New-Token')) {
+            this.userState.setToken(response.headers.get('New-Token'));
+        }
     }
     /**
      * Ohjaa kirjautumissivulle, jos vastauksen status = 401/Unauthorized, ja se

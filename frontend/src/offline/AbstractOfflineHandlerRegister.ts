@@ -42,7 +42,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * cachen päivitetyillä tiedoilla, ja lopuksi palauttaa {updater}:n palauttaman
      * feikatun backendin vastauksen.
      */
-    protected updateCache(updater: (items: Array<T>) => Enj.API.InsertResponse|Enj.API.UpdateResponse|Enj.API.DeleteResponse, cacheUrl?: string): Promise<string> {
+    protected updateCache(updater: (items: Array<T>) => Enj.API.InsertResponse|Enj.API.MultiInsertResponse|Enj.API.UpdateResponse|Enj.API.DeleteResponse, cacheUrl?: string): Promise<string> {
         let response;
         return (
             // 1. Hae cachetetut <T>:t

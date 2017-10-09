@@ -69,7 +69,7 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
             </label>
-            <ProgramWorkoutsManager program={ this.state.program } ref={ cmp => { this.programWorkoutsManager = cmp; } }/>
+            <ProgramWorkoutsManager program={ this.state.program } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => this.receiveProgramWorkouts(programWorkouts) }/>
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || !this.state.program.workouts.length } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
     }
@@ -121,6 +121,13 @@ class ProgramForm extends ValidatingComponent<Props, State> {
         const program = this.state.program;
         program[prop] = Math.floor(date.getTime() / 1000);
         this.setState({program});
+    }
+    private receiveProgramWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
+        if (this.isInsert) {
+            const program = this.state.program;
+            program.workouts = programWorkouts;
+            this.setState({program});
+        }
     }
 }
 

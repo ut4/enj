@@ -4,6 +4,8 @@ import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
 import ProgramBackend from 'src/program/ProgramBackend';
 import ProgramCreateView from 'src/program/ProgramCreateView';
+import ProgramForm from 'src/program/ProgramForm';
+import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 import ptu from 'tests/program/utils';
 
@@ -23,19 +25,30 @@ QUnit.module('program/ProgramCreateView', hooks => {
             name: 'foo',
             start: getExpectedStart(),
             end: getExpectedEnd(),
-            description: 'asd'
+            description: 'asd',
+            workouts: [{
+                name: 'foo',
+                occurrences: [{weekDay: 1, repeatEvery: null}],
+                ordinal: 0,
+                programId: undefined
+            }]
         };
         // Renderöi näkymä & assertoi initial-arvot
-        const rendered = itu.renderIntoDocument(<ProgramCreateView/>);
+        const rendered = itu.renderIntoDocument(<div><Modal/><ProgramCreateView/></div>);
         const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
         assert.equal(startInputEl.value, getExpectedInitialStartDateStr());
         assert.equal(endInputEl.value, getExpectedInitialEndDateStr());
-        // Täytä & lähetä lomake
+        // Täytä name & start & end & description
         utils.setInputValue(expectedNewProgram.name, nameInputEl);
         utils.selectDatepickerDate(5, startInputEl);
         utils.selectDatepickerDate(5, endInputEl);
         const descriptionEl = itu.findRenderedDOMElementWithTag(rendered, 'textarea') as HTMLTextAreaElement;
         utils.setInputValue(expectedNewProgram.description, descriptionEl);
+        // Lisää ohjelmatreeni modalin kautta
+        utils.findButtonByContent(rendered, 'Lisää treeni').click();
+        utils.setInputValue(expectedNewProgram.workouts[0].name, utils.findInputByName(rendered, 'name'));
+        utils.findButtonByContent(rendered, 'Ok').click();
+        // Lähetä lomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lähettikö?

@@ -8,7 +8,7 @@ import Modal from 'src/ui/Modal';
  * päivityksesta ja poistoista.
  */
 class ProgramWorkoutsManager extends Component<
-    {program: Enj.API.ProgramRecord},
+    {program: Enj.API.ProgramRecord; onChange?: Function},
     {programWorkouts: Array<Enj.API.ProgramWorkoutRecord>}
 > {
     private initialValues: Array<{name: string; occurrences: string}>;
@@ -82,7 +82,7 @@ class ProgramWorkoutsManager extends Component<
                 afterInsert={ programWorkout => {
                     const programWorkouts = this.state.programWorkouts;
                     programWorkouts.push(programWorkout);
-                    this.setState({programWorkouts});
+                    this.applyProgramWorkouts(programWorkouts);
                 } }/>
         );
     }
@@ -96,7 +96,7 @@ class ProgramWorkoutsManager extends Component<
                 afterUpdate={ programWorkout => {
                     const programWorkouts = this.state.programWorkouts;
                     programWorkouts[index] = programWorkout;
-                    this.setState({programWorkouts});
+                    this.applyProgramWorkouts(programWorkouts);
                 } }/>
         );
     }
@@ -106,7 +106,15 @@ class ProgramWorkoutsManager extends Component<
     private deleteWorkout(index: number) {
         const programWorkouts = this.state.programWorkouts;
         programWorkouts.splice(index, 1);
+        this.applyProgramWorkouts(programWorkouts);
+    }
+    /**
+     * Asettaa {programWorkouts}:t stateen, ja passaa ne {this.props.onChange}-
+     * callbackille jos sellainen on määritelty.
+     */
+    private applyProgramWorkouts(programWorkouts) {
         this.setState({programWorkouts});
+        this.props.onChange && this.props.onChange(programWorkouts);
     }
 }
 

@@ -197,14 +197,14 @@ QUnit.module('stat/StatHistoryView', hooks => {
             );
             // Simuloi routerin normaalisti triggeröimä componentWillReceiveProps
             historyView.componentWillReceiveProps({params: expectedParams});
-            return progressFetch.firstCall.returnValue;
+            return progressFetch.secondCall.returnValue;
         }).then(() => {
             // Klikkaa "< Vanhemmat" -painiketta uudestaan
             prevPaginationButton.click();
             // Ohjautuiko?
             const expectedParams2 = Object.assign(expectedParams, {
                 page: '-2',
-                before: testProgressSets[0].liftedAt,
+                before: testProgressSets[2].liftedAt,
                 after: 0
             });
             assert.ok(redirectSpy.calledTwice, 'Pitäisi päivittää urliin before, ja after-unixTime');
