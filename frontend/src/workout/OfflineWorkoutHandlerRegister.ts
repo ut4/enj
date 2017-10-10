@@ -48,18 +48,6 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         });
     }
     /**
-     * Handlaa DELETE /api/workout/:id REST-pyynnön.
-     */
-    public delete(workoutId: AAGUID) {
-        return this.updateCache(cachedWorkouts => {
-            // Poista treeni cachetaulukosta
-            const ref = this.findItemById(workoutId, cachedWorkouts);
-            cachedWorkouts.splice(cachedWorkouts.indexOf(ref), 1);
-            //
-            return {deleteCount: 1};
-        });
-    }
-    /**
      * Handlaa POST /api/workout/exercise REST-pyynnön.
      */
     public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {

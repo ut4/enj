@@ -9,9 +9,6 @@ class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
         super(http, urlNamespace);
         this.programWorkoutBackend = new ProgramWorkoutBackend(http, 'program/workout');
     }
-    public delete(data: any, url?: string): any {
-        throw new Error('Not implemented');
-    }
     /**
      * Sama kuin ProgramWorkoutBackend.insertAll.
      */

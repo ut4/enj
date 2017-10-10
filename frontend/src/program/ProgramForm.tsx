@@ -77,12 +77,10 @@ class ProgramForm extends ValidatingComponent<Props, State> {
         return (this.isInsert
             ? iocFactories.programBackend().insert(this.state.program)
             // Päivittää ohjelman ja ohjelmatreenit, tai ei tee mitään jos mikään ei muuttunut
-            : Promise.all([
-                this.saveProgram(),
-                this.saveInsertedWorkouts(),
-                this.saveModifiedWorkouts(),
-                this.saveDeletedWorkouts()
-            ]) as any
+            : this.saveProgram()
+                .then(() => this.insertInsertedWorkouts())
+                .then(() => this.saveModifiedWorkouts())
+                .then(() => this.deleteDeletedWorkouts())
         ).then(
             () => {
                 this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.program);
@@ -94,28 +92,29 @@ class ProgramForm extends ValidatingComponent<Props, State> {
     }
     private saveProgram(): Promise<any> {
         if (serializeProgram(this.state.program) === this.initialSerializedProgram) {
-            return;
+            return Promise.resolve(null);
         }
         return iocFactories.programBackend().update(this.state.program, '/' + this.state.program.id);
     }
-    private saveInsertedWorkouts() {
+    private insertInsertedWorkouts(): Promise<any> {
         const inserted = this.programWorkoutsManager.getInsertedWorkouts();
-        if (inserted.length) {
-            return iocFactories.programBackend().insertWorkouts(inserted);
-        }
+        return inserted.length
+            ? iocFactories.programBackend().insertWorkouts(inserted)
+            : Promise.resolve(null);
     }
-    private saveModifiedWorkouts() {
+    private saveModifiedWorkouts(): Promise<any> {
         const modified = this.programWorkoutsManager.getModifiedWorkouts();
-        if (modified.length) {
-            return iocFactories.programBackend().updateWorkout(modified);
-        }
+        return modified.length
+            ? iocFactories.programBackend().updateWorkout(modified)
+            : Promise.resolve(null);
     }
-    private saveDeletedWorkouts() {
+    private deleteDeletedWorkouts(): Promise<any> {
         const deleted = this.programWorkoutsManager.getDeletedWorkouts();
         if (deleted.length) {
             const programBackend = iocFactories.programBackend();
             return Promise.all(deleted.map(programWorkout => programBackend.deleteWorkout(programWorkout)));
         }
+        return Promise.resolve(null);
     }
     private receiveDateSelection(date: Date, prop: 'start' | 'end') {
         const program = this.state.program;

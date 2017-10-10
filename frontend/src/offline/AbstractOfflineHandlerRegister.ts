@@ -17,7 +17,8 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      */
     public abstract registerHandlers(offlineHttp: OfflineHttp);
     /**
-     * Lisää itemin {entity} /api/${some-entity}-cachen (esim. /api/exercise) alkuun.
+     * Lisää itemin {entity} /api/${some-entity}[/{cacheUrl}]-cachen (esim.
+     * /api/exercise) alkuun.
      */
     public insert(entity: T, cacheUrl?: string): Promise<string> {
         return this.updateCache(cachedEntities => {
@@ -29,12 +30,28 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
         }, cacheUrl);
     }
     /**
-     * Päivittää /api/${some-entity}-cachen (esim. /api/exercise) itemin {entity}.
+     * Päivittää /api/${some-entity}[/{cacheUrl}]-cachen (esim. /api/exercise)
+     * itemin {entity}.
      */
     public update(entity: T, cacheUrl?: string): Promise<string> {
         return this.updateCache(cachedEntities => {
             Object.assign(this.findItemById(entity.id, cachedEntities), entity);
             return {updateCount: 1};
+        }, cacheUrl);
+    }
+    /**
+     * Poistaa /api/${some-entity}[/{cacheUrl}]-cachen (esim. /api/exercise)
+     * itemin id:llä {id}.
+     */
+    public delete(id: AAGUID, cacheUrl?: string): Promise<string> {
+        return this.updateCache(cachedEntities => {
+            for (let i = 0; i < cachedEntities.length; i++) {
+                if (cachedEntities[i].id === id) {
+                    cachedEntities.splice(i, 1);
+                    return {deleteCount: 1};
+                }
+            }
+            return {deleteCount: 0};
         }, cacheUrl);
     }
     /**

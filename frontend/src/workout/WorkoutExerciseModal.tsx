@@ -46,12 +46,14 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
      */
     private confirm() {
         const newSets = this.workoutExerciseSetList ? this.workoutExerciseSetList.state.sets : null;
+        const modifiedSets = this.workoutExerciseSetList ? this.workoutExerciseSetList.getModifiedSets() : [];
+        const deletedSets = this.workoutExerciseSetList ? this.workoutExerciseSetList.getDeletedSets() : [];
         // note. suorittaa HTTP-pyynnöt vain silloin, jos tietoja on muuttunut
-        return Promise.all([
-            this.saveWorkoutExercise(),
-            this.workoutExerciseSetList && this.saveModifiedSets(),
-            this.workoutExerciseSetList && this.deleteDeletedSets()
-        ]).then(
+        return (
+            this.saveWorkoutExercise()
+                .then(() => this.saveModifiedSets(modifiedSets))
+                .then(() => this.deleteDeletedSets(deletedSets))
+        ).then(
             () => {
                 if (newSets) { this.state.workoutExercise.sets = newSets; }
                 this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.workoutExercise);
@@ -73,21 +75,20 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     /**
      * Lähettää päivitetyt sarjat backendiin tallennettavaksi.
      */
-    private saveModifiedSets() {
-        const modified = this.workoutExerciseSetList.getModifiedSets();
-        if (modified.length) {
-            return iocFactories.workoutBackend().updateSet(modified);
-        }
+    private saveModifiedSets(modified: Array<Enj.API.WorkoutExerciseSetRecord>): Promise<any> {
+        return modified.length
+            ? iocFactories.workoutBackend().updateSet(modified)
+            : Promise.resolve(null);
     }
     /**
      * Lähettää poistetut sarjat backendiin poistettavaksi.
      */
-    private deleteDeletedSets() {
-        const deleted = this.workoutExerciseSetList.getDeletedSets();
+    private deleteDeletedSets(deleted: Array<Enj.API.WorkoutExerciseSetRecord>): Promise<any> {
         if (deleted.length) {
             const workoutBackend = iocFactories.workoutBackend();
             return Promise.all(deleted.map(deletedSet => workoutBackend.deleteSet(deletedSet)));
         }
+        return Promise.resolve(null);
     }
     public render() {
         return <div class="workout-exercise-modal">

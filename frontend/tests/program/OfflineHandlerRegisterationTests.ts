@@ -55,6 +55,21 @@ QUnit.module('program/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('programBackend.delete kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const deleteCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'delete').returns(Promise.resolve('{"deleteCount": 19}'));
+        //
+        const done = assert.async();
+        const testProgram = {id: 'foo'};
+        programBackend.delete(testProgram as any).then(deleteCount => {
+            //
+            assert.ok(deleteCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testProgram.id, '/mine']);
+            assert.equal(deleteCount, 19, 'Pitäisi palauttaa offline-handlerin deleteCount');
+            done();
+        });
+    });
     QUnit.test('programBackend.insertWorkouts kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
         const postCallSpy = sinon.spy(fetchContainer.fetch);
         const handlerCallStub = sinon.stub(handlerRegister, 'insertWorkouts').returns(Promise.resolve('{"insertCount": 3,"insertIds":["someuuid"]}'));

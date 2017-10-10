@@ -1,5 +1,7 @@
 import Component from 'inferno-component';
 import SubMenu from 'src/ui/SubMenu';
+import Modal from 'src/ui/Modal';
+import ProgramDeleteModal from 'src/program/ProgramDeleteModal';
 import iocFactories from 'src/ioc';
 
 /**
@@ -45,7 +47,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>
                             <td data-th="Kuvaus">{ program.description || '-' }</td>
                             <td class="minor-group">
                                 <a href={ '#/ohjelmat/muokkaa/' + program.id }>Muokkaa</a>
-                                <a href={ '#/ohjelmat/poista/' + program.id }>Poista</a>
+                                <a href="" onClick={ e => this.openDeleteModal(program, e) }>Poista</a>
                             </td>
                         </tr>
                     ) }
@@ -53,6 +55,18 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>
                 <p>Ei vielä ohjelmia. <a href="#/ohjelmat/luo-uusi">Luo uusi ohjelma</a>.</p>
             ) }
         </div>;
+    }
+    private openDeleteModal(program: Enj.API.ProgramRecord, e) {
+        e.preventDefault();
+        Modal.open(() =>
+            <ProgramDeleteModal
+                program={ program }
+                afterDelete={ () => {
+                    const programs = this.state.programs;
+                    programs.splice(programs.indexOf(program), 1);
+                    this.setState({programs});
+                } }/>
+        );
     }
     private toFinDate(unixTime: number): string {
         return this.dateUtils.getLocaleDateString(new Date(unixTime * 1000));

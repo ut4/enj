@@ -13,6 +13,7 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         //
         offlineHttp.addHandler('POST', 'program', program => this.insert(program, '/mine'));
         offlineHttp.addHandler('PUT', 'program/*', program => this.update(program, '/mine'));
+        offlineHttp.addHandler('DELETE', 'program/*', program => this.delete(program.id, '/mine'));
         //
         offlineHttp.addHandler('POST', 'program/workout/all', programWorkouts =>
             this.insertWorkouts(programWorkouts)

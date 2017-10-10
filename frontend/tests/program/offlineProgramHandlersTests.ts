@@ -56,6 +56,22 @@ QUnit.module('program/offlineProgramHandlers', hooks => {
             done();
         });
     });
+    QUnit.test('delete poistaa ohjelman ohjelmacachesta, ja palauttaa deleteCount:n', assert => {
+        const cachedProgramsCopy = JSON.parse(JSON.stringify(mockCachedPrograms));
+        sinon.stub(shallowProgramBackend, 'getAll').returns(Promise.resolve(cachedProgramsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        // Poista cachen ensimmäinen ohjelma
+        const done = assert.async();
+        programHandlerRegister.delete(cachedProgramsCopy[0].id, '/mine').then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'program/mine',
+                [mockCachedPrograms[1]]
+            ], 'Pitäisi poistaa ohjelma ohjelmacachesta');
+            assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteCount');
+            done();
+        });
+    });
     QUnit.test('insertWorkouts lisää uuden ohjelmatreenin ohjelmacacheen, ja palauttaa insertCount:n', assert => {
         const cachedProgramsCopy = JSON.parse(JSON.stringify(mockCachedPrograms));
         sinon.stub(shallowProgramBackend, 'getAll').returns(Promise.resolve(cachedProgramsCopy));

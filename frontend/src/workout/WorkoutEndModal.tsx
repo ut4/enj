@@ -2,10 +2,9 @@ import Component from 'inferno-component';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 import { notify } from 'src/ui/Notifier';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
-import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
-class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEnd: Function}, any> {
+class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord; afterEnd: Function}, any> {
     private hasValidSets: boolean;
     private workoutBackend: WorkoutBackend;
     private notify: notify;
@@ -14,6 +13,12 @@ class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEn
         this.workoutBackend = iocFactories.workoutBackend();
         this.notify = iocFactories.notify();
         this.hasValidSets = hasAtleastOneValidSet(props.workout);
+    }
+    public render() {
+        return <div>
+            <h3>{ this.hasValidSets ? 'Merkkaa treeni tehdyksi' : 'Poista tyhjä treeni' }?</h3>
+            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+        </div>;
     }
     /**
      * Päivittää treenille lopetusajan backendiin, tai poistaa treenin kokonaan,
@@ -34,12 +39,6 @@ class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord, afterEn
                 },
                 err => this.notify('Treenin lopettaminen epäonnistui', 'error')
             );
-    }
-    public render() {
-        return <div>
-            <h3>{ this.hasValidSets ? 'Merkkaa treeni tehdyksi' : 'Poista tyhjä treeni' }?</h3>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
-        </div>;
     }
 }
 
