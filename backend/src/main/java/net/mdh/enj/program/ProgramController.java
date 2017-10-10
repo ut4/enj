@@ -105,6 +105,24 @@ public class ProgramController {
     }
 
     /**
+     * Poistaa kirjautuneen käyttäjän ohjelman id:llä {programId} tietokannasta.
+     */
+    @DELETE
+    @Path("/{programId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse delete(@PathParam("programId") @UUID String id) {
+        Program program = new Program();
+        program.setId(id);
+        program.setUserId(this.requestContext.getUserId());
+        int deleteCount = this.programRepository.delete(program);
+        if (deleteCount < 1) {
+            throw new BadRequestException();
+        }
+        return new DeleteResponse(deleteCount);
+    }
+
+    /**
      * Lisää kirjautuneen käyttäjän ohjelmatreenit {programWorkouts} tietokantaan.
      *
      * @throws BadRequestException Jos lisättävän ohjelmatreenin viittaama ohjelma ei kuulunut kirjautuneelle käyttäjälle

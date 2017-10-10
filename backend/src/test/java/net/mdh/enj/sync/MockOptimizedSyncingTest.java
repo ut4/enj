@@ -33,7 +33,8 @@ public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
             "{'id':4,'route':{'url':'exercise','method':'POST'},'data':null}," +
             "{'id':5,'route':{'url':'workout/exercise/1','method':'DELETE'},'data':null}," +
             "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':null}," +
-            "{'id':7,'route':{'url':'exercise/uuid','method':'PUT'},'data':null}" +
+            "{'id':7,'route':{'url':'exercise/uuid','method':'PUT'},'data':null}," +
+            "{'id':8,'route':{'url':'workout/exercise/all','method':'POST'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(queue.get(3));
@@ -41,6 +42,7 @@ public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
         expected.add(queue.get(2));
         expected.add(queue.get(0));
         expected.add(queue.get(1));
+        expected.add(queue.get(7));
         expected.add(queue.get(5));
         expected.add(queue.get(4));
         this.syncController.sortQueueByPriority(queue);

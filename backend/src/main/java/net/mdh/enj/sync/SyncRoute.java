@@ -19,6 +19,19 @@ public class SyncRoute extends Route {
         this.pattern = pattern;
     }
 
+    /**
+     * "workout"                -> "workout"
+     * "workout/{id}"           -> "workout"
+     * "workout/all"            -> "workout"
+     * "workout/foo/all"        -> "workout/foo"
+     * "workout/foo/{p1}/{p2}"  -> "workout/foo"
+     */
+    public String getUrlNamespace() {
+        return (
+            this.getPattern() == null ? this.getUrl() : this.getUrl().split("/\\{")[0]
+        ).replace("/all", "");
+    }
+
     @Override
     public String toString() {
         return "SyncRoute{" +

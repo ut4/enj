@@ -1,4 +1,5 @@
 DROP VIEW    IF EXISTS programView;
+DROP TRIGGER IF EXISTS programDeleteTrg;
 DROP TABLE   IF EXISTS programWorkout;
 DROP TABLE   IF EXISTS program;
 DROP VIEW    IF EXISTS setProgressView;
@@ -137,9 +138,9 @@ CREATE TABLE bestSet (
     PRIMARY KEY (workoutExerciseSetId, exerciseId)
 ) DEFAULT CHARSET = utf8mb4;
 
+DELIMITER //
 -- Treenin valmiiksi merkkauksen yhteydessä ajautuva triggeri joka poistaa
 -- treenin "tyhjät" liikkeet (jolla ei tehtyjä settejä)
-DELIMITER //
 CREATE TRIGGER workoutEndTrg AFTER UPDATE ON workout
 FOR EACH ROW BEGIN
     IF ((OLD.`end` IS NULL OR OLD.`end` < 1) AND NEW.`end` > 0) THEN
@@ -275,6 +276,15 @@ CREATE TABLE programWorkout (
     FOREIGN KEY (programId) REFERENCES program(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
+
+DELIMITER //
+-- Ohjelman poiston yhteydessä ajautuva triggeri, joka poistaa kaikki ohjelmaan
+-- kuuluvat ohjelmatreenit ennen varsinaista poistoa
+CREATE TRIGGER programDeleteTrg BEFORE DELETE ON program
+FOR EACH ROW BEGIN
+    DELETE FROM programWorkout WHERE programId = OLD.id;
+END;//
+DELIMITER ;
 
 CREATE VIEW programView AS
     SELECT

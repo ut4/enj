@@ -56,9 +56,10 @@ public class SyncController {
         operationPriorities.put("exercise",         0);
         operationPriorities.put("exercise/variant", 1);
         operationPriorities.put("program",          2);
-        operationPriorities.put("workout",          3);
-        operationPriorities.put("workout/exercise", 4);
-        operationPriorities.put("workout/exercise/set", 5);
+        operationPriorities.put("program/workout",  3);
+        operationPriorities.put("workout",          4);
+        operationPriorities.put("workout/exercise", 5);
+        operationPriorities.put("workout/exercise/set", 6);
         methodPriorities = new HashMap<>();
         methodPriorities.put(HttpMethod.POST, 0);
         methodPriorities.put(HttpMethod.PUT, 1);
@@ -156,10 +157,7 @@ public class SyncController {
         ));
         queue.sort(Comparator.comparingInt(a -> {
             SyncRoute route = syncRouteRegister.find(a.getRoute());
-            if (route.getPattern() == null) {
-                return operationPriorities.get(a.getRoute().getUrl());
-            }
-            return operationPriorities.get(route.getUrl().split("/\\{")[0]);
+            return operationPriorities.get(route.getUrlNamespace());
         }));
     }
 }

@@ -28,6 +28,10 @@ class SyncingTestUtils {
         SyncRoute workoutExerciseAddRoute = new SyncRoute();
         workoutExerciseAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl());
         workoutExerciseAddRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
+        // POST /api/workout/exercise/all
+        SyncRoute workoutExerciseAddAllRoute = new SyncRoute();
+        workoutExerciseAddAllRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl() + "/all");
+        workoutExerciseAddAllRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
         // PUT /api/workout/exercise
         SyncRoute workoutExerciseUpdateRoute = new SyncRoute();
         workoutExerciseUpdateRoute.setUrl("workout/exercise");
@@ -55,6 +59,7 @@ class SyncingTestUtils {
         register.add(workoutInsertRoute);
         register.add(workoutDeleteRoute);
         register.add(workoutExerciseAddRoute);
+        register.add(workoutExerciseAddAllRoute);
         register.add(workoutExerciseUpdateRoute);
         register.add(workoutExerciseDeleteRoute);
         register.add(exerciseAddRoute);

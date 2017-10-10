@@ -27,6 +27,10 @@ public class ProgramRepository extends BasicRepository<Program> {
         return super.selectOne(filters, new ProgramMapper());
     }
 
+    int delete(Program program) {
+        return super.delete(program, "id = :id AND userId = :userId");
+    }
+
     private static final class ProgramMapper extends NoDupeRowMapper<Program> {
 
         private final SubCollector<Program.Workout> programWorkoutCollector;

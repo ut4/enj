@@ -151,8 +151,7 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         Program program = this.makeNewProgramEntity("Another notMyProgram");
         program.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(program);
-        String originalProgramWorkoutName = "Another notMyProgramworkout";
-        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity(originalProgramWorkoutName, program.getId());
+        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity("Another notMyProgramworkout", program.getId());
         utils.insertProgramWorkout(programWorkout);
         // Lähetä DELETE-pyyntö
         Response response = this.newDeleteRequest("program/workout/" + programWorkout.getId());

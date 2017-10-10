@@ -162,4 +162,41 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
             TestData.TEST_USER_ID, actualProgram.getUserId()
         );
     }
+
+    @Test
+    public void DELETEPoistaaOhjelmanOhjelmatreeneineenTietokannasta() {
+        // Luo poistettava ohjelma.
+        Program program = this.makeNewProgramEntity("Deletable");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        utils.insertProgramWorkout(this.makeNewProgramWorkoutEntity("Workout of deletable", program.getId()));
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/" + program.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Poistiko ohjelman kannasta?
+        Assert.assertNull(utils.selectOneWhere(
+            "SELECT * FROM program WHERE id = :id",
+            new MapSqlParameterSource("id", program.getId()),
+            new SimpleMappers.ProgramMapper()
+        ));
+    }
+
+    @Test
+    public void DELETEEiPoistaToiselleKäyttäjälleKuuluvaaOhjelmaa() {
+        // Luo testidata.
+        Program program = this.makeNewProgramEntity("notMineToDelete");
+        program.setUserId(TestData.TEST_USER_ID2);
+        utils.insertProgram(program);
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/" + program.getId());
+        Assert.assertEquals(400, response.getStatus());
+        // Jättikö tiedot rauhaan?
+        Assert.assertNotNull(utils.selectOneWhere(
+            "SELECT * FROM program WHERE id = :id",
+            new MapSqlParameterSource("id", program.getId()),
+            new SimpleMappers.ProgramMapper()
+        ));
+    }
 }
