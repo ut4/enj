@@ -1,4 +1,6 @@
 import iocFactories from 'src/ioc';
+import * as itu from 'inferno-test-utils';
+import ProgramForm from 'src/program/ProgramForm';
 import { dateUtils } from 'src/common/utils';
 
 const programTestUtils = {
@@ -43,6 +45,9 @@ const programTestUtils = {
                 programId
             }
         ];
+    },
+    getRenderedProgramForm(rendered): ProgramForm {
+        return (itu.findRenderedVNodeWithType(rendered, ProgramForm).children as any) as ProgramForm;
     }
 };
 

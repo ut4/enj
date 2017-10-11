@@ -64,11 +64,11 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     /**
      * Lähettää treeniliikkeen backendiin tallennettavaksi.
      */
-    private saveWorkoutExercise() {
+    private saveWorkoutExercise(): Promise<any> {
         if (!this.isInsert &&
             this.state.workoutExercise.exerciseId === this.initialValues.exerciseId &&
             this.state.workoutExercise.exerciseVariantId === this.initialValues.exerciseVariantId) {
-            return;
+            return Promise.resolve(null);
         }
         return iocFactories.workoutBackend()[(this.isInsert ? 'add' : 'update') + 'Exercise'](this.state.workoutExercise);
     }

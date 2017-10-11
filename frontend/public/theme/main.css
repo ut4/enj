@@ -245,8 +245,8 @@ a.icon-button.with-text:hover {
     background-size: 22px auto;
 }
 
-.icon-button.secondary-menu-black {
-    background-image: url("icon-sprite.svg#secondary-menu-black");
+.icon-button.secondary-menu-dark {
+    background-image: url("icon-sprite.svg#secondary-menu-dark");
 }
 .icon-button.add {
     background-image: url("icon-sprite.svg#add");
@@ -255,21 +255,20 @@ a.icon-button.with-text:hover {
     background-image: url("icon-sprite.svg#edit");
     background-position: 8px 7px;
 }
-.icon-button.delete, .icon-button.delete-black {
+.icon-button.delete, .icon-button.delete-dark {
     background-image: url("icon-sprite.svg#delete");
     background-position: 5px 5px;
 }
-.icon-button.delete-black {
-    background-image: url("icon-sprite.svg#delete-black");
+.icon-button.delete-dark {
+    background-image: url("icon-sprite.svg#delete-dark");
 }
-.icon-button.arrow, .icon-button.arrow-black {
+.icon-button.arrow, .icon-button.arrow-dark {
     transition: transform .1s ease-out;
     background-image: url("icon-sprite.svg#arrow");
     background-size: 20px auto;
 }
-.icon-button.arrow-black {
-    background-image: url("icon-sprite.svg#arrow-black");
-    opacity: 0.65;
+.icon-button.arrow-dark {
+    background-image: url("icon-sprite.svg#arrow-dark");
 }
 .icon-button.arrow.up {
     transform: rotate(180deg);
@@ -500,7 +499,7 @@ input[type="checkbox"] + label:after {
     border: 2px solid #899598;
 }
 input[type="checkbox"]:checked + label:after {
-    background-image: url(icon-sprite.svg#checked-black);
+    background-image: url(icon-sprite.svg#checked-dark);
 }
 .input-set {
     display: inline-block;
@@ -605,6 +604,7 @@ table .input-set .text-error {
 }
 .occurrences-selector label {
     position: relative;
+    padding: 0 20% 40px;
 }
 .occurrences-selector input[type="checkbox"] + label:after {
     position: absolute;
@@ -757,10 +757,9 @@ header nav a {
     top: 7px;
     text-align: left;
 }
-.sub-menu > .secondary-menu-black {
+.sub-menu > .secondary-menu-dark {
     float: right;
     background-size: 26px auto;
-    opacity: 0.7;
     background-position: center 4px;
     background-color: #FFFFFF;
 }
@@ -821,7 +820,7 @@ footer a {
 }
 
 /* -- Treeninäkymät ---------- */
-.workout-view h2 .arrow-black { margin: 0 -5px -7px 2px; top: -7px; position: relative; }
+.workout-view h2 .arrow-dark { margin: 0 -5px -7px 2px; top: -7px; position: relative; }
 .workout-view .datepicker { position: absolute; display: inline-block; transform: translate(-85%, 45px);
     z-index: 1; }
 .workout-view > div { margin-top: -10px; }
@@ -834,8 +833,8 @@ footer a {
 .workout-view.not-current .footer { margin-bottom: 0; }
 
 .workout-exercise-modal table { width: auto }
-.workout-exercise-modal table .icon-button { opacity: .25 }
-.workout-exercise-modal table tr:last-of-type .arrow-black {
+.workout-exercise-modal table .icon-button { opacity: .3 }
+.workout-exercise-modal table tr:last-of-type .arrow-dark {
     transform: rotate(180deg);
 }
 

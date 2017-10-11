@@ -33,7 +33,8 @@ QUnit.module('program/ProgramEditView', hooks => {
         assert.deepEqual(programFetchStub.firstCall.args, ['/' + testProgram.id], 'Pitäisi hake urlin ohjelma');
         const done = assert.async();
         programFetchStub.firstCall.returnValue.then(() => {
-            then(rendered, programSaveStub, done);
+            const confirmSpy = sinon.spy(ptu.getRenderedProgramForm(rendered), 'confirm');
+            then(rendered, programSaveStub, done, confirmSpy);
         });
     }
     QUnit.test('Tallentaa tiedot backendiin', assert => {
@@ -63,7 +64,7 @@ QUnit.module('program/ProgramEditView', hooks => {
             .returns(Promise.resolve(1));
         const programWorkoutSaveStub = sinon.stub(shallowProgramBackend, 'updateWorkout');
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout');
-        renderEditView(assert, testProgram, (rendered, programSaveStub, done) => {
+        renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
             // Lisää ohjelmatreeni modalin kautta
             utils.findButtonByContent(rendered, 'Lisää treeni').click();
             const programWorkoutNameInputEl = utils.findInputByName(rendered, 'name');
@@ -72,17 +73,19 @@ QUnit.module('program/ProgramEditView', hooks => {
             utils.findButtonByContent(rendered, 'Ok').click();
             // Lähetä muokkauslomake
             utils.findButtonByContent(rendered, 'Tallenna').click();
-            //
-            assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
-            assert.ok(programWorkoutSaveStub.notCalled, 'Ei pitäisi päivittää ohjelmatreenejä');
-            assert.ok(programWorkoutDeleteStub.notCalled, 'Ei pitäisi poistaa ohjelmatreenejä');
-            assert.deepEqual(programWorkoutInsertStub.firstCall.args, [[{
-                name: newProgramWorkoutName,
-                programId: testProgram.id,
-                ordinal: testProgram.workouts[0].ordinal + 1,
-                occurrences: [{weekDay: 1, repeatEvery: null}]
-            }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
-            done();
+            // Resolvaa confirm
+            confirmSpy.firstCall.returnValue.then(() => {
+                assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
+                assert.ok(programWorkoutSaveStub.notCalled, 'Ei pitäisi päivittää ohjelmatreenejä');
+                assert.ok(programWorkoutDeleteStub.notCalled, 'Ei pitäisi poistaa ohjelmatreenejä');
+                assert.deepEqual(programWorkoutInsertStub.firstCall.args, [[{
+                    name: newProgramWorkoutName,
+                    programId: testProgram.id,
+                    ordinal: testProgram.workouts[0].ordinal + 1,
+                    occurrences: [{weekDay: 1, repeatEvery: null}]
+                }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
+                done();
+            });
         });
     });
     QUnit.test('Tallentaa muuttuneet ohjelmatreenit backendiin', assert => {
@@ -90,7 +93,7 @@ QUnit.module('program/ProgramEditView', hooks => {
         const programWorkoutSaveStub = sinon.stub(shallowProgramBackend, 'updateWorkout')
             .returns(Promise.resolve(1));
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout');
-        renderEditView(assert, testProgram, (rendered, programSaveStub, done) => {
+        renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
             // Päivitä ohjelmatreenin nimeä modalin kautta
             utils.findButtonByAttribute(rendered, 'title', 'Muokkaa').click();
             const programWorkoutNameInputEl = utils.findInputByName(rendered, 'name');
@@ -98,17 +101,19 @@ QUnit.module('program/ProgramEditView', hooks => {
             utils.findButtonByContent(rendered, 'Ok').click();
             // Lähetä muokkauslomake
             utils.findButtonByContent(rendered, 'Tallenna').click();
-            //
-            assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
-            assert.ok(programWorkoutInsertStub.notCalled, 'Ei pitäisi lisätä ohjelmatreenejä');
-            assert.ok(programWorkoutDeleteStub.notCalled, 'Ei pitäisi poistaa ohjelmatreenejä');
-            assert.ok(programWorkoutSaveStub.calledOnce, 'Pitäisi tallentaa muuttunut ohjelmatreeni');
-            assert.deepEqual(programWorkoutSaveStub.firstCall.args, [[
-                Object.assign(testProgram.workouts[0], {
-                    name: 'fooo'
-                })
-            ]], 'Pitäisi tallentaa muuttuneen ohjelmatreenin tiedot');
-            done();
+            // Resolvaa confirm
+            confirmSpy.firstCall.returnValue.then(() => {
+                assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
+                assert.ok(programWorkoutInsertStub.notCalled, 'Ei pitäisi lisätä ohjelmatreenejä');
+                assert.ok(programWorkoutDeleteStub.notCalled, 'Ei pitäisi poistaa ohjelmatreenejä');
+                assert.ok(programWorkoutSaveStub.calledOnce, 'Pitäisi tallentaa muuttunut ohjelmatreeni');
+                assert.deepEqual(programWorkoutSaveStub.firstCall.args, [[
+                    Object.assign(testProgram.workouts[0], {
+                        name: 'fooo'
+                    })
+                ]], 'Pitäisi tallentaa muuttuneen ohjelmatreenin tiedot');
+                done();
+            });
         });
     });
     QUnit.test('Tallentaa poistetut ohjelmatreenit backendiin', assert => {
@@ -117,20 +122,22 @@ QUnit.module('program/ProgramEditView', hooks => {
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout')
             .returns(Promise.resolve(1));
         testProgram = ptu.getSomeTestPrograms()[1];
-        renderEditView(assert, testProgram, (rendered, programSaveStub, done) => {
+        renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
             // Poista ensimmäinen ohjelmatreeni listalta
             utils.findButtonByAttribute(rendered, 'title', 'Poista').click();
             // Lähetä muokkauslomake
             utils.findButtonByContent(rendered, 'Tallenna').click();
-            //
-            assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
-            assert.ok(programWorkoutInsertStub.notCalled, 'Ei pitäisi lisätä ohjelmatreenejä');
-            assert.ok(programWorkoutSaveStub.notCalled, 'Ei pitäisi päivittää ohjelmatreenejä');
-            assert.ok(programWorkoutDeleteStub.calledOnce, 'Pitäisi tallentaa poistettu ohjelmatreeni');
-            assert.deepEqual(programWorkoutDeleteStub.firstCall.args, [
-                testProgram.workouts[0]
-            ], 'Pitäisi poistaa poistettu ohjelmatreeni');
-            done();
+            // Resolvaa confirm
+            confirmSpy.firstCall.returnValue.then(() => {
+                assert.ok(programSaveStub.notCalled, 'Ei pitäisi tallentaa ohjelmaa');
+                assert.ok(programWorkoutInsertStub.notCalled, 'Ei pitäisi lisätä ohjelmatreenejä');
+                assert.ok(programWorkoutSaveStub.notCalled, 'Ei pitäisi päivittää ohjelmatreenejä');
+                assert.ok(programWorkoutDeleteStub.calledOnce, 'Pitäisi tallentaa poistettu ohjelmatreeni');
+                assert.deepEqual(programWorkoutDeleteStub.firstCall.args, [
+                    testProgram.workouts[0]
+                ], 'Pitäisi poistaa poistettu ohjelmatreeni');
+                done();
+            });
         });
     });
 });

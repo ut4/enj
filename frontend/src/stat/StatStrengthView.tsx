@@ -222,7 +222,7 @@ class StrengthLevelTable extends Component<{user: Enj.API.UserRecord}, {tableIsV
     }
     public render() {
         return <div>
-            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-black end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () =>
+            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () =>
                 this.setState({tableIsVisible: !this.state.tableIsVisible})
             }></button>
             { this.state.tableIsVisible && <div>

@@ -52,7 +52,7 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi taas olla klikattava');
         // Simuloi tyhjä ohjelmatreenilista
         testProgram.workouts = [];
-        (itu.findRenderedVNodeWithType(rendered, ProgramForm).children as any).setState({program: testProgram});
+        ptu.getRenderedProgramForm(rendered).setState({program: testProgram});
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     QUnit.test('lähettää tiedot backendiin ja kutsuu afterInsert', assert => {

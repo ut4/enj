@@ -2,7 +2,7 @@
     <defs>
         <style><![CDATA[
             .icon { fill: #FFFFFF; display: none; }
-            .icon.black { fill: #000000; }
+            .icon.dark { fill: #676269; }
             .icon:target { display: inline; }
         ]]></style>
         <g id="dashboard-g">
@@ -48,17 +48,17 @@
     <use class="icon" id="dashboard" href="#dashboard-g"/>
     <use class="icon" id="dumb-bell" href="#dumb-bell-g"/>
     <use class="icon" id="diagram" href="#diagram-g"/>
-    <use class="icon black" id="secondary-menu-black" href="#secondary-menu-g"/>
+    <use class="icon dark" id="secondary-menu-dark" href="#secondary-menu-g"/>
     <use class="icon" id="success" href="#success-g"/>
     <use class="icon" id="notice" href="#notice-g"/>
     <use class="icon" id="error" href="#error-g"/>
     <use class="icon" id="history" href="#history-g"/>
     <use class="icon" id="arrow" href="#arrow-g"/>
-    <use class="icon black" id="arrow-black" href="#arrow-g"/>
+    <use class="icon dark" id="arrow-dark" href="#arrow-g"/>
     <use class="icon" id="add" href="#add-g"/>
     <use class="icon" id="edit" href="#edit-g"/>
     <use class="icon" id="delete" href="#delete-g"/>
-    <use class="icon black" id="delete-black" href="#delete-g"/>
+    <use class="icon dark" id="delete-dark" href="#delete-g"/>
     <use class="icon" id="checked" href="#checked-g"/>
-    <use class="icon black" id="checked-black" href="#checked-g"/>
+    <use class="icon dark" id="checked-dark" href="#checked-g"/>
 </svg>

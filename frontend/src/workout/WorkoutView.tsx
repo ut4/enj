@@ -75,7 +75,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
         const isCurrent = isToday(this.selectedDate);
         return (<div class={ 'workout-view' + (!isCurrent ? ' not-current' : '') }>
             <h2>Treeni { isCurrent ? 'tänään' : toFinDate(this.selectedDate) }
-                <button title="Valitse päivä" class="icon-button arrow-black arrow down" onClick={ e => this.datePicker.open() }></button>
+                <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ e => this.datePicker.open() }></button>
                 <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ isCurrent ? undefined : this.selectedDate } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             <div>{ this.state.workouts && (

@@ -10,10 +10,10 @@ const utils = {
         return (itu.findRenderedVNodeWithType(rendered, WorkoutExerciseModal).children as any) as WorkoutExerciseModal;
     },
     getSetListSwapButtons(rendered): Array<HTMLButtonElement> {
-        return itu.scryRenderedDOMElementsWithClass(rendered, 'arrow-black') as Array<HTMLButtonElement>;
+        return itu.scryRenderedDOMElementsWithClass(rendered, 'arrow-dark') as Array<HTMLButtonElement>;
     },
     getSetListDeleteButtons(rendered): Array<HTMLButtonElement> {
-        return itu.scryRenderedDOMElementsWithClass(rendered, 'delete-black') as Array<HTMLButtonElement>;
+        return itu.scryRenderedDOMElementsWithClass(rendered, 'delete-dark') as Array<HTMLButtonElement>;
     },
     getSomeSets() {
         return [
