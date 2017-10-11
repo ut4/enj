@@ -39,4 +39,22 @@ const domUtils = {
     }
 };
 
-export {arrayUtils, domUtils};
+const dateUtils = {
+    getLocaleDateString(date: Date): string {
+        return date.getDate() + '.' + (date.getMonth() + 1) + ' ' + date.getFullYear();
+    },
+    getShortWeekDay(weekDay: number): string {
+        const shortWeekDays = {
+            0: 'Su',
+            1: 'Ma',
+            2: 'Ti',
+            3: 'Ke',
+            4: 'To',
+            5: 'Pe',
+            6: 'La'
+        };
+        return shortWeekDays[weekDay];
+    }
+};
+
+export { arrayUtils, domUtils, dateUtils };

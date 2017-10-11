@@ -3,17 +3,16 @@ import SubMenu from 'src/ui/SubMenu';
 import Modal from 'src/ui/Modal';
 import ProgramDeleteModal from 'src/program/ProgramDeleteModal';
 import iocFactories from 'src/ioc';
+import { dateUtils } from 'src/common/utils';
 
 /**
  * Komponentti urlille #/ohjelmat. Listaa kaikki kirjautuneelle käyttäjälle
  * kuuluvat treeniohjelmat.
  */
 class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>}> {
-    private dateUtils: any;
     public constructor(props, context) {
         super(props, context);
         this.state = {programs: null};
-        this.dateUtils = iocFactories.dateUtils();
     }
     public componentWillMount() {
         iocFactories.programBackend().getAll('/mine').then(
@@ -69,7 +68,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>
         );
     }
     private toFinDate(unixTime: number): string {
-        return this.dateUtils.getLocaleDateString(new Date(unixTime * 1000));
+        return dateUtils.getLocaleDateString(new Date(unixTime * 1000));
     }
 }
 

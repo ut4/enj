@@ -2,6 +2,7 @@ import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingCompone
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import ProgramWorkoutsManager from 'src/program/ProgramWorkoutsManager';
 import Datepicker from 'src/ui/Datepicker';
+import { dateUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -131,7 +132,7 @@ class ProgramForm extends ValidatingComponent<Props, State> {
 }
 
 function datepickerFormatter(date: Date): string {
-    return iocFactories.dateUtils().getLocaleDateString(date);
+    return dateUtils.getLocaleDateString(date);
 }
 
 function serializeProgram(program: Enj.API.ProgramRecord): string {

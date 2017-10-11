@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import { arrayUtils } from 'src/common/utils';
+import { arrayUtils, dateUtils } from 'src/common/utils';
 import ProgramWorkoutModal from 'src/program/ProgramWorkoutModal';
 import Modal from 'src/ui/Modal';
 
@@ -55,7 +55,15 @@ class ProgramWorkoutsManager extends Component<
                 ? this.state.programWorkouts.map((programWorkout, i) =>
                     <li>
                         <div class="heading">{ programWorkout.name }</div>
-                        <div class="content">Liikkeet - todo</div>
+                        <div class="content">
+                            <div>Päivät: { programWorkout.occurrences.length
+                                ? <b>{ programWorkout.occurrences.map(occurrence =>
+                                    dateUtils.getShortWeekDay(occurrence.weekDay)
+                                ).join(', ') }</b>
+                                : '-'
+                            }</div>
+                            <div>Liikkeet: todo</div>
+                        </div>
                         <button class="nice-button icon-button add with-text">todo</button>
                         <div class="action-buttons">
                             <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, i) } title="Muokkaa"></button>

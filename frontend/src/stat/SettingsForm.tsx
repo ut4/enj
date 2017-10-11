@@ -39,9 +39,10 @@ class SettingsForm extends Component<Props, any> {
     public render() {
         return <div class="inline-form">
             <BasicUserInputs user={ this.props.user } ref={ cmp => { this.userInputs = cmp; } }/>
-            { this.props.user && <label class="input-set inline">
-                <input type="checkbox" name="saveValues" onChange={ e => this.receiveCheckboxValue(e) }/>Tallenna asetukset
-            </label> }
+            { this.props.user && <div class="input-set">
+                <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
+                <label for="saveValuesCb">Tallenna asetukset</label>
+            </div> }
             <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } shouldConfirmButtonBeDisabled={ () => this.userInputs.state.validity === false }/>
         </div>;
     }

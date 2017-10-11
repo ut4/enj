@@ -1,5 +1,6 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import OccurrencesSelector from 'src/program/ProgramWorkoutOccurrencesSelector';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -14,18 +15,17 @@ interface Props {
  */
 class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: Enj.API.ProgramWorkoutRecord}> {
     private isInsert: boolean;
+    private occurrencesSelector: OccurrencesSelector;
     protected propertyToValidate: string = 'programWorkout';
     public constructor(props, context) {
         super(props, context);
         this.isInsert = this.props.hasOwnProperty('afterInsert');
         this.evaluators = {
             name: [(input: any) => input.length >= 2 && input.length <= 64],
-            occurrences: [(input: any) => !!input]
+            occurrences: [(input: any) => input.length > 0]
         };
         this.state = {
-            programWorkout: Object.assign({}, this.props.programWorkout, {
-                occurrences: JSON.stringify(this.props.programWorkout.occurrences)
-            }),
+            programWorkout: this.props.programWorkout,
             validity: true
         };
     }
@@ -37,18 +37,19 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
                 <input name="name" value={ this.state.programWorkout.name } placeholder="esim. Jalat, Työntävät ..." onInput={ e => this.receiveInputValue(e) }/>
                 { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
             </label>
-            <label class="input-set">
-                <span>Päivät - TODO dayselector</span>
-                <input name="occurrences" value={ this.state.programWorkout.occurrences } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.occurrences[0], () => 'TODO') }
-            </label>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <div class="input-set">
+                <span>Päivät</span>
+                <OccurrencesSelector occurrences={ this.state.programWorkout.occurrences } onChange={ occurrences => this.receiveInputValue({target: {value: occurrences, name: 'occurrences'}}) } ref={ cmp => { this.occurrencesSelector = cmp; }}/>
+                { validationMessage(this.evaluators.occurrences[0], () => 'Ainakin yksi päivä vaaditaan') }
+            </div>
+            <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
     private confirm() {
-        // Tämä tulevaisuudessa day/occurrenceselectorista
-        this.state.programWorkout.occurrences = JSON.parse(this.state.programWorkout.occurrences as any);
         this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.programWorkout);
+    }
+    private cancel() {
+        this.state.programWorkout.occurrences = this.occurrencesSelector.getOriginalOccurrences();
     }
 }
 

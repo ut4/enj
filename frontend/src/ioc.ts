@@ -1,6 +1,5 @@
 import IocContainer    from 'src/common/IocContainer';
 import Db              from 'src/common/Db';
-import dateUtils       from 'src/common/dateUtils';
 import Http            from 'src/common/Http';
 import OfflineHttp     from 'src/common/OfflineHttp';
 import { notify }      from 'src/ui/Notifier';
@@ -35,9 +34,6 @@ class IocFactories extends IocContainer {
     }
     public history(): any {
         return routerHistory;
-    }
-    public dateUtils() {
-        return dateUtils;
     }
 
     // == Stat =================================================================

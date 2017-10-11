@@ -2,6 +2,7 @@ import Component from 'inferno-component';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 import Datepicker from 'src/ui/Datepicker';
+import { dateUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 
 /**
@@ -90,7 +91,7 @@ class WorkoutView extends Component<any, {workouts: Array<Enj.API.WorkoutRecord>
 }
 
 function toFinDate(date: Date): string {
-    return iocFactories.dateUtils().getLocaleDateString(date);
+    return dateUtils.getLocaleDateString(date);
 }
 
 function isToday(date: Date): boolean {

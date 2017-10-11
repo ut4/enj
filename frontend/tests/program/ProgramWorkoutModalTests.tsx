@@ -24,6 +24,16 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         utils.setInputValue('jokinohjelma', nameInputEl);
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
+        // Poista valittu treenipäivä
+        let checkboxEl = utils.findElementByAttribute<HTMLInputElement>(rendered, 'input', 'id', 'cb' + testProgramWorkout.occurrences[0].weekDay);
+        utils.setChecked(false, checkboxEl);
+        assert.equal(getFirstValidationError(rendered), 'Ainakin yksi päivä vaaditaan');
+        assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
+        // Aseta uusi valittu treenipäivä
+        checkboxEl = utils.findElementByAttribute<HTMLInputElement>(rendered, 'input', 'id', 'cb2'); // tiistai
+        utils.setChecked(true, checkboxEl);
+        assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
+        assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
     });
     function getFirstValidationError(rendered): string {
         return vtu.getRenderedValidationErrors(rendered)[0].textContent;

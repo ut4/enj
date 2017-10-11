@@ -41,6 +41,9 @@
         <g id="delete-g">
             <path d="M21.736,19.64l-2.098,2.096c-0.383,0.386-1.011,0.386-1.396,0l-5.241-5.239L7.76,21.735 c-0.385,0.386-1.014,0.386-1.397-0.002L4.264,19.64c-0.385-0.386-0.385-1.011,0-1.398L9.505,13l-5.24-5.24 c-0.384-0.387-0.384-1.016,0-1.398l2.098-2.097c0.384-0.388,1.013-0.388,1.397,0L13,9.506l5.242-5.241 c0.386-0.388,1.014-0.388,1.396,0l2.098,2.094c0.386,0.386,0.386,1.015,0.001,1.401L16.496,13l5.24,5.241 C22.121,18.629,22.121,19.254,21.736,19.64z" style="fill: inherit;"></path>
         </g>
+        <g id="checked-g">
+            <path d="M 19.28125 5.28125 L 9 15.5625 L 4.71875 11.28125 L 3.28125 12.71875 L 8.28125 17.71875 L 9 18.40625 L 9.71875 17.71875 L 20.71875 6.71875 Z" style="fill: inherit;"></path>
+        </g>
     </defs>
     <use class="icon" id="dashboard" href="#dashboard-g"/>
     <use class="icon" id="dumb-bell" href="#dumb-bell-g"/>
@@ -56,4 +59,6 @@
     <use class="icon" id="edit" href="#edit-g"/>
     <use class="icon" id="delete" href="#delete-g"/>
     <use class="icon black" id="delete-black" href="#delete-g"/>
+    <use class="icon" id="checked" href="#checked-g"/>
+    <use class="icon black" id="checked-black" href="#checked-g"/>
 </svg>

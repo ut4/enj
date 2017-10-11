@@ -95,7 +95,7 @@ declare module Enj {
             signature?: string;
         }
         interface ProgramWorkoutOccurence {
-            weekDay: number;
+            weekDay: number; // 0-6; 0 = Su, 1 = Ma jne.
             repeatEvery?: number;
         }
         interface ProgramWorkoutRecord {

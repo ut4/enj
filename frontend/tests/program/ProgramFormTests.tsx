@@ -97,7 +97,9 @@ QUnit.module('program/ProgramForm', hooks => {
         const programWorkoutNameInputEl = utils.findInputByName(rendered, 'name');
         const testNewProgramWorkoutName = 'Someworkout';
         utils.setInputValue(testNewProgramWorkoutName, programWorkoutNameInputEl);
-        // TODO occurrences
+        // Lisää oletuksena valitun maanantain lisäksi toinen treeniviikonpäivä
+        const wednesdayCheckbox = utils.findElementByAttribute<HTMLInputElement>(rendered, 'input', 'id', 'cb3');
+        utils.setChecked(true, wednesdayCheckbox);
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lisäsikö treenin?
@@ -105,6 +107,13 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.equal(programWorkoutLengthAfter, programWorkoutLengthBefore + 1);
         assert.equal(newProgram.workouts[programWorkoutLengthAfter - 1].name,
             testNewProgramWorkoutName
+        );
+        assert.deepEqual(
+            newProgram.workouts[programWorkoutLengthAfter - 1].occurrences,
+            [
+                {weekDay: 1, repeatEvery: null}, // oletuksena valittu ma
+                {weekDay: 3, repeatEvery: null}  // yllä valittu ke
+            ]
         );
     });
     function getFirstValidationError(rendered): string {

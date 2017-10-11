@@ -1,8 +1,9 @@
 import iocFactories from 'src/ioc';
+import { dateUtils } from 'src/common/utils';
 
 const programTestUtils = {
     getExpectedDateStr(unixTime: number): string {
-        return iocFactories.dateUtils().getLocaleDateString(new Date(unixTime * 1000));
+        return dateUtils.getLocaleDateString(new Date(unixTime * 1000));
     },
     getSomeTestPrograms(): Array<Enj.API.ProgramRecord> {
         return [

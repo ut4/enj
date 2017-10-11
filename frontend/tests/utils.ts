@@ -27,6 +27,10 @@ const utils = {
         (el as any).value = value;
         utils.triggerEvent('input', el);
     },
+    setChecked(checked: boolean, el: HTMLInputElement) {
+        el.checked = checked;
+        utils.triggerEvent('change', el);
+    },
     setDropdownIndex(index: number, el: HTMLSelectElement) {
         el.selectedIndex = index;
         utils.triggerEvent('change', el);
