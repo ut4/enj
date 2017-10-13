@@ -28,7 +28,7 @@ QUnit.module('program/ProgramCreateView', hooks => {
             description: 'asd',
             workouts: [{
                 name: 'foo',
-                occurrences: [{weekDay: 1, repeatEvery: null}],
+                occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
                 ordinal: 0,
                 programId: undefined
             }]

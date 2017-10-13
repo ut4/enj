@@ -107,6 +107,9 @@ body.loading:after {
 .text-heavy {
     font-family: "Fira sans heavy";
 }
+.heading {
+    font: 24px/24px "Fira sans heavy";
+}
 .heading .text-small {
     font-size: .7em;
     font-family: "Fira sans light";
@@ -216,8 +219,16 @@ ul {
 .text-button.current {
     border-bottom: 1px solid;
 }
-.text-button:hover {
+.text-button:disabled {
+    color: #AAAAAA;
+    cursor: not-allowed;
+}
+.text-button:hover:enabled {
     color: #1A7C96;
+}
+.text-button.heavy {
+    font: 24px/20px "Fira sans heavy";
+    padding: 1px 6px 6px;
 }
 .icon-button.with-text {
     background-color: rgba(255,255,255,0.15);
@@ -241,8 +252,9 @@ a.icon-button.with-text:hover {
     padding: 16px;
     display: inline-block;
     background-repeat: no-repeat;
-    background-position: 6px 7px;
+    background-position: center center;
     background-size: 22px auto;
+    vertical-align: middle;
 }
 
 .icon-button.secondary-menu-dark {
@@ -251,9 +263,12 @@ a.icon-button.with-text:hover {
 .icon-button.add {
     background-image: url("icon-sprite.svg#add");
 }
-.icon-button.edit {
+.icon-button.edit, .icon-button.edit-dark {
     background-image: url("icon-sprite.svg#edit");
     background-position: 8px 7px;
+}
+.icon-button.edit-dark {
+    background-image: url("icon-sprite.svg#edit-dark");
 }
 .icon-button.delete, .icon-button.delete-dark {
     background-image: url("icon-sprite.svg#delete");
@@ -313,7 +328,6 @@ li:last-of-type .down {
     margin: auto 10px;
 }
 .dark-list .heading {
-    font: 24px/24px "Fira sans heavy";
     margin: -5px auto 10px;
 }
 .dark-list .content {
@@ -364,6 +378,9 @@ table {
 table.crud-table, table.fixed {
     table-layout: fixed;
 }
+.input-set table {
+    margin-bottom: 0;
+}
 table th {
     padding-right: 10px;
     text-align: left;
@@ -404,6 +421,125 @@ table.crud-table td:last-of-type {
 table.crud-table th:only-child,
 table.crud-table td:only-child {
     width: initial;
+}
+table .icon-button {
+    padding: 10px 16px;
+    opacity: 0.7;
+}
+table .icon-button.edit-dark {
+    background-position: 7px 0;
+}
+table .icon-button.delete-dark {
+    background-position: 5px -2px;
+}
+tfoot {
+    border-top: 1px solid #DDDDDD;
+}
+
+/* -- Lomakkeet ---------- */
+input, textarea, select:not(.no-style) {
+    border-color: #ABADB3 #DBDFE6 #E3E9EF #E2E3EA;
+    border-radius: 1px;
+    border-style: solid;
+    border-width: 1px;
+    color: #3E2F49;
+    font: 14px "Fira sans light";
+    margin-bottom: 5px;
+    padding: 5px 0;
+    text-indent: 8px;
+    -webkit-transition: border-color 0.1s ease-out 0s;
+            transition: border-color 0.1s ease-out 0s;
+}
+select:not(.no-style) {
+    text-indent: 2px;
+}
+input:hover {
+    border-color: #5794BF #B7D5EA #C7E2F1 #C5DAED;
+}
+input[type="date"] {
+    text-indent: 3px;
+}
+input[type="checkbox"] {
+    display:none;
+}
+input[type="checkbox"] + label:after {
+    content: "";
+    display: block;
+    width: 14px;
+    height: 14px;
+    margin: 2px 10px 4px 0;
+    background-repeat: no-repeat;
+    background-size: 19px auto;
+    background-position: 40% 25%;
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 1px;
+    float: left;
+    border: 2px solid #899598;
+}
+input[type="checkbox"]:checked + label:after {
+    background-image: url(icon-sprite.svg#checked);
+    background-color: #479AB0;
+    border: none;
+    padding: 3px;
+    background-size: 21px auto;
+}
+input[type="checkbox"]:checked:disabled + label:after {
+    background-color: #ddd;
+}
+.input-set {
+    display: inline-block;
+    margin-bottom: 4px;
+    width: 100%;
+    text-align: left;
+}
+.input-set > span:first-of-type {
+    box-sizing: border-box;
+    display: inline-block;
+}
+.input-set input, .input-set textarea, .input-set select {
+    box-sizing: border-box;
+    width: 100%;
+}
+.input-set.inline input {
+    width: auto;
+    margin: 0 6px 6px 0;
+}
+.input-set .text-error {
+    display: inline-block;
+    width: 100%;
+}
+.input-set .datepicker > div {
+    position: absolute;
+    z-index: 1;
+}
+.input-set .crud-table th:last-of-type, .input-set .crud-table td:last-of-type {
+    width: 63px;
+}
+.form-buttons {
+    text-align: left;
+}
+.form-buttons .nice-button {
+    min-width: 60px;
+    width: 20%;
+}
+table .input-set {
+    max-width: 48%;
+    margin: 0 2% 0 0;
+}
+table .input-set > span:first-of-type {
+    display: none;
+}
+table .input-set input {
+    margin: 0;
+}
+table .input-set .text-error {
+    font-size: 12px;
+    float: left;
+}
+.input-set ul {
+    margin: 4px 0;
+    padding: 5px 10px;
 }
 
 /* -- Notifier ---------- */
@@ -457,102 +593,6 @@ table.crud-table td:only-child {
     background-image: url("icon-sprite.svg#error");
 }
 
-/* -- Lomakkeet ---------- */
-input, textarea, select:not(.no-style) {
-    border-color: #ABADB3 #DBDFE6 #E3E9EF #E2E3EA;
-    border-radius: 1px;
-    border-style: solid;
-    border-width: 1px;
-    color: #3E2F49;
-    font: 14px "Fira sans light";
-    margin-bottom: 5px;
-    padding: 5px 0;
-    text-indent: 8px;
-    -webkit-transition: border-color 0.1s ease-out 0s;
-            transition: border-color 0.1s ease-out 0s;
-}
-select:not(.no-style) {
-    text-indent: 2px;
-}
-input:hover {
-    border-color: #5794BF #B7D5EA #C7E2F1 #C5DAED;
-}
-input[type="date"] {
-    text-indent: 3px;
-}
-input[type="checkbox"] {
-    display:none;
-}
-input[type="checkbox"] + label:after {
-    content: "";
-    display: block;
-    width: 14px;
-    height: 14px;
-    margin: 2px 10px 4px 0;
-    background-repeat: no-repeat;
-    background-size: 19px auto;
-    background-position: 40% 25%;
-    cursor: pointer;
-    border-radius: 2px;
-    padding: 1px;
-    float: left;
-    border: 2px solid #899598;
-}
-input[type="checkbox"]:checked + label:after {
-    background-image: url(icon-sprite.svg#checked-dark);
-}
-.input-set {
-    display: inline-block;
-    margin-bottom: 4px;
-    width: 100%;
-    text-align: left;
-}
-.input-set > span:first-of-type {
-    box-sizing: border-box;
-    display: inline-block;
-}
-.input-set input, .input-set textarea, .input-set select {
-    box-sizing: border-box;
-    width: 100%;
-}
-.input-set.inline input {
-    width: auto;
-    margin: 0 6px 6px 0;
-}
-.input-set .text-error {
-    display: inline-block;
-    width: 100%;
-}
-.input-set .datepicker > div {
-    position: absolute;
-    z-index: 1;
-}
-.form-buttons {
-    text-align: left;
-}
-.form-buttons .nice-button {
-    min-width: 60px;
-    width: 20%;
-}
-table .input-set {
-    max-width: 48%;
-    margin: 0 2% 0 0;
-}
-table .input-set > span:first-of-type {
-    display: none;
-}
-table .input-set input {
-    margin: 0;
-}
-table .input-set .text-error {
-    font-size: 12px;
-    float: left;
-}
-.input-set ul {
-    margin: 4px 0;
-    padding: 5px 10px;
-}
-
 /* -- Modal ---------- */
 #modal {
     display: block;
@@ -567,7 +607,7 @@ table .input-set .text-error {
     text-align: left;
     background-color: rgba(0,0,0,0.8);
 }
-#modal-content {
+.modal-content {
     max-width: 560px;
     max-height: 100%;
     margin: 0 auto;
@@ -576,41 +616,25 @@ table .input-set .text-error {
     overflow-y: auto;
     background-color: #FFFFFF;
     border-radius: 2px;
+    -webkit-transition: max-height, padding .2s ease-out 0s;
+            transition: max-height, padding .2s ease-out 0s;
 }
-#modal-content:after { /* puskee scroll tilassa paddingia */
+.modal-content.level-0:not(:only-child) {
+    max-height: 0%;
+    padding: 0;
+}
+.modal-content:after { /* puskee scroll tilassa paddingia */
     content: "";
     display: block;
     margin-bottom: 10px;
 }
-#modal-content h3 {
+.modal-content h3 {
     width: 100%;
     margin: -10px 0 10px -10px;
     padding: 8px 10px 12px;
     font: 1.2em/1em "Fira sans heavy";
     background-color: #EEEEEE;
     color: #676269;
-}
-
-.occurrences-selector {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    margin-bottom: 10px;
-}
-.occurrences-selector div {
-    display: table-cell;
-    text-align: center;
-    padding-bottom: 35px;
-}
-.occurrences-selector label {
-    position: relative;
-    padding: 0 20% 40px;
-}
-.occurrences-selector input[type="checkbox"] + label:after {
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    margin-left: -11px;
 }
 
 /* Chartist */
@@ -820,7 +844,7 @@ footer a {
 }
 
 /* -- Treeninäkymät ---------- */
-.workout-view h2 .arrow-dark { margin: 0 -5px -7px 2px; top: -7px; position: relative; }
+.workout-view h2 .arrow-dark { margin: 0 -5px -7px 2px; top: -3px; position: relative; }
 .workout-view .datepicker { position: absolute; display: inline-block; transform: translate(-85%, 45px);
     z-index: 1; }
 .workout-view > div { margin-top: -10px; }
@@ -833,7 +857,6 @@ footer a {
 .workout-view.not-current .footer { margin-bottom: 0; }
 
 .workout-exercise-modal table { width: auto }
-.workout-exercise-modal table .icon-button { opacity: .3 }
 .workout-exercise-modal table tr:last-of-type .arrow-dark {
     transform: rotate(180deg);
 }
@@ -867,6 +890,19 @@ footer a {
 .stats-overview-view .box:nth-of-type(3) .score > span { font-size: 24px; }
 
 .line-chart { height: 300px; margin-left: -12px; }
+
+/* -- Ohjelmanäkymät ----------- */
+.program-workouts-manager { text-align: center; }
+.program-workouts-manager .dark-list { padding: 0; }
+.program-workouts-manager .dark-list li { min-height: 20px; padding-left: 20px; }
+.program-workouts-manager .dark-list li:before {
+    content: attr(data-dayname); background-color: rgba(0,0,0,0.3); height: calc(100% + 1px);
+    position: absolute; top: 0px; left: -14px; font-size: 12px; padding: 6px 0;
+    box-sizing: border-box; width: 23px; text-align: center; border-radius: 2px;
+}
+.week-navigation { display: inline-block; position: relative; }
+.week-navigation > button { position: absolute; left: -44px; top: 27%; }
+.week-navigation > button:last-of-type { left: initial; right: -40px; }
 
 /* -- Käyttäjänäkymät ---------- */
 .profile-pic { margin-right: 15px; height: 140px; background-color: #e0e0e0;

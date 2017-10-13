@@ -163,13 +163,16 @@ public class Program extends DbEntity {
         }
 
         public static class Occurrence {
-            @Min(value = 0)
-            @Max(value = 6)
+            @Min(0)
+            @Max(6)
             private int weekDay;
+            @Min(0)
+            private int firstWeek;
             private Integer repeatEvery;
             public Occurrence() {}
-            public Occurrence(int weekDay, Integer repeatEvery) {
+            public Occurrence(int weekDay, int firstWeek, Integer repeatEvery) {
                 this.weekDay = weekDay;
+                this.firstWeek = firstWeek;
                 this.repeatEvery = repeatEvery;
             }
 
@@ -180,6 +183,13 @@ public class Program extends DbEntity {
                 this.weekDay = weekDay;
             }
 
+            public int getFirstWeek() {
+                return this.firstWeek;
+            }
+            public void setFirstWeek(int firstWeek) {
+                this.firstWeek = firstWeek;
+            }
+
             public Integer getRepeatEvery() {
                 return this.repeatEvery;
             }
@@ -188,7 +198,7 @@ public class Program extends DbEntity {
             }
             @Override
             public String toString() {
-                return this.weekDay + "," + this.repeatEvery;
+                return this.weekDay + "," + this.firstWeek + "," + this.repeatEvery;
             }
         }
 

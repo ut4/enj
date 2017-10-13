@@ -82,7 +82,7 @@ QUnit.module('program/ProgramEditView', hooks => {
                     name: newProgramWorkoutName,
                     programId: testProgram.id,
                     ordinal: testProgram.workouts[0].ordinal + 1,
-                    occurrences: [{weekDay: 1, repeatEvery: null}]
+                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}]
                 }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
                 done();
             });

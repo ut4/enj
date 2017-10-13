@@ -33,7 +33,6 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.equal(descriptionEl.value, testProgram.description,  'Pitäisi asettaa initial-description');
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
-        assert.equal(itu.scryRenderedDOMElementsWithTag(rendered, 'li').length, 2);
         // Aseta invalid nimi
         utils.setInputValue('f', nameInputEl);
         assert.equal(getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
@@ -98,8 +97,13 @@ QUnit.module('program/ProgramForm', hooks => {
         const testNewProgramWorkoutName = 'Someworkout';
         utils.setInputValue(testNewProgramWorkoutName, programWorkoutNameInputEl);
         // Lisää oletuksena valitun maanantain lisäksi toinen treeniviikonpäivä
-        const wednesdayCheckbox = utils.findElementByAttribute<HTMLInputElement>(rendered, 'input', 'id', 'cb3');
-        utils.setChecked(true, wednesdayCheckbox);
+        utils.findButtonByContent(rendered, 'Lisää päivä').click();
+        const daySelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'weekDay');
+        utils.setDropdownIndex(2, daySelectInputEl); // 0 = Ma, 1 = Ti jne..
+        const repeatEverySelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'repeatEvery');
+        utils.setDropdownIndex(0, repeatEverySelectInputEl);
+        utils.findButtonByContent(rendered, 'Lisää').click();
+        // Hyväksy ohjelmatreenilomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lisäsikö treenin?
@@ -111,8 +115,8 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.deepEqual(
             newProgram.workouts[programWorkoutLengthAfter - 1].occurrences,
             [
-                {weekDay: 1, repeatEvery: null}, // oletuksena valittu ma
-                {weekDay: 3, repeatEvery: null}  // yllä valittu ke
+                {weekDay: 1, firstWeek: 0, repeatEvery: 7}, // oletuksena valittu ma
+                {weekDay: 3, firstWeek: 0, repeatEvery: null}  // yllä valittu ke
             ]
         );
     });

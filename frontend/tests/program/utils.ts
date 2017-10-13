@@ -33,14 +33,14 @@ const programTestUtils = {
             {
                 id:'uuid10',
                 name: 'fooworkout',
-                occurrences: [{weekDay: 1, repeatEvery: null}], // Ma, ei toistu
+                occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: null}], // Ma, alkaen vk:sta 0, ei toistu
                 ordinal: 1,
                 programId
             },
             {
                 id:'uuid11',
                 name: 'barworkout',
-                occurrences: [{weekDay: 3, repeatEvery: null}], // Ke, ei toistu
+                occurrences: [{weekDay: 3, firstWeek: 0, repeatEvery: null}], // Ke, alkaen vk:sta 0, ei toistu
                 ordinal: 2,
                 programId
             }

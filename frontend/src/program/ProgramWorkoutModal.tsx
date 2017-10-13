@@ -1,10 +1,11 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
-import OccurrencesSelector from 'src/program/ProgramWorkoutOccurrencesSelector';
+import OccurrencesManager from 'src/program/ProgramWorkoutOccurrencesManager';
 import iocFactories from 'src/ioc';
 
 interface Props {
     programWorkout: Enj.API.ProgramWorkoutRecord;
+    programWeekCount: number;
     afterInsert?: Function;
     afterUpdate?: Function;
 }
@@ -15,7 +16,7 @@ interface Props {
  */
 class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: Enj.API.ProgramWorkoutRecord}> {
     private isInsert: boolean;
-    private occurrencesSelector: OccurrencesSelector;
+    private occurrencesManager: OccurrencesManager;
     protected propertyToValidate: string = 'programWorkout';
     public constructor(props, context) {
         super(props, context);
@@ -38,8 +39,8 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
                 { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
             </label>
             <div class="input-set">
-                <span>Päivät</span>
-                <OccurrencesSelector occurrences={ this.state.programWorkout.occurrences } onChange={ occurrences => this.receiveInputValue({target: {value: occurrences, name: 'occurrences'}}) } ref={ cmp => { this.occurrencesSelector = cmp; }}/>
+                <span>Treenipäivät</span>
+                <OccurrencesManager occurrences={ this.state.programWorkout.occurrences } onChange={ occurrences => this.receiveInputValue({target: {value: occurrences, name: 'occurrences'}}) } ref={ cmp => { this.occurrencesManager = cmp; }} programWeekCount={ this.props.programWeekCount }/>
                 { validationMessage(this.evaluators.occurrences[0], () => 'Ainakin yksi päivä vaaditaan') }
             </div>
             <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
@@ -49,7 +50,7 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
         this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.programWorkout);
     }
     private cancel() {
-        this.state.programWorkout.occurrences = this.occurrencesSelector.getOriginalOccurrences();
+        this.state.programWorkout.occurrences = this.occurrencesManager.getOriginalOccurrences();
     }
 }
 

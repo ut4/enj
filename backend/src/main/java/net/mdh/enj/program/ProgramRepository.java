@@ -77,12 +77,13 @@ public class ProgramRepository extends BasicRepository<Program> {
     public static List<Program.Workout.Occurrence> parseOccurrences(String value) {
         List<Program.Workout.Occurrence> out = new ArrayList<>();
         // [, ja ] pois
-        String spaceSeparatedPairs = value.replaceAll("[\\[\\]]", "");
-        for (String pair: spaceSeparatedPairs.split(" ")) {
-            String[] values = pair.split("\\,");
+        String spaceSeparatedGroups = value.replaceAll("[\\[\\]]", "");
+        for (String group: spaceSeparatedGroups.split(" ")) {
+            String[] values = group.split("\\,");
             out.add(new Program.Workout.Occurrence(
                 Integer.valueOf(values[0]),
-                !values[1].equals("null") ? Integer.valueOf(values[1]) : null
+                Integer.valueOf(values[1]),
+                !values[2].equals("null") ? Integer.valueOf(values[2]) : null
             ));
         }
         return out;

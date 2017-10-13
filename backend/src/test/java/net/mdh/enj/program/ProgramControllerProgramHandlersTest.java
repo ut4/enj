@@ -22,8 +22,8 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName("Leg day");
         programWorkout.setOccurrences(Arrays.asList(
-            new Program.Workout.Occurrence(1, null), // Ma, ei toistu
-            new Program.Workout.Occurrence(3, null) // Pe, ei toistu
+            new Program.Workout.Occurrence(1, 0, null), // Ma, alkaa vk:sta 0, ei toistu
+            new Program.Workout.Occurrence(3, 0, null) // Pe, alkaa vk:sta 0, ei toistu
         ));
         programWorkout.setOrdinal(1);
         List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
@@ -64,7 +64,7 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName("Fyy daa");
         programWorkout.setOccurrences(Collections.singletonList(
-            new Program.Workout.Occurrence(1, null)
+            new Program.Workout.Occurrence(1, 0, null)
         ));
         programWorkout.setOrdinal(256); // Pitäisi aiheuttaa Out of range -error (max 255)
         List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
@@ -137,6 +137,7 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Program program = this.makeNewProgramEntity("Inserted");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
+        program.setWorkouts(Collections.singletonList(this.makeNewProgramWorkoutEntity("foo", program.getId())));
         // Muuta sen tietoja
         program.setName("Updated");
         program.setStart(program.getStart() + 1);

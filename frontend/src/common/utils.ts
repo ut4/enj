@@ -54,6 +54,23 @@ const dateUtils = {
             6: 'La'
         };
         return shortWeekDays[weekDay];
+    },
+    getLongWeekDay(weekDay: number): string {
+        const shortWeekDays = {
+            0: 'Sunnuntai',
+            1: 'Maanantai',
+            2: 'Tiistai',
+            3: 'Keskiviikko',
+            4: 'Torstai',
+            5: 'Perjantai',
+            6: 'Lauatai'
+        };
+        return shortWeekDays[weekDay];
+    },
+    getMonday(date: Date): Date {
+        const d = new Date(date);
+        d.setDate(d.getDate() + 1 - (d.getDay() || 7));
+        return d;
     }
 };
 

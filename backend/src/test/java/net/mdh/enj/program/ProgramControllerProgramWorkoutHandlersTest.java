@@ -78,7 +78,7 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         utils.insertProgramWorkout(programWorkout);
         // Muuta treeniliikkeen tietoja.
         programWorkout.setName("updatedName");
-        programWorkout.setOccurrences(Collections.singletonList(new Program.Workout.Occurrence(3,3)));
+        programWorkout.setOccurrences(Collections.singletonList(new Program.Workout.Occurrence(3,0,3)));
         programWorkout.setOrdinal(2);
         programWorkout.setProgramId(TestData.TEST_USER_ID); // Ei pitäisi vaikuttaa
         // PUTtaa muutetut tiedot

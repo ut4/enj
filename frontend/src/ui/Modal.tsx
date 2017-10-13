@@ -2,32 +2,38 @@ import Component from 'inferno-component';
 
 interface contentFactory {(): Component<any, any>;}
 
-class Modal extends Component<any, {content?: contentFactory}> {
+class Modal extends Component<any, {levels: Array<contentFactory>}> {
     static instance: Modal;
     public constructor(props, context) {
         super(props, context);
-        this.state = {};
+        this.state = {levels: []};
     }
     public componentDidMount() {
         Modal.instance = this;
     }
-    public open(content: contentFactory) {
-        this.setState({ content });
+    public open(contentFn: contentFactory) {
+        const levels = this.state.levels;
+        levels.push(contentFn);
+        this.setState({levels});
     }
     public close() {
-        this.setState({content: null});
+        const levels = this.state.levels;
+        levels.pop();
+        this.setState({levels});
     }
-    public static open(content: contentFactory) {
-        Modal.instance.open(content);
+    public static open(contentFn: contentFactory) {
+        Modal.instance.open(contentFn);
     }
     public static close() {
         Modal.instance.close();
     }
     public render() {
-        return this.state.content && <div id="modal">
-            <div id="modal-content">
-                { this.state.content() }
-            </div>
+        return this.state.levels.length > 0 && <div id="modal">
+            { this.state.levels.map((contentFn, i) =>
+                <div class={ 'modal-content level-' + i }>
+                    { contentFn() }
+                </div>
+            ) }
         </div>;
     }
 }

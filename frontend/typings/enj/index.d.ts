@@ -74,17 +74,17 @@ declare module Enj {
             lifted: number;
             reps: number;
         }
-        interface ExerciseVariantRecord {
-            id?: AAGUID;
-            content: string;
-            exerciseId: AAGUID;
-            userId: AAGUID;
-        }
         interface ExerciseRecord {
             id: AAGUID;
             name: string;
             userId: AAGUID;
             variants: Array<ExerciseVariantRecord>;
+        }
+        interface ExerciseVariantRecord {
+            id?: AAGUID;
+            content: string;
+            exerciseId: AAGUID;
+            userId: AAGUID;
         }
         interface UserRecord {
             id: AAGUID;
@@ -94,17 +94,6 @@ declare module Enj {
             isMale: number;
             signature?: string;
         }
-        interface ProgramWorkoutOccurence {
-            weekDay: number; // 0-6; 0 = Su, 1 = Ma jne.
-            repeatEvery?: number;
-        }
-        interface ProgramWorkoutRecord {
-            id?: AAGUID;
-            name: string;
-            occurrences: Array<ProgramWorkoutOccurence>;
-            ordinal: number;
-            programId: AAGUID;
-        }
         interface ProgramRecord {
             id: AAGUID;
             name: string;
@@ -113,6 +102,18 @@ declare module Enj {
             description?: string;
             userId: AAGUID;
             workouts: Array<ProgramWorkoutRecord>;
+        }
+        interface ProgramWorkoutRecord {
+            id?: AAGUID;
+            name: string;
+            occurrences: Array<ProgramWorkoutOccurence>;
+            ordinal: number;
+            programId: AAGUID;
+        }
+        interface ProgramWorkoutOccurence {
+            weekDay: number;   // 0-6; 0 = Su, 1 = Ma jne.
+            firstWeek: number; // 0 = ensimmäinen, 1 = toinen jne.
+            repeatEvery?: number;
         }
         // REST-vastauswrapperit
         interface InsertResponse {

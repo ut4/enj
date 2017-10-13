@@ -48,9 +48,9 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
     Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName(name);
-        // Joka maanantai, ei toistu
+        // Joka maanantai, alkaa viikosta 0, ei toistu
         programWorkout.setOccurrences(
-            Collections.singletonList(new Program.Workout.Occurrence(1, null))
+            Collections.singletonList(new Program.Workout.Occurrence(1, 0, null))
         );
         programWorkout.setOrdinal(1);
         programWorkout.setProgramId(programId);
