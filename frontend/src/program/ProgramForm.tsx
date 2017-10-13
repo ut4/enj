@@ -30,7 +30,8 @@ class ProgramForm extends ValidatingComponent<Props, State> {
         this.isInsert = this.props.hasOwnProperty('afterInsert');
         this.evaluators = {
             name: [(input: any) => input.length >= 2 && input.length <= 64],
-            description: [(input: any) => input.length <= 128]
+            description: [(input: any) => input.length <= 128],
+            workouts: [(input: any) => input.length > 0]
         };
         this.initialSerializedProgram = serializeProgram(this.props.program);
         this.state = {
@@ -70,8 +71,9 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
             </label>
-            <ProgramWorkoutsManager program={ this.state.program } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => this.receiveProgramWorkouts(programWorkouts) }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || !this.state.program.workouts.length } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <ProgramWorkoutsManager program={ this.state.program } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => { this.receiveProgramWorkouts(programWorkouts); this.receiveInputValue({target: {value: programWorkouts, name: 'workouts'}}); } }/>
+            { validationMessage(this.evaluators.workouts[0], () => 'Ainakin yksi treeni vaaditaan') }
+            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
     }
     private confirm(): Promise<any> {

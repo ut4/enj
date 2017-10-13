@@ -60,7 +60,7 @@ const utils = {
 };
 
 function findElement<T extends Element>(rendered, tag: string, predicate: Function): T {
-    const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, tag);
+    const allButtons = itu.scryRenderedDOMElementsWithTag(rendered, tag).filter(el => !!el);
     return Array.from(allButtons).find(el => predicate(el)) as T;
 }
 

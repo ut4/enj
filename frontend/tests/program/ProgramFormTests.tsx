@@ -50,8 +50,7 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi taas olla klikattava');
         // Simuloi tyhjä ohjelmatreenilista
-        testProgram.workouts = [];
-        ptu.getRenderedProgramForm(rendered).setState({program: testProgram});
+        (ptu.getRenderedProgramForm(rendered) as any).receiveInputValue({target: {value: [], name: 'workouts'}});
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     QUnit.test('lähettää tiedot backendiin ja kutsuu afterInsert', assert => {

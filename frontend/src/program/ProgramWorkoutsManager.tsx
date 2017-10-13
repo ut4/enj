@@ -11,14 +11,21 @@ class ProgramWorkoutsManager extends Component<
     {program: Enj.API.ProgramRecord; onChange?: Function},
     {programWorkouts: Array<Enj.API.ProgramWorkoutRecord>}
 > {
-    private initialValues: Array<{name: string; occurrences: string}>;
+    private initialValues: Array<Enj.API.ProgramWorkoutRecord>;
     private weekNavigator: WeekNavigator;
     public constructor(props, context) {
         super(props, context);
-        this.state = {programWorkouts: props.program.workouts.slice(0)};
+        this.state = {programWorkouts: props.program.workouts};
         this.initialValues = this.state.programWorkouts.map(programWorkout => ({
+            id: programWorkout.id,
             name: programWorkout.name,
-            occurrences: JSON.stringify(programWorkout.occurrences)
+            occurrences: programWorkout.occurrences.map(o => ({
+                weekDay: o.weekDay,
+                firstWeek: o.firstWeek,
+                repeatEvery: o.repeatEvery
+            })),
+            programId: programWorkout.programId,
+            ordinal: programWorkout.ordinal
         }));
     }
     /**
@@ -31,21 +38,18 @@ class ProgramWorkoutsManager extends Component<
      * Palauttaa kaikki ohjelmatreenit, joiden tietoja on muutettu.
      */
     public getModifiedWorkouts(): Array<Enj.API.ProgramWorkoutRecord> {
-        return this.state.programWorkouts.filter(programWorkout => {
-            const originals = this.props.program.workouts;
-            const original = this.initialValues[originals.indexOf(
-                originals.find(pw => pw.id === programWorkout.id)
-            )];
+        return this.state.programWorkouts.filter(current => {
+            const original = this.initialValues.find(o => o.id === current.id);
             return original &&
-                (programWorkout.name !== original.name ||
-                JSON.stringify(programWorkout.occurrences) !== original.occurrences);
+                (current.name !== original.name ||
+                JSON.stringify(current.occurrences) !== JSON.stringify(original.occurrences));
         });
     }
     /**
      * Palauttaa kaikki listalta poistetut ohjelmatreenit.
      */
     public getDeletedWorkouts(): Array<Enj.API.ProgramWorkoutRecord> {
-        return this.props.program.workouts.filter(a =>
+        return this.initialValues.filter(a =>
             !this.state.programWorkouts.some(b => b.id === a.id)
         );
     }
@@ -148,19 +152,23 @@ class WeekNavigator extends Component<
     {nthWeek: number; start: Date; end: Date}
 > {
     private weekCount: number;
+    private previousProgramStart: number;
+    private previousProgramEnd: number;
     public constructor(props, context) {
         super(props, context);
-        const start = dateUtils.getMonday(new Date(props.program.start * 1000));
-        const end = new Date(start);
-        end.setDate(end.getDate() + 7);
-        this.state = {start, end, nthWeek: this.props.nthWeek || 0};
-        this.weekCount = Math.floor((dateUtils.getMonday(new Date(props.program.end * 1000)).getTime() - start.getTime()) / 604800000);
+        this.state = this.makeState(props);
     }
     public getNthWeek(): number {
         return this.state.nthWeek;
     }
     public getWeekCount(): number {
         return this.weekCount;
+    }
+    public componentWillReceiveProps(props) {
+        if (props.program.start !== this.previousProgramStart ||
+            props.program.end !== this.previousProgramEnd) {
+            this.applyState(this.makeState(props));
+        }
     }
     public render() {
         const isLastWeek = this.state.nthWeek + 1 === this.weekCount;
@@ -173,6 +181,15 @@ class WeekNavigator extends Component<
                 }</div>
             <button class="text-button heavy" title="Seuraava viikko" onClick={ e => this.navigate('+') } disabled={ isLastWeek }>&gt;</button>
         </div>;
+    }
+    private makeState(props) {
+        const state = {start: dateUtils.getMonday(new Date(props.program.start * 1000)), nthWeek: props.nthWeek || 0} as any;
+        state.end = new Date(state.start);
+        state.end.setDate(state.end.getDate() + 6);
+        this.weekCount = Math.floor((dateUtils.getMonday(new Date(props.program.end * 1000)).getTime() - state.start.getTime()) / 604800000) + 1;
+        this.previousProgramStart = props.program.start;
+        this.previousProgramEnd = props.program.end;
+        return state;
     }
     private navigate(direction: '-' | '+') {
         let dayDiff;
@@ -190,8 +207,11 @@ class WeekNavigator extends Component<
         newState.start.setDate(this.state.start.getDate() + dayDiff);
         newState.end.setDate(this.state.end.getDate() + dayDiff);
         newState.nthWeek = this.state.nthWeek + weekDiff;
-        this.setState(newState);
-        this.props.onNavigate(newState);
+        this.applyState(newState);
+    }
+    private applyState(state) {
+        this.setState(state);
+        this.props.onNavigate(state);
     }
 }
 

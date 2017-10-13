@@ -122,6 +122,7 @@ QUnit.module('program/ProgramEditView', hooks => {
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout')
             .returns(Promise.resolve(1));
         testProgram = ptu.getSomeTestPrograms()[1];
+        const expectedDeletion = testProgram.workouts[0];
         renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
             // Poista ensimmäinen ohjelmatreeni listalta
             utils.findButtonByAttribute(rendered, 'title', 'Poista').click();
@@ -133,9 +134,9 @@ QUnit.module('program/ProgramEditView', hooks => {
                 assert.ok(programWorkoutInsertStub.notCalled, 'Ei pitäisi lisätä ohjelmatreenejä');
                 assert.ok(programWorkoutSaveStub.notCalled, 'Ei pitäisi päivittää ohjelmatreenejä');
                 assert.ok(programWorkoutDeleteStub.calledOnce, 'Pitäisi tallentaa poistettu ohjelmatreeni');
-                assert.deepEqual(programWorkoutDeleteStub.firstCall.args, [
-                    testProgram.workouts[0]
-                ], 'Pitäisi poistaa poistettu ohjelmatreeni');
+                assert.deepEqual(programWorkoutDeleteStub.firstCall.args, [expectedDeletion],
+                    'Pitäisi poistaa poistettu ohjelmatreeni'
+                );
                 done();
             });
         });
