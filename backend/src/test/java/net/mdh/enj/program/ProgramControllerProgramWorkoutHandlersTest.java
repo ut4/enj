@@ -17,12 +17,12 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void POSTWorkoutAllInsertoiKirjautuneenKäyttäjänOhjelmatreenitTietokantaan() {
         // Insertoi ohjelma, johon testattavat treenit lisätään
-        Program program = this.makeNewProgramEntity("My cool prog");
+        Program program = makeNewProgramEntity("My cool prog");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
         // Luo insertoitavat ohjelmatreenit
         List<Program.Workout> programWorkouts = Collections.singletonList(
-            this.makeNewProgramWorkoutEntity("My cool prog workout", program.getId())
+            makeNewProgramWorkoutEntity("My cool prog workout", program.getId())
         );
         // Lähetä pyyntö
         Response response = this.newPostRequest("program/workout/all", programWorkouts);
@@ -46,16 +46,16 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void POSTWorkoutAllEiInsertoiTreenejäToisenKäyttäjänOhjelmaan() {
         // Insertoi pari ohjelmaa, joista toinen kuuluu toiselle käyttäjälle
-        Program program = this.makeNewProgramEntity("My program");
+        Program program = makeNewProgramEntity("My program");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
-        Program notMyProgram = this.makeNewProgramEntity("Not My program");
+        Program notMyProgram = makeNewProgramEntity("Not My program");
         notMyProgram.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(notMyProgram);
         // Luo insertoitavat ohjelmatreenit, joista jälkimmäinen kuuluu toiselle käyttäjälle
         List<Program.Workout> programWorkouts = Arrays.asList(
-            this.makeNewProgramWorkoutEntity("My cool prog workout", program.getId()),
-            this.makeNewProgramWorkoutEntity("Some other users cool prog workout", notMyProgram.getId())
+            makeNewProgramWorkoutEntity("My cool prog workout", program.getId()),
+            makeNewProgramWorkoutEntity("Some other users cool prog workout", notMyProgram.getId())
         );
         //
         Response response = this.newPostRequest("program/workout/all", programWorkouts);
@@ -71,10 +71,10 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void PUTWorkoutPäivittääOhjelmatreeninTietokantaan() {
         // Luo testidata.
-        Program program = this.makeNewProgramEntity("Testprogram");
+        Program program = makeNewProgramEntity("Testprogram");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
-        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity("Testprogramworkout", program.getId());
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity("Testprogramworkout", program.getId());
         utils.insertProgramWorkout(programWorkout);
         // Muuta treeniliikkeen tietoja.
         programWorkout.setName("updatedName");
@@ -103,11 +103,11 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void PUTWorkoutEiPäivitäToiselleKäyttäjälleKuuluvaaOhjelmatreeniä() {
         // Luo testidata.
-        Program program = this.makeNewProgramEntity("NotMyProgram");
+        Program program = makeNewProgramEntity("NotMyProgram");
         program.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(program);
         String originalProgramWorkoutName = "NotMyProgramworkout";
-        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity(originalProgramWorkoutName, program.getId());
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity(originalProgramWorkoutName, program.getId());
         utils.insertProgramWorkout(programWorkout);
         // Muuta jotain.
         programWorkout.setName("updatedName");
@@ -127,10 +127,10 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void DELETEWorkoutPoistaaOhjelmatreeninTietokannasta() {
         // Luo testidata.
-        Program program = this.makeNewProgramEntity("Another testprogram");
+        Program program = makeNewProgramEntity("Another testprogram");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
-        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity("Another testprogramworkout", program.getId());
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity("Another testprogramworkout", program.getId());
         utils.insertProgramWorkout(programWorkout);
         // Lähetä DELETE-pyyntö
         Response response = this.newDeleteRequest("program/workout/" + programWorkout.getId());
@@ -148,10 +148,10 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
     @Test
     public void DELETEWorkoutEiPoistaToiselleKäyttäjälleKuuluvaaOhjelmatreeniä() {
         // Luo testidata.
-        Program program = this.makeNewProgramEntity("Another notMyProgram");
+        Program program = makeNewProgramEntity("Another notMyProgram");
         program.setUserId(TestData.TEST_USER_ID2);
         utils.insertProgram(program);
-        Program.Workout programWorkout = this.makeNewProgramWorkoutEntity("Another notMyProgramworkout", program.getId());
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity("Another notMyProgramworkout", program.getId());
         utils.insertProgramWorkout(programWorkout);
         // Lähetä DELETE-pyyntö
         Response response = this.newDeleteRequest("program/workout/" + programWorkout.getId());

@@ -30,13 +30,14 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
                 protected void configure() {
                     bind(ProgramRepository.class).to(ProgramRepository.class);
                     bind(ProgramWorkoutRepository.class).to(ProgramWorkoutRepository.class);
+                    bind(ProgramWorkoutExerciseRepository.class).to(ProgramWorkoutExerciseRepository.class);
                     bind(rollbackingDSFactory).to(DataSourceFactory.class);
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                 }
             });
     }
 
-    Program makeNewProgramEntity(String name) {
+    static Program makeNewProgramEntity(String name) {
         Program program = new Program();
         program.setName(name);
         program.setStart(123L);
@@ -45,7 +46,7 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         return program;
     }
 
-    Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
+    static Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName(name);
         // Joka maanantai, alkaa viikosta 0, ei toistu
@@ -55,5 +56,14 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         programWorkout.setOrdinal(1);
         programWorkout.setProgramId(programId);
         return programWorkout;
+    }
+
+    static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, String exerciseId) {
+        Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
+        programWorkoutExercise.setProgramWorkoutId(programWorkoutId);
+        programWorkoutExercise.setExerciseId(exerciseId);
+        programWorkoutExercise.setExerciseVariantId(null);
+        programWorkoutExercise.setOrdinal(1);
+        return programWorkoutExercise;
     }
 }

@@ -32,6 +32,7 @@ import java.util.List;
 public class ProgramController {
 
     private final ProgramRepository programRepository;
+    private final ProgramWorkoutExerciseRepository programWorkoutExerciseRepository;
     private final ProgramWorkoutRepository programWorkoutRepository;
     private final RequestContext requestContext;
 
@@ -39,10 +40,12 @@ public class ProgramController {
     public ProgramController(
         ProgramRepository programRepository,
         ProgramWorkoutRepository programWorkoutRepository,
+        ProgramWorkoutExerciseRepository programWorkoutExerciseRepository,
         RequestContext requestContext
     ) {
         this.programRepository = programRepository;
         this.programWorkoutRepository = programWorkoutRepository;
+        this.programWorkoutExerciseRepository = programWorkoutExerciseRepository;
         this.requestContext = requestContext;
     }
 
@@ -171,6 +174,28 @@ public class ProgramController {
             () -> this.programWorkoutRepository.delete(programWorkout),
             programWorkout
         ));
+    }
+
+    /**
+     * Lisää kirjautuneen käyttäjän ohjelmatreeniliikkeet {programWorkoutExercises} tietokantaan.
+     */
+    @POST
+    @Path("/workout/exercise/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllProgramWorkoutExercises(
+        @Valid @NotNull List<Program.Workout.Exercise> programWorkoutExercises
+    ) {
+        // Tarkista, kuuluuko {programWorkoutExercises}n viittaamat ohjelmatreenit
+        // kirjautuneelle käyttäjälle
+        if (!this.programWorkoutExerciseRepository.belongsToUser(
+            programWorkoutExercises,
+            this.requestContext.getUserId()
+        )) {
+            throw new BadRequestException();
+        }
+        int insertCount = this.programWorkoutExerciseRepository.insert(programWorkoutExercises);
+        return new MultiInsertResponse(insertCount, programWorkoutExercises);
     }
 
     /**

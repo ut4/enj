@@ -49,6 +49,9 @@ public class DbTestUtils {
     public void insertProgramWorkout(Program.Workout pw) {
         this.insert(this.getInserter("programWorkout"), pw);
     }
+    public void insertProgramWorkoutExercise(Program.Workout.Exercise pwe) {
+        this.insert(this.getInserter("programWorkoutExercise"), pwe);
+    }
     public Object selectOne(String query, RowMapper<?> mapper) {
         return this.getQueryTemplate().queryForObject(query, (Map<String, ?>) null, mapper);
     }

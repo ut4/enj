@@ -103,6 +103,7 @@ public class Program extends DbEntity {
         @NotNull
         @Valid
         private List<Occurrence> occurrences;
+        private List<Exercise> exercises;
         private int ordinal;
         @UUID(allowNull = true)
         private String programId;
@@ -123,6 +124,13 @@ public class Program extends DbEntity {
         }
         public void setOccurrences(List<Occurrence> occurrences) {
             this.occurrences = occurrences;
+        }
+
+        public List<Exercise> getExercises() {
+            return this.exercises;
+        }
+        public void setExercises(List<Exercise> exercises) {
+            this.exercises = exercises;
         }
 
         public int getOrdinal() {
@@ -160,6 +168,78 @@ public class Program extends DbEntity {
         }
         public void setFilters(Filters filters) {
             this.filters = filters;
+        }
+
+        public static class Exercise extends DbEntity {
+            private int ordinal;
+            @UUID
+            private String programWorkoutId;
+            @UUID
+            private String exerciseId;
+            private String exerciseName;
+            @UUID(allowNull = true)
+            private String exerciseVariantId;
+            private String exerciseVariantContent;
+
+            public int getOrdinal() {
+                return this.ordinal;
+            }
+            public void setOrdinal(int ordinal) {
+                this.ordinal = ordinal;
+            }
+
+            public String getProgramWorkoutId() {
+                return this.programWorkoutId;
+            }
+            public void setProgramWorkoutId(String programWorkoutId) {
+                this.programWorkoutId = programWorkoutId;
+            }
+
+            public String getExerciseId() {
+                return this.exerciseId;
+            }
+            public void setExerciseId(String exerciseId) {
+                this.exerciseId = exerciseId;
+            }
+
+            public String getExerciseName() {
+                return this.exerciseName;
+            }
+            public void setExerciseName(String exerciseName) {
+                this.exerciseName = exerciseName;
+            }
+
+            public String getExerciseVariantId() {
+                return this.exerciseVariantId;
+            }
+            public void setExerciseVariantId(String exerciseVariantId) {
+                this.exerciseVariantId = exerciseVariantId;
+            }
+
+            public String getExerciseVariantContent() {
+                return this.exerciseVariantContent;
+            }
+            public void setExerciseVariantContent(String exerciseVariantContent) {
+                this.exerciseVariantContent = exerciseVariantContent;
+            }
+
+            @Override
+            public String toUpdateFields() {
+                throw new RuntimeException("Not implemented yet.");
+            }
+
+            @Override
+            public String toString() {
+                return "Program.Workout.Exercise{" +
+                    "id=" + this.getId() +
+                    ", ordinal=" + this.getOrdinal() +
+                    ", programWorkoutId=" + this.getProgramWorkoutId() +
+                    ", exerciseId=" + this.getExerciseId() +
+                    ", exerciseName=" + this.getExerciseName() +
+                    ", exerciseVariantId=" + this.getExerciseVariantId() +
+                    ", exerciseVariantContent=" + this.getExerciseVariantContent() +
+                "}";
+            }
         }
 
         public static class Occurrence {

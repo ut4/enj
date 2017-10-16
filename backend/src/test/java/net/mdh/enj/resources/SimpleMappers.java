@@ -122,4 +122,16 @@ public class SimpleMappers {
             return programWorkout;
         }
     }
+    public static class ProgramWorkoutExerciseMapper implements RowMapper<Program.Workout.Exercise> {
+        @Override
+        public Program.Workout.Exercise mapRow(ResultSet rs, int i) throws SQLException {
+            Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
+            programWorkoutExercise.setId(rs.getString("id"));
+            programWorkoutExercise.setOrdinal(rs.getInt("ordinal"));
+            programWorkoutExercise.setProgramWorkoutId(rs.getString("programWorkoutId"));
+            programWorkoutExercise.setExerciseId(rs.getString("exerciseId"));
+            programWorkoutExercise.setExerciseVariantId(rs.getString("exerciseVariantId"));
+            return programWorkoutExercise;
+        }
+    }
 }

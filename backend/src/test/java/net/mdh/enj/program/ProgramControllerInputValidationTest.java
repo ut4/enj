@@ -27,6 +27,7 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(Mockito.mock(ProgramRepository.class)).to(ProgramRepository.class);
                     bind(Mockito.mock(ProgramWorkoutRepository.class)).to(ProgramWorkoutRepository.class);
+                    bind(Mockito.mock(ProgramWorkoutExerciseRepository.class)).to(ProgramWorkoutExerciseRepository.class);
                 }
             });
     }
@@ -51,10 +52,12 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         // workouts[0]
         Assert.assertEquals("ProgramController.insert.arg0.workouts[0].name", errors.get(3).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(3).getMessageTemplate());
-        Assert.assertEquals("ProgramController.insert.arg0.workouts[0].occurrences[0].weekDay", errors.get(4).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Max.message}", errors.get(4).getMessageTemplate());
-        Assert.assertEquals("ProgramController.insert.arg0.workouts[0].programId", errors.get(5).getPath());
-        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(5).getMessageTemplate());
+        Assert.assertEquals("ProgramController.insert.arg0.workouts[0].occurrences[0].firstWeek", errors.get(4).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(4).getMessageTemplate());
+        Assert.assertEquals("ProgramController.insert.arg0.workouts[0].occurrences[0].weekDay", errors.get(5).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Max.message}", errors.get(5).getMessageTemplate());
+        Assert.assertEquals("ProgramController.insert.arg0.workouts[0].programId", errors.get(6).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(6).getMessageTemplate());
     }
 
     @Test
@@ -93,7 +96,7 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Response response = this.newPutRequest("program/" + ignoreThis, badData);
         Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
-        Assert.assertEquals(6, errors.size());
+        Assert.assertEquals(7, errors.size());
         Assert.assertEquals("ProgramController.update.arg1.end", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("ProgramController.update.arg1.name", errors.get(1).getPath());
@@ -102,10 +105,12 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(2).getMessageTemplate());
         Assert.assertEquals("ProgramController.update.arg1.workouts[0].name", errors.get(3).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(3).getMessageTemplate());
-        Assert.assertEquals("ProgramController.update.arg1.workouts[0].occurrences[0].weekDay", errors.get(4).getPath());
-        Assert.assertEquals("{javax.validation.constraints.Max.message}", errors.get(4).getMessageTemplate());
-        Assert.assertEquals("ProgramController.update.arg1.workouts[0].programId", errors.get(5).getPath());
-        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(5).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].occurrences[0].firstWeek", errors.get(4).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(4).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].occurrences[0].weekDay", errors.get(5).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Max.message}", errors.get(5).getMessageTemplate());
+        Assert.assertEquals("ProgramController.update.arg1.workouts[0].programId", errors.get(6).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(6).getMessageTemplate());
     }
 
     @Test
@@ -197,6 +202,27 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
     }
 
+
+    @Test
+    public void POSTWorkoutExerciseAllHylkääPyynnönJosDataPuuttuuKokonaan() {
+        this.assertRequestFailsOnNullInput("program/workout/exercise/all", "ProgramController.insertAllProgramWorkoutExercises");
+    }
+
+    @Test
+    public void POSTWorkoutExerciseAllValidoiInputDatan() {
+        Program.Workout.Exercise badData = this.makeNewInvalidProgramWorkoutExercise();
+        Response response = this.newPostRequest("program/workout/exercise/all", Collections.singletonList(badData));
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("ProgramController.insertAllProgramWorkoutExercises.arg0[0].exerciseId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ProgramController.insertAllProgramWorkoutExercises.arg0[0].exerciseVariantId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("ProgramController.insertAllProgramWorkoutExercises.arg0[0].programWorkoutId", errors.get(2).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
+    }
+
     private Program makeNewInvalidProgram() {
         Program badData = new Program();
         badData.setName("s");
@@ -211,5 +237,14 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         badProgramWorkout.setProgramId("not-valid-uuid");
         badData.setWorkouts(Collections.singletonList(badProgramWorkout));
         return badData;
+    }
+
+    private Program.Workout.Exercise makeNewInvalidProgramWorkoutExercise() {
+        Program.Workout.Exercise badProgramWorkoutExercise = new Program.Workout.Exercise();
+        badProgramWorkoutExercise.setProgramWorkoutId("not-valid-uuid");
+        badProgramWorkoutExercise.setExerciseId("not-valid-uuid");
+        badProgramWorkoutExercise.setExerciseVariantId("not-valid-uuid");
+        badProgramWorkoutExercise.setOrdinal(0);
+        return badProgramWorkoutExercise;
     }
 }

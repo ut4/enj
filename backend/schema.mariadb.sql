@@ -1,5 +1,6 @@
 DROP VIEW    IF EXISTS programView;
 DROP TRIGGER IF EXISTS programDeleteTrg;
+DROP TABLE   IF EXISTS programWorkoutExercise;
 DROP TABLE   IF EXISTS programWorkout;
 DROP TABLE   IF EXISTS program;
 DROP VIEW    IF EXISTS setProgressView;
@@ -277,11 +278,26 @@ CREATE TABLE programWorkout (
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
+CREATE TABLE programWorkoutExercise (
+    id CHAR(36) NOT NULL,
+    ordinal TINYINT UNSIGNED NOT NULL,
+    programWorkoutId CHAR(36) NOT NULL,
+    exerciseId CHAR(36) NOT NULL,
+    exerciseVariantId CHAR(36) DEFAULT NULL,
+    FOREIGN KEY (programWorkoutId) REFERENCES programWorkout(id),
+    FOREIGN KEY (exerciseId) REFERENCES exercise(id),
+    FOREIGN KEY (exerciseVariantId) REFERENCES exerciseVariant(id),
+    PRIMARY KEY (id)
+) DEFAULT CHARSET = utf8mb4;
+
 DELIMITER //
 -- Ohjelman poiston yhteydessä ajautuva triggeri, joka poistaa kaikki ohjelmaan
--- kuuluvat ohjelmatreenit ennen varsinaista poistoa
+-- kuuluvat ohjelmatreenit, ja ohjelmatreeniliikkeet ennen varsinaista poistoa
 CREATE TRIGGER programDeleteTrg BEFORE DELETE ON program
 FOR EACH ROW BEGIN
+    DELETE FROM programWorkoutExercise WHERE programWorkoutId = (
+        SELECT programWorkoutId FROM programWorkout WHERE programId = OLD.id
+    );
     DELETE FROM programWorkout WHERE programId = OLD.id;
 END;//
 DELIMITER ;
