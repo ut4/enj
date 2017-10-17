@@ -35,7 +35,7 @@ public class ProgramControllerProgramWorkoutExerciseHandlersTest extends Program
         utils.insertProgramWorkout(programWorkout);
         // Luo insertoitavat ohjelmatreeniliikkeet
         List<Program.Workout.Exercise> programWorkoutExercises = Collections.singletonList(
-            makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise.getId())
+            makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise)
         );
         // Lähetä pyyntö
         Response response = this.newPostRequest("program/workout/exercise/all", programWorkoutExercises);
@@ -72,8 +72,8 @@ public class ProgramControllerProgramWorkoutExerciseHandlersTest extends Program
         utils.insertProgramWorkout(programWorkout2);
         // Insertoi liikkeet treeneihin, joista jälkimmäinen kuuluu toiselle käyttäjälle
         List<Program.Workout.Exercise> programWorkoutExercises = Arrays.asList(
-            makeNewProgramWorkoutExerciseEntity(programWorkout1.getId(), testExercise.getId()),
-            makeNewProgramWorkoutExerciseEntity(programWorkout2.getId(), testExercise.getId())
+            makeNewProgramWorkoutExerciseEntity(programWorkout1.getId(), testExercise),
+            makeNewProgramWorkoutExerciseEntity(programWorkout2.getId(), testExercise)
         );
         //
         Response response = this.newPostRequest("program/workout/exercise/all", programWorkoutExercises);

@@ -1,5 +1,6 @@
 package net.mdh.enj.program;
 
+import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.db.DataSourceFactory;
@@ -58,10 +59,11 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         return programWorkout;
     }
 
-    static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, String exerciseId) {
+    static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, Exercise exercise) {
         Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
         programWorkoutExercise.setProgramWorkoutId(programWorkoutId);
-        programWorkoutExercise.setExerciseId(exerciseId);
+        programWorkoutExercise.setExerciseId(exercise.getId());
+        programWorkoutExercise.setExerciseName(exercise.getName());
         programWorkoutExercise.setExerciseVariantId(null);
         programWorkoutExercise.setOrdinal(1);
         return programWorkoutExercise;

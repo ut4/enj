@@ -314,6 +314,16 @@ CREATE VIEW programView AS
         pw.name       AS programWorkoutName,
         pw.occurrences AS programWorkoutOccurrences,
         pw.ordinal    AS programWorkoutOrdinal,
-        pw.programId  AS programWorkoutProgramId
+        pw.programId  AS programWorkoutProgramId,
+        pwe.id                AS programWorkoutExerciseId,
+        pwe.ordinal           AS programWorkoutExerciseOrdinal,
+        pwe.programWorkoutId  AS programWorkoutExerciseProgramWorkoutId,
+        pwe.exerciseId        AS programWorkoutExerciseExerciseId,
+        e.`name`              AS programWorkoutExerciseExerciseName,
+        pwe.exerciseVariantId AS programWorkoutExerciseVariantId,
+        ev.content            AS programWorkoutExerciseVariantContent
     FROM program p
-    JOIN programWorkout pw ON (pw.programId = p.id);
+    JOIN programWorkout pw ON (pw.programId = p.id)
+    JOIN programWorkoutExercise pwe ON (pwe.programWorkoutId = pw.id)
+    JOIN exercise e ON (e.id = pwe.exerciseId)
+    LEFT JOIN exerciseVariant ev ON (ev.id = pwe.exerciseVariantId);

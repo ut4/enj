@@ -16,6 +16,10 @@ import java.util.List;
 
 public class ProgramControllerProgramHandlersTest extends ProgramControllerTestCase {
 
+    private static Program testProgram;
+    private static Program.Workout testProgramWorkout;
+    private static Exercise testExercise;
+
     @Test
     public void POSTInsertoiUudenOhjelmanJaOhjelmatreenitTietokantaanKirjautuneelleKäyttäjälle() {
         // Luo testiohjelma, ja sille yksi ohjelmatreeni. NOTE - ei userId:tä
@@ -85,47 +89,57 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     }
 
     @Test
+    public void GETReititLiittääPalautettuunOhjelmaanOhjelmatreenitJaliikkeet() {
+        // Insertoi testiohjelma, sille yksi ohjelmatreeni, ja sille yksi liike
+        insertMainGetTestData();
+        // Lähetä pyyntö
+        Response response = newGetRequest("program/mine");
+        Assert.assertEquals(200, response.getStatus());
+        // Palauttiko ohjelman relaatioineen?
+        List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
+        Program actualMyProgramsProgram = findProgram(actualMyPrograms, testProgram.getId());
+        Assert.assertEquals(
+            testProgramWorkout.toString(),
+            actualMyProgramsProgram.getWorkouts().get(0).toString()
+        );
+        Assert.assertEquals(
+            testProgramWorkout.getExercises().get(0).toString(),
+            actualMyProgramsProgram.getWorkouts().get(0).getExercises().get(0).toString()
+        );
+    }
+
+    @Test
     public void GETMineJaGETProgramIdPalauttaaVainKirjautuneelleKäyttäjälleKuuluviaOhjelmia() {
         // Insertoi kaksi testiohjelmaa, joista toinen kuuluu toiselle käyttäjälle
-        Program myProgram = makeNewProgramEntity("My program");
-        myProgram.setUserId(TestData.TEST_USER_ID);
-        utils.insertProgram(myProgram);
-        myProgram.setWorkouts(Collections.singletonList(
-            makeNewProgramWorkoutEntity("MyProgramWorkout", myProgram.getId()))
-        );
-        utils.insertProgramWorkout(myProgram.getWorkouts().get(0));
-        Program notMyProgram = makeNewProgramEntity("Not my program");
-        notMyProgram.setUserId(TestData.TEST_USER_ID2);
-        utils.insertProgram(notMyProgram);
-        notMyProgram.setWorkouts(Collections.singletonList(
-            makeNewProgramWorkoutEntity("NotMyProgramWorkout", notMyProgram.getId()))
-        );
-        utils.insertProgramWorkout(notMyProgram.getWorkouts().get(0));
+        insertMainGetTestData();
+        Program notMyProgram = insertGetTestData("Not my program", TestData.TEST_USER_ID2);
         // -- GET program/mine -----------------------------
         Response response = newGetRequest("program/mine");
         Assert.assertEquals(200, response.getStatus());
         List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
         // Palauttiko vain kirjautuneen käyttäjän ohjelmat?
         Program actualMyProgramsProgram = actualMyPrograms.stream()
-            .filter(p -> p.getId().equals(myProgram.getId()))
+            .filter(p -> p.getId().equals(testProgram.getId()))
             .findFirst().orElse(null);
         Assert.assertNotNull("Pitäisi sisältää kirjautuneen käyttäjän ohjelma",
             actualMyProgramsProgram
         );
+        Assert.assertEquals(1, actualMyProgramsProgram.getWorkouts().size());
         Assert.assertEquals(
-            myProgram.getWorkouts().toString(),
+            testProgram.getWorkouts().toString(),
             actualMyProgramsProgram.getWorkouts().toString()
         );
         Assert.assertFalse("Ei pitäisi sisältää toisen käyttäjän ohjelmaa",
             actualMyPrograms.stream().anyMatch(p -> p.getId().equals(notMyProgram.getId()))
         );
         // -- GET program/{programId} ----------------------------------
-        Response response2 = newGetRequest("program/" + myProgram.getId());
+        Response response2 = newGetRequest("program/" + testProgram.getId());
         Assert.assertEquals(200, response2.getStatus());
         Program actualMyProgram = response2.readEntity(new GenericType<Program>() {});
-        Assert.assertEquals(myProgram, actualMyProgram);
+        Assert.assertEquals(testProgram, actualMyProgram);
+        Assert.assertEquals(1, actualMyProgram.getWorkouts().size());
         Assert.assertEquals(
-            myProgram.getWorkouts().toString(),
+            testProgram.getWorkouts().toString(),
             actualMyProgram.getWorkouts().toString()
         );
         Response response3 = newGetRequest("program/" + notMyProgram.getId());
@@ -176,7 +190,7 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Exercise testExercise = new Exercise();
         testExercise.setName("DELETEProgramTestExercise");
         utils.insertExercise(testExercise);
-        utils.insertProgramWorkoutExercise(makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise.getId()));
+        utils.insertProgramWorkoutExercise(makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise));
         // Lähetä DELETE-pyyntö
         Response response = this.newDeleteRequest("program/" + program.getId());
         Assert.assertEquals(200, response.getStatus());
@@ -205,5 +219,34 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
             new MapSqlParameterSource("id", program.getId()),
             new SimpleMappers.ProgramMapper()
         ));
+    }
+
+    private static void insertMainGetTestData() {
+        if (testProgram == null) {
+            testProgram = insertGetTestData("ProgramsGETJoinTestProgram", TestData.TEST_USER_ID);
+            testProgramWorkout = testProgram.getWorkouts().get(0);
+        }
+    }
+    private static Program insertGetTestData(String name, String userId) {
+        Program program = makeNewProgramEntity(name);
+        program.setUserId(userId);
+        utils.insertProgram(program);
+        Program.Workout pw = makeNewProgramWorkoutEntity(name + "Workout", program.getId());
+        program.setWorkouts(Collections.singletonList(pw));
+        utils.insertProgramWorkout(pw);
+        if (testExercise == null) {
+            testExercise = new Exercise();
+            testExercise.setName(name + "Exercise");
+            utils.insertExercise(testExercise);
+        }
+        pw.setExercises(Collections.singletonList(makeNewProgramWorkoutExerciseEntity(pw.getId(), testExercise)));
+        utils.insertProgramWorkoutExercise(pw.getExercises().get(0));
+        return program;
+    }
+
+    private static Program findProgram(List<Program> programs, String id) {
+        return programs.stream()
+            .filter(p -> p.getId().equals(id))
+            .findFirst().orElse(null);
     }
 }

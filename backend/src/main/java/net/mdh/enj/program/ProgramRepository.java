@@ -56,9 +56,11 @@ public class ProgramRepository extends BasicRepository<Program> {
         private static final class ProgramWorkoutMapper extends NoDupeRowMapper<Program.Workout> {
 
             private static final String ID_COL = "programWorkoutId";
+            private final SubCollector<Program.Workout.Exercise> exerciseCollector;
 
             private ProgramWorkoutMapper() {
                 super(ID_COL);
+                exerciseCollector = new SubCollector<>(new ProgramWorkoutExerciseMapper(), ID_COL);
             }
 
             @Override
@@ -69,7 +71,28 @@ public class ProgramRepository extends BasicRepository<Program> {
                 programWorkout.setOccurrences(parseOccurrences(rs.getString("programWorkoutOccurrences")));
                 programWorkout.setOrdinal(rs.getInt("programWorkoutOrdinal"));
                 programWorkout.setProgramId(rs.getString("programId"));
+                programWorkout.setExercises(exerciseCollector.collect(rs, rowNum, programWorkout.getId()));
                 return programWorkout;
+            }
+
+            private static final class ProgramWorkoutExerciseMapper extends NoDupeRowMapper<Program.Workout.Exercise> {
+
+                ProgramWorkoutExerciseMapper() {
+                    super("programWorkoutExerciseId");
+                }
+
+                @Override
+                public Program.Workout.Exercise doMapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
+                    programWorkoutExercise.setId(rs.getString("programWorkoutExerciseId"));
+                    programWorkoutExercise.setOrdinal(rs.getInt("programWorkoutExerciseOrdinal"));
+                    programWorkoutExercise.setProgramWorkoutId(rs.getString("programWorkoutExerciseProgramWorkoutId"));
+                    programWorkoutExercise.setExerciseId(rs.getString("programWorkoutExerciseExerciseId"));
+                    programWorkoutExercise.setExerciseName(rs.getString("programWorkoutExerciseExerciseName"));
+                    programWorkoutExercise.setExerciseVariantId(rs.getString("programWorkoutExerciseVariantId"));
+                    programWorkoutExercise.setExerciseVariantContent(rs.getString("programWorkoutExerciseVariantContent"));
+                    return programWorkoutExercise;
+                }
             }
         }
     }
