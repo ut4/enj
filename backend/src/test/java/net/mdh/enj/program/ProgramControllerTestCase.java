@@ -15,6 +15,7 @@ import java.util.Collections;
 public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
 
     static DbTestUtils utils;
+    private static Exercise testExercise;
 
     @BeforeClass
     public static void beforeClass() {
@@ -67,5 +68,22 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         programWorkoutExercise.setExerciseVariantId(null);
         programWorkoutExercise.setOrdinal(1);
         return programWorkoutExercise;
+    }
+
+    static Program insertTestData(String name, String userId) {
+        Program program = makeNewProgramEntity(name);
+        program.setUserId(userId);
+        utils.insertProgram(program);
+        Program.Workout pw = makeNewProgramWorkoutEntity(name + "Workout", program.getId());
+        program.setWorkouts(Collections.singletonList(pw));
+        utils.insertProgramWorkout(pw);
+        if (testExercise == null) {
+            testExercise = new Exercise();
+            testExercise.setName("ProgramControllerTestExercise");
+            utils.insertExercise(testExercise);
+        }
+        pw.setExercises(Collections.singletonList(makeNewProgramWorkoutExerciseEntity(pw.getId(), testExercise)));
+        utils.insertProgramWorkoutExercise(pw.getExercises().get(0));
+        return program;
     }
 }

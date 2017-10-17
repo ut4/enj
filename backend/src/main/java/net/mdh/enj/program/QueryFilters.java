@@ -3,12 +3,13 @@ package net.mdh.enj.program;
 import net.mdh.enj.mapping.SelectQueryFilters;
 import java.util.ArrayList;
 
-class SelectFilters implements SelectQueryFilters {
+class QueryFilters implements SelectQueryFilters {
 
     public String id;
     public String userId;
 
-    SelectFilters(String userId) {
+    QueryFilters() {}
+    QueryFilters(String userId) {
         this.userId = userId;
     }
 

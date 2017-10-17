@@ -96,7 +96,7 @@ public class Program extends DbEntity {
      * Ohjelmatreeni-entiteetti.
      */
     @JsonIgnoreProperties({"occurrencesAsString"})
-    public static class Workout extends DbEntity {
+    public static class Workout extends DbEntity implements Filterable {
         @NotNull
         @Size(min = 2, max = 64)
         private String name;
@@ -107,7 +107,7 @@ public class Program extends DbEntity {
         private int ordinal;
         @UUID(allowNull = true)
         private String programId;
-        private Filters filters;
+        private QueryFilters filters;
 
         public String getName() {
             return this.name;
@@ -163,14 +163,16 @@ public class Program extends DbEntity {
             "}";
         }
 
-        public Filters getFilters() {
+        @Override
+        public QueryFilters getFilters() {
             return this.filters;
         }
-        public void setFilters(Filters filters) {
+        @Override
+        public void setFilters(QueryFilters filters) {
             this.filters = filters;
         }
 
-        public static class Exercise extends DbEntity {
+        public static class Exercise extends DbEntity implements Filterable {
             private int ordinal;
             @UUID
             private String programWorkoutId;
@@ -180,6 +182,7 @@ public class Program extends DbEntity {
             @UUID(allowNull = true)
             private String exerciseVariantId;
             private String exerciseVariantContent;
+            private QueryFilters filters;
 
             public int getOrdinal() {
                 return this.ordinal;
@@ -224,8 +227,17 @@ public class Program extends DbEntity {
             }
 
             @Override
+            public QueryFilters getFilters() {
+                return this.filters;
+            }
+            @Override
+            public void setFilters(QueryFilters filters) {
+                this.filters = filters;
+            }
+
+            @Override
             public String toUpdateFields() {
-                throw new RuntimeException("Not implemented yet.");
+                return "ordinal = :ordinal, exerciseId = :exerciseId, exerciseVariantId = :exerciseVariantId";
             }
 
             @Override
@@ -279,23 +291,6 @@ public class Program extends DbEntity {
             @Override
             public String toString() {
                 return this.weekDay + "," + this.firstWeek + "," + this.repeatEvery;
-            }
-        }
-
-        static class Filters {
-
-            private String userId;
-
-            Filters() {}
-            Filters(String userId) {
-                this.userId = userId;
-            }
-
-            public String getUserId() {
-                return this.userId;
-            }
-            public void setUserId(String userId) {
-                this.userId = userId;
             }
         }
     }

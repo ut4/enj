@@ -9,10 +9,22 @@ import java.util.List;
 public class ProgramWorkoutExerciseRepository extends BasicRepository<Program.Workout.Exercise> {
 
     private final static String TABLE_NAME = "programWorkoutExercise";
+    // Päivitys-, ja poistokyselyn WHERE-osio
+    private final static String FILTER_Q = (
+        "id = :id AND EXISTS(SELECT userId FROM (" +
+            " SELECT p.userId FROM program p" +
+            " JOIN programWorkout pw ON (pw.programId = p.id)" +
+            " WHERE p.userId = :filters.userId AND pw.id = :programWorkoutId" +
+        " ) as cond)"
+    );
 
     @Inject
     public ProgramWorkoutExerciseRepository(DataSourceFactory dSFactory) {
         super(dSFactory, TABLE_NAME);
+    }
+
+    int updateMany(List<Program.Workout.Exercise> programWorkoutExercises) {
+        return super.updateMany(programWorkoutExercises, FILTER_Q);
     }
 
     /**

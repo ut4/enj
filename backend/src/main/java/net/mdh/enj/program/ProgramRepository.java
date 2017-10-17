@@ -19,11 +19,11 @@ public class ProgramRepository extends BasicRepository<Program> {
         super(dSFactory, TABLE_NAME);
     }
 
-    List<Program> selectAll(SelectFilters filters) {
+    List<Program> selectAll(QueryFilters filters) {
         return super.selectAll(filters, new ProgramMapper());
     }
 
-    Program selectOne(SelectFilters filters) {
+    Program selectOne(QueryFilters filters) {
         return super.selectOne(filters, new ProgramMapper());
     }
 

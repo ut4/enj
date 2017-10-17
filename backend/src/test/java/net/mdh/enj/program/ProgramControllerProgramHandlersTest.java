@@ -18,7 +18,6 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
 
     private static Program testProgram;
     private static Program.Workout testProgramWorkout;
-    private static Exercise testExercise;
 
     @Test
     public void POSTInsertoiUudenOhjelmanJaOhjelmatreenitTietokantaanKirjautuneelleKäyttäjälle() {
@@ -91,7 +90,7 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     @Test
     public void GETReititLiittääPalautettuunOhjelmaanOhjelmatreenitJaliikkeet() {
         // Insertoi testiohjelma, sille yksi ohjelmatreeni, ja sille yksi liike
-        insertMainGetTestData();
+        insertMainGETTestData();
         // Lähetä pyyntö
         Response response = newGetRequest("program/mine");
         Assert.assertEquals(200, response.getStatus());
@@ -111,8 +110,8 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     @Test
     public void GETMineJaGETProgramIdPalauttaaVainKirjautuneelleKäyttäjälleKuuluviaOhjelmia() {
         // Insertoi kaksi testiohjelmaa, joista toinen kuuluu toiselle käyttäjälle
-        insertMainGetTestData();
-        Program notMyProgram = insertGetTestData("Not my program", TestData.TEST_USER_ID2);
+        insertMainGETTestData();
+        Program notMyProgram = insertTestData("Not my program", TestData.TEST_USER_ID2);
         // -- GET program/mine -----------------------------
         Response response = newGetRequest("program/mine");
         Assert.assertEquals(200, response.getStatus());
@@ -221,27 +220,11 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         ));
     }
 
-    private static void insertMainGetTestData() {
+    private static void insertMainGETTestData() {
         if (testProgram == null) {
-            testProgram = insertGetTestData("ProgramsGETJoinTestProgram", TestData.TEST_USER_ID);
+            testProgram = insertTestData("ProgramControllerTestProgram", TestData.TEST_USER_ID);
             testProgramWorkout = testProgram.getWorkouts().get(0);
         }
-    }
-    private static Program insertGetTestData(String name, String userId) {
-        Program program = makeNewProgramEntity(name);
-        program.setUserId(userId);
-        utils.insertProgram(program);
-        Program.Workout pw = makeNewProgramWorkoutEntity(name + "Workout", program.getId());
-        program.setWorkouts(Collections.singletonList(pw));
-        utils.insertProgramWorkout(pw);
-        if (testExercise == null) {
-            testExercise = new Exercise();
-            testExercise.setName(name + "Exercise");
-            utils.insertExercise(testExercise);
-        }
-        pw.setExercises(Collections.singletonList(makeNewProgramWorkoutExerciseEntity(pw.getId(), testExercise)));
-        utils.insertProgramWorkoutExercise(pw.getExercises().get(0));
-        return program;
     }
 
     private static Program findProgram(List<Program> programs, String id) {

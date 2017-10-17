@@ -75,7 +75,7 @@ public class ProgramController {
     @GET
     @Path("/mine")
     public List<Program> getMyPrograms() {
-        return this.programRepository.selectAll(new SelectFilters(this.requestContext.getUserId()));
+        return this.programRepository.selectAll(new QueryFilters(this.requestContext.getUserId()));
     }
 
     /**
@@ -84,7 +84,7 @@ public class ProgramController {
     @GET
     @Path("/{programId}")
     public Program getMyProgram(@PathParam("programId") @UUID String id) {
-        SelectFilters filters = new SelectFilters(this.requestContext.getUserId());
+        QueryFilters filters = new QueryFilters(this.requestContext.getUserId());
         filters.setId(id);
         return this.programRepository.selectOne(filters);
     }
@@ -154,7 +154,7 @@ public class ProgramController {
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllProgramWorkouts(@Valid @NotNull Program.Workout... programWorkouts) {
-        return new UpdateResponse(this.alterProgramWorkouts(
+        return new UpdateResponse(this.alterProgramWorkoutsOrExercises(
             () -> this.programWorkoutRepository.updateMany(Arrays.asList(programWorkouts)),
             programWorkouts
         ));
@@ -170,7 +170,7 @@ public class ProgramController {
     public DeleteResponse deleteProgramWorkout(@PathParam("programWorkoutId") @UUID String id) {
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setId(id);
-        return new DeleteResponse(this.alterProgramWorkouts(
+        return new DeleteResponse(this.alterProgramWorkoutsOrExercises(
             () -> this.programWorkoutRepository.delete(programWorkout),
             programWorkout
         ));
@@ -199,20 +199,38 @@ public class ProgramController {
     }
 
     /**
+     * Päivittää kirjautuneen käyttäjän ohjelmatreeniliikkeet {programWorkoutExercises} tietokantaan.
+     */
+    @PUT
+    @Path("/workout/exercise")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public UpdateResponse updateAllProgramWorkoutExercises(@Valid @NotNull Program.Workout.Exercise... programWorkoutExercises) {
+        return new UpdateResponse(this.alterProgramWorkoutsOrExercises(
+            () -> this.programWorkoutExerciseRepository.updateMany(Arrays.asList(programWorkoutExercises)),
+            programWorkoutExercises
+        ));
+    }
+
+    /**
      * Ajaa päivitys-, tai poistokyselyn {updateOrDeleteQueryExecutor}, ja palauttaa
      * päivitettyjen/poistettujen rivien lukumäärän, tai heittää poikkeuksen jos
-     * jokin ohjelmatreeneistä ei kuulunut kirjautuneelle käyttäjälle.
+     * jokin ohjelmatreeneistä tai ohjelmatreeniliikkeen viittaamista ohjelmatreeneistä
+     * ei kuulunut kirjautuneelle käyttäjälle.
      *
-     * @throws BadRequestException Jos poistettava ohjelmatreeni ei kuulunut kirjautuneelle käyttäjälle
+     * @throws BadRequestException Jos päivitettävä/poistettava itemi ei kuulunut kirjautuneelle käyttäjälle
      */
-    private int alterProgramWorkouts(Supplier<Integer> updateOrDeleteQueryExecutor, Program.Workout... programWorkouts) {
+    private int alterProgramWorkoutsOrExercises(
+        Supplier<Integer> updateOrDeleteQueryExecutor,
+        Filterable... programWorkoutsOrExercises
+    ) {
         // Aseta kirjautuneen käyttäjän id filters.userId:ksi
-        for (Program.Workout programWorkout: programWorkouts) {
-            programWorkout.setFilters(new Program.Workout.Filters(this.requestContext.getUserId()));
+        for (Filterable item: programWorkoutsOrExercises) {
+            item.setFilters(new QueryFilters(this.requestContext.getUserId()));
         }
         int rowCount = updateOrDeleteQueryExecutor.get();
         // userId ei täsmännyt
-        if (rowCount < programWorkouts.length) {
+        if (rowCount < programWorkoutsOrExercises.length) {
             throw new BadRequestException();
         }
         return rowCount;

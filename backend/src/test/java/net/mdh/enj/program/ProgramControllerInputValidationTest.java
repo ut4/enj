@@ -223,6 +223,24 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
     }
 
+    @Test
+    public void PUTWorkoutExerciseValidoiInputTaulukon() {
+        // Luo virheellinen input
+        Program.Workout.Exercise badData = this.makeNewInvalidProgramWorkoutExercise();
+        // Lähetä pyyntö
+        Response response = this.newPutRequest("program/workout/exercise", Collections.singletonList(badData));
+        Assert.assertEquals(400, response.getStatus());
+        // Sisältääkö validaatiovirheet?
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("ProgramController.updateAllProgramWorkoutExercises.arg0[0].exerciseId", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("ProgramController.updateAllProgramWorkoutExercises.arg0[0].exerciseVariantId", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("ProgramController.updateAllProgramWorkoutExercises.arg0[0].programWorkoutId", errors.get(2).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
+    }
+
     private Program makeNewInvalidProgram() {
         Program badData = new Program();
         badData.setName("s");
