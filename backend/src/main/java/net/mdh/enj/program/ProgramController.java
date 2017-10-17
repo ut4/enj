@@ -213,6 +213,22 @@ public class ProgramController {
     }
 
     /**
+     * Poistaa kirjautuneen käyttäjän ohjelmatreeniliikkeen id:llä {programWorkoutExerciseId} tietokannasta.
+     */
+    @DELETE
+    @Path("/workout/exercise/{programWorkoutExerciseId}")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse deleteProgramWorkoutExercise(@PathParam("programWorkoutExerciseId") @UUID String id) {
+        Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
+        programWorkoutExercise.setId(id);
+        return new DeleteResponse(this.alterProgramWorkoutsOrExercises(
+            () -> this.programWorkoutExerciseRepository.delete(programWorkoutExercise),
+            programWorkoutExercise
+        ));
+    }
+
+    /**
      * Ajaa päivitys-, tai poistokyselyn {updateOrDeleteQueryExecutor}, ja palauttaa
      * päivitettyjen/poistettujen rivien lukumäärän, tai heittää poikkeuksen jos
      * jokin ohjelmatreeneistä tai ohjelmatreeniliikkeen viittaamista ohjelmatreeneistä

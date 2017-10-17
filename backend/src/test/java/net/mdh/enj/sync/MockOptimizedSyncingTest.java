@@ -34,12 +34,18 @@ public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
             "{'id':5,'route':{'url':'workout/exercise/1','method':'DELETE'},'data':null}," +
             "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':null}," +
             "{'id':7,'route':{'url':'exercise/uuid','method':'PUT'},'data':null}," +
-            "{'id':8,'route':{'url':'workout/exercise/all','method':'POST'},'data':null}" +
+            "{'id':8,'route':{'url':'workout/exercise/all','method':'POST'},'data':null}," +
+            "{'id':9,'route':{'url':'program/workout/exercise','method':'PUT'},'data':null}," +
+            "{'id':10,'route':{'url':'program','method':'POST'},'data':null}," +
+            "{'id':11,'route':{'url':'program/workout','method':'POST'},'data':null}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(queue.get(3));
         expected.add(queue.get(6));
         expected.add(queue.get(2));
+        expected.add(queue.get(9));
+        expected.add(queue.get(10));
+        expected.add(queue.get(8));
         expected.add(queue.get(0));
         expected.add(queue.get(1));
         expected.add(queue.get(7));

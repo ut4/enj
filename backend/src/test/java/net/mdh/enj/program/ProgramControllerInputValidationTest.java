@@ -241,6 +241,18 @@ public class ProgramControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(2).getMessageTemplate());
     }
 
+    @Test
+    public void DELETEWorkoutExerciseValidoiUrlin() {
+        //
+        Response response = this.newDeleteRequest("program/workout/exercise/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("ProgramController.deleteProgramWorkoutExercise.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
+
     private Program makeNewInvalidProgram() {
         Program badData = new Program();
         badData.setName("s");

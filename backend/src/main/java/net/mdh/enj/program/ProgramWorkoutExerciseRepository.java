@@ -11,11 +11,12 @@ public class ProgramWorkoutExerciseRepository extends BasicRepository<Program.Wo
     private final static String TABLE_NAME = "programWorkoutExercise";
     // Päivitys-, ja poistokyselyn WHERE-osio
     private final static String FILTER_Q = (
-        "id = :id AND EXISTS(SELECT userId FROM (" +
-            " SELECT p.userId FROM program p" +
-            " JOIN programWorkout pw ON (pw.programId = p.id)" +
-            " WHERE p.userId = :filters.userId AND pw.id = :programWorkoutId" +
-        " ) as cond)"
+        "id = :id AND EXISTS(SELECT * FROM (" +
+            "SELECT pwe.id FROM programWorkoutExercise pwe" +
+            " JOIN programWorkout pw ON (pw.id = pwe.programWorkoutId)" +
+            " JOIN program p ON (p.id = pw.programId)" +
+            " WHERE pwe.id = :id AND p.userId = :filters.userId" +
+        ") as cond)"
     );
 
     @Inject
@@ -25,6 +26,10 @@ public class ProgramWorkoutExerciseRepository extends BasicRepository<Program.Wo
 
     int updateMany(List<Program.Workout.Exercise> programWorkoutExercises) {
         return super.updateMany(programWorkoutExercises, FILTER_Q);
+    }
+
+    int delete(Program.Workout.Exercise programWorkoutExercise) {
+        return super.delete(programWorkoutExercise, FILTER_Q);
     }
 
     /**

@@ -57,9 +57,10 @@ public class SyncController {
         operationPriorities.put("exercise/variant", 1);
         operationPriorities.put("program",          2);
         operationPriorities.put("program/workout",  3);
-        operationPriorities.put("workout",          4);
-        operationPriorities.put("workout/exercise", 5);
-        operationPriorities.put("workout/exercise/set", 6);
+        operationPriorities.put("program/workout/exercise", 4);
+        operationPriorities.put("workout",          5);
+        operationPriorities.put("workout/exercise", 6);
+        operationPriorities.put("workout/exercise/set", 7);
         methodPriorities = new HashMap<>();
         methodPriorities.put(HttpMethod.POST, 0);
         methodPriorities.put(HttpMethod.PUT, 1);

@@ -248,7 +248,7 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
     }
 
     /*
-     * Palauttaa treeniliikeen, ja sille kuuluvien settien yhteislukumäärän.
+     * Palauttaa treeniliikkeen, ja sille kuuluvien settien yhteislukumäärän.
      */
     private Integer selectDataCount(String workouExerciseId) {
         Integer count = (Integer) utils.selectOneWhere(

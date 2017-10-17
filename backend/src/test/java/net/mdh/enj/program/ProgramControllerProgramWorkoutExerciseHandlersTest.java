@@ -127,4 +127,38 @@ public class ProgramControllerProgramWorkoutExerciseHandlersTest extends Program
         );
         Assert.assertEquals(originalOrdinal, actualProgramWorkoutExercise.getOrdinal());
     }
+
+    @Test
+    public void DELETEWorkoutExercisePoistaaOhjelmatreeniliikkeenTietokannasta() {
+        // Luo testidata.
+        Program program = insertTestData("WorkoutExerciseDELETETestProgram", TestData.TEST_USER_ID);
+        Program.Workout.Exercise programWorkoutExercise = program.getWorkouts().get(0).getExercises().get(0);
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/workout/exercise/" + programWorkoutExercise.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Poistiko ohjelmatreenin kannasta?
+        Assert.assertNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkoutExercise WHERE id = :id",
+            new MapSqlParameterSource("id", programWorkoutExercise.getId()),
+            new SimpleMappers.ProgramWorkoutExerciseMapper()
+        ));
+    }
+
+    @Test
+    public void DELETEWorkoutExerciseEiPoistaToiselleKäyttäjälleKuuluvaaOhjelmatreeniliikettä() {
+        // Luo testidata.
+        Program program = insertTestData("WorkoutExerciseDELETETestNotMyProgram", TestData.TEST_USER_ID2);
+        Program.Workout.Exercise programWorkoutExercise = program.getWorkouts().get(0).getExercises().get(0);
+        // Lähetä DELETE-pyyntö
+        Response response = this.newDeleteRequest("program/workout/exercise/" + programWorkoutExercise.getId());
+        Assert.assertEquals(400, response.getStatus());
+        // Jättikö tiedot rauhaan?
+        Assert.assertNotNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkoutExercise WHERE id = :id",
+            new MapSqlParameterSource("id", programWorkoutExercise.getId()),
+            new SimpleMappers.ProgramWorkoutExerciseMapper()
+        ));
+    }
 }
