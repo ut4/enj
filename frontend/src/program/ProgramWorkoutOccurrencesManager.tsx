@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
+import CrudList from 'src/ui/CrudList';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
-import Modal from 'src/ui/Modal';
 import { dateUtils } from 'src/common/utils';
 
 interface Props {
@@ -15,84 +15,34 @@ interface State {
 /**
  * Muokattava ohjelmatreenipäivälista.
  */
-class ProgramWorkoutOccurrencesManager extends Component<Props, State> {
-    private originals: Array<Enj.API.ProgramWorkoutOccurence>;
-    constructor(props, context) {
-        super(props, context);
-        this.state = {occurrences: props.occurrences};
-        this.originals = props.occurrences.map(o => ({
+class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOccurence> {
+    protected ModalClass = OccurrenceModal;
+    protected modalPropName = 'occurrence';
+    protected confirmButtonText = 'Lisää päivä';
+    protected clone(o: Enj.API.ProgramWorkoutOccurence): Enj.API.ProgramWorkoutOccurence {
+        return {
             weekDay: o.weekDay,
             firstWeek: o.firstWeek,
             repeatEvery: o.repeatEvery
-        }));
+        };
     }
-    /**
-     * Palauttaa modifoimattoman staten.
-     */
-    public getOriginalOccurrences(): Array<Enj.API.ProgramWorkoutOccurence> {
-        return this.originals;
+    protected new(): Enj.API.ProgramWorkoutOccurence {
+        return {
+            weekDay: 1,
+            firstWeek: 0,
+            repeatEvery: 7
+        };
     }
-    public render() {
-        return <div>
-            <table class="crud-table striped responsive">
-                <thead><tr>
-                    <th>Viikonpäivä</th>
-                    <th>Toistuvuus</th>
-                    <th>Alkaen</th>
-                    <th>&nbsp;</th>
-                </tr></thead>
-                <tbody>{ this.state.occurrences.length
-                    ? this.state.occurrences.map((occurrence, i) =>
-                        <tr>
-                            <td data-th="Viikonpäivä">{ dateUtils.getShortWeekDay(occurrence.weekDay) }</td>
-                            <td data-th="Toistuvuus">{ getRepeativityAsText(occurrence.repeatEvery) }</td>
-                            <td data-th="Alkaen">{ occurrence.firstWeek + 1 }. viikosta</td>
-                            <td>
-                                <button class="icon-button edit-dark" onClick={ () => this.openEditModal(occurrence, i) } title="Muokkaa"></button>
-                                <button class="icon-button delete-dark" onClick={ () => this.deleteOccurrence(i) } title="Poista"></button>
-                            </td>
-                        </tr>
-                    )
-                    : <tr><td colspan="4">-</td></tr>
-                }</tbody>
-                <tfoot><tr>
-                    <td colspan="4"><button class="nice-button" onClick={ () => this.openAddModal() }>Lisää päivä</button></td>
-                </tr></tfoot>
-            </table>
-        </div>;
+    protected getListItemContent(o: Enj.API.ProgramWorkoutOccurence, index: number): Array<HTMLTableCellElement> {
+        return [
+            <td>{ dateUtils.getShortWeekDay(o.weekDay) }</td>,
+            <td>{ getRepeativityAsText(o.repeatEvery) }</td>,
+            <td>{ o.firstWeek + 1 }. viikosta</td>
+        ];
     }
-    private openAddModal() {
-        Modal.open(() =>
-            <OccurrenceModal
-                occurrence={ {weekDay: 1, firstWeek: 0, repeatEvery: 7} }
-                programWeekCount={ this.props.programWeekCount }
-                afterInsert={ occurrence => {
-                    const occurrences = this.state.occurrences;
-                    occurrences.push(occurrence);
-                    this.applyState(occurrences);
-                } }/>
-        );
-    }
-    private openEditModal(occurrence: Enj.API.ProgramWorkoutOccurence, index: number) {
-        Modal.open(() =>
-            <OccurrenceModal
-                occurrence={ occurrence }
-                programWeekCount={ this.props.programWeekCount }
-                afterUpdate={ () => {
-                    const occurrences = this.state.occurrences;
-                    occurrences[index] = occurrence;
-                    this.applyState(occurrences);
-                } }/>
-        );
-    }
-    private deleteOccurrence(index: number) {
-        const occurrences = this.state.occurrences;
-        occurrences.splice(index, 1);
-        this.applyState(occurrences);
-    }
-    private applyState(occurrences: Array<Enj.API.ProgramWorkoutOccurence>) {
-        this.props.onChange && this.props.onChange(occurrences);
-        this.setState({occurrences});
+    protected getModalProps(props) {
+        props.programWeekCount = this.props.programWeekCount;
+        return props;
     }
 }
 
@@ -139,7 +89,7 @@ class OccurrenceModal extends Component<
             <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } shouldConfirmButtonBeDisabled={ () => false } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
         </div>;
     }
-    private getWeekNumbers() {
+    private getWeekNumbers(): Array<number> {
         const out = [];
         for (let i = 0; i < this.props.programWeekCount; i++) {
             out.push(i);
@@ -156,7 +106,7 @@ class OccurrenceModal extends Component<
     }
 }
 
-function getRepeativityAsText(repeatEvery: number | string) {
+function getRepeativityAsText(repeatEvery: number | string): string {
     let text = 'Joka ' + repeatEvery + '. päivä';
     if (repeatEvery === '' || !repeatEvery) {
         text = 'Ei toistu';
@@ -168,4 +118,40 @@ function getRepeativityAsText(repeatEvery: number | string) {
     return text;
 }
 
+const occurrenceFinder = {
+    // TODO - mitä jos päivällä useita treenejä?
+    findWorkout(
+        programWorkouts: Array<Enj.API.ProgramWorkoutRecord>,
+        weekDay: number,
+        nthWeek: number
+    ): [Enj.API.ProgramWorkoutRecord, number] {
+        for (let i = 0; i < programWorkouts.length; i++) {
+            const programWorkout = programWorkouts[i];
+            if (programWorkout.occurrences.some(o => {
+                const nthDay = o.weekDay + (o.firstWeek * 7);
+                if (!o.repeatEvery) {
+                    return nthDay === weekDay + nthWeek * 7;
+                }
+                const day = nthWeek * 7 + (weekDay || 7) - nthDay;
+                return day > -1 && day % o.repeatEvery === 0;
+            })) {
+                return [programWorkout, i];
+            }
+        }
+        return [undefined, -1];
+    },
+    findWorkoutForDate(
+        programWorkouts: Array<Enj.API.ProgramWorkoutRecord>,
+        date: Date,
+        programStart: Date
+    ): [Enj.API.ProgramWorkoutRecord, number] {
+        return this.findWorkout(
+            programWorkouts,
+            date.getDay(),
+            Math.floor((dateUtils.getMonday(date).getTime() - (programStart).getTime()) / 604800000) + 1
+        );
+    }
+};
+
 export default ProgramWorkoutOccurrencesManager;
+export { occurrenceFinder };

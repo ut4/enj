@@ -107,8 +107,18 @@ declare module Enj {
             id?: AAGUID;
             name: string;
             occurrences: Array<ProgramWorkoutOccurence>;
+            exercises: Array<ProgramWorkoutExercise>;
             ordinal: number;
             programId: AAGUID;
+        }
+        interface ProgramWorkoutExercise {
+            id: AAGUID;
+            ordinal: number;
+            programWorkoutId: AAGUID;
+            exerciseId: AAGUID;
+            exerciseName: string;
+            exerciseVariantId: AAGUID;
+            exerciseVariantContent: string;
         }
         interface ProgramWorkoutOccurence {
             weekDay: number;   // 0-6; 0 = Su, 1 = Ma jne.

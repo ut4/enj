@@ -29,6 +29,44 @@ class ExerciseSelector extends Component<Props, State> {
             );
         }
     }
+    public static assign<T extends Enj.API.WorkoutExerciseRecord|Enj.API.ProgramWorkoutExercise>(
+        to: T,
+        selectedExercise: Enj.API.ExerciseRecord,
+        selectedVariant: Enj.API.ExerciseVariantRecord
+    ): T {
+        to.exerciseId = selectedExercise.id || null;
+        to.exerciseName = selectedExercise.name || null;
+        to.exerciseVariantId = selectedVariant.id || null;
+        to.exerciseVariantContent = selectedVariant.content || null;
+        return to;
+    }
+    public render() {
+        return (<div>
+            <label class="input-set">
+                <span>{ this.props.label || 'Liikkeen nimi' }</span>
+                <select name="exercise" onChange={ this.receiveExerciseSelection.bind(this) } value={ this.getIndexOfSelectedExercise() }>
+                    <option value=""> - </option>
+                    { this.state.exercises.map((exercise, i) =>
+                        <option value={ i }>{ exercise.name }</option>
+                    ) }
+                </select>
+            </label>
+            { (this.state.selectedExercise &&
+                this.props.noVariant !== true &&
+                this.state.selectedExercise.variants.length)
+                    ? <label class="input-set">
+                        <span>Variantti</span>
+                        <select name="exerciseVariant" onChange={ this.receiveVariantSelection.bind(this) } value={ this.getIndexOfSelectedVariant() }>
+                            <option value=""> - </option>
+                            { this.state.selectedExercise.variants.map((variant, i) =>
+                                <option value={ i }>{ variant.content }</option>
+                            ) }
+                        </select>
+                    </label>
+                    : ''
+            }
+        </div>);
+    }
     private makeState(exercises) {
         const selectedExercise = this.props.initialExerciseId
             ? exercises.find(e => e.id === this.props.initialExerciseId)
@@ -91,33 +129,6 @@ class ExerciseSelector extends Component<Props, State> {
     private getIndexOfSelectedVariant(): number {
         return this.state.selectedExercise && this.state.selectedVariant
             ? this.state.selectedExercise.variants.indexOf(this.state.selectedVariant) : null;
-    }
-    public render() {
-        return (<div>
-            <label class="input-set">
-                <span>{ this.props.label || 'Liikkeen nimi' }</span>
-                <select onChange={ this.receiveExerciseSelection.bind(this) } value={ this.getIndexOfSelectedExercise() }>
-                    <option value=""> - </option>
-                    { this.state.exercises.map((exercise, i) =>
-                        <option value={ i }>{ exercise.name }</option>
-                    ) }
-                </select>
-            </label>
-            { (this.state.selectedExercise &&
-                this.props.noVariant !== true &&
-                this.state.selectedExercise.variants.length)
-                    ? <label class="input-set">
-                        <span>Variantti</span>
-                        <select onChange={ this.receiveVariantSelection.bind(this) } value={ this.getIndexOfSelectedVariant() }>
-                            <option value=""> - </option>
-                            { this.state.selectedExercise.variants.map((variant, i) =>
-                                <option value={ i }>{ variant.content }</option>
-                            ) }
-                        </select>
-                    </label>
-                    : ''
-            }
-        </div>);
     }
 }
 

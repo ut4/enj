@@ -1,6 +1,7 @@
 import Component from 'inferno-component';
 import { arrayUtils, dateUtils } from 'src/common/utils';
 import ProgramWorkoutModal from 'src/program/ProgramWorkoutModal';
+import { occurrenceFinder } from 'src/program/ProgramWorkoutOccurrencesManager';
 import Modal from 'src/ui/Modal';
 
 /**
@@ -24,6 +25,7 @@ class ProgramWorkoutsManager extends Component<
                 firstWeek: o.firstWeek,
                 repeatEvery: o.repeatEvery
             })),
+            exercises: [], // hanskataan erikseen ProgramWorkoutExercisesManagerissa
             programId: programWorkout.programId,
             ordinal: programWorkout.ordinal
         }));
@@ -65,35 +67,26 @@ class ProgramWorkoutsManager extends Component<
         </div>;
     }
     private getDayContent(weekDay: number): any {
-        // TODO - mitä jos päivällä useita treenejä?
-        const [foundWorkout, index] = this.findWorkout(weekDay);
-        if (foundWorkout) {
+        const [programWorkout, index] = occurrenceFinder.findWorkout(
+            this.state.programWorkouts,
+            weekDay,
+            this.weekNavigator ? this.weekNavigator.getNthWeek() : 0
+        );
+        if (programWorkout) {
             return [
-                <div class="heading">{ foundWorkout.name }</div>,
+                <div class="heading">{ programWorkout.name }</div>,
+                <div class="content">{ programWorkout.exercises.map(pwe =>
+                    <div>{ pwe.exerciseName }{ pwe.exerciseVariantId &&
+                        <span class="text-small">({ pwe.exerciseVariantContent })</span>
+                    }</div>
+                ) }</div>,
                 <div class="action-buttons">
-                    <button class="icon-button edit" onClick={ () => this.openEditModal(foundWorkout, index) } title="Muokkaa"></button>
+                    <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa"></button>
                     <button class="icon-button delete" onClick={ () => this.deleteWorkout(index) } title="Poista"></button>
                 </div>
             ];
         }
         return '-';
-    }
-    private findWorkout(weekDay: number): [Enj.API.ProgramWorkoutRecord, number] {
-        const nthWeek = this.weekNavigator ? this.weekNavigator.getNthWeek() : 0;
-        for (let i = 0; i < this.state.programWorkouts.length; i++) {
-            const programWorkout = this.state.programWorkouts[i];
-            if (programWorkout.occurrences.some(o => {
-                const nthDay = o.weekDay + (o.firstWeek * 7);
-                if (!o.repeatEvery) {
-                    return nthDay === weekDay + nthWeek * 7;
-                }
-                const day = nthWeek * 7 + (weekDay || 7) - nthDay;
-                return day > -1 && day % o.repeatEvery === 0;
-            })) {
-                return [programWorkout, i];
-            }
-        }
-        return [undefined, -1];
     }
     /**
      * Avaa ohjelmatreenin lisäysmodalin.
@@ -104,7 +97,8 @@ class ProgramWorkoutsManager extends Component<
                 programWorkout={ {
                     programId: this.props.program.id,
                     ordinal: arrayUtils.max(this.state.programWorkouts, 'ordinal') + 1,
-                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}]
+                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+                    exercises: []
                 } }
                 afterInsert={ programWorkout => {
                     const programWorkouts = this.state.programWorkouts;

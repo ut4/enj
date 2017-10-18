@@ -29,6 +29,12 @@ QUnit.module('program/ProgramCreateView', hooks => {
             workouts: [{
                 name: 'foo',
                 occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+                exercises: [{
+                    ordinal: 0,
+                    programWorkoutId: null,
+                    exerciseId: 'foo',
+                    exerciseVariantId: null
+                }],
                 ordinal: 0,
                 programId: undefined
             }]
@@ -47,6 +53,10 @@ QUnit.module('program/ProgramCreateView', hooks => {
         // Lisää ohjelmatreeni modalin kautta
         utils.findButtonByContent(rendered, 'Lisää treeni').click();
         utils.setInputValue(expectedNewProgram.workouts[0].name, utils.findInputByName(rendered, 'name'));
+        // Lisää liike ohjelmatreeniin ohjelmallisesti
+        (ptu.getRenderedProgramWorkoutModal(rendered) as any).receiveInputValue(
+            {target: {value: expectedNewProgram.workouts[0].exercises, name: 'exercises'}}
+        );
         utils.findButtonByContent(rendered, 'Ok').click();
         // Lähetä lomake
         const submitButton = utils.findButtonByContent(rendered, 'Ok');

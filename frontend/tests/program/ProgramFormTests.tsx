@@ -6,18 +6,25 @@ import ptu from 'tests/program/utils';
 import { templates } from 'src/ui/ValidatingComponent';
 import ProgramBackend from 'src/program/ProgramBackend';
 import ProgramForm from 'src/program/ProgramForm';
+import ExerciseBackend from 'src/exercise/ExerciseBackend';
+import etu from 'tests/exercise/utils';
 import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
 QUnit.module('program/ProgramForm', hooks => {
     let programBackendIocOverride: sinon.SinonStub;
     let shallowProgramBackend: ProgramBackend;
+    let exerciseBackendIocOverride: sinon.SinonStub;
+    let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {
         shallowProgramBackend = Object.create(ProgramBackend.prototype);
         programBackendIocOverride = sinon.stub(iocFactories, 'programBackend').returns(shallowProgramBackend);
+        shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
+        exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
     });
     hooks.afterEach(() => {
         programBackendIocOverride.restore();
+        exerciseBackendIocOverride.restore();
     });
     QUnit.test('validoi inputit', assert => {
         const testProgram = ptu.getSomeTestPrograms()[1];
@@ -82,6 +89,7 @@ QUnit.module('program/ProgramForm', hooks => {
         });
     });
     QUnit.test('"Lisää treeni"-painikkeesta voi lisätä uuden treenin ohjelmaan', assert => {
+        const exerciseDropdownFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(etu.getSomeDropdownExercises()));
         const newProgram = ptu.getSomeTestPrograms()[0];
         const programWorkoutLengthBefore = newProgram.workouts.length;
         const rendered = itu.renderIntoDocument(<div>
@@ -102,22 +110,31 @@ QUnit.module('program/ProgramForm', hooks => {
         const repeatEverySelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'repeatEvery');
         utils.setDropdownIndex(0, repeatEverySelectInputEl);
         utils.findButtonByContent(rendered, 'Lisää').click();
-        // Hyväksy ohjelmatreenilomake
-        const submitButton = utils.findButtonByContent(rendered, 'Ok');
-        submitButton.click();
-        // Lisäsikö treenin?
-        const programWorkoutLengthAfter = newProgram.workouts.length;
-        assert.equal(programWorkoutLengthAfter, programWorkoutLengthBefore + 1);
-        assert.equal(newProgram.workouts[programWorkoutLengthAfter - 1].name,
-            testNewProgramWorkoutName
-        );
-        assert.deepEqual(
-            newProgram.workouts[programWorkoutLengthAfter - 1].occurrences,
-            [
-                {weekDay: 1, firstWeek: 0, repeatEvery: 7}, // oletuksena valittu ma
-                {weekDay: 3, firstWeek: 0, repeatEvery: null}  // yllä valittu ke
-            ]
-        );
+        // Lisää yksi ohjelmatreeniliike
+        utils.findButtonByContent(rendered, 'Lisää liike').click();
+        const done = assert.async();
+        exerciseDropdownFetch.firstCall.returnValue.then(() => {
+            const exerciseSelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'exercise');
+            utils.setDropdownIndex(1, exerciseSelectInputEl);
+            utils.findButtonByContent(rendered, 'Lisää').click();
+            // Hyväksy ohjelmatreenilomake
+            const submitButton = utils.findButtonByContent(rendered, 'Ok');
+            submitButton.click();
+            // Lisäsikö treenin?
+            const programWorkoutLengthAfter = newProgram.workouts.length;
+            assert.equal(programWorkoutLengthAfter, programWorkoutLengthBefore + 1);
+            assert.equal(newProgram.workouts[programWorkoutLengthAfter - 1].name,
+                testNewProgramWorkoutName
+            );
+            assert.deepEqual(
+                newProgram.workouts[programWorkoutLengthAfter - 1].occurrences,
+                [
+                    {weekDay: 1, firstWeek: 0, repeatEvery: 7}, // oletuksena valittu ma
+                    {weekDay: 3, firstWeek: 0, repeatEvery: null}  // yllä valittu ke
+                ]
+            );
+            done();
+        });
     });
     function getFirstValidationError(rendered): string {
         return vtu.getRenderedValidationErrors(rendered)[0].textContent;

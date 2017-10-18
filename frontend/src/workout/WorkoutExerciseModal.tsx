@@ -29,18 +29,6 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         this.state = { workoutExercise: this.props.workoutExercise };
     }
     /**
-     * Asettaa valitun liikkeen luotavaan dataan. Triggeröityy ExerciseSelectorin
-     * toimesta aina, kun liike, tai liikkeen variantti valitaan.
-     */
-    public onExerciseSelect(selectedExercise, selectedVariant) {
-        const workoutExercise = this.state.workoutExercise;
-        workoutExercise.exerciseId = selectedExercise.id || null;
-        workoutExercise.exerciseName = selectedExercise.name || null;
-        workoutExercise.exerciseVariantId = selectedVariant.id || null;
-        workoutExercise.exerciseVariantContent = selectedVariant.content || null;
-        this.setState({ workoutExercise });
-    }
-    /**
      * Lähettää lomakkeeseen tapahtuneet muutokset backendiin tallennettavaksi,
      * ja ohjaa käyttäjän takaisin mikäli tallennus onnistui.
      */
@@ -96,7 +84,9 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
             <ExerciseSelector
                 initialExerciseId={ this.state.workoutExercise.exerciseId }
                 initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
-                onSelect={ (exs, variant) => this.onExerciseSelect(exs || {}, variant || {}) }/>
+                onSelect={ (exs, variant) => this.setState({
+                    workoutExercise: ExerciseSelector.assign(this.state.workoutExercise, exs || {}, variant || {})
+                }) }/>
             { this.state.workoutExercise.sets.length > 0 &&
                 <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
             }

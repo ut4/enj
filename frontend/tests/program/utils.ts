@@ -1,6 +1,7 @@
 import iocFactories from 'src/ioc';
 import * as itu from 'inferno-test-utils';
 import ProgramForm from 'src/program/ProgramForm';
+import ProgramWorkoutModal from 'src/program/ProgramWorkoutModal';
 import { dateUtils } from 'src/common/utils';
 
 const programTestUtils = {
@@ -34,6 +35,15 @@ const programTestUtils = {
                 id:'uuid10',
                 name: 'fooworkout',
                 occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: null}], // Ma, alkaen vk:sta 0, ei toistu
+                exercises: [{
+                    id: 'uuid20',
+                    ordinal: 0,
+                    programWorkoutId: 'uuid10',
+                    exerciseId: 'uuid30',
+                    exerciseName: 'asd',
+                    exerciseVariantId: null,
+                    exerciseVariantContent: null
+                }],
                 ordinal: 1,
                 programId
             },
@@ -42,12 +52,23 @@ const programTestUtils = {
                 name: 'barworkout',
                 occurrences: [{weekDay: 3, firstWeek: 0, repeatEvery: null}], // Ke, alkaen vk:sta 0, ei toistu
                 ordinal: 2,
+                exercises: [{
+                    id: 'uuid21',
+                    ordinal: 1,
+                    programWorkoutId: 'uuid11', exerciseId: 'uuid31',
+                    exerciseName: 'yui',
+                    exerciseVariantId: null,
+                    exerciseVariantContent: null
+                }],
                 programId
             }
         ];
     },
     getRenderedProgramForm(rendered): ProgramForm {
         return (itu.findRenderedVNodeWithType(rendered, ProgramForm).children as any) as ProgramForm;
+    },
+    getRenderedProgramWorkoutModal(rendered): ProgramWorkoutModal {
+        return (itu.findRenderedVNodeWithType(rendered, ProgramWorkoutModal).children as any) as ProgramWorkoutModal;
     }
 };
 

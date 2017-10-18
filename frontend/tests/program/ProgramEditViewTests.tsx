@@ -70,6 +70,10 @@ QUnit.module('program/ProgramEditView', hooks => {
             const programWorkoutNameInputEl = utils.findInputByName(rendered, 'name');
             const newProgramWorkoutName = 'New workout';
             utils.setInputValue(newProgramWorkoutName, programWorkoutNameInputEl);
+            const newProgramWorkoutExercises = [{ordinal: 0, exerciseId: 1}];
+            (ptu.getRenderedProgramWorkoutModal(rendered) as any).receiveInputValue(
+                {target: {value: newProgramWorkoutExercises, name: 'exercises'}}
+            );
             utils.findButtonByContent(rendered, 'Ok').click();
             // Lähetä muokkauslomake
             utils.findButtonByContent(rendered, 'Tallenna').click();
@@ -82,7 +86,8 @@ QUnit.module('program/ProgramEditView', hooks => {
                     name: newProgramWorkoutName,
                     programId: testProgram.id,
                     ordinal: testProgram.workouts[0].ordinal + 1,
-                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}]
+                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+                    exercises: newProgramWorkoutExercises
                 }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
                 done();
             });
@@ -122,7 +127,7 @@ QUnit.module('program/ProgramEditView', hooks => {
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout')
             .returns(Promise.resolve(1));
         testProgram = ptu.getSomeTestPrograms()[1];
-        const expectedDeletion = testProgram.workouts[0];
+        const expectedDeletion = Object.assign(testProgram.workouts[0], {exercises: []});
         renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
             // Poista ensimmäinen ohjelmatreeni listalta
             utils.findButtonByAttribute(rendered, 'title', 'Poista').click();

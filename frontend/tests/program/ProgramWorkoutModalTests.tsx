@@ -15,18 +15,17 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         // Asettiko initial arvot?
         const [nameInputEl] = utils.getInputs(rendered);
         assert.equal(nameInputEl.value, testProgramWorkout.name,  'Pitäisi asettaa initial-name');
-        assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
-        assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
+        assertFormIsValid(assert, rendered);
         // Aseta invalid nimi
         utils.setInputValue('f', nameInputEl);
         assert.equal(getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta validi nimi
         utils.setInputValue('jokinohjelma', nameInputEl);
-        assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
-        assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
-        // Poista valittu treenipäivä PorogramWorkoutsManager-listasta
-        utils.findButtonByAttribute(rendered, 'title', 'Poista').click();
+        assertFormIsValid(assert, rendered);
+        // Poista valittu treenipäivä OccurrencesManager-listasta
+        const [occurrencesTable, exercisesTable] = itu.scryRenderedDOMElementsWithClass(rendered, 'crud-table');
+        (occurrencesTable.querySelector('[title="Poista"]') as any).click();
         assert.equal(getFirstValidationError(rendered), 'Ainakin yksi päivä vaaditaan');
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta uusi valittu treenipäivä
@@ -34,10 +33,17 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         const daySelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'weekDay');
         utils.setDropdownIndex(1, daySelectInputEl); // tiistai
         utils.findButtonByContent(rendered, 'Lisää').click();
-        assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
-        assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
+        assertFormIsValid(assert, rendered);
+        // Poista valittu ohjelmatreeniliike ProgramWorkoutExercisesManager-listasta
+        (exercisesTable.querySelector('[title="Poista"]') as any).click();
+        assert.equal(getFirstValidationError(rendered), 'Ainakin yksi liike vaaditaan');
+        assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     function getFirstValidationError(rendered): string {
         return vtu.getRenderedValidationErrors(rendered)[0].textContent;
+    }
+    function assertFormIsValid(assert, rendered) {
+        assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
+        assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
     }
 });
