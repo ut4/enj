@@ -103,6 +103,7 @@ public class Program extends DbEntity {
         @NotNull
         @Valid
         private List<Occurrence> occurrences;
+        @Valid
         private List<Exercise> exercises;
         private int ordinal;
         @UUID(allowNull = true)
@@ -174,7 +175,7 @@ public class Program extends DbEntity {
 
         public static class Exercise extends DbEntity implements Filterable {
             private int ordinal;
-            @UUID
+            @UUID(allowNull = true)
             private String programWorkoutId;
             @UUID
             private String exerciseId;

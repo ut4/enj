@@ -25,11 +25,15 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Program program = makeNewProgramEntity("My program");
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName("Leg day");
+        programWorkout.setOrdinal(1);
         programWorkout.setOccurrences(Arrays.asList(
             new Program.Workout.Occurrence(1, 0, null), // Ma, alkaa vk:sta 0, ei toistu
             new Program.Workout.Occurrence(3, 0, null) // Pe, alkaa vk:sta 0, ei toistu
         ));
-        programWorkout.setOrdinal(1);
+        Exercise testExercise = new Exercise();
+        testExercise.setName("ProgramPOSTTestExercise");
+        utils.insertExercise(testExercise);
+        programWorkout.setExercises(Collections.singletonList(makeNewProgramWorkoutExerciseEntity(null, testExercise)));
         List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
         program.setWorkouts(programWorkouts);
         //
@@ -53,12 +57,23 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
             new SimpleMappers.ProgramWorkoutMapper()
         );
         Assert.assertEquals(1, actualProgramWorkouts.size());
-        programWorkouts.get(0).setProgramId(actualProgram.getId());
-        ((Program.Workout) actualProgramWorkouts.get(0)).setId(null);
+        Program.Workout actualProgramWorkout = (Program.Workout) actualProgramWorkouts.get(0);
+        programWorkout.setProgramId(actualProgram.getId());
+        programWorkout.setId(actualProgramWorkout.getId());
         Assert.assertEquals(
             programWorkouts.get(0).toString(),
-            actualProgramWorkouts.get(0).toString()
+            actualProgramWorkout.toString()
         );
+        // Insertoiko ohjelmatreeniliikkeen?
+        List actualProgramWorkoutExercises = utils.selectAllWhere(
+            "SELECT * FROM programWorkoutExercise WHERE programWorkoutId = :pwId",
+            new MapSqlParameterSource("pwId", actualProgramWorkout.getId()),
+            new SimpleMappers.ProgramWorkoutExerciseMapper()
+        );
+        Assert.assertEquals(1, actualProgramWorkoutExercises.size());
+        Program.Workout.Exercise actualPwe = (Program.Workout.Exercise) actualProgramWorkoutExercises.get(0);
+        Assert.assertEquals(testExercise.getId(), actualPwe.getExerciseId());
+        Assert.assertNull(actualPwe.getExerciseVariantId());
     }
 
     @Test

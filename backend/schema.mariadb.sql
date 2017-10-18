@@ -296,7 +296,7 @@ DELIMITER //
 CREATE TRIGGER programDeleteTrg BEFORE DELETE ON program
 FOR EACH ROW BEGIN
     DELETE FROM programWorkoutExercise WHERE programWorkoutId = (
-        SELECT programWorkoutId FROM programWorkout WHERE programId = OLD.id
+        SELECT id FROM programWorkout WHERE programId = OLD.id
     );
     DELETE FROM programWorkout WHERE programId = OLD.id;
 END;//

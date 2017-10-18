@@ -62,11 +62,11 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
 
     static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, Exercise exercise) {
         Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
+        programWorkoutExercise.setOrdinal(1);
         programWorkoutExercise.setProgramWorkoutId(programWorkoutId);
         programWorkoutExercise.setExerciseId(exercise.getId());
         programWorkoutExercise.setExerciseName(exercise.getName());
         programWorkoutExercise.setExerciseVariantId(null);
-        programWorkoutExercise.setOrdinal(1);
         return programWorkoutExercise;
     }
 

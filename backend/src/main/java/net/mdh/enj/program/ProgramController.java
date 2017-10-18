@@ -20,6 +20,7 @@ import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.validation.UUID;
 import javax.validation.Valid;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 import java.util.Arrays;
 import java.util.List;
@@ -60,11 +61,20 @@ public class ProgramController {
         this.programRepository.runInTransaction(() -> {
             // 1. Insertoi ohjelma
             this.programRepository.insert(program);
-            // 2. Insertoi ohjelmatreenit
+            // 2. Insertoi ohjelmatreenit, ja ohjelmatreeniliikkeet
             for (Program.Workout programWorkout: program.getWorkouts()) {
                 programWorkout.setProgramId(program.getId());
             }
             this.programWorkoutRepository.insert(program.getWorkouts());
+            // 3. Insertoi ohjelmatreeniliikkeet
+            List<Program.Workout.Exercise> programWorkoutExercises = new ArrayList<>();
+            for (Program.Workout programWorkout: program.getWorkouts()) {
+                for (Program.Workout.Exercise pwe: programWorkout.getExercises()) {
+                    pwe.setProgramWorkoutId(programWorkout.getId());
+                    programWorkoutExercises.add(pwe);
+                }
+            }
+            this.programWorkoutExerciseRepository.insert(programWorkoutExercises);
         });
         return new InsertResponse(1, program.getId());
     }
