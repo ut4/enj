@@ -11,10 +11,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ClientErrorException;
 import net.mdh.enj.HttpClient;
 import net.mdh.enj.Application;
+import net.mdh.enj.JsonMapperProvider;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import javax.validation.constraints.NotNull;
@@ -143,7 +143,7 @@ public class SyncController {
             .method(
                 route.getMethod(),
                 !route.getMethod().equals("DELETE")
-                    ? Entity.json(new ObjectMapper().writeValueAsString(syncableItem.getData()))
+                    ? Entity.json(JsonMapperProvider.getInstance().writeValueAsString(syncableItem.getData()))
                     : null
             );
     }

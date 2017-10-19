@@ -60,34 +60,6 @@ QUnit.module('program/ProgramForm', hooks => {
         (ptu.getRenderedProgramForm(rendered) as any).receiveInputValue({target: {value: [], name: 'workouts'}});
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
-    QUnit.test('lähettää tiedot backendiin ja kutsuu afterInsert', assert => {
-        const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.resolve(1));
-        const afterInsertSpy = sinon.spy();
-        //
-        const newProgram = ptu.getSomeTestPrograms()[0];
-        const rendered = itu.renderIntoDocument(<ProgramForm program={ newProgram } afterInsert={ afterInsertSpy }/>);
-        // Täytä & lähetä lomake
-        const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
-        const newProgramName = 'some program';
-        utils.setInputValue(newProgramName, nameInputEl);
-        // Aseta start&end datepickerista & lähetä lomake
-        utils.selectDatepickerDate(2, startInputEl);
-        utils.selectDatepickerDate(3, endInputEl);
-        utils.findButtonByContent(rendered, 'Ok').click();
-        // Lähettikö?
-        assert.ok(insertCallStub.calledOnce, 'Pitäisi lähettää pyyntö backediin');
-        assert.deepEqual(insertCallStub.firstCall.args, [Object.assign({
-            start: 86400,
-            end: 86400 * 2
-        }, newProgram)]);
-        const done = assert.async();
-        insertCallStub.firstCall.returnValue.then(() => {
-            assert.ok(afterInsertSpy.calledAfter(insertCallStub),
-                'Pitäisi lopuksi kutsua afterInsert-callbackia'
-            );
-            done();
-        });
-    });
     QUnit.test('"Lisää treeni"-painikkeesta voi lisätä uuden treenin ohjelmaan', assert => {
         const exerciseDropdownFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(etu.getSomeDropdownExercises()));
         const newProgram = ptu.getSomeTestPrograms()[0];

@@ -7,11 +7,9 @@ import net.mdh.enj.resources.SimpleMappers;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.junit.Assert;
 import org.junit.Test;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
-import java.util.Arrays;
 import java.util.List;
 
 public class ProgramControllerProgramHandlersTest extends ProgramControllerTestCase {
@@ -20,22 +18,9 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     private static Program.Workout testProgramWorkout;
 
     @Test
-    public void POSTInsertoiUudenOhjelmanJaOhjelmatreenitTietokantaanKirjautuneelleKäyttäjälle() {
-        // Luo testiohjelma, ja sille yksi ohjelmatreeni. NOTE - ei userId:tä
+    public void POSTInsertoiUudenOhjelmanTietokantaanKirjautuneelleKäyttäjälle() {
+        // Luo testiohjelma. NOTE - ei userId:tä
         Program program = makeNewProgramEntity("My program");
-        Program.Workout programWorkout = new Program.Workout();
-        programWorkout.setName("Leg day");
-        programWorkout.setOrdinal(1);
-        programWorkout.setOccurrences(Arrays.asList(
-            new Program.Workout.Occurrence(1, 0, null), // Ma, alkaa vk:sta 0, ei toistu
-            new Program.Workout.Occurrence(3, 0, null) // Pe, alkaa vk:sta 0, ei toistu
-        ));
-        Exercise testExercise = new Exercise();
-        testExercise.setName("ProgramPOSTTestExercise");
-        utils.insertExercise(testExercise);
-        programWorkout.setExercises(Collections.singletonList(makeNewProgramWorkoutExerciseEntity(null, testExercise)));
-        List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
-        program.setWorkouts(programWorkouts);
         //
         Response response = this.newPostRequest("program", program);
         Assert.assertEquals(200, response.getStatus());
@@ -50,56 +35,6 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         program.setUserId(TestData.TEST_USER_ID);
         program.setWorkouts(null);
         Assert.assertEquals(program.toString(), actualProgram.toString());
-        // Insertoiko ohjelmatreenin?
-        List actualProgramWorkouts = utils.selectAllWhere(
-            "SELECT * FROM programWorkout WHERE programId = :programId",
-            new MapSqlParameterSource("programId", actualProgram.getId()),
-            new SimpleMappers.ProgramWorkoutMapper()
-        );
-        Assert.assertEquals(1, actualProgramWorkouts.size());
-        Program.Workout actualProgramWorkout = (Program.Workout) actualProgramWorkouts.get(0);
-        programWorkout.setProgramId(actualProgram.getId());
-        programWorkout.setId(actualProgramWorkout.getId());
-        Assert.assertEquals(
-            programWorkouts.get(0).toString(),
-            actualProgramWorkout.toString()
-        );
-        // Insertoiko ohjelmatreeniliikkeen?
-        List actualProgramWorkoutExercises = utils.selectAllWhere(
-            "SELECT * FROM programWorkoutExercise WHERE programWorkoutId = :pwId",
-            new MapSqlParameterSource("pwId", actualProgramWorkout.getId()),
-            new SimpleMappers.ProgramWorkoutExerciseMapper()
-        );
-        Assert.assertEquals(1, actualProgramWorkoutExercises.size());
-        Program.Workout.Exercise actualPwe = (Program.Workout.Exercise) actualProgramWorkoutExercises.get(0);
-        Assert.assertEquals(testExercise.getId(), actualPwe.getExerciseId());
-        Assert.assertNull(actualPwe.getExerciseVariantId());
-    }
-
-    @Test
-    public void POSTInsertEiKirjoitaOhjelmaaTietokantaanJosOhjelmatreeninLisäysEpäonnistuu() {
-        //
-        Program program = makeNewProgramEntity("Fyy");
-        Program.Workout programWorkout = new Program.Workout();
-        programWorkout.setName("Fyy daa");
-        programWorkout.setOccurrences(Collections.singletonList(
-            new Program.Workout.Occurrence(1, 0, null)
-        ));
-        programWorkout.setOrdinal(256); // Pitäisi aiheuttaa Out of range -error (max 255)
-        List<Program.Workout> programWorkouts = Collections.singletonList(programWorkout);
-        program.setWorkouts(programWorkouts);
-        //
-        try {
-            this.newPostRequest("program", program);
-            Assert.fail("Olisi pitänyt heittää poikkeus");
-        } catch (ProcessingException e) {
-            // Peruuttiko ohjelman insertoinnin?
-            Assert.assertNull(utils.selectOneWhere(
-                "SELECT * FROM program WHERE `name` = :name",
-                new MapSqlParameterSource("name", program.getName()),
-                new SimpleMappers.ProgramMapper()
-            ));
-        }
     }
 
     @Test

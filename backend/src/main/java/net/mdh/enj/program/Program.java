@@ -21,9 +21,6 @@ public class Program extends DbEntity {
     @Min(1)
     private Long end;
     private String description;
-    @NotNull
-    @Valid
-    @Size(min = 1)
     private List<Workout> workouts;
     private String userId;
 
@@ -95,7 +92,7 @@ public class Program extends DbEntity {
     /**
      * Ohjelmatreeni-entiteetti.
      */
-    @JsonIgnoreProperties({"occurrencesAsString"})
+    @JsonIgnoreProperties({"occurrencesAsString", "filters"})
     public static class Workout extends DbEntity implements Filterable {
         @NotNull
         @Size(min = 2, max = 64)
@@ -103,7 +100,6 @@ public class Program extends DbEntity {
         @NotNull
         @Valid
         private List<Occurrence> occurrences;
-        @Valid
         private List<Exercise> exercises;
         private int ordinal;
         @UUID(allowNull = true)
@@ -159,6 +155,7 @@ public class Program extends DbEntity {
                 "id=" + this.getId() +
                 ", name=" + this.getName() +
                 ", occurrences=" + this.getOccurrences() +
+                ", exercises=" + this.getExercises() +
                 ", ordinal=" + this.getOrdinal() +
                 ", programId=" + this.getProgramId() +
             "}";
@@ -173,9 +170,10 @@ public class Program extends DbEntity {
             this.filters = filters;
         }
 
+        @JsonIgnoreProperties({"filters"})
         public static class Exercise extends DbEntity implements Filterable {
             private int ordinal;
-            @UUID(allowNull = true)
+            @UUID
             private String programWorkoutId;
             @UUID
             private String exerciseId;

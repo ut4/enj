@@ -78,7 +78,7 @@ class ProgramForm extends ValidatingComponent<Props, State> {
     }
     private confirm(): Promise<any> {
         return (this.isInsert
-            ? iocFactories.programBackend().insert(this.state.program)
+            ? this.handleInsert()
             // Päivittää ohjelman ja ohjelmatreenit, tai ei tee mitään jos mikään ei muuttunut
             : this.saveProgram()
                 .then(() => this.insertInsertedWorkouts())
@@ -92,6 +92,31 @@ class ProgramForm extends ValidatingComponent<Props, State> {
                 iocFactories.notify()('Ohjelman ' + (this.isInsert ? 'lisä' : 'päivit') + 'ys epäonnistui', 'error');
             }
         );
+    }
+    private handleInsert(): Promise<any> {
+        const programBackend = iocFactories.programBackend();
+        const programWorkouts = this.state.program.workouts;
+        delete this.state.program.workouts;
+        const programWorkoutExerciseGroups = [];
+        // 1. Insertoi ohjelma
+        return programBackend.insert(this.state.program)
+        // 2. Insertoi ohjelmatreenit
+            .then(() => programBackend.insertWorkouts(programWorkouts.map(pw => {
+                pw.programId = this.state.program.id;
+                programWorkoutExerciseGroups.push(pw.exercises);
+                delete pw.exercises;
+                return pw;
+        // 3. Insertoi ohjelmatreeniliikkeet
+            }))).then(() => {
+                const programWorkoutExercises = [];
+                programWorkoutExerciseGroups.forEach((group, i) => {
+                    group.forEach(pwe => {
+                        pwe.programWorkoutId = programWorkouts[i].id;
+                        programWorkoutExercises.push(pwe);
+                    });
+                });
+                return programBackend.insertWorkoutExercises(programWorkoutExercises);
+            });
     }
     private saveProgram(): Promise<any> {
         if (serializeProgram(this.state.program) === this.initialSerializedProgram) {

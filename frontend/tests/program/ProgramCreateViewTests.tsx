@@ -21,24 +21,26 @@ QUnit.module('program/ProgramCreateView', hooks => {
     });
     QUnit.test('lähettää tiedot backendiin', assert => {
         const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.resolve(1));
+        const insertWorkoutsStub = sinon.stub(shallowProgramBackend, 'insertWorkouts').returns(Promise.resolve(1));
+        const insertWorkoutExercisesStub = sinon.stub(shallowProgramBackend, 'insertWorkoutExercises').returns(Promise.resolve(1));
         const expectedNewProgram = {
             name: 'foo',
             start: getExpectedStart(),
             end: getExpectedEnd(),
-            description: 'asd',
-            workouts: [{
-                name: 'foo',
-                occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
-                exercises: [{
-                    ordinal: 0,
-                    programWorkoutId: null,
-                    exerciseId: 'foo',
-                    exerciseVariantId: null
-                }],
-                ordinal: 0,
-                programId: undefined
-            }]
+            description: 'asd'
         };
+        const expectedNewProgramWorkouts = [{
+            name: 'foo',
+            occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+            ordinal: 0,
+            programId: undefined
+        }];
+        const expectedNewProgramWorkoutExercises = [{
+            ordinal: 0,
+            programWorkoutId: null,
+            exerciseId: 'foo',
+            exerciseVariantId: null
+        }];
         // Renderöi näkymä & assertoi initial-arvot
         const rendered = itu.renderIntoDocument(<div><Modal/><ProgramCreateView/></div>);
         const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
@@ -52,18 +54,63 @@ QUnit.module('program/ProgramCreateView', hooks => {
         utils.setInputValue(expectedNewProgram.description, descriptionEl);
         // Lisää ohjelmatreeni modalin kautta
         utils.findButtonByContent(rendered, 'Lisää treeni').click();
-        utils.setInputValue(expectedNewProgram.workouts[0].name, utils.findInputByName(rendered, 'name'));
+        utils.setInputValue(expectedNewProgramWorkouts[0].name, utils.findInputByName(rendered, 'name'));
         // Lisää liike ohjelmatreeniin ohjelmallisesti
         (ptu.getRenderedProgramWorkoutModal(rendered) as any).receiveInputValue(
-            {target: {value: expectedNewProgram.workouts[0].exercises, name: 'exercises'}}
+            {target: {value: expectedNewProgramWorkoutExercises, name: 'exercises'}}
         );
         utils.findButtonByContent(rendered, 'Ok').click();
         // Lähetä lomake
+        const confirmSpy = sinon.spy(ptu.getRenderedProgramForm(rendered), 'confirm');
         const submitButton = utils.findButtonByContent(rendered, 'Ok');
         submitButton.click();
         // Lähettikö?
-        assert.ok(insertCallStub.calledOnce, 'Pitäisi lähettää pyyntö backediin');
-        assert.deepEqual(insertCallStub.firstCall.args, [expectedNewProgram]);
+        const done = assert.async();
+        confirmSpy.firstCall.returnValue.then(() => {
+            assert.ok(insertCallStub.calledOnce, 'Pitäisi lähettää ohjelma backediin');
+            assert.deepEqual(insertCallStub.firstCall.args, [expectedNewProgram]);
+            assert.ok(insertWorkoutsStub.calledAfter(insertCallStub),
+                'Pitäisi lähettää ohjelmatreenit backendiin'
+            );
+            assert.deepEqual(insertWorkoutsStub.firstCall.args, [expectedNewProgramWorkouts]);
+            assert.ok(insertWorkoutExercisesStub.calledAfter(insertWorkoutsStub),
+                'Pitäisi lähettää ohjelmatreeniliikkeet backendiin'
+            );
+            assert.deepEqual(insertWorkoutExercisesStub.firstCall.args, [expectedNewProgramWorkoutExercises]);
+            done();
+        });
+    });
+    QUnit.test('Ei insertoi ohjelmatreenejä tai ohjelmatreeniliikkeitä jos ohjelman lisäys epäonnistuu', assert => {
+        const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.reject(false));
+        const insertWorkoutsSpy = sinon.spy(shallowProgramBackend, 'insertWorkouts');
+        const insertWorkoutExercisesSpy = sinon.spy(shallowProgramBackend, 'insertWorkoutExercises');
+        // Renderöi näkymä & assertoi initial-arvot
+        const rendered = itu.renderIntoDocument(<div><Modal/><ProgramCreateView/></div>);
+        const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
+        // Täytä name & start & end & description
+        utils.setInputValue('foo', nameInputEl);
+        utils.selectDatepickerDate(5, startInputEl);
+        utils.selectDatepickerDate(5, endInputEl);
+        // Lisää ohjelmatreeni ohjelmallisesti
+        (ptu.getRenderedProgramForm(rendered) as any).receiveInputValue(
+            {target: {value: ptu.getSomeTestPrograms()[0].workouts, name: 'workouts'}}
+        );
+        // Lähetä lomake
+        const confirmSpy = sinon.spy(ptu.getRenderedProgramForm(rendered), 'confirm');
+        const submitButton = utils.findButtonByContent(rendered, 'Ok');
+        submitButton.click();
+        // Skippasiko ohjelmatreenien ja liikkeiden lähettämisen?
+        const done = assert.async();
+        confirmSpy.firstCall.returnValue.then(() => {
+            assert.ok(insertCallStub.calledOnce);
+            assert.ok(insertWorkoutsSpy.notCalled,
+                'Ei pitäisi lähettää ohjelmatreenejä backendiin'
+            );
+            assert.ok(insertWorkoutExercisesSpy.notCalled,
+                'Ei pitäisi lähettää ohjelmatreeniliikkeitä backendiin'
+            );
+            done();
+        });
     });
     function getExpectedInitialStartDateStr(): string {
         return ptu.getExpectedDateStr(Math.floor(new Date().getTime() / 1000));

@@ -1,4 +1,5 @@
 DROP VIEW    IF EXISTS programView;
+DROP TRIGGER IF EXISTS programWorkoutDeleteTrg;
 DROP TRIGGER IF EXISTS programDeleteTrg;
 DROP TABLE   IF EXISTS programWorkoutExercise;
 DROP TABLE   IF EXISTS programWorkout;
@@ -292,13 +293,17 @@ CREATE TABLE programWorkoutExercise (
 
 DELIMITER //
 -- Ohjelman poiston yhteydessä ajautuva triggeri, joka poistaa kaikki ohjelmaan
--- kuuluvat ohjelmatreenit, ja ohjelmatreeniliikkeet ennen varsinaista poistoa
+-- kuuluvat ohjelmatreenit ennen varsinaista poistoa
 CREATE TRIGGER programDeleteTrg BEFORE DELETE ON program
 FOR EACH ROW BEGIN
-    DELETE FROM programWorkoutExercise WHERE programWorkoutId = (
-        SELECT id FROM programWorkout WHERE programId = OLD.id
-    );
     DELETE FROM programWorkout WHERE programId = OLD.id;
+END;//
+
+-- Ohjelmatreenin poiston yhteydessä ajautuva triggeri, joka poistaa kaikki ohjelm-
+-- treeniin kuuluvat ohjelmatreeniliikkeet ennen varsinaista poistoa
+CREATE TRIGGER programWorkoutDeleteTrg BEFORE DELETE ON programWorkout
+FOR EACH ROW BEGIN
+    DELETE FROM programWorkoutExercise WHERE programWorkoutId = OLD.id;
 END;//
 DELIMITER ;
 

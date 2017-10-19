@@ -5,9 +5,11 @@ import RESTBackend  from 'src/common/RESTBackend';
  */
 class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
     public programWorkoutBackend: ProgramWorkoutBackend;
+    public programWorkoutExerciseBackend: ProgramWorkoutExerciseBackend;
     public constructor(http, urlNamespace) {
         super(http, urlNamespace);
         this.programWorkoutBackend = new ProgramWorkoutBackend(http, 'program/workout');
+        this.programWorkoutExerciseBackend = new ProgramWorkoutExerciseBackend(http, 'program/workout/exercise');
     }
     /**
      * Sama kuin ProgramWorkoutBackend.insertAll.
@@ -29,11 +31,22 @@ class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
     public deleteWorkout(programWorkout: Enj.API.ProgramWorkoutRecord) {
         return this.programWorkoutBackend.delete(programWorkout);
     }
+    /**
+     * Sama kuin ProgramWorkoutExerciseBackend.insertAll.
+     */
+    public insertWorkoutExercises(programWorkoutExercises: Array<Enj.API.ProgramWorkoutExercise>) {
+        return this.programWorkoutExerciseBackend.insertAll(programWorkoutExercises, '/all');
+    }
 }
 
 /**
  * Vastaa /api/program/workout -REST-pyynnöistä.
  */
 class ProgramWorkoutBackend extends RESTBackend<Enj.API.ProgramWorkoutRecord> { }
+
+/**
+ * Vastaa /api/program/workout/exercise -REST-pyynnöistä.
+ */
+class ProgramWorkoutExerciseBackend extends RESTBackend<Enj.API.ProgramWorkoutExercise> { }
 
 export default ProgramBackend;

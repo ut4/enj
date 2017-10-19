@@ -13,6 +13,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.mdh.enj.JsonMapperProvider;
 import net.mdh.enj.AppConfig;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class TokenService {
     }
     TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser, AppConfig appConfig) {
         this.JWT_KEY = appConfig.authTokenSigningKey.getBytes();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapperProvider.getInstance();
         this.jwtBuilder = jwtBuilder;
         this.jwtParser = jwtParser;
     }
