@@ -1,13 +1,13 @@
 import Component from 'inferno-component';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
-import CrudList from 'src/ui/CrudList';
+import { ChangeDetectingCrudList } from 'src/ui/CrudList';
 import { arrayUtils } from 'src/common/utils';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
 
 /**
  * Muokattava ohjelmatreeniliikelista.
  */
-class ProgramWorkoutExercisesManager extends CrudList<Enj.API.ProgramWorkoutExercise> {
+class ProgramWorkoutExercisesManager extends ChangeDetectingCrudList<Enj.API.ProgramWorkoutExercise> {
     protected ModalClass = ProgramWorkoutExerciseModal;
     protected modalPropName = 'programWorkoutExercise';
     protected confirmButtonText = 'Lisää liike';
@@ -34,6 +34,13 @@ class ProgramWorkoutExercisesManager extends CrudList<Enj.API.ProgramWorkoutExer
                 <span class="text-small">({ pwe.exerciseVariantContent })</span>
             }</td>
         ];
+    }
+    protected isChanged(current: Enj.API.ProgramWorkoutExercise, original: Enj.API.ProgramWorkoutExercise) {
+        return (
+            current.ordinal !== original.ordinal ||
+            current.exerciseId !== original.exerciseId ||
+            current.exerciseVariantId !== original.exerciseVariantId
+        );
     }
 }
 

@@ -11,31 +11,23 @@ class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
         this.programWorkoutBackend = new ProgramWorkoutBackend(http, 'program/workout');
         this.programWorkoutExerciseBackend = new ProgramWorkoutExerciseBackend(http, 'program/workout/exercise');
     }
-    /**
-     * Sama kuin ProgramWorkoutBackend.insertAll.
-     */
     public insertWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
         return this.programWorkoutBackend.insertAll(programWorkouts, '/all');
     }
-    /**
-     * Sama kuin ProgramWorkoutBackend.update.
-     */
-    public updateWorkout(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>|Enj.API.ProgramWorkoutRecord) {
-        return this.programWorkoutBackend.update(
-            Array.isArray(programWorkouts) ? programWorkouts : [programWorkouts]
-        );
+    public updateWorkout(pw: Array<Enj.API.ProgramWorkoutRecord>|Enj.API.ProgramWorkoutRecord) {
+        return this.programWorkoutBackend.update(Array.isArray(pw) ? pw : [pw]);
     }
-    /**
-     * Sama kuin ProgramWorkoutBackend.delete.
-     */
     public deleteWorkout(programWorkout: Enj.API.ProgramWorkoutRecord) {
         return this.programWorkoutBackend.delete(programWorkout);
     }
-    /**
-     * Sama kuin ProgramWorkoutExerciseBackend.insertAll.
-     */
     public insertWorkoutExercises(programWorkoutExercises: Array<Enj.API.ProgramWorkoutExercise>) {
         return this.programWorkoutExerciseBackend.insertAll(programWorkoutExercises, '/all');
+    }
+    public updateWorkoutExercise(pwe: Array<Enj.API.ProgramWorkoutExercise>|Enj.API.ProgramWorkoutExercise) {
+        return this.programWorkoutExerciseBackend.update(Array.isArray(pwe) ? pwe : [pwe]);
+    }
+    public deleteWorkoutExercise(programWorkoutExercise: Enj.API.ProgramWorkoutExercise) {
+        return this.programWorkoutExerciseBackend.delete(programWorkoutExercise);
     }
 }
 

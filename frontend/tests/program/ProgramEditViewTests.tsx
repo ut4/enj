@@ -62,6 +62,8 @@ QUnit.module('program/ProgramEditView', hooks => {
     QUnit.test('Tallentaa lisätyt ohjelmatreenit backendiin', assert => {
         const programWorkoutInsertStub = sinon.stub(shallowProgramBackend, 'insertWorkouts')
             .returns(Promise.resolve(1));
+        const programWorkoutExerciseInsertStub = sinon.stub(shallowProgramBackend, 'insertWorkoutExercises')
+            .returns(Promise.resolve(1));
         const programWorkoutSaveStub = sinon.stub(shallowProgramBackend, 'updateWorkout');
         const programWorkoutDeleteStub = sinon.stub(shallowProgramBackend, 'deleteWorkout');
         renderEditView(assert, testProgram, (rendered, programSaveStub, done, confirmSpy) => {
@@ -86,9 +88,12 @@ QUnit.module('program/ProgramEditView', hooks => {
                     name: newProgramWorkoutName,
                     programId: testProgram.id,
                     ordinal: testProgram.workouts[0].ordinal + 1,
-                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
-                    exercises: newProgramWorkoutExercises
+                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}]
                 }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
+                assert.ok(programWorkoutExerciseInsertStub.calledAfter(programWorkoutInsertStub),
+                    'Pitäisi lähettää lisätyn ohjelmatreenin liikkeet backendiin'
+                );
+                assert.deepEqual(programWorkoutExerciseInsertStub.firstCall.args, [newProgramWorkoutExercises]);
                 done();
             });
         });

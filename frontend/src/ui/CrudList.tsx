@@ -9,7 +9,7 @@ abstract class CrudList<T> extends Component<
     {list: Array<T>; onChange?: Function;},
     {list: Array<T>;}
 > {
-    private originals: Array<T>;
+    protected originals: Array<T>;
     protected confirmButtonText = 'Lisää uusi';
     protected abstract ModalClass: new (...args: any[]) => Component<any, any & {afterInsert?: Function; afterUpdate?: Function}>;
     protected abstract modalPropName: string;
@@ -63,6 +63,9 @@ abstract class CrudList<T> extends Component<
     protected getModalProps(props) {
         return props;
     }
+    /**
+     * Avaa <T>-modalin lisäysmoodissa.
+     */
     protected openAddModal() {
         Modal.open(() =>
             <this.ModalClass { ...this.getModalProps({
@@ -75,6 +78,9 @@ abstract class CrudList<T> extends Component<
             }) }/>
         );
     }
+    /**
+     * Avaa <T>:n modaliin muokattavaksi.
+     */
     protected openEditModal(item: T, index: number) {
         Modal.open(() =>
             <this.ModalClass { ...this.getModalProps({
@@ -87,15 +93,54 @@ abstract class CrudList<T> extends Component<
             }) }/>
         );
     }
+    /**
+     * Poistaa <T>:n listalta kohdasta {index}.
+     */
     protected deleteItem(index: number) {
         const list = this.state.list;
         list.splice(index, 1);
         this.applyState(list);
     }
+    /**
+     * Asettaa {list}:t stateen, ja passaa ne {this.props.onChange}-callbackille
+     * jos sellainen on määritelty.
+     */
     protected applyState(list: Array<T>) {
         this.props.onChange && this.props.onChange(list);
         this.setState({list});
     }
 }
 
+/**
+ * Lisää muokattavaan listaan getInserted|Modified|DeletedItems -metodit.
+ */
+abstract class ChangeDetectingCrudList<T extends {id?: AAGUID}> extends CrudList<T> {
+    /**
+     * Palauttaa kaikki mountin jälkeen listaan lisätyt <T>:t.
+     */
+    public getInsertedItems(): Array<T> {
+        return this.state.list.filter(item => !item.id);
+    }
+    /**
+     * Palauttaa kaikki <T>:t, joiden tietoja on mountin jälkeen muutettu.
+     */
+    public getModifiedItems(): Array<T> {
+        return this.state.list.filter(current => {
+            const original = this.originals.find(o => o.id === current.id);
+            return original && this.isChanged(current, original);
+        });
+    }
+    /**
+     * Palauttaa kaikki mountin jälkeen listalta poistetut <T>:t.
+     */
+    public getDeletedItems(): Array<T> {
+        return this.originals.filter(a => !this.state.list.some(b => b.id === a.id));
+    }
+    /**
+     * Palauttaa tiedon, onko <T>:n {a} tiedot muuttuneet verrattuna <T>:hen {b}.
+     */
+    protected abstract isChanged(current: T, original: T): boolean;
+}
+
 export default CrudList;
+export { ChangeDetectingCrudList };

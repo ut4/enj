@@ -44,6 +44,10 @@ class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOc
         props.programWeekCount = this.props.programWeekCount;
         return props;
     }
+    protected isChanged() {
+        // Ei käytössä
+        return null;
+    }
 }
 
 /**

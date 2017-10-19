@@ -1,4 +1,5 @@
 import Component from 'inferno-component';
+import { ChangeDetectingCrudList } from 'src/ui/CrudList';
 import { arrayUtils, dateUtils } from 'src/common/utils';
 import ProgramWorkoutModal from 'src/program/ProgramWorkoutModal';
 import { occurrenceFinder } from 'src/program/ProgramWorkoutOccurrencesManager';
@@ -8,16 +9,23 @@ import Modal from 'src/ui/Modal';
  * Renderöidään osaksi ohjelmalomaketta, vastaa ohjelmatreenien lisäyksestä,
  * päivityksesta ja poistoista.
  */
-class ProgramWorkoutsManager extends Component<
-    {program: Enj.API.ProgramRecord; onChange?: Function},
-    {programWorkouts: Array<Enj.API.ProgramWorkoutRecord>}
-> {
-    private initialValues: Array<Enj.API.ProgramWorkoutRecord>;
+class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWorkoutRecord> {
+    protected ModalClass = ProgramWorkoutModal;
+    protected modalPropName = 'programWorkout';
     private weekNavigator: WeekNavigator;
-    public constructor(props, context) {
-        super(props, context);
-        this.state = {programWorkouts: props.program.workouts};
-        this.initialValues = this.state.programWorkouts.map(programWorkout => ({
+    public render() {
+        return <div class="input-set program-workouts-manager">
+            <WeekNavigator program={ this.props.program } ref={ cmp => { this.weekNavigator = cmp; } } onNavigate={ () => this.state.list.length && this.forceUpdate() }/>
+            <ul class="dark-list">{ [1, 2, 3, 4, 5, 6, 0].map(weekDay =>
+                <li data-dayname={ dateUtils.getShortWeekDay(weekDay) }>
+                    { this.getDayContent(weekDay) }
+                </li>
+            ) }</ul>
+            <button class="nice-button" onClick={ () => this.openAddModal() }>Lisää treeni</button>
+        </div>;
+    }
+    protected clone(programWorkout: Enj.API.ProgramWorkoutRecord): Enj.API.ProgramWorkoutRecord {
+        return {
             id: programWorkout.id,
             name: programWorkout.name,
             occurrences: programWorkout.occurrences.map(o => ({
@@ -28,47 +36,33 @@ class ProgramWorkoutsManager extends Component<
             exercises: [], // hanskataan erikseen ProgramWorkoutExercisesManagerissa
             programId: programWorkout.programId,
             ordinal: programWorkout.ordinal
-        }));
+        };
     }
-    /**
-     * Palauttaa kaikki listaan lisätyt ohjelmatreenit.
-     */
-    public getInsertedWorkouts(): Array<Enj.API.ProgramWorkoutRecord> {
-        return this.state.programWorkouts.filter(programWorkout => !programWorkout.id);
+    protected new(): Enj.API.ProgramWorkoutRecord {
+        return {
+            programId: this.props.program.id,
+            ordinal: arrayUtils.max(this.state.list, 'ordinal') + 1,
+            occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+            exercises: []
+        } as any;
     }
-    /**
-     * Palauttaa kaikki ohjelmatreenit, joiden tietoja on muutettu.
-     */
-    public getModifiedWorkouts(): Array<Enj.API.ProgramWorkoutRecord> {
-        return this.state.programWorkouts.filter(current => {
-            const original = this.initialValues.find(o => o.id === current.id);
-            return original &&
-                (current.name !== original.name ||
-                JSON.stringify(current.occurrences) !== JSON.stringify(original.occurrences));
-        });
+    protected getModalProps(props) {
+        props.programWeekCount = this.weekNavigator.getWeekCount();
+        return props;
     }
-    /**
-     * Palauttaa kaikki listalta poistetut ohjelmatreenit.
-     */
-    public getDeletedWorkouts(): Array<Enj.API.ProgramWorkoutRecord> {
-        return this.initialValues.filter(a =>
-            !this.state.programWorkouts.some(b => b.id === a.id)
+    protected isChanged(current: Enj.API.ProgramWorkoutRecord, original: Enj.API.ProgramWorkoutRecord): boolean {
+        return (
+            current.name !== original.name ||
+            JSON.stringify(current.occurrences) !== JSON.stringify(original.occurrences)
         );
     }
-    public render() {
-        return <div class="input-set program-workouts-manager">
-            <WeekNavigator program={ this.props.program } ref={ cmp => { this.weekNavigator = cmp; } } onNavigate={ () => this.state.programWorkouts.length && this.forceUpdate() }/>
-            <ul class="dark-list">{ [1, 2, 3, 4, 5, 6, 0].map(weekDay =>
-                <li data-dayname={ dateUtils.getShortWeekDay(weekDay) }>
-                    { this.getDayContent(weekDay) }
-                </li>
-            ) }</ul>
-            <button class="nice-button" onClick={ () => this.openAddModal() }>Lisää treeni</button>
-        </div>;
+    protected getListItemContent() {
+        // Ei käytössä
+        return null;
     }
     private getDayContent(weekDay: number): any {
         const [programWorkout, index] = occurrenceFinder.findWorkout(
-            this.state.programWorkouts,
+            this.state.list,
             weekDay,
             this.weekNavigator ? this.weekNavigator.getNthWeek() : 0
         );
@@ -82,62 +76,11 @@ class ProgramWorkoutsManager extends Component<
                 ) }</div>,
                 <div class="action-buttons">
                     <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa"></button>
-                    <button class="icon-button delete" onClick={ () => this.deleteWorkout(index) } title="Poista"></button>
+                    <button class="icon-button delete" onClick={ () => this.deleteItem(index) } title="Poista"></button>
                 </div>
             ];
         }
         return '-';
-    }
-    /**
-     * Avaa ohjelmatreenin lisäysmodalin.
-     */
-    private openAddModal() {
-        Modal.open(() =>
-            <ProgramWorkoutModal
-                programWorkout={ {
-                    programId: this.props.program.id,
-                    ordinal: arrayUtils.max(this.state.programWorkouts, 'ordinal') + 1,
-                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
-                    exercises: []
-                } }
-                afterInsert={ programWorkout => {
-                    const programWorkouts = this.state.programWorkouts;
-                    programWorkouts.push(programWorkout);
-                    this.applyProgramWorkouts(programWorkouts);
-                } }
-                programWeekCount={ this.weekNavigator.getWeekCount() }/>
-        );
-    }
-    /**
-     * Avaa ohjelmatreenin modaliin muokattavaksi.
-     */
-    private openEditModal(programWorkout: Enj.API.ProgramWorkoutRecord, index: number) {
-        Modal.open(() =>
-            <ProgramWorkoutModal
-                programWorkout={ programWorkout }
-                afterUpdate={ programWorkout => {
-                    const programWorkouts = this.state.programWorkouts;
-                    programWorkouts[index] = programWorkout;
-                    this.applyProgramWorkouts(programWorkouts);
-                } }
-                programWeekCount={ this.weekNavigator.getWeekCount() }/>
-        );
-    }
-    /**
-     * Poistaa ohjelmatreenin listalta kohdasta {index}.
-     */
-    private deleteWorkout(index: number) {
-        const programWorkouts = this.state.programWorkouts;
-        programWorkouts.splice(index, 1);
-        this.applyProgramWorkouts(programWorkouts);
-    }
-    /**
-     * Asettaa {programWorkouts}:t stateen, ja passaa ne {this.props.onChange}-
-     * callbackille jos sellainen on määritelty.
-     */
-    private applyProgramWorkouts(programWorkouts) {
-        this.setState({programWorkouts});
-        this.props.onChange && this.props.onChange(programWorkouts);
     }
 }
 

@@ -54,8 +54,42 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
             <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
-    private confirm() {
-        this.props['after' + (this.isInsert ? 'Insert' : 'Update')](this.state.programWorkout);
+    private confirm(): Promise<any> {
+        if (this.isInsert) {
+            this.props.afterInsert(this.state.programWorkout);
+            return;
+        }
+        const inserted = this.exercisesManager.getInsertedItems();
+        const modified = this.exercisesManager.getModifiedItems();
+        const deleted = this.exercisesManager.getDeletedItems();
+        return this.insertInsertedExercises(inserted)
+            .then(() => this.saveModifiedExercises(modified))
+            .then(() => this.deleteDeletedExercises(deleted))
+            .then(
+                () => {
+                    this.props.afterUpdate(this.state.programWorkout);
+                },
+                err => {
+                    iocFactories.notify()('Ohjelmatreeniliikkeiden päivitys epäonnistui', 'error');
+                }
+            );
+    }
+    private insertInsertedExercises(inserted: Array<Enj.API.ProgramWorkoutExercise>): Promise<any> {
+        return inserted.length
+            ? iocFactories.programBackend().insertWorkoutExercises(inserted)
+            : Promise.resolve(null);
+    }
+    private saveModifiedExercises(modified: Array<Enj.API.ProgramWorkoutExercise>): Promise<any> {
+        return modified.length
+            ? iocFactories.programBackend().updateWorkoutExercise(modified)
+            : Promise.resolve(null);
+    }
+    private deleteDeletedExercises(deleted: Array<Enj.API.ProgramWorkoutExercise>): Promise<any> {
+        if (deleted.length) {
+            const programBackend = iocFactories.programBackend();
+            return Promise.all(deleted.map(pwe => programBackend.deleteWorkoutExercise(pwe)));
+        }
+        return Promise.resolve(null);
     }
     private cancel() {
         this.state.programWorkout.occurrences = this.occurrencesManager.getOriginalList();
