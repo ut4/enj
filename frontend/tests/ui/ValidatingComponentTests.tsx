@@ -5,7 +5,7 @@ import itu from 'inferno-test-utils';
 import utils, { validationTestUtils as vtu } from 'tests/utils';
 
 class SomeComponent extends ValidatingComponent<any, {somekey: string, another: string}> {
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.evaluators = {
             somekey: [
@@ -37,7 +37,7 @@ interface Entity {
 }
 class AnotherComponent extends ValidatingComponent<any, {ent: Entity}> {
     protected propertyToValidate: string = 'ent';
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.evaluators = {val: [input => !input.length || input.length > 1]};
         this.state = {ent: {val: ''}, validity: false};

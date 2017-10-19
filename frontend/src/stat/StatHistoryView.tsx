@@ -24,7 +24,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     public PAGE_SIZE: number = 10;
     private chartContainer: HTMLDivElement;
     private chartInstance: any;
-    constructor(props, context) {
+    public constructor(props, context) {
         super(props, context);
         this.state = {data: undefined, dataCount: 0};
     }

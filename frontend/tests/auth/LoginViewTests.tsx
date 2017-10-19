@@ -7,7 +7,7 @@ import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
 class ContextFakingLoginView extends LoginView {
-    constructor(props, context) {
+    public constructor(props, context) {
         context.router = {location: {search: ''}};
         super(props, context);
     }

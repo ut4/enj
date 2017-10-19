@@ -86,7 +86,7 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
     class FakeResponse {
         url: string;
         status: number;
-        constructor(url, status) {
+        public constructor(url, status) {
             this.url = url;
             this.status = status;
         }
