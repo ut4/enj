@@ -19,6 +19,8 @@ class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOc
     protected ModalClass = OccurrenceModal;
     protected modalPropName = 'occurrence';
     protected confirmButtonText = 'Lisää päivä';
+    protected editButtonText = 'Muokkaa päivää';
+    protected deleteButtonText = 'Poista päivä';
     protected clone(o: Enj.API.ProgramWorkoutOccurrence): Enj.API.ProgramWorkoutOccurrence {
         return {
             weekDay: o.weekDay,
@@ -82,14 +84,14 @@ class OccurrenceModal extends Component<
                     } ) }
                 </select>
             </label>
-            { this.state.occurrence.repeatEvery && <label class="input-set">
+            <label class="input-set">
                 <span>Alkaen viikosta</span>
                 <select name="firstWeek" onChange={ e => this.receiveSelection(e.target.value, 'firstWeek') }>
                     { this.getWeekNumbers().map(nthWeek =>
                         <option value={ nthWeek } selected={ this.state.occurrence.firstWeek === nthWeek }>{ nthWeek + 1 }</option>
                     ) }
                 </select>
-            </label> }
+            </label>
             <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } shouldConfirmButtonBeDisabled={ () => false } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
         </div>;
     }

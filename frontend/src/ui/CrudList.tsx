@@ -10,6 +10,8 @@ abstract class CrudList<T> extends Component<
     {list: Array<T>;}
 > {
     protected originals: Array<T>;
+    protected editButtonText = 'Muokkaa';
+    protected deleteButtonText = 'Poista';
     protected confirmButtonText = 'Lisää uusi';
     protected abstract ModalClass: new (...args: any[]) => Component<any, any & {afterInsert?: Function; afterUpdate?: Function}>;
     protected abstract modalPropName: string;
@@ -33,8 +35,8 @@ abstract class CrudList<T> extends Component<
                         const cells = this.getListItemContent(item, index);
                         fieldCount = cells.length + 1;
                         return <tr>{ cells.concat([<td>
-                            <button class="icon-button edit-dark" onClick={ () => this.openEditModal(item, index) } title="Muokkaa"></button>
-                            <button class="icon-button delete-dark" onClick={ () => this.deleteItem(index) } title="Poista"></button>
+                            <button class="icon-button edit-dark" onClick={ () => this.openEditModal(item, index) } title={ this.editButtonText }></button>
+                            <button class="icon-button delete-dark" onClick={ () => this.deleteItem(index) } title={ this.deleteButtonText }></button>
                         </td>]) }</tr>;
                     })
                     : <tr><td colspan={ fieldCount }>-</td></tr>

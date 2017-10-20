@@ -11,6 +11,8 @@ class ProgramWorkoutExercisesManager extends ChangeDetectingCrudList<Enj.API.Pro
     protected ModalClass = ProgramWorkoutExerciseModal;
     protected modalPropName = 'programWorkoutExercise';
     protected confirmButtonText = 'Lisää liike';
+    protected editButtonText = 'Muokkaa liikettä';
+    protected deleteButtonText = 'Poista liike';
     protected new() {
         return {
             ordinal: arrayUtils.max(this.state.list, 'ordinal') + 1,

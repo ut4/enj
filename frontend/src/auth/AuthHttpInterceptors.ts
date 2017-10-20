@@ -33,9 +33,11 @@ class AuthHttpInterceptors {
      */
     public response(response: Response) {
         if (response.headers.has('new-token')) {
-            this.userState.setToken(response.headers.get('new-token'));
+            this.token = response.headers.get('new-token');
+            this.userState.setToken(this.token);
         } else if (response.headers.has('New-Token')) {
-            this.userState.setToken(response.headers.get('New-Token'));
+            this.token = response.headers.get('New-Token');
+            this.userState.setToken(this.token);
         }
     }
     /**
@@ -44,7 +46,8 @@ class AuthHttpInterceptors {
      */
     public responseError(response: Response) {
         if (response.status === 401 && response.url.indexOf('auth/login') < 0) {
-            this.userState.setToken('');
+            this.token = '';
+            this.userState.setToken(this.token);
             const hashLocation = this.history.location;
             this.history.push('/kirjaudu?returnTo=' + hashLocation.pathname + hashLocation.search);
         }

@@ -43,8 +43,7 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         utils.setInputValue('jokinohjelma', nameInputEl);
         assertFormIsValid(assert, rendered);
         // Poista valittu treenipäivä OccurrencesManager-listasta
-        const [occurrencesTable, exercisesTable] = itu.scryRenderedDOMElementsWithClass(rendered, 'crud-table');
-        (occurrencesTable.querySelector('[title="Poista"]') as any).click();
+        utils.findButtonByAttribute(rendered, 'title', 'Poista päivä').click();
         assert.equal(getFirstValidationError(rendered), 'Ainakin yksi päivä vaaditaan');
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta uusi valittu treenipäivä
@@ -54,9 +53,44 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         utils.findButtonByContent(rendered, 'Lisää').click();
         assertFormIsValid(assert, rendered);
         // Poista valittu ohjelmatreeniliike ProgramWorkoutExercisesManager-listasta
-        (exercisesTable.querySelector('[title="Poista"]') as any).click();
+        utils.findButtonByAttribute(rendered, 'title', 'Poista liike').click();
         assert.equal(getFirstValidationError(rendered), 'Ainakin yksi liike vaaditaan');
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
+    });
+    QUnit.test('OccurrencesManager mutatoi occurrences-taulukkoa', assert => {
+        const afterInsertSpy = sinon.spy();
+        const programWorkout = ptu.getSomeTestProgramWorkouts()[0];
+        const rendered = itu.renderIntoDocument(<div><Modal/>
+            <ProgramWorkoutModal programWorkout={ programWorkout } afterInsert={ afterInsertSpy }/>
+        </div>);
+        // Poista yksi päivä
+        const occurrencesTable = itu.scryRenderedDOMElementsWithClass(rendered, 'crud-table')[0];
+        const occurrenceListItemContentBefore = occurrencesTable.querySelectorAll('tr')[0].textContent;
+        utils.findButtonByAttribute(rendered, 'title', 'Poista päivä').click();
+        const occurrenceListItemContentAfter = occurrencesTable.querySelectorAll('tr')[0].textContent;
+        assert.notEqual(occurrenceListItemContentAfter, occurrenceListItemContentBefore);
+        assert.equal(occurrenceListItemContentAfter, '-', 'Pitäisi poistaa poistettu itemi');
+        // Lisää yksi päivä
+        utils.findButtonByContent(rendered, 'Lisää päivä').click();
+        const daySelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'weekDay');
+        utils.setDropdownIndex(2, daySelectInputEl); // keskiviikko
+        const repeatSelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'repeatEvery');
+        utils.setDropdownIndex(0, repeatSelectInputEl); // 'Ei toistu'
+        utils.findButtonByContent(rendered, 'Lisää').click();
+        assert.equal(occurrencesTable.querySelectorAll('tr')[0].innerText.replace(/\t+/g, ''), 'KeEi toistu1. viikosta');
+        // Hyväksy ohjelmatreenilomake
+        utils.findButtonByContent(rendered, 'Ok').click();
+        //
+        assert.ok(afterInsertSpy.calledOnce, 'Pitäisi kutsua afterInser-callbackia');
+        assert.deepEqual(afterInsertSpy.firstCall.args, [Object.assign(programWorkout, {
+            occurrences: [
+                {
+                    weekDay: 3,
+                    repeatEvery: 0,
+                    firstWeek: 1
+                }
+            ]
+        })]);
     });
     QUnit.test('Lähettää liikkeitä backendiin', assert => {
         const exerciseFetchStub = sinon.stub(shallowExerciseBackend, 'getAll')
@@ -69,8 +103,7 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
             <ProgramWorkoutModal programWorkout={ ptu.getSomeTestProgramWorkouts()[1] } afterUpdate={ () => {} }/>
         </div>);
         // Poista yksi, ja lisää yksi liike
-        const exercisesTable = itu.scryRenderedDOMElementsWithClass(rendered, 'crud-table')[1];
-        (exercisesTable.querySelector('[title="Poista"]') as any).click();
+        utils.findButtonByAttribute(rendered, 'title', 'Poista liike').click();
         utils.findButtonByContent(rendered, 'Lisää liike').click();
         const done = assert.async();
         exerciseFetchStub.firstCall.returnValue.then(() => {
