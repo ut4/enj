@@ -22,7 +22,7 @@ class ExerciseForm extends ValidatingComponent<Props, State> {
         super(props, context);
         this.isInsert = this.props.hasOwnProperty('afterInsert');
         this.evaluators = {
-            name: [(input: any) => input && input.length >= 2 && input.length <= 64]
+            name: [(input: any) => input.length >= 2 && input.length <= 64]
         };
         this.state = {
             exercise: props.exercise,

@@ -14,7 +14,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord
         super(props, context);
         this.props.allowUnknownValidities = true;
         this.evaluators = {
-            signature: [(input: any) => input && input.length <= 255]
+            signature: [(input: any) => input.length <= 255]
         };
         this.state = {
             validity: true,

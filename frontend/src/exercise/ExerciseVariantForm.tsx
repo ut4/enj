@@ -22,7 +22,7 @@ class ExerciseVariantForm extends ValidatingComponent<Props, State> {
         super(props, context);
         this.isInsert = this.props.operationType === 'insert';
         this.evaluators = {
-            content: [(input: any) => input && input.length >= 2 && input.length <= 64]
+            content: [(input: any) => input.length >= 2 && input.length <= 64]
         };
         this.state = {
             content: props.exerciseVariant.content,

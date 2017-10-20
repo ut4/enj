@@ -106,7 +106,7 @@ declare module Enj {
         interface ProgramWorkoutRecord {
             id?: AAGUID;
             name: string;
-            occurrences: Array<ProgramWorkoutOccurence>;
+            occurrences: Array<ProgramWorkoutOccurrence>;
             exercises: Array<ProgramWorkoutExercise>;
             ordinal: number;
             programId: AAGUID;
@@ -120,7 +120,7 @@ declare module Enj {
             exerciseVariantId: AAGUID;
             exerciseVariantContent: string;
         }
-        interface ProgramWorkoutOccurence {
+        interface ProgramWorkoutOccurrence {
             weekDay: number;   // 0-6; 0 = Su, 1 = Ma jne.
             firstWeek: number; // 0 = ensimmäinen, 1 = toinen jne.
             repeatEvery?: number;

@@ -4,36 +4,36 @@ import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import { dateUtils } from 'src/common/utils';
 
 interface Props {
-    occurrences: Array<Enj.API.ProgramWorkoutOccurence>;
+    occurrences: Array<Enj.API.ProgramWorkoutOccurrence>;
     programWeekCount: number;
     onChange?: Function;
 }
 interface State {
-    occurrences: Array<Enj.API.ProgramWorkoutOccurence>;
+    occurrences: Array<Enj.API.ProgramWorkoutOccurrence>;
 }
 
 /**
  * Muokattava ohjelmatreenipäivälista.
  */
-class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOccurence> {
+class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOccurrence> {
     protected ModalClass = OccurrenceModal;
     protected modalPropName = 'occurrence';
     protected confirmButtonText = 'Lisää päivä';
-    protected clone(o: Enj.API.ProgramWorkoutOccurence): Enj.API.ProgramWorkoutOccurence {
+    protected clone(o: Enj.API.ProgramWorkoutOccurrence): Enj.API.ProgramWorkoutOccurrence {
         return {
             weekDay: o.weekDay,
             firstWeek: o.firstWeek,
             repeatEvery: o.repeatEvery
         };
     }
-    protected new(): Enj.API.ProgramWorkoutOccurence {
+    protected new(): Enj.API.ProgramWorkoutOccurrence {
         return {
             weekDay: 1,
             firstWeek: 0,
             repeatEvery: 7
         };
     }
-    protected getListItemContent(o: Enj.API.ProgramWorkoutOccurence, index: number): Array<HTMLTableCellElement> {
+    protected getListItemContent(o: Enj.API.ProgramWorkoutOccurrence, index: number): Array<HTMLTableCellElement> {
         return [
             <td>{ dateUtils.getShortWeekDay(o.weekDay) }</td>,
             <td>{ getRepeativityAsText(o.repeatEvery) }</td>,
@@ -54,8 +54,8 @@ class ProgramWorkoutOccurrencesManager extends CrudList<Enj.API.ProgramWorkoutOc
  * Treenipäivän lisäys-, tai muokkauslomake.
  */
 class OccurrenceModal extends Component<
-    {occurrence: Enj.API.ProgramWorkoutOccurence; programWeekCount: number; afterInsert?: Function; afterUpdate?: Function},
-    {occurrence: Enj.API.ProgramWorkoutOccurence}
+    {occurrence: Enj.API.ProgramWorkoutOccurrence; programWeekCount: number; afterInsert?: Function; afterUpdate?: Function},
+    {occurrence: Enj.API.ProgramWorkoutOccurrence}
 > {
     private isInsert: boolean;
     public constructor(props, context) {
@@ -100,7 +100,7 @@ class OccurrenceModal extends Component<
         }
         return out;
     }
-    private receiveSelection(value: string, prop: keyof Enj.API.ProgramWorkoutOccurence) {
+    private receiveSelection(value: string, prop: keyof Enj.API.ProgramWorkoutOccurrence) {
         const occurrence = this.state.occurrence;
         occurrence[prop] = value.length ? parseInt(value, 10) : null;
         this.setState({occurrence});
