@@ -51,96 +51,43 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
      * Handlaa POST /api/workout/exercise REST-pyynnön.
      */
     public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
-        return this.updateCache(workouts => {
-            // Lisää uusi liike sille kuuluvan treenin liikelistaan
-            const parentWorkoutRef = this.findItemById(workoutExercise.workoutId, workouts);
-            workoutExercise.id = this.backend.utils.uuidv4();
-            parentWorkoutRef.exercises.push(workoutExercise);
-            //
-            return {insertCount: 1, insertId: workoutExercise.id};
-        });
+        return this.insertHasManyItem<Enj.API.WorkoutExerciseRecord>(workoutExercise, 'exercises', 'workoutId');
     }
     /**
      * Handlaa PUT /api/workout/exercise REST-pyynnön.
      */
     public updateExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
-        return this.updateCache(cachedWorkouts => {
-            // Päivitä liikkeet niille kuuluvien treenien liikelistoihin
-            workoutExercises.forEach(we => {
-                const workoutExerciseListRef = this.findItemById(we.workoutId, cachedWorkouts).exercises;
-                Object.assign(workoutExerciseListRef.find(we2 => we2.id === we.id), we);
-            });
-            return {updateCount: workoutExercises.length};
-        });
+        // Päivitä liikkeet niille kuuluvien treenien liikelistoihin
+        return this.updateHasManyItem<Enj.API.WorkoutExerciseRecord>(workoutExercises, 'exercises', 'workoutId');
     }
     /**
      * Handlaa DELETE /api/workout/exercise/:id REST-pyynnön.
      */
     public deleteExercise(workoutExerciseId: AAGUID) {
-        return this.updateCache(cachedWorkouts => {
-            // Poista treeniliike sille kuuluvan treenin liikelistalta
-            const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(workoutExerciseId, cachedWorkouts);
-            workoutRef.exercises.splice(exerciseIndex, 1);
-            //
-            return {deleteCount: 1};
-        });
+        // Poista treeniliike sille kuuluvan treenin liikelistalta
+        return this.deleteHasManyItem(workoutExerciseId, 'exercises');
     }
     /**
      * Handlaa POST /api/workout/exercise/set REST-pyynnön.
      */
     public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
-        return this.updateCache(cachedWorkouts => {
-            // Lisää uusi sarja sille kuuluvan treeniliikkeen sarjalistaan
-            const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(set.workoutExerciseId, cachedWorkouts);
-            set.id = this.backend.utils.uuidv4();
-            workoutRef.exercises[exerciseIndex].sets.push(set);
-            //
-            return {insertCount: 1, insertId: set.id};
-        });
+        // Lisää uusi sarja sille kuuluvan treeniliikkeen sarjalistaan
+        return this.insertHasManySubItem<Enj.API.WorkoutExerciseSetRecord>(set, 'sets', 'workoutExerciseId', 'exercises');
     }
     /**
      * Handlaa PUT /api/workout/exercise/set REST-pyynnön.
      */
     public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>) {
-        return this.updateCache(cachedWorkouts => {
-            // Päivitä sarjat niille kuuluvien treeniliikkeiden sarjalistoihin
-            workoutExerciseSets.forEach(wes => {
-                const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(wes.workoutExerciseId, cachedWorkouts);
-                Object.assign(workoutRef.exercises[exerciseIndex].sets.find(wes2 => wes2.id === wes.id), wes);
-            });
-            return {updateCount: workoutExerciseSets.length};
-        });
+        // Päivitä sarjat niille kuuluvien treeniliikkeiden sarjalistoihin
+        return this.updateHasManySubItems<Enj.API.WorkoutExerciseSetRecord>(workoutExerciseSets, 'sets', 'workoutExerciseId', 'exercises');
     }
     /**
      * Handlaa DELETE /api/workout/exercise/set/:id REST-pyynnön.
      */
     public deleteSet(workoutExerciseSet: Enj.API.WorkoutExerciseSetRecord) {
-        return this.updateCache(cachedWorkouts => {
-            // Poista sarja sille kuuluvan treeniliikkeen sarjalistasta
-            const {workoutRef, exerciseIndex} = findWorkoutByExerciseId(
-                workoutExerciseSet.workoutExerciseId,
-                cachedWorkouts
-            );
-            const setsRef = workoutRef.exercises[exerciseIndex].sets;
-            setsRef.splice(setsRef.indexOf(setsRef.find(set => set.id === workoutExerciseSet.id)), 1);
-            //
-            return {deleteCount: 1};
-        });
+        // Poista sarja sille kuuluvan treeniliikkeen sarjalistasta
+        return this.deleteHasManySubItem<Enj.API.WorkoutExerciseSetRecord>(workoutExerciseSet, 'sets', 'workoutExerciseId', 'exercises');
     }
-}
-
-function findWorkoutByExerciseId(workoutExerciseId: string, workouts: Array<Enj.API.WorkoutRecord>): {workoutRef: Enj.API.WorkoutRecord, exerciseIndex: number} {
-    for (const workout of workouts) {
-        for (const workoutExercise of workout.exercises) {
-            if (workoutExercise.id === workoutExerciseId) {
-                return {
-                    workoutRef: workout,
-                    exerciseIndex: workout.exercises.indexOf(workoutExercise)
-                };
-            }
-        }
-    }
-    return {workoutRef: null, exerciseIndex: -1};
 }
 
 export default OfflineWorkoutHandlerRegister;

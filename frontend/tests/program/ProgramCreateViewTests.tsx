@@ -27,13 +27,15 @@ QUnit.module('program/ProgramCreateView', hooks => {
             name: 'foo',
             start: getExpectedStart(),
             end: getExpectedEnd(),
-            description: 'asd'
+            description: 'asd',
+            workouts: []
         };
         const expectedNewProgramWorkouts = [{
             name: 'foo',
             occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
             ordinal: 0,
-            programId: undefined
+            programId: undefined,
+            exercises: []
         }];
         const expectedNewProgramWorkoutExercises = [{
             ordinal: 0,

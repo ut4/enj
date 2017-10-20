@@ -15,7 +15,7 @@ const programTestUtils = {
                 name: 'foo',
                 start: 323384400,
                 end: 323470800,
-                workouts: this.getSomeTestProgramWorkouts('uuid1').slice(0, 1),
+                workouts: this.getSomeTestProgramWorkouts(0, 'uuid1').slice(0, 1),
                 userId: 'u'
             },
             {
@@ -23,39 +23,42 @@ const programTestUtils = {
                 name: 'bar',
                 start: 318204000,
                 end: 318290400,
-                workouts: this.getSomeTestProgramWorkouts('uuid2'),
+                workouts: this.getSomeTestProgramWorkouts(1, 'uuid2'),
                 description: '...',
                 userId: 'u'
             }
         ];
     },
-    getSomeTestProgramWorkouts(programId: AAGUID = 'uuid1'): Array<Enj.API.ProgramWorkoutRecord> {
+    getSomeTestProgramWorkouts(nth: number = 0, programId: AAGUID = 'uuid1'): Array<Enj.API.ProgramWorkoutRecord> {
+        const pwId1 = 'uuid' + (10 + nth * 2);
+        const pwId2 = 'uuid' + (11 + nth * 2);
         return [
             {
-                id:'uuid10',
-                name: 'fooworkout',
+                id: pwId1,
+                name: 'fooworkout' + nth,
                 occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: null}], // Ma, alkaen vk:sta 0, ei toistu
+                ordinal: 1,
                 exercises: [{
-                    id: 'uuid20',
+                    id: 'uuid' + (20 + nth * 2),
                     ordinal: 0,
-                    programWorkoutId: 'uuid10',
+                    programWorkoutId: pwId1,
                     exerciseId: 'uuid30',
                     exerciseName: 'asd',
                     exerciseVariantId: null,
                     exerciseVariantContent: null
                 }],
-                ordinal: 1,
                 programId
             },
             {
-                id:'uuid11',
-                name: 'barworkout',
+                id: pwId2,
+                name: 'barworkout' + nth,
                 occurrences: [{weekDay: 3, firstWeek: 0, repeatEvery: null}], // Ke, alkaen vk:sta 0, ei toistu
                 ordinal: 2,
                 exercises: [{
-                    id: 'uuid21',
+                    id: 'uuid' + (21 + nth * 2),
                     ordinal: 1,
-                    programWorkoutId: 'uuid11', exerciseId: 'uuid31',
+                    programWorkoutId: pwId2,
+                    exerciseId: 'uuid31',
                     exerciseName: 'yui',
                     exerciseVariantId: null,
                     exerciseVariantContent: null

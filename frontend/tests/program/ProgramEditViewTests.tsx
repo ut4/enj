@@ -88,7 +88,8 @@ QUnit.module('program/ProgramEditView', hooks => {
                     name: newProgramWorkoutName,
                     programId: testProgram.id,
                     ordinal: testProgram.workouts[0].ordinal + 1,
-                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}]
+                    occurrences: [{weekDay: 1, firstWeek: 0, repeatEvery: 7}],
+                    exercises: []
                 }]], 'Pitäisi tallentaa uusi ohjelmatreeni');
                 assert.ok(programWorkoutExerciseInsertStub.calledAfter(programWorkoutInsertStub),
                     'Pitäisi lähettää lisätyn ohjelmatreenin liikkeet backendiin'

@@ -37,7 +37,7 @@ QUnit.module('common/RESTBackend', hooks => {
         assert.ok(httpGet.verify());
         assert.deepEqual(actualResults, ['foo']);
     });
-    QUnit.test('insert kutsuu http.post namespacella, ja palauttaa insertCountin', assert => {
+    QUnit.test('insert kutsuu http.post namespacella, ja palauttaa insertResponsen', assert => {
         const httpPost = sinon.mock(shallowHttp);
         const data = {foo: 'bar'};
         httpPost.expects('post').once()
@@ -67,7 +67,7 @@ QUnit.module('common/RESTBackend', hooks => {
             done();
         });
     });
-    QUnit.test('update kutsuu http.put namespacella, ja palauttaa updateCountin', assert => {
+    QUnit.test('update kutsuu http.put namespacella, ja palauttaa updateResponsen', assert => {
         const httpPost = sinon.mock(shallowHttp);
         const data = {foo: 'bar'};
         httpPost.expects('put').once()
@@ -83,7 +83,7 @@ QUnit.module('common/RESTBackend', hooks => {
             done();
         });
     });
-    QUnit.test('delete kutsuu http.delete namespacella, ja palauttaa deleteCountin', assert => {
+    QUnit.test('delete kutsuu http.delete namespacella, ja palauttaa deleteResponsen', assert => {
         const httpPost = sinon.mock(shallowHttp);
         const data = {id: 'someuuid', foo: 'bar'};
         httpPost.expects('delete').once()

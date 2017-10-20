@@ -91,7 +91,7 @@ class ProgramForm extends ValidatingComponent<
      */
     private handleInsert(): Promise<any> {
         const programWorkouts = this.state.program.workouts;
-        delete this.state.program.workouts;
+        this.state.program.workouts = [];
         return (
             // 1. Insertoi ohjelma
             iocFactories.programBackend().insert(this.state.program)
@@ -113,7 +113,7 @@ class ProgramForm extends ValidatingComponent<
                 // 1. Insertoi ohjelmatreenit
                 iocFactories.programBackend().insertWorkouts(programWorkouts.map(pw => {
                     programWorkoutExerciseGroups.push(pw.exercises);
-                    delete pw.exercises;
+                    pw.exercises = [];
                     return pw;
                 }))
                 // 2. Insertoi ohjelmatreeniliikkeet

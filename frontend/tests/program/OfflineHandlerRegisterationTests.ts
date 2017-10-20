@@ -114,4 +114,48 @@ QUnit.module('program/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('programBackend.insertWorkoutExercises kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const postCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'insertWorkoutExercises').returns(Promise.resolve('{"insertCount": 9,"insertIds":["someuuid"]}'));
+        //
+        const done = assert.async();
+        const mockNewProgramWorkoutExercise: any = {exerciseId: 'foo'};
+        programBackend.insertWorkoutExercises([mockNewProgramWorkoutExercise]).then(insertCount => {
+            //
+            assert.ok(postCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [[mockNewProgramWorkoutExercise]]);
+            assert.equal(insertCount, 9, 'Pitäisi palauttaa offline-handlerin insertCount');
+            done();
+        });
+    });
+    QUnit.test('programBackend.updateWorkoutExercise kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const putCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'updateWorkoutExercise').returns(Promise.resolve('{"updateCount": 8}'));
+        //
+        const done = assert.async();
+        programBackend.updateWorkoutExercise(['foo'] as any).then(updateCount => {
+            //
+            assert.ok(putCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [['foo']]);
+            assert.equal(updateCount, 8, 'Pitäisi palauttaa offline-handlerin updateCount');
+            done();
+        });
+    });
+    QUnit.test('programBackend.deleteWorkoutExercise kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const deleteCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'deleteWorkoutExercise').returns(Promise.resolve('{"deleteCount": 7}'));
+        //
+        const done = assert.async();
+        const testProgramWorkoutExercise = {id: 'foo'};
+        programBackend.deleteWorkoutExercise(testProgramWorkoutExercise as any).then(deleteCount => {
+            //
+            assert.ok(deleteCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testProgramWorkoutExercise.id]);
+            assert.equal(deleteCount, 7, 'Pitäisi palauttaa offline-handlerin deleteCount');
+            done();
+        });
+    });
 });

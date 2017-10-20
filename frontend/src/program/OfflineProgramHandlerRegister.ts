@@ -24,6 +24,16 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         offlineHttp.addHandler('DELETE', 'program/workout/*', programWorkout =>
             this.deleteWorkout(programWorkout.id)
         );
+        //
+        offlineHttp.addHandler('POST', 'program/workout/exercise/all', pwe =>
+            this.insertWorkoutExercises(pwe)
+        );
+        offlineHttp.addHandler('PUT', 'program/workout/exercise', pwe =>
+            this.updateWorkoutExercise(pwe)
+        );
+        offlineHttp.addHandler('DELETE', 'program/workout/exercise/*', pwe =>
+            this.deleteWorkoutExercise(pwe.id)
+        );
     }
     /**
      * Handlaa POST /api/workout/exercise/all REST-pyynnön.
@@ -46,41 +56,37 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
      * Handlaa PUT /api/program/workout REST-pyynnön.
      */
     public updateWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
-        return this.updateCache(cachedPrograms => {
-            // Päivitä ohjelmatreenit niille kuuluvien ohjelmien treenilistoihin
-            programWorkouts.forEach(pw => {
-                const programWorkoutsListRef = this.findItemById(pw.programId, cachedPrograms).workouts;
-                Object.assign(programWorkoutsListRef.find(pw2 => pw2.id === pw.id), pw);
-            });
-            return {updateCount: programWorkouts.length};
-        }, '/mine');
+        // Päivitä ohjelmatreenit niille kuuluvien ohjelmien treenilistoihin
+        return this.updateHasManyItem<Enj.API.ProgramWorkoutRecord>(programWorkouts, 'workouts', 'programId', '/mine');
     }
     /**
     * Handlaa DELETE /api/program/workout/:id REST-pyynnön.
     */
-   public deleteWorkout(programWorkoutId: AAGUID) {
-       return this.updateCache(cachedPrograms => {
-           // Poista ohjelmatreeni sille kuuluvan ohjelman treenilistalta
-           const {programRef, workoutIndex} = findProgramByProgramWorkoutId(programWorkoutId, cachedPrograms);
-           programRef.workouts.splice(workoutIndex, 1);
-           //
-           return {deleteCount: 1};
-       }, '/mine');
-   }
-}
-
-function findProgramByProgramWorkoutId(programWorkoutId: AAGUID, programs: Array<Enj.API.ProgramRecord>): {programRef: Enj.API.ProgramRecord, workoutIndex: number} {
-    for (const program of programs) {
-        for (const programWorkout of program.workouts) {
-            if (programWorkout.id === programWorkoutId) {
-                return {
-                    programRef: program,
-                    workoutIndex: program.workouts.indexOf(programWorkout)
-                };
-            }
-        }
+    public deleteWorkout(programWorkoutId: AAGUID) {
+        // Poista ohjelmatreeni sille kuuluvan ohjelman treenilistalta
+        return this.deleteHasManyItem(programWorkoutId, 'workouts', '/mine');
     }
-    return {programRef: null, workoutIndex: -1};
+    /**
+     * Handlaa POST /api/program/workout/exercise REST-pyynnön.
+     */
+    public insertWorkoutExercises(pwe: Array<Enj.API.ProgramWorkoutExercise>) {
+        // Lisää uusi ohjelmatreeniliike sille kuuluvan ohjelmatreenin liikelistaan
+        return this.insertHasManySubItems<Enj.API.ProgramWorkoutExercise>(pwe, 'exercises', 'programWorkoutId', 'workouts', '/mine');
+    }
+    /**
+    * Handlaa PUT /api/program/workout/exercise REST-pyynnön.
+    */
+   public updateWorkoutExercise(pwe: Array<Enj.API.ProgramWorkoutExercise>) {
+       // Päivitä ohjelmatreeniliikkeet niille kuuluvien ohjelmatreenien liikelistoihin
+       return this.updateHasManySubItems<Enj.API.ProgramWorkoutExercise>(pwe, 'exercises', 'programWorkoutId', 'workouts', '/mine');
+   }
+   /**
+    * Handlaa DELETE /api/program/workout/exercise/:id REST-pyynnön.
+    */
+   public deleteWorkoutExercise(pwe: Enj.API.ProgramWorkoutExercise) {
+       // Poista ohjelmatreeniliike sille kuuluvan ohjelmatreenin liikelistasta
+       return this.deleteHasManySubItem<Enj.API.ProgramWorkoutExercise>(pwe, 'exercises', 'programWorkoutId', 'workouts', '/mine');
+   }
 }
 
 export default OfflineProgramHandlerRegister;

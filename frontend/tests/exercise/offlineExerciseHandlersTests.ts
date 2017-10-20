@@ -24,7 +24,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
             ], userId: 'someuuid101'}
         ];
     });
-    QUnit.test('insert lisää uuden liikkeen cacheen, ja palauttaa insertCount:n', assert => {
+    QUnit.test('insert lisää uuden liikkeen cacheen, ja palauttaa insertResponse:n', assert => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -37,12 +37,12 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
                 'exercise',
                 [newExercise].concat(mockCachedExercises as any)
             ], 'Pitäisi lisätä uusi liike cacheen');
-            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertCount');
+            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertResponse');
             assert.equal(newExercise.id, mockNewUuid, 'Pitäisi luoda liikkeelle id');
             done();
         });
     });
-    QUnit.test('update päivittää liikkeen cacheen, ja palauttaa updateCount:n', assert => {
+    QUnit.test('update päivittää liikkeen cacheen, ja palauttaa updateResponse:n', assert => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -57,11 +57,11 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
                 'exercise',
                 [updatedExercise, mockCachedExercises[1]]
             ], 'Pitäisi päivittää liike cacheen');
-            assert.equal(result, JSON.stringify({updateCount: 1}), 'Pitäisi palauttaa updateCount');
+            assert.equal(result, JSON.stringify({updateCount: 1}), 'Pitäisi palauttaa updateResponse');
             done();
         });
     });
-    QUnit.test('insertVariant lisää variantin liikecacheen, ja palauttaa insertCount:n', assert => {
+    QUnit.test('insertVariant lisää variantin liikecacheen, ja palauttaa insertResponse:n', assert => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -80,12 +80,12 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
                     variants: mockCachedExercises[1].variants.concat([newExerciseVariant])
                 })]
             ], 'Pitäisi lisätä uusi variantti liikecachen oikeaan itemiin');
-            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertCount');
+            assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertResponse');
             assert.equal(newExerciseVariant.id, mockNewUuid, 'Pitäisi luoda variantille id');
             done();
         });
     });
-    QUnit.test('updateVariant päivittää variantin liikecacheen, ja palauttaa updateCount:n', assert => {
+    QUnit.test('updateVariant päivittää variantin liikecacheen, ja palauttaa updateResponse:n', assert => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
@@ -104,7 +104,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
                     ]
                 })]
             ], 'Pitäisi päivittää variantti oikeaan itemiin');
-            assert.equal(result, JSON.stringify({updateCount: 1}), 'Pitäisi palauttaa updateCount');
+            assert.equal(result, JSON.stringify({updateCount: 1}), 'Pitäisi palauttaa updateResponse');
             done();
         });
     });
