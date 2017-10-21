@@ -69,7 +69,6 @@ public class ProgramRepository extends BasicRepository<Program> {
                 programWorkout.setId(rs.getString(ID_COL));
                 programWorkout.setName(rs.getString("programWorkoutName"));
                 programWorkout.setOccurrences(parseOccurrences(rs.getString("programWorkoutOccurrences")));
-                programWorkout.setOrdinal(rs.getInt("programWorkoutOrdinal"));
                 programWorkout.setProgramId(rs.getString("programId"));
                 programWorkout.setExercises(exerciseCollector.collect(rs, rowNum, programWorkout.getId()));
                 return programWorkout;

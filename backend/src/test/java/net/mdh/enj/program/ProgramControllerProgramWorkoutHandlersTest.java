@@ -79,7 +79,6 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         // Muuta treeniliikkeen tietoja.
         programWorkout.setName("updatedName");
         programWorkout.setOccurrences(Collections.singletonList(new Program.Workout.Occurrence(3,0,3)));
-        programWorkout.setOrdinal(2);
         programWorkout.setProgramId(TestData.TEST_USER_ID); // Ei pitäisi vaikuttaa
         // PUTtaa muutetut tiedot
         Response response = this.newPutRequest("program/workout", Collections.singletonList(programWorkout));
@@ -94,7 +93,6 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         );
         Assert.assertEquals(programWorkout.getName(), actualProgramWorkout.getName());
         Assert.assertEquals(programWorkout.getOccurrencesAsString(), actualProgramWorkout.getOccurrencesAsString());
-        Assert.assertEquals(programWorkout.getOrdinal(), actualProgramWorkout.getOrdinal());
         Assert.assertEquals("Ei pitäisi tallentaa muutettua programId:tä",
             program.getId(), actualProgramWorkout.getProgramId()
         );
@@ -111,7 +109,6 @@ public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControll
         utils.insertProgramWorkout(programWorkout);
         // Muuta jotain.
         programWorkout.setName("updatedName");
-        programWorkout.setOrdinal(3);
         // PUTtaa muutetut tiedot
         Response response = this.newPutRequest("program/workout", Collections.singletonList(programWorkout));
         Assert.assertEquals(400, response.getStatus());

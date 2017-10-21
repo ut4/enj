@@ -55,7 +55,6 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         programWorkout.setOccurrences(
             Collections.singletonList(new Program.Workout.Occurrence(1, 0, null))
         );
-        programWorkout.setOrdinal(1);
         programWorkout.setProgramId(programId);
         return programWorkout;
     }

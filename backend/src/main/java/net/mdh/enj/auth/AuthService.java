@@ -206,7 +206,7 @@ public class AuthService {
         filters.setId(userId);
         filters.setCurrentToken(expiredToken);
         AuthUser user = this.authUserRepository.selectOne(filters);
-        // id, tai token ei täsmännyt
+        // token ei täsmännyt, tai tokenin viittaama käyttäjänimeä ei oltu aktivoitu
         if (user == null || user.getLastLogin() == null) {
             throw new SignatureException("Access-token virheellinen");
         }

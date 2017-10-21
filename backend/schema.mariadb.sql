@@ -112,7 +112,7 @@ CREATE TABLE workout (
 
 CREATE TABLE workoutExercise (
     id CHAR(36) NOT NULL,
-    ordinal TINYINT UNSIGNED NOT NULL,
+    ordinal TINYINT UNSIGNED DEFAULT 0,
     workoutId CHAR(36) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     exerciseVariantId CHAR(36) DEFAULT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE workoutExerciseSet (
     id CHAR(36) NOT NULL,
     weight FLOAT NOT NULL,
     reps SMALLINT UNSIGNED NOT NULL,
-    ordinal TINYINT UNSIGNED NOT NULL,
+    ordinal TINYINT UNSIGNED DEFAULT 0,
     workoutExerciseId CHAR(36) NOT NULL,
     FOREIGN KEY (workoutExerciseId) REFERENCES workoutExercise(id),
     PRIMARY KEY (id)
@@ -272,8 +272,7 @@ CREATE TABLE program (
 CREATE TABLE programWorkout (
     id CHAR(36) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
-    occurrences TEXT NOT NULL, -- csv
-    ordinal TINYINT UNSIGNED NOT NULL,
+    occurrences TEXT NOT NULL, -- [weekDay,firstWeek,repeatEvery weekDay...] esim [1,0,null 3,0,7]
     programId CHAR(36) NOT NULL,
     FOREIGN KEY (programId) REFERENCES program(id),
     PRIMARY KEY (id)
@@ -281,7 +280,7 @@ CREATE TABLE programWorkout (
 
 CREATE TABLE programWorkoutExercise (
     id CHAR(36) NOT NULL,
-    ordinal TINYINT UNSIGNED NOT NULL,
+    ordinal TINYINT UNSIGNED DEFAULT 0,
     programWorkoutId CHAR(36) NOT NULL,
     exerciseId CHAR(36) NOT NULL,
     exerciseVariantId CHAR(36) DEFAULT NULL,
@@ -318,7 +317,6 @@ CREATE VIEW programView AS
         pw.id         AS programWorkoutId,
         pw.name       AS programWorkoutName,
         pw.occurrences AS programWorkoutOccurrences,
-        pw.ordinal    AS programWorkoutOrdinal,
         pw.programId  AS programWorkoutProgramId,
         pwe.id                AS programWorkoutExerciseId,
         pwe.ordinal           AS programWorkoutExerciseOrdinal,

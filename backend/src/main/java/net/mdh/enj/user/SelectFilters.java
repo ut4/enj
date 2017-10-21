@@ -63,4 +63,19 @@ public class SelectFilters implements SelectQueryFilters {
         }
         return String.join(" AND ", out);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj instanceof SelectFilters && obj.toString().equals(this.toString());
+    }
+
+    @Override
+    public String toString() {
+        return "SelectFilters{" +
+            "id=" + this.getId() +
+            ", userName=" + this.getUsername() +
+            ", currentToken=" + this.getCurrentToken() +
+            ", isActivated=" + this.getIsActivated() +
+        "}";
+    }
 }

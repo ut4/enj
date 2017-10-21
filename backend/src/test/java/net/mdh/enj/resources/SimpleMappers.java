@@ -117,7 +117,6 @@ public class SimpleMappers {
             programWorkout.setId(rs.getString("id"));
             programWorkout.setName(rs.getString("name"));
             programWorkout.setOccurrences(ProgramRepository.parseOccurrences(rs.getString("occurrences")));
-            programWorkout.setOrdinal(rs.getInt("ordinal"));
             programWorkout.setProgramId(rs.getString("programId"));
             return programWorkout;
         }

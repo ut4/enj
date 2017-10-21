@@ -101,7 +101,6 @@ public class Program extends DbEntity {
         @Valid
         private List<Occurrence> occurrences;
         private List<Exercise> exercises;
-        private int ordinal;
         @UUID(allowNull = true)
         private String programId;
         private QueryFilters filters;
@@ -130,13 +129,6 @@ public class Program extends DbEntity {
             this.exercises = exercises;
         }
 
-        public int getOrdinal() {
-            return this.ordinal;
-        }
-        public void setOrdinal(int ordinal) {
-            this.ordinal = ordinal;
-        }
-
         public String getProgramId() {
             return this.programId;
         }
@@ -146,7 +138,7 @@ public class Program extends DbEntity {
 
         @Override
         public String toUpdateFields() {
-            return "name = :name, occurrences = :occurrencesAsString, ordinal = :ordinal";
+            return "name = :name, occurrences = :occurrencesAsString";
         }
 
         @Override
@@ -156,7 +148,6 @@ public class Program extends DbEntity {
                 ", name=" + this.getName() +
                 ", occurrences=" + this.getOccurrences() +
                 ", exercises=" + this.getExercises() +
-                ", ordinal=" + this.getOrdinal() +
                 ", programId=" + this.getProgramId() +
             "}";
         }

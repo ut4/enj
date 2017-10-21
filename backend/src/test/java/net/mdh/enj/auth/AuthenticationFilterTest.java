@@ -1,18 +1,19 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.Mailer;
-import org.junit.Test;
-import org.junit.Assert;
-import org.glassfish.jersey.test.JerseyTest;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.process.internal.RequestScoped;
-import net.mdh.enj.resources.AppConfigProvider;
-import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.AppConfig;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
+import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.user.SelectFilters;
+import net.mdh.enj.resources.AppConfigProvider;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.JerseyTest;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.mockito.Mockito;
+import org.junit.Assert;
+import org.junit.Test;
 import javax.ws.rs.core.Response;
 
 public class AuthenticationFilterTest extends JerseyTest {
@@ -99,10 +100,10 @@ public class AuthenticationFilterTest extends JerseyTest {
         ReturnValueCaptor<String> newTokenCaptor = new ReturnValueCaptor<>();
         Mockito.doAnswer(newTokenCaptor).when(spyingTokenService).generateNew(mockUuid);
         // Simuloi pyyntö, jossa vanhentunut token
-        String expiredToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
+        String renewableToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
         Response response = target(this.normalUrl)
             .request()
-            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + renewableToken)
             .get();
         Assert.assertEquals(200, response.getStatus());
         String newToken = newTokenCaptor.getResult();
@@ -125,11 +126,12 @@ public class AuthenticationFilterTest extends JerseyTest {
         Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(userWithInvalidLogin);
         Mockito.when(this.mockAuthUserRepository.updateToken(Mockito.any())).thenReturn(1);
         // Simuloi pyyntö, jossa vanhentunut token, ja vanhentunut kirjautuminen
-        String expiredToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
+        String renewableToken = this.spyingTokenService.generateNew(mockUuid, -2000L);
         Response response = target(this.normalUrl)
             .request()
-            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + renewableToken)
             .get();
+        // Hylkäsikö pyynnön?
         Assert.assertEquals(401, response.getStatus());
         // Lisäsikö uuden tokenin headeriin?
         Assert.assertNull("Ei pitäisi uusia tokenia",
@@ -143,16 +145,24 @@ public class AuthenticationFilterTest extends JerseyTest {
         Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).updateLogin(Mockito.eq(invalidated));
     }
     @Test
-    public void eiUusiTokeniaJosSeEiOleValidiCurrentToken() {
-        // Simuloi tilanne, jossa headerin tokeni ei täsmää tietokantaan tallennettuan
-        // tokeniin (selectOne palauttaa null)
+    public void eiUusiTokeniaJosSeEiOleValidiCurrentTokenTaiSiihenViittaavaKäyttäjänimiEiOleAktivoitu() {
+        // Simuloi tilanne, jossa headerin token ei täsmää tietokantaan tallennettuun
+        // tokeniin, tai siihen viittama käyttänimi ei ole aktivoitu (selectOne palauttaa null)
         Mockito.when(this.mockAuthUserRepository.selectOne(Mockito.any())).thenReturn(null);
-        String expiredToken = this.spyingTokenService.generateNew("uuid80", -2000L);
+        String mockUserId = "uuid80";
+        String renewableToken = this.spyingTokenService.generateNew(mockUserId, -2000L);
         Response response = target(this.normalUrl)
             .request()
-            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + expiredToken)
+            .header(AuthenticationFilter.AUTH_HEADER_NAME, "Bearer " + renewableToken)
             .get();
+        // Hylkäsikö pyynnön?
         Assert.assertEquals(401, response.getStatus());
+        // Sisällyttikö tietokantahakuun tarvittavat arvot?
+        SelectFilters expectedFilters = new SelectFilters();
+        expectedFilters.setId(mockUserId);
+        expectedFilters.setIsActivated(1); // <- ei saa puuttua
+        expectedFilters.setCurrentToken(renewableToken);
+        Mockito.verify(this.mockAuthUserRepository, Mockito.times(1)).selectOne(expectedFilters);
         // Lisäsikö uuden tokenin headeriin?
         Assert.assertNull("Ei pitäisi uusia tokenia",
             response.getHeaderString(AuthenticationFilter.NEW_TOKEN_HEADER_NAME)
