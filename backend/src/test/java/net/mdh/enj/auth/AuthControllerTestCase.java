@@ -10,6 +10,7 @@ import net.mdh.enj.resources.SimpleMappers;
 import net.mdh.enj.resources.AppConfigProvider;
 import net.mdh.enj.resources.MockHashingProvider;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
+import net.mdh.enj.resources.ControllerTestExceptionMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
@@ -51,6 +52,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
     public ResourceConfig configure() {
         return new ResourceConfig()
             .register(AuthController.class)
+            .register(ControllerTestExceptionMapper.class)
             .property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
             .register(new AbstractBinder() {
                 @Override

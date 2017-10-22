@@ -3,6 +3,8 @@ import FormButtons from 'src/ui/FormButtons';
 import CredentialsForm from 'src/auth/CredentialsForm';
 import iocFactories from 'src/ioc';
 
+const RESERVED_USERNAME_ERR = 'Käyttäjänimi on jo käytössä';
+
 /**
  * Näkymä #/tili/muokkaa
  */
@@ -32,15 +34,26 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
         </div>);
     }
     private confirm() {
+        const updatedCredentials = this.credentialsForm.getValues();
         return iocFactories.authBackend()
-            .updateCredentials(this.credentialsForm.getValues())
+            .updateCredentials(updatedCredentials)
             .then(
                 () => {
                     iocFactories.notify()('Tilitiedot päivitetty', 'success');
                     iocFactories.history().push('/profiili');
                 },
-                () => iocFactories.notify()('Tilitietojen päivitys epäonnistui', 'error')
+                err => {
+                    err.response && err.response.json(json => json).then(
+                        errors => this.applyErrors(errors, updatedCredentials),
+                        () => iocFactories.notify()('Tilitietojen päivitys epäonnistui', 'error')
+                    );
+                }
             );
+    }
+    private applyErrors(errors: Array<string>, updatedCredentials: Enj.API.Credentials) {
+        if (errors.indexOf('reservedUsername') > -1) {
+            this.credentialsForm.addReservedUsername(updatedCredentials.username);
+        }
     }
     private setValidity(newValidity) {
         this.setState({goodToGo: newValidity});

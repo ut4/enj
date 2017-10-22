@@ -80,7 +80,7 @@ QUnit.module('auth/CredentialsEditView', hooks => {
     });
     QUnit.test('confirm näyttää virheviestin backendin rejektoidessa', assert => {
         const credentialsUpdateStub = sinon.stub(shallowAuthBackend, 'updateCredentials')
-            .returns(Promise.reject({response:{status: 400}}));
+            .returns(Promise.reject({response:{status:400,json:()=>Promise.reject(null)}}));
         //
         const instance = new CredentialsEditView({}, {}) as any;
         instance.credentialsForm = {getValues: () => null};
@@ -89,6 +89,23 @@ QUnit.module('auth/CredentialsEditView', hooks => {
         instance.confirm().then(res => {
             assert.ok(notifySpy.calledOnce, 'Pitäisi notifioida käyttäjää backendin failauksista');
             assert.equal(notifySpy.firstCall.args[1], 'error');
+            done();
+        });
+    });
+    QUnit.test('confirm näyttää validaatiovirheen jos käyttäjänimi oli varattu', assert => {
+        const credentialsUpdateStub = sinon.stub(shallowAuthBackend, 'updateCredentials')
+            .returns(Promise.reject({response:{status:400,json:()=>Promise.resolve(['reservedUsername'])}}));
+        //
+        const instance = new CredentialsEditView({}, {}) as any;
+        const testReservedUsername = 'foo';
+        const errorAddSpy = sinon.spy();
+        instance.credentialsForm = {getValues: () => ({username: testReservedUsername}), addReservedUsername: errorAddSpy};
+        //
+        const done = assert.async();
+        instance.confirm().then(res => {
+            assert.ok(errorAddSpy);
+            assert.deepEqual(errorAddSpy.firstCall.args, [testReservedUsername]);
+            assert.ok(notifySpy.notCalled);
             done();
         });
     });

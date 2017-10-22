@@ -12,6 +12,7 @@ import net.mdh.enj.Mailer;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public class AuthService {
     static final int TOKEN_EXPIRATION = 1800;           // 30min
     static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
     static final int ACTIVATION_KEY_LENGTH = 32;
+    static final String ERRORNAME_RESERVED_USERNAME = "reservedUsername";
 
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
@@ -159,7 +161,12 @@ public class AuthService {
      * Päivittää käyttäjän {user} emailin, ja luo uuden salasanan mikäli se
      * vaihtui.
      */
-    void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
+    List<String> updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
+        // Tsekkaa onko vaihtunut käyttäjänimi jo käytössä
+        if (!user.getUsername().equals(newCredentials.getUsername()) &&
+            !this.isUsernameAvailable(newCredentials.getUsername())) {
+            return Collections.singletonList(ERRORNAME_RESERVED_USERNAME);
+        }
         List<AuthUser.UpdateColumn> cols = new ArrayList<>();
         // Aseta käyttäjänimi & email aina
         user.setUsername(newCredentials.getUsername());
@@ -177,6 +184,7 @@ public class AuthService {
         if (this.authUserRepository.update(user) < 1) {
             throw new UnaffectedOperationException("Tietojen päivitys epäonnistui");
         }
+        return new ArrayList<>();
     }
 
     /**
@@ -206,7 +214,7 @@ public class AuthService {
         filters.setId(userId);
         filters.setCurrentToken(expiredToken);
         AuthUser user = this.authUserRepository.selectOne(filters);
-        // token ei täsmännyt, tai tokenin viittaama käyttäjänimeä ei oltu aktivoitu
+        // token ei täsmännyt, tai tokenin viittaamaa käyttäjää ei oltu aktivoitu
         if (user == null || user.getLastLogin() == null) {
             throw new SignatureException("Access-token virheellinen");
         }
@@ -228,6 +236,12 @@ public class AuthService {
         user.setLastLogin(null);
         user.setCurrentToken(null);
         this.authUserRepository.updateLogin(user);
+    }
+
+    private boolean isUsernameAvailable(String username) {
+        SelectFilters filters = new SelectFilters();
+        filters.setUsername(username);
+        return this.authUserRepository.selectOne(filters) == null;
     }
 
     // -------------------------------------------------------------------------

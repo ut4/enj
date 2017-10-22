@@ -15,8 +15,9 @@ import javax.ws.rs.core.Response;
  */
 public class TestUserDependentAuthControllerTest extends AuthControllerTestCase {
 
-    private final static String correctUsername = TestData.TEST_USER_NAME;
-    private final static char[] correctPassword = TestData.TEST_USER_PASS.toCharArray();
+    private final static String correctUsername = "bar";
+    private final static String correctEmail = "bar@bar.com";
+    private final static char[] correctPassword = "bars".toCharArray();
     private final static char[] inCorrectPassword = "dars".toCharArray();
     private static String mockCurrentToken = "mocktokne";
     private static Long mockLastLogin = 3L;
@@ -32,11 +33,12 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         testUser = new AuthUser();
         testUser.setId(TestData.TEST_USER_ID);
         testUser.setUsername(correctUsername);
+        testUser.setEmail(correctEmail);
         testUser.setPasswordHash(String.valueOf(correctPassword));
         testUser.setLastLogin(mockLastLogin);
         testUser.setCurrentToken(mockCurrentToken);
         utils.update("UPDATE `user` SET " +
-            "lastLogin = :lastLogin, currentToken = :currentToken," +
+            "email = :email, lastLogin = :lastLogin, currentToken = :currentToken," +
             "username = :username, passwordhash = :passwordHash, isActivated = 1 " +
             "WHERE id = :id", testUser);
     }
@@ -153,6 +155,27 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         // Säilyikö muuttumattomat kentät ennallaan?
         Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
         Assert.assertEquals(testUser.getUsername(), testUserAfter.getUsername());
+    }
+
+    @Test
+    public void PUTUpdateCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiOnJoKäytössä() {
+        AuthUser existing = new AuthUser();
+        existing.setUsername("taken");
+        existing.setEmail("taken@fus.ro");
+        existing.setPasswordHash("fooo");
+        existing.setIsActivated(1);
+        utils.insertAuthUser(existing);
+        UpdateCredentials newCredentials = new UpdateCredentials();
+        newCredentials.setUserId(testUser.getId());
+        newCredentials.setUsername(existing.getUsername());
+        newCredentials.setEmail(testUser.getEmail());
+        newCredentials.setPassword(testUser.getPasswordHash().toCharArray());
+        // Lähetä PUT /auth/credentials
+        Response response = this.newPutRequest("auth/credentials", newCredentials);
+        Assert.assertEquals(400, response.getStatus());
+        // Sisältääkö virhekoodin?
+        String errorNames = response.readEntity(String.class);
+        Assert.assertTrue(errorNames.contains(AuthService.ERRORNAME_RESERVED_USERNAME));
     }
 
     @Test

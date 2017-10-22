@@ -1,17 +1,12 @@
 package net.mdh.enj.auth;
 
-import org.hibernate.validator.constraints.Email;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
  * Bean PUT /auth/credentials-reitin input-JSONille.
  */
-public class UpdateCredentials extends LoginCredentials {
+public class UpdateCredentials extends RegistrationCredentials {
     private String userId;
-    @Email
-    @NotNull
-    private String email;
     @Size(min = LoginCredentials.MIN_PASSWORD_LENGTH)
     private char[] newPassword;
 
@@ -20,13 +15,6 @@ public class UpdateCredentials extends LoginCredentials {
     }
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public char[] getNewPassword() {

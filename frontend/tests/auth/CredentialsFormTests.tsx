@@ -12,8 +12,10 @@ QUnit.module('auth/CredentialsForm', hooks => {
     let currentPasswordInputEl: HTMLInputElement;
     let newPasswordInputEl: HTMLInputElement;
     let newPasswordConfirmationInputEl: HTMLInputElement;
+    const testReservedUsername = 'fyy';
     hooks.beforeEach(() => {
         testCredentials = {username: 'test', email: 'test@email.com', password: 'pass'};
+        (CredentialsForm as any).reservedUsernames = {[testReservedUsername]: 1};
         rendered = itu.renderIntoDocument(
             <CredentialsForm credentials={ testCredentials } onValidityChange={ () => {} }/>
         );
@@ -25,7 +27,10 @@ QUnit.module('auth/CredentialsForm', hooks => {
         newPasswordInputEl = inputEls[3];
         newPasswordConfirmationInputEl = inputEls[4];
     });
-    QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa invalid', assert => {
+    hooks.afterEach(() => {
+        (CredentialsForm as any).reservedUsernames = {};
+    });
+    QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa virheellinen', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);
         assert.equal(initialErrorMessages.length, 0);
         assert.equal(credentialsFormInstance.state.validity, false);
@@ -36,11 +41,15 @@ QUnit.module('auth/CredentialsForm', hooks => {
         const asserter = new FormValidityAsserter(credentialsFormInstance, rendered, assert);
         utils.setInputValue('a', usernameInputEl);
         asserter.assertIsValid(false, 1);
+        utils.setInputValue(testReservedUsername, usernameInputEl);
+        asserter.assertIsValid(false, 1, 'on jo käytössä');
         utils.setInputValue('foo', usernameInputEl);
         asserter.assertIsValid(false, 0);
         //
         utils.setInputValue('@test.com', emailInputEl);
         asserter.assertIsValid(false, 1);
+        utils.setInputValue(('s'.repeat(190)) + '@test.com', emailInputEl);
+        asserter.assertIsValid(false, 1, 'enintään 191 merkkiä pitkä');
         utils.setInputValue('e@mail.com', emailInputEl);
         asserter.assertIsValid(false, 0);
         //
@@ -62,10 +71,11 @@ QUnit.module('auth/CredentialsForm', hooks => {
         asserter.assertIsValid(true, 0);
     });
     function FormValidityAsserter(form, rendered, assert) {
-        this.assertIsValid = function (expectedValidity: boolean, expectedErrorCount?: number) {
+        this.assertIsValid = function (expectedValidity: boolean, expectedErrorCount: number, errorContains?: string) {
             const errorMessages = vtu.getRenderedValidationErrors(rendered);
             assert.equal(errorMessages.length, expectedErrorCount || 0);
             assert.equal(form.state.validity, expectedValidity);
+            errorContains && assert.ok(errorMessages[0].textContent.indexOf(errorContains) > 0);
             return errorMessages;
         };
     }

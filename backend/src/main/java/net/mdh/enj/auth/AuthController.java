@@ -16,6 +16,7 @@ import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
 import net.mdh.enj.api.RequestContext;
+import java.util.List;
 
 /**
  * Vastaa /api/auth REST-pyynnöistä
@@ -138,7 +139,10 @@ public class AuthController {
         if (user == null) {
             throw new BadRequestException("Invalid credentials");
         }
-        this.authService.updateCredentials(user, newCredentials);
+        List<String> errorNames = this.authService.updateCredentials(user, newCredentials);
+        if (!errorNames.isEmpty()) {
+            throw new BadRequestException("[\"" + String.join("\",\"", errorNames) + "\"]");
+        }
         return new Responses.Ok();
     }
 }
