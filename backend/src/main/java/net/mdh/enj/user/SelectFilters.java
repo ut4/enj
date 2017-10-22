@@ -7,6 +7,7 @@ public class SelectFilters implements SelectQueryFilters {
 
     private String id;
     private String username;
+    private String email;
     private String currentToken;
     private Integer isActivated = 1;
 
@@ -22,6 +23,13 @@ public class SelectFilters implements SelectQueryFilters {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getCurrentToken() {
@@ -42,6 +50,7 @@ public class SelectFilters implements SelectQueryFilters {
     public boolean hasRules() {
         return this.id != null ||
             this.username != null ||
+            this.email != null ||
             this.currentToken != null ||
             this.isActivated != null;
     }
@@ -54,6 +63,9 @@ public class SelectFilters implements SelectQueryFilters {
         }
         if (this.username != null) {
             out.add("userUsername = :username");
+        }
+        if (this.email != null) {
+            out.add("userEmail = :email");
         }
         if (this.currentToken != null) {
             out.add("userCurrentToken = :currentToken");
@@ -73,7 +85,8 @@ public class SelectFilters implements SelectQueryFilters {
     public String toString() {
         return "SelectFilters{" +
             "id=" + this.getId() +
-            ", userName=" + this.getUsername() +
+            ", username=" + this.getUsername() +
+            ", email=" + this.getEmail() +
             ", currentToken=" + this.getCurrentToken() +
             ", isActivated=" + this.getIsActivated() +
         "}";

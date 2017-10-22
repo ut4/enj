@@ -12,7 +12,6 @@ import net.mdh.enj.Mailer;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,6 +24,7 @@ public class AuthService {
     static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
     static final int ACTIVATION_KEY_LENGTH = 32;
     static final String ERRORNAME_RESERVED_USERNAME = "reservedUsername";
+    static final String ERRORNAME_RESERVED_EMAIL = "reservedEmail";
 
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
@@ -162,13 +162,20 @@ public class AuthService {
      * vaihtui.
      */
     List<String> updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
+        List<String> errors = new ArrayList<>();
         // Tsekkaa onko vaihtunut käyttäjänimi jo käytössä
-        if (!user.getUsername().equals(newCredentials.getUsername()) &&
-            !this.isUsernameAvailable(newCredentials.getUsername())) {
-            return Collections.singletonList(ERRORNAME_RESERVED_USERNAME);
+        AuthUser reserved = this.getReservedCredentials(newCredentials, user);
+        if (reserved != null) {
+            if (reserved.getUsername().equals(newCredentials.getUsername())) {
+                errors.add(ERRORNAME_RESERVED_USERNAME);
+            }
+            if (reserved.getEmail().equals(newCredentials.getEmail())) {
+                errors.add(ERRORNAME_RESERVED_EMAIL);
+            }
+            return errors;
         }
-        List<AuthUser.UpdateColumn> cols = new ArrayList<>();
         // Aseta käyttäjänimi & email aina
+        List<AuthUser.UpdateColumn> cols = new ArrayList<>();
         user.setUsername(newCredentials.getUsername());
         cols.add(AuthUser.UpdateColumn.USERNAME);
         user.setEmail(newCredentials.getEmail());
@@ -184,7 +191,7 @@ public class AuthService {
         if (this.authUserRepository.update(user) < 1) {
             throw new UnaffectedOperationException("Tietojen päivitys epäonnistui");
         }
-        return new ArrayList<>();
+        return errors;
     }
 
     /**
@@ -232,16 +239,42 @@ public class AuthService {
         return tokenHash;
     }
 
+    /**
+     * Päivittää tietokantaan käyttäjän lastLogin-, ja currentToken-kenttien
+     * arvoiksi NULL.
+     */
     private void invalidateLogin(AuthUser user) {
         user.setLastLogin(null);
         user.setCurrentToken(null);
         this.authUserRepository.updateLogin(user);
     }
 
-    private boolean isUsernameAvailable(String username) {
-        SelectFilters filters = new SelectFilters();
-        filters.setUsername(username);
-        return this.authUserRepository.selectOne(filters) == null;
+    /**
+     * Palauttaa käyttäjän tietokannasta, jonka username tai email on sama kuin
+     * newCredentials-arvo, ja se eroaa currentCredentials-arvosta.
+     */
+    private AuthUser getReservedCredentials(
+        UpdateCredentials newCredentials,
+        AuthUser currentCredentials
+    ) {
+        SelectFilters filters = new SelectFilters() {
+            @Override
+            public String toSql() {
+                return super.toSql().replace(" AND ", " OR ");
+            }
+        };
+        if (!newCredentials.getUsername().equals(currentCredentials.getUsername())) {
+            filters.setUsername(newCredentials.getUsername());
+        }
+        if (!newCredentials.getEmail().equals(currentCredentials.getEmail())) {
+            filters.setEmail(newCredentials.getEmail());
+        }
+        System.out.println(filters);
+        if (filters.getUsername() == null && filters.getEmail() == null) {
+            return null;
+        }
+        filters.setIsActivated(null);
+        return this.authUserRepository.selectOne(filters);
     }
 
     // -------------------------------------------------------------------------

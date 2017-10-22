@@ -52,7 +52,10 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
     }
     private applyErrors(errors: Array<string>, updatedCredentials: Enj.API.Credentials) {
         if (errors.indexOf('reservedUsername') > -1) {
-            this.credentialsForm.addReservedUsername(updatedCredentials.username);
+            this.credentialsForm.addReservedProperty(updatedCredentials.username, 'username');
+        }
+        if (errors.indexOf('reservedEmail') > -1) {
+            this.credentialsForm.addReservedProperty(updatedCredentials.email, 'email');
         }
     }
     private setValidity(newValidity) {

@@ -12,10 +12,12 @@ QUnit.module('auth/CredentialsForm', hooks => {
     let currentPasswordInputEl: HTMLInputElement;
     let newPasswordInputEl: HTMLInputElement;
     let newPasswordConfirmationInputEl: HTMLInputElement;
-    const testReservedUsername = 'fyy';
+    const testReservedUsername = 'taken';
+    const testReservedEmail = 'taken@mail.com';
     hooks.beforeEach(() => {
         testCredentials = {username: 'test', email: 'test@email.com', password: 'pass'};
         (CredentialsForm as any).reservedUsernames = {[testReservedUsername]: 1};
+        (CredentialsForm as any).reservedEmails = {[testReservedEmail]: 1};
         rendered = itu.renderIntoDocument(
             <CredentialsForm credentials={ testCredentials } onValidityChange={ () => {} }/>
         );
@@ -29,6 +31,7 @@ QUnit.module('auth/CredentialsForm', hooks => {
     });
     hooks.afterEach(() => {
         (CredentialsForm as any).reservedUsernames = {};
+        (CredentialsForm as any).reservedEmails = {};
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa virheellinen', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);
@@ -40,40 +43,42 @@ QUnit.module('auth/CredentialsForm', hooks => {
         //
         const asserter = new FormValidityAsserter(credentialsFormInstance, rendered, assert);
         utils.setInputValue('a', usernameInputEl);
-        asserter.assertIsValid(false, 1);
+        asserter.assertIsValid(false, 1, 'Käyttäjänimi');
         utils.setInputValue(testReservedUsername, usernameInputEl);
-        asserter.assertIsValid(false, 1, 'on jo käytössä');
+        asserter.assertIsValid(false, 1, 'Käyttäjänimi', 'on jo käytössä');
         utils.setInputValue('foo', usernameInputEl);
-        asserter.assertIsValid(false, 0);
+        asserter.assertIsValid(false, 0, 'Käyttäjänimi');
         //
         utils.setInputValue('@test.com', emailInputEl);
-        asserter.assertIsValid(false, 1);
+        asserter.assertIsValid(false, 1, 'E-mail');
+        utils.setInputValue(testReservedEmail, emailInputEl);
+        asserter.assertIsValid(false, 1, 'E-mail', 'on jo käytössä');
         utils.setInputValue(('s'.repeat(190)) + '@test.com', emailInputEl);
-        asserter.assertIsValid(false, 1, 'enintään 191 merkkiä pitkä');
+        asserter.assertIsValid(false, 1, 'E-mail', 'enintään 191 merkkiä pitkä');
         utils.setInputValue('e@mail.com', emailInputEl);
-        asserter.assertIsValid(false, 0);
+        asserter.assertIsValid(false, 0, 'E-mail');
         //
         utils.setInputValue('ba', currentPasswordInputEl);
-        asserter.assertIsValid(false, 1);
+        asserter.assertIsValid(false, 1, 'nykyinen salasana');
         utils.setInputValue('bars', currentPasswordInputEl);
-        asserter.assertIsValid(true, 0);
+        asserter.assertIsValid(true, 0, 'nykyinen salasana');
         //
         utils.setInputValue('aa', newPasswordInputEl);
-        asserter.assertIsValid(false, 2);
+        asserter.assertIsValid(false, 2, 'uusi salasana');
         utils.setInputValue('aaaa', newPasswordInputEl);
-        asserter.assertIsValid(false, 1);
+        asserter.assertIsValid(false, 1, 'uusi salasana');
         //
         utils.setInputValue('aa', newPasswordConfirmationInputEl);
-        asserter.assertIsValid(false, 3);
+        asserter.assertIsValid(false, 3, 'salasanan vahvistus');
         utils.setInputValue('aaab', newPasswordConfirmationInputEl);
-        asserter.assertIsValid(false, 2);
+        asserter.assertIsValid(false, 2, 'salasanan vahvistus');
         utils.setInputValue('aaaa', newPasswordConfirmationInputEl);
-        asserter.assertIsValid(true, 0);
+        asserter.assertIsValid(true, 0, 'salasanan vahvistus');
     });
     function FormValidityAsserter(form, rendered, assert) {
-        this.assertIsValid = function (expectedValidity: boolean, expectedErrorCount: number, errorContains?: string) {
+        this.assertIsValid = function (expectedValidity: boolean, expectedErrorCount: number, prop: string, errorContains?: string) {
             const errorMessages = vtu.getRenderedValidationErrors(rendered);
-            assert.equal(errorMessages.length, expectedErrorCount || 0);
+            assert.equal(errorMessages.length, expectedErrorCount || 0, `Pitäisi sisältää <n> virhettä (${prop})`);
             assert.equal(form.state.validity, expectedValidity);
             errorContains && assert.ok(errorMessages[0].textContent.indexOf(errorContains) > 0);
             return errorMessages;

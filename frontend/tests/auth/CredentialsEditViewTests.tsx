@@ -93,22 +93,43 @@ QUnit.module('auth/CredentialsEditView', hooks => {
         });
     });
     QUnit.test('confirm näyttää validaatiovirheen jos käyttäjänimi oli varattu', assert => {
-        const credentialsUpdateStub = sinon.stub(shallowAuthBackend, 'updateCredentials')
-            .returns(Promise.reject({response:{status:400,json:()=>Promise.resolve(['reservedUsername'])}}));
+        const credentialsUpdateStub = sinon.stub(shallowAuthBackend, 'updateCredentials');
+        credentialsUpdateStub.onFirstCall().returns(Promise.reject(makeFakeResponseError()));
+        credentialsUpdateStub.onSecondCall().returns(Promise.reject(makeFakeResponseError(
+            ['reservedEmail', 'reservedUsername']
+        )));
         //
         const instance = new CredentialsEditView({}, {}) as any;
         const testReservedUsername = 'foo';
+        const testReservedEmail = 'm@ai.l';
         const errorAddSpy = sinon.spy();
-        instance.credentialsForm = {getValues: () => ({username: testReservedUsername}), addReservedUsername: errorAddSpy};
+        instance.credentialsForm = {
+            getValues: () => ({username: testReservedUsername, email: testReservedEmail}),
+            addReservedProperty: errorAddSpy
+        };
         //
         const done = assert.async();
-        instance.confirm().then(res => {
-            assert.ok(errorAddSpy);
-            assert.deepEqual(errorAddSpy.firstCall.args, [testReservedUsername]);
-            assert.ok(notifySpy.notCalled);
+        // Simuloi tilanne, jossa backend rejektoi ['reservedUsername']
+        instance.confirm().then(() => {
+            assert.ok(errorAddSpy.calledOnce, 'Pitäisi informoida credentialsFormille varattu username');
+            assert.deepEqual(errorAddSpy.firstCall.args, [testReservedUsername, 'username']);
+            assert.ok(notifySpy.notCalled, 'Ei pitäisi kutsua notify()ä');
+        // Simuloi tilanne, jossa backend rejektoi ['reservedEmail', 'reservedUsername']
+            return instance.confirm();
+        }).then(() => {
+            assert.ok(errorAddSpy.calledThrice, 'Pitäisi informoida credentialsFormille varattu username & email');
+            assert.deepEqual(errorAddSpy.secondCall.args, [testReservedUsername, 'username']);
+            assert.deepEqual(errorAddSpy.thirdCall.args, [testReservedEmail, 'email']);
+            assert.ok(notifySpy.notCalled, 'Ei pitäisi kutsua edelleenkään notifyä');
             done();
         });
     });
+    function makeFakeResponseError(errorJson = ['reservedUsername']) {
+        return {response: {
+            status: 400,
+            json: () => Promise.resolve(errorJson)
+        }};
+    }
     function getConfirmButton(rendered): HTMLButtonElement {
         return itu.findRenderedDOMElementWithClass(rendered, 'nice-button-primary') as HTMLButtonElement;
     }

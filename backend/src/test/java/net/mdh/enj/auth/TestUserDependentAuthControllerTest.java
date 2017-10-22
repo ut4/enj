@@ -158,13 +158,15 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiOnJoKäytössä() {
+    public void PUTUpdateCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiTaiEmailOnJoKäytössä() {
         AuthUser existing = new AuthUser();
         existing.setUsername("taken");
         existing.setEmail("taken@fus.ro");
         existing.setPasswordHash("fooo");
         existing.setIsActivated(1);
         utils.insertAuthUser(existing);
+        // Sama käyttäjänimi
+        // ---------------------------------------------------------------------
         UpdateCredentials newCredentials = new UpdateCredentials();
         newCredentials.setUserId(testUser.getId());
         newCredentials.setUsername(existing.getUsername());
@@ -176,6 +178,19 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         // Sisältääkö virhekoodin?
         String errorNames = response.readEntity(String.class);
         Assert.assertTrue(errorNames.contains(AuthService.ERRORNAME_RESERVED_USERNAME));
+        // Sama email
+        // ---------------------------------------------------------------------
+        UpdateCredentials newCredentials2 = new UpdateCredentials();
+        newCredentials2.setUserId(testUser.getId());
+        newCredentials2.setUsername(testUser.getUsername());
+        newCredentials2.setEmail(existing.getEmail());
+        newCredentials2.setPassword(testUser.getPasswordHash().toCharArray());
+        // Lähetä PUT /auth/credentials
+        Response response2 = this.newPutRequest("auth/credentials", newCredentials2);
+        Assert.assertEquals(400, response2.getStatus());
+        // Sisältääkö virhekoodin?
+        String errorNames2 = response2.readEntity(String.class);
+        Assert.assertTrue(errorNames2.contains(AuthService.ERRORNAME_RESERVED_EMAIL));
     }
 
     @Test

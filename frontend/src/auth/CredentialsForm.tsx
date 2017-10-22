@@ -10,6 +10,7 @@ interface State {
 
 class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credentials}, State> {
     private static reservedUsernames: {[username: string]: any} = {};
+    private static reservedEmails: {[email: string]: any} = {};
     public constructor(props, context) {
         super(props, context);
         this.evaluators = {
@@ -19,7 +20,8 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
             ],
             email: [
                 (input: string) => /\S+@\S+/.test(input),
-                (input: string) => input.length <= 191
+                (input: string) => input.length <= 191,
+                (input: string) => !CredentialsForm.reservedEmails.hasOwnProperty(input)
             ],
             currentPassword: [(input: string) => input.length >= 4],
             newPassword: this.newNewPasswordEvaluators('newPasswordConfirmation'),
@@ -42,9 +44,9 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
             newPassword: this.state.newPassword || null
         };
     }
-    public addReservedUsername(reserved: string) {
-        CredentialsForm.reservedUsernames[reserved] = 1;
-        this.receiveInputValue({target: {value: this.state.username, name: 'username'}});
+    public addReservedProperty(reserved: string, prop: keyof Enj.API.Credentials) {
+        CredentialsForm['reserved' + prop === 'username' ? 'Usernames' : 'Emails'][reserved] = 1;
+        this.receiveInputValue({target: {value: this.state[prop], name: prop}});
     }
     public render() {
         return (<div>
@@ -59,6 +61,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
                 <input type="text" name="email" value={ this.state.email } onInput={ e => this.receiveInputValue(e) }/>
                 { validationMessage(this.evaluators.email[0], templates => templates.valid('E-mail')) }
                 { validationMessage(this.evaluators.email[1], templates => templates.maxLength('E-mail', 191)) }
+                { validationMessage(this.evaluators.email[2], () => `E-mail ${this.state.email} on jo käytössä`) }
             </label>
             <label class="input-set">
                 <span>Nykyinen salasana</span>
