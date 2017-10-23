@@ -10,6 +10,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.BeforeClass;
+import java.util.function.Consumer;
 import java.util.Collections;
 
 public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
@@ -70,7 +71,13 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
     }
 
     static Program insertTestData(String name, String userId) {
+        return insertTestData(name, userId, null);
+    }
+    static Program insertTestData(String name, String userId, Consumer<Program> programModder) {
         Program program = makeNewProgramEntity(name);
+        if (programModder != null) {
+            programModder.accept(program);
+        }
         program.setUserId(userId);
         utils.insertProgram(program);
         Program.Workout pw = makeNewProgramWorkoutEntity(name + "Workout", program.getId());

@@ -7,6 +7,7 @@ class QueryFilters implements SelectQueryFilters {
 
     public String id;
     public String userId;
+    public Long whenUnixTime;
 
     QueryFilters() {}
     QueryFilters(String userId) {
@@ -27,6 +28,13 @@ class QueryFilters implements SelectQueryFilters {
         this.userId = userId;
     }
 
+    public Long getWhenUnixTime() {
+        return this.whenUnixTime;
+    }
+    public void setWhenUnixTime(Long whenUnixTime) {
+        this.whenUnixTime = whenUnixTime;
+    }
+
     @Override
     public boolean hasRules() {
         return true;
@@ -38,6 +46,9 @@ class QueryFilters implements SelectQueryFilters {
         out.add("programUserId = :userId");
         if (this.id != null) {
             out.add("programId = :id");
+        }
+        if (this.whenUnixTime != null) {
+            out.add(":whenUnixTime > programStart AND :whenUnixTime < programEnd");
         }
         return String.join(" AND ", out);
     }

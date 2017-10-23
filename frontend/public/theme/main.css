@@ -175,15 +175,13 @@ ul {
     text-shadow: 0 1px rgba(0,0,0,0.1);
     text-decoration: none;
 }
-.nice-button.nice-button-small {
-    color: #555555;
+.nice-button.small {
     font-size: 10px;
     padding: 6px;
 }
-.nice-button.nice-button-large {
-    color: #555555;
+.nice-button.large {
     font-size: 14px;
-    padding: 15px 25px;
+    padding: 15px 35px;
 }
 .nice-button:disabled {
     background-color: #E5E5E5;
@@ -231,20 +229,20 @@ ul {
     padding: 1px 6px 6px;
 }
 .icon-button.with-text {
-    background-color: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
-    color: #FFFFFF;
     padding: 9px 14px 9px 32px;
     background-position: 8px center;
     background-size: 16px auto;
 }
-.icon-button.with-text:active:enabled,
-a.icon-button.with-text:active {
+.dark-list .nice-button {
+    background-color: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
+    color: #FFFFFF;
+}
+.dark-list .nice-button:active:enabled {
     background-color: rgba(255,255,255,0.1);
     box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
 }
-.icon-button.with-text:hover:enabled,
-a.icon-button.with-text:hover {
+.dark-list .nice-button:hover:enabled {
     background-color: rgba(255,255,255,0.20);
     border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
 }
@@ -378,9 +376,6 @@ table {
 table.crud-table, table.fixed {
     table-layout: fixed;
 }
-.input-set table {
-    margin-bottom: 0;
-}
 table th {
     padding-right: 10px;
     text-align: left;
@@ -389,29 +384,33 @@ table th:first-child {
     padding-left: 6px;
 }
 table.striped tr:nth-of-type(2n) td, .striped > *:nth-of-type(2n) {
-    background-color: #ECECEC;
+    background-color: rgba(0,0,0,0.05);
 }
 table td {
     padding: 6px 10px 6px 0;
     text-align: left;
     vertical-align: top;
 }
-table.crud-table td {
+table.crud-table tbody td {
     padding: 8px 10px 8px 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-table td:first-child {
+table tbody td:first-child {
     padding-left: 4px;
 }
-table.striped td:first-child {
+table.striped tbody td:first-child {
     padding-left: 6px;
 }
-table.crud-table td:first-child {
+table.crud-table tbody td:first-child, table.dark-list tfoot td {
     padding-left: 10px;
 }
-.striped thead tr:only-child th:first-child, .striped tbody tr:only-child td:first-child {
+table.dark-list tfoot td {
+    padding: 10px;
+}
+.striped:not(.dark-list) thead tr:only-child th:first-child,
+.striped:not(.dark-list) tbody tr:only-child td:first-child {
     padding-left: 0;
 }
 table.crud-table th:last-of-type,
@@ -431,9 +430,6 @@ table .icon-button.edit-dark {
 }
 table .icon-button.delete-dark {
     background-position: 5px -2px;
-}
-tfoot {
-    border-top: 1px solid #DDDDDD;
 }
 
 /* -- Lomakkeet ---------- */
@@ -618,7 +614,7 @@ table .input-set .text-error {
     border-radius: 2px;
 }
 .modal-content.level-0:only-child {
-    transition: transform .25s ease-out, opacity .2s ease-out, position 0s linear .25s;
+    transition: transform .15s ease-out, opacity .15s ease-out, position 0s linear .15s;
 }
 .modal-content.level-0:not(:only-child) {
     opacity: 0;
@@ -846,7 +842,7 @@ footer a {
 }
 
 /* -- Treeninäkymät ---------- */
-.workout-view h2 .arrow-dark { margin: 0 -5px -7px 2px; top: -3px; position: relative; }
+.workout-view h2 .arrow-dark { padding: 14px 16px; margin: 0 -5px -7px 2px; top: -3px; position: relative; }
 .workout-view .datepicker { position: absolute; display: inline-block; transform: translate(-85%, 45px);
     z-index: 1; }
 .workout-view > div { margin-top: -10px; }
@@ -902,6 +898,7 @@ footer a {
     position: absolute; top: 0px; left: -14px; font-size: 12px; padding: 6px 0;
     box-sizing: border-box; width: 23px; text-align: center; border-radius: 2px;
 }
+.program-workouts-manager .dark-list .content { margin-bottom: 0; }
 .week-navigation { display: inline-block; position: relative; }
 .week-navigation > button { position: absolute; left: -44px; top: 27%; }
 .week-navigation > button:last-of-type { left: initial; right: -40px; }
@@ -952,7 +949,8 @@ footer a {
     table.responsive td:first-child {
         padding: 10px 15px 0;
     }
-    table.responsive td:last-child {
+    table.responsive td:last-of-type,
+    table.responsive.crud-table td:last-of-type {
         padding-bottom: 10px;
         margin-bottom: 5px;
         width: auto;

@@ -8,6 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.BadRequestException;
 import javax.validation.constraints.NotNull;
@@ -66,8 +67,12 @@ public class ProgramController {
      */
     @GET
     @Path("/mine")
-    public List<Program> getMyPrograms() {
-        return this.programRepository.selectAll(new QueryFilters(this.requestContext.getUserId()));
+    public List<Program> getMyPrograms(@QueryParam("when") Long whenUnixTime) {
+        QueryFilters filters = new QueryFilters(this.requestContext.getUserId());
+        if (whenUnixTime != null) {
+            filters.setWhenUnixTime(whenUnixTime);
+        }
+        return this.programRepository.selectAll(filters);
     }
 
     /**

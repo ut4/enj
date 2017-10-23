@@ -329,4 +329,5 @@ CREATE VIEW programView AS
     JOIN programWorkout pw ON (pw.programId = p.id)
     JOIN programWorkoutExercise pwe ON (pwe.programWorkoutId = pw.id)
     JOIN exercise e ON (e.id = pwe.exerciseId)
-    LEFT JOIN exerciseVariant ev ON (ev.id = pwe.exerciseVariantId);
+    LEFT JOIN exerciseVariant ev ON (ev.id = pwe.exerciseVariantId)
+    ORDER BY programWorkoutExerciseOrdinal;

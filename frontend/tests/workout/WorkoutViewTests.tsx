@@ -5,20 +5,28 @@ import utils from 'tests/utils';
 import WorkoutBackend, { Workout } from 'src/workout/WorkoutBackend';
 import WorkoutView from 'src/workout/WorkoutView';
 import EditableWorkout from 'src/workout/EditableWorkout';
+import ProgramBackend from 'src/program/ProgramBackend';
+import ptu from 'tests/program/utils';
 import Datepicker from 'src/ui/Datepicker';
 import iocFactories from 'src/ioc';
-const emptyMessageRegExp: RegExp = /Ei treenejä/;
+const noWorkoutsMessage = 'Ei treenejä';
+const noProgramWorkoutsMessage = 'Ei ohjelmatreeniä tälle päivälle';
 const someUserId = 'uuid56';
 
 QUnit.module('workout/WorkoutView', hooks => {
     let someTestWorkouts: Array<Enj.API.WorkoutRecord>;
     let workoutBackendIocOverride: sinon.SinonStub;
     let shallowWorkoutBackend: WorkoutBackend;
+    let programBackendIocOverride: sinon.SinonStub;
+    let shallowProgramBackend: WorkoutBackend;
     let fakeHistory;
     let historyIocOverride: sinon.SinonStub;
+    let componentWillReceivePropsSpy: sinon.SinonSpy;
     hooks.beforeEach(() => {
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
+        shallowProgramBackend = Object.create(ProgramBackend.prototype);
+        programBackendIocOverride = sinon.stub(iocFactories, 'programBackend').returns(shallowProgramBackend);
         someTestWorkouts = [
             {id:'uuid1', start: 1, exercises: [], userId: 'uuid2'},
             {id:'uuid2', start: 2, exercises: [], userId: 'uuid2'}
@@ -28,7 +36,9 @@ QUnit.module('workout/WorkoutView', hooks => {
     });
     hooks.afterEach(() => {
         workoutBackendIocOverride.restore();
+        programBackendIocOverride.restore();
         historyIocOverride.restore();
+        componentWillReceivePropsSpy && componentWillReceivePropsSpy.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
         const todaysWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
@@ -43,8 +53,59 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('mount näyttää viestin mikäli current-treenejä ei löydy', assert => {
+    QUnit.test('mount näyttää current-ohjelman ohjelmatreenin, jos current-treeniä ei löytynyt', assert => {
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
+        const testProgram = ptu.getSomeTestPrograms()[1];
+        testProgram.start = Math.floor(new Date().getTime() / 1000);
+        testProgram.workouts[0].occurrences[0].weekDay = new Date().getDay();
+        const programsFetch = sinon.stub(shallowProgramBackend, 'getAll').returns(
+            Promise.resolve([testProgram])
+        );
+        //
+        componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        //
+        const done = assert.async();
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
+            assert.equal(
+                new Date(programsFetch.firstCall.args[0].split('when=')[1] * 1000).toDateString(),
+                new Date().toDateString(),
+                'Pitäisi hakea ohjelmia kuluvan päivän unixTimella'
+            );
+            assert.equal(
+                itu.findRenderedDOMElementWithTag(rendered, 'h2').textContent,
+                'Ohjelmassa tänään'
+            );
+            const actualProgramWorkoutHeading = itu.findRenderedDOMElementWithClass(rendered, 'heading');
+            const actualProgramWorkoutContent = itu.findRenderedDOMElementWithClass(rendered, 'content');
+            const pw = testProgram.workouts[0];
+            assert.equal(actualProgramWorkoutHeading.textContent, pw.name, 'Pitäisi');
+            assert.equal(actualProgramWorkoutContent.textContent, pw.exercises.map(e => e.exerciseName).join(''));
+            done();
+        });
+    });
+    QUnit.test('mount näyttää viestin jos current-ohjelmasta ei löytynyt ohjelmatreeniä kuluvalle päivälle', assert => {
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
+        const testProgram = ptu.getSomeTestPrograms()[1];
+        testProgram.workouts[0].occurrences[0].weekDay = new Date().getDay() + 1;
+        const programsFetch = sinon.stub(shallowProgramBackend, 'getAll').returns(
+            Promise.resolve([testProgram])
+        );
+        //
+        componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        //
+        const done = assert.async();
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
+            assert.ok(itu.findRenderedDOMElementWithTag(rendered, 'p').textContent
+                .indexOf('Ei ohjelmatreeniä tälle päivälle') > -1);
+            done();
+        });
+    });
+    QUnit.test('mount näyttää viestin mikäli current-treenejä, eikä ohjelmia löydy', assert => {
         const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([]));
+        const currentProgramsFetch = sinon.stub(shallowProgramBackend, 'getAll')
             .returns(Promise.resolve([]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
@@ -53,8 +114,21 @@ QUnit.module('workout/WorkoutView', hooks => {
         currentWorkoutsFetch.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 0);
-            const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
-            assert.ok(emptyMessageRegExp.test(rootElem.innerHTML));
+            const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'p')[0];
+            assert.ok(rootElem.innerHTML.indexOf(noWorkoutsMessage) > -1);
+            done();
+        });
+    });
+    QUnit.test('mount ei hae ohjelmaa, jos params.date ei ole tänään', assert => {
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([]));
+        const currentProgramsFetch = sinon.spy(shallowProgramBackend, 'getAll');
+        //
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        //
+        const done = assert.async();
+        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+            assert.ok(currentProgramsFetch.notCalled, 'Ei pitäisi hakea ohjelmia');
             done();
         });
     });
@@ -64,14 +138,14 @@ QUnit.module('workout/WorkoutView', hooks => {
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // Assertoi että initial render on tyhjä
-        const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
-        assert.equal(emptyMessageRegExp.test(rootElem.innerHTML), false);
+        assert.equal(itu.scryRenderedDOMElementsWithTag(rendered, 'div').length, 0);
         // Assertoi että thenin jälkeinen render ei ole tyhjä
         const done = assert.async();
         currentWorkoutsFetch.firstCall.returnValue.then(null, () => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 0);
-            assert.ok(emptyMessageRegExp.test(rootElem.innerHTML));
+            const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
+            assert.ok(rootElem.innerHTML.indexOf(noWorkoutsMessage) > -1);
             done();
         });
     });

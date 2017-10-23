@@ -60,6 +60,15 @@ self.DYNAMIC_CACHE = [{
         prefixWithApiNamespace('workout')
     )
 }, {
+    urlMatcher: prefixWithApiNamespace('program/mine\\?when=(\\d+)'),
+    dataGetter: ([unixTime]) => swManager.findFromCachedArrayBy(
+        {$where: function () {
+            const unixTimeInt = parseInt(unixTime, 10);
+            return unixTimeInt > this.start && unixTimeInt < this.end;
+        }},
+        prefixWithApiNamespace('program/mine')
+    )
+}, {
     urlMatcher: prefixWithApiNamespace('program/(.{36})'),
     dataGetter: ([programId]) => swManager.findFromCachedArrayBy(
         {id: {$eq: programId}},

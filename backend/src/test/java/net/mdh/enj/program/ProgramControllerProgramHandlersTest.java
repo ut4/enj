@@ -58,6 +58,26 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     }
 
     @Test
+    public void GETMinePalauttaaWhenAjankohtanaAktiivisetOhjelmat() {
+        // Testiohjelma jonka start = 123 ja end = 456
+        insertMainGETTestData();
+        // Testiohjelma jonka start = 678 ja end = 91011
+        Program notActive = insertTestData("Not active program", TestData.TEST_USER_ID, program -> {
+            program.setStart(678L);
+            program.setEnd(91011L);
+        });
+        // Lähetä pyyntö
+        Response response = newGetRequest("program/mine", t ->
+            t.queryParam("when", 300)
+        );
+        Assert.assertEquals(200, response.getStatus());
+        // Palauttiko vain ensimmäisen ohjelman?
+        List<Program> actualMyPrograms = response.readEntity(new GenericType<List<Program>>() {});
+        Assert.assertNull(findProgram(actualMyPrograms, notActive.getId()));
+        Assert.assertNotNull(findProgram(actualMyPrograms, testProgram.getId()));
+    }
+
+    @Test
     public void GETMineJaGETProgramIdPalauttaaVainKirjautuneelleKäyttäjälleKuuluviaOhjelmia() {
         // Insertoi kaksi testiohjelmaa, joista toinen kuuluu toiselle käyttäjälle
         insertMainGETTestData();
