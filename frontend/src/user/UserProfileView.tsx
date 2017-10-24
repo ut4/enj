@@ -7,7 +7,7 @@ import iocFactories from 'src/ioc';
 /**
  * Komponentti urlille #/profiili
  */
-class UserProfileView extends ValidatingComponent<any, {user: Enj.API.UserRecord}> {
+class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
     private userInputs: BasicUserInputs;
     protected propertyToValidate: string = 'user';
     public constructor(props, context) {

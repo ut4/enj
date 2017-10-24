@@ -8,8 +8,8 @@ import { dateUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 
 interface State {
-    workouts: Array<Enj.API.WorkoutRecord>;
-    programs: Array<Enj.API.ProgramRecord>;
+    workouts: Array<Enj.API.Workout>;
+    programs: Array<Enj.API.Program>;
     isToday: boolean;
 }
 
@@ -94,7 +94,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
      */
     private startWorkout(pwe?: Array<Enj.API.ProgramWorkoutExercise>) {
-        let newWorkout: Enj.API.WorkoutRecord;
+        let newWorkout: Enj.API.Workout;
         return this.workoutBackend.newWorkout().then(workout => {
             newWorkout = workout;
             newWorkout.start = Math.floor(Date.now() / 1000);
@@ -110,7 +110,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                         exerciseVariantId: programWorkoutExercise.exerciseVariantId,
                         exerciseVariantContent: programWorkoutExercise.exerciseVariantContent,
                         sets: []
-                    } as Enj.API.WorkoutExerciseRecord;
+                    } as Enj.API.WorkoutExercise;
                 });
                 return this.workoutBackend.addExercises(newWorkout.exercises);
             }
@@ -126,7 +126,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
      * renderöitynä.
      */
     private getProgramWorkoutsList(): HTMLElement {
-        const programWorkouts: Array<Enj.API.ProgramWorkoutRecord> = [];
+        const programWorkouts: Array<Enj.API.ProgramWorkout> = [];
         this.state.programs.forEach(p => {
             const todaysProgramWorkout = occurrenceFinder.findWorkoutForDate(
                 p.workouts,

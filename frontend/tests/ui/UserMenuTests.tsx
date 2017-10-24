@@ -28,7 +28,7 @@ QUnit.module('ui/UserMenu', hooks => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: ''
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         // Assertoi initial tila
@@ -50,7 +50,7 @@ QUnit.module('ui/UserMenu', hooks => {
             isOffline: true,
             // Tämän ei pitäisi vaikuttaa, käyttäjä ei voi olla kirjautunut ja offline samaan aikaan
             token: mockToken
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
@@ -66,7 +66,7 @@ QUnit.module('ui/UserMenu', hooks => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: mockToken
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         //
@@ -84,7 +84,7 @@ QUnit.module('ui/UserMenu', hooks => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: mockToken
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         const subscribeRegistration = sinon.spy(shallowUserState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
@@ -99,7 +99,7 @@ QUnit.module('ui/UserMenu', hooks => {
             actualSubscribeFn({
                 isOffline: true, // <----------- Tämä muuttuu false -> true
                 token: mockToken
-            } as Enj.OfflineDbSchema.UserStateRecord);
+            } as Enj.OfflineDbSchema.UserState);
             const visibleMenuItemsAfter = getVisibleUserMenuLinks(rendered);
             assert.notOk(visibleMenuItemsAfter.some(el => /Go offline/.test(el.innerHTML)));
             assert.notOk(visibleMenuItemsAfter.some(el => /Profiili/.test(el.innerHTML)));
@@ -111,7 +111,7 @@ QUnit.module('ui/UserMenu', hooks => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: ''
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         const subscribeRegistration = sinon.spy(shallowUserState, 'subscribe');
         //
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
@@ -125,7 +125,7 @@ QUnit.module('ui/UserMenu', hooks => {
             actualSubscribeFn({
                 isOffline: false,
                 token: mockToken // <----------- Tämä muuttuu '' -> <token>
-            } as Enj.OfflineDbSchema.UserStateRecord);
+            } as Enj.OfflineDbSchema.UserState);
             const visibleMenuItemsAfter = getVisibleUserMenuLinks(rendered);
             assert.notEqual(visibleMenuItemsAfter[0].innerHTML, 'Kirjaudu sisään');
             done();
@@ -135,7 +135,7 @@ QUnit.module('ui/UserMenu', hooks => {
         const onMountUserStateRead = sinon.stub(shallowUserState, 'getState').returns(Promise.resolve({
             isOffline: false,
             token: mockToken
-        } as Enj.OfflineDbSchema.UserStateRecord));
+        } as Enj.OfflineDbSchema.UserState));
         const logoutCallStub = sinon.stub(shallowAuthService, 'logout').returns(Promise.resolve(undefined));
         const rendered = infernoUtils.renderIntoDocument(<UserMenu/>);
         const done = assert.async();

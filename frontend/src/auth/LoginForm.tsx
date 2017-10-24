@@ -19,7 +19,7 @@ class LoginForm extends ValidatingComponent<any, State> {
         return {username: this.state.username, password: this.state.password};
     }
     public render() {
-        return (<div>
+        return <div>
             <label class="input-set">
                 <span>Käyttäjätunnus</span>
                 <input type="text" name="username" value={ this.state.username } onInput={ e => this.receiveInputValue(e) }/>
@@ -30,7 +30,7 @@ class LoginForm extends ValidatingComponent<any, State> {
                 <input type="password" name="password" value={ this.state.password } onInput={ e => this.receiveInputValue(e) }/>
                 { validationMessage(this.evaluators.password[0], templates => templates.minLength('Salasana', 3)) }
             </label>
-        </div>);
+        </div>;
     }
 }
 

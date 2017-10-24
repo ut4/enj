@@ -6,7 +6,7 @@ import WorkoutExerciseSetForm from 'src/workout/WorkoutExerciseSetForm';
 import workoutTestUtils from 'tests/workout/utils';
 
 QUnit.module('workout/EditableWorkoutExerciseSetList', hooks => {
-    let testSets: Array<Enj.API.WorkoutExerciseSetRecord>;
+    let testSets: Array<Enj.API.WorkoutExerciseSet>;
     hooks.beforeEach(() => {
         testSets = workoutTestUtils.getSomeSets();
     });
@@ -71,7 +71,7 @@ QUnit.module('workout/EditableWorkoutExerciseSetList', hooks => {
             'Ei pitäisi mutatoida propseja ennen lomakkeen hyväksymistä'
         );
     });
-    function getSetPosition(rendered, set: Enj.API.WorkoutExerciseSetRecord): number {
+    function getSetPosition(rendered, set: Enj.API.WorkoutExerciseSet): number {
         const list = itu.scryRenderedVNodesWithType(rendered, WorkoutExerciseSetForm);
         for (const item of list) {
             const {weight, reps} = item.props.workoutExerciseSet;

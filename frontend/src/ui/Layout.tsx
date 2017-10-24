@@ -5,7 +5,7 @@ import Modal from 'src/ui/Modal';
 
 class Layout extends Component<any, any> {
     public render() {
-        return (<div>
+        return <div>
             <Modal/>
             <header>
                 <MainMenu/>
@@ -20,7 +20,7 @@ class Layout extends Component<any, any> {
                 <div>Powered by <a href="https://infernojs.org/" title="InfernoJS">Inferno</a> &amp; <a href="http://jersey.github.io/" title="Jersey">Jersey</a></div>
                 <div>Icons by <a href="https://icons8.com">Icons8</a></div>
             </footer>
-        </div>);
+        </div>;
     }
 }
 

@@ -127,10 +127,10 @@ function getRepeativityAsText(repeatEvery: number | string): string {
 const occurrenceFinder = {
     // TODO - mitä jos päivällä useita treenejä?
     findWorkout(
-        programWorkouts: Array<Enj.API.ProgramWorkoutRecord>,
+        programWorkouts: Array<Enj.API.ProgramWorkout>,
         weekDay: number,
         nthWeek: number
-    ): [Enj.API.ProgramWorkoutRecord, number] {
+    ): [Enj.API.ProgramWorkout, number] {
         for (let i = 0; i < programWorkouts.length; i++) {
             const programWorkout = programWorkouts[i];
             if (programWorkout.occurrences.some(o => {
@@ -147,10 +147,10 @@ const occurrenceFinder = {
         return [undefined, -1];
     },
     findWorkoutForDate(
-        programWorkouts: Array<Enj.API.ProgramWorkoutRecord>,
+        programWorkouts: Array<Enj.API.ProgramWorkout>,
         date: Date,
         programStart: Date
-    ): [Enj.API.ProgramWorkoutRecord, number] {
+    ): [Enj.API.ProgramWorkout, number] {
         return this.findWorkout(
             programWorkouts,
             date.getDay(),

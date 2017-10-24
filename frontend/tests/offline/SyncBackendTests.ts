@@ -8,7 +8,7 @@ QUnit.module('offline/SyncBackend', hooks => {
     let shallowHttp: Http;
     let shallowOfflineHttp: OfflineHttp;
     let syncBackend: SyncBackend;
-    let someSyncableItems: Array<Enj.OfflineDbSchema.SyncQueueRecord>;
+    let someSyncableItems: Array<Enj.OfflineDbSchema.SyncQueueItem>;
     hooks.beforeEach(() => {
         shallowHttp = Object.create(Http.prototype);
         shallowOfflineHttp = Object.create(OfflineHttp.prototype);

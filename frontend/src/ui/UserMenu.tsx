@@ -13,7 +13,7 @@ class UserMenu extends Component<any, any> {
         };
     }
     public componentWillMount() {
-        const receiveUserState = (state: Enj.OfflineDbSchema.UserStateRecord) => {
+        const receiveUserState = (state: Enj.OfflineDbSchema.UserState) => {
             this.setState({
                 offlineIsEnabled: state && state.isOffline,
                 // Käyttäjä ei voi olla kirjautunut, jos Offline-tila on päällä
@@ -33,7 +33,7 @@ class UserMenu extends Component<any, any> {
         );
     }
     public render() {
-        return (<nav id="user-menu">
+        return <nav id="user-menu">
             <ul>
                 { this.state.offlineIsEnabled &&
                     <li><a href="#/palauta-online">Go online</a></li>
@@ -47,7 +47,7 @@ class UserMenu extends Component<any, any> {
                     <li><a href="#/aloita-offline">Go offline</a></li>
                 ] }
             </ul>
-        </nav>);
+        </nav>;
     }
 }
 

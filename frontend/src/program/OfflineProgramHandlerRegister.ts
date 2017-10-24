@@ -5,7 +5,7 @@ import OfflineHttp from 'src/common/OfflineHttp';
  * Sisältää handerit, jotka vastaa /api/program/* -REST-pyynnöistä yhteydettömän
  * tilan aikana.
  */
-class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.ProgramRecord> {
+class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Program> {
     /**
      * Rekisteröi kaikki /api/program/* offline-handlerit.
      */
@@ -38,7 +38,7 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     /**
      * Handlaa POST /api/workout/exercise/all REST-pyynnön.
      */
-    public insertWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
+    public insertWorkouts(programWorkouts: Array<Enj.API.ProgramWorkout>) {
         return this.updateCache(cachedPrograms => {
             // Lisää uudet ohjelmatreenit niille kuuluvien ohjelmien treenilistoihin
             return {
@@ -55,9 +55,9 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     /**
      * Handlaa PUT /api/program/workout REST-pyynnön.
      */
-    public updateWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
+    public updateWorkouts(programWorkouts: Array<Enj.API.ProgramWorkout>) {
         // Päivitä ohjelmatreenit niille kuuluvien ohjelmien treenilistoihin
-        return this.updateHasManyItem<Enj.API.ProgramWorkoutRecord>(programWorkouts, 'workouts', 'programId', '/mine');
+        return this.updateHasManyItem<Enj.API.ProgramWorkout>(programWorkouts, 'workouts', 'programId', '/mine');
     }
     /**
     * Handlaa DELETE /api/program/workout/:id REST-pyynnön.

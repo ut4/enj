@@ -5,7 +5,7 @@ import iocFactories from 'src/ioc';
 /**
  * Komponentti urlille #/ohjelmat/muokkaa/:id.
  */
-class ProgramEditView extends Component<any, {program: Enj.API.ProgramRecord}> {
+class ProgramEditView extends Component<any, {program: Enj.API.Program}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {program: null};

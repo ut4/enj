@@ -11,7 +11,7 @@ const emptyMessageRegExp: RegExp = /Ei vielä ohjelmia/;
 const someUserId = 'uuid34';
 
 QUnit.module('program/ProgramView', hooks => {
-    let someTestPrograms: Array<Enj.API.ProgramRecord>;
+    let someTestPrograms: Array<Enj.API.Program>;
     let programBackendIocOverride: sinon.SinonStub;
     let shallowProgramBackend: ProgramBackend;
     hooks.beforeEach(() => {
@@ -22,7 +22,7 @@ QUnit.module('program/ProgramView', hooks => {
     hooks.afterEach(() => {
         programBackendIocOverride.restore();
     });
-    function renderView(assert, programs: Array<Enj.API.ProgramRecord>, then: Function) {
+    function renderView(assert, programs: Array<Enj.API.Program>, then: Function) {
         const programsFetch = sinon.stub(shallowProgramBackend, 'getAll')
             .returns(Promise.resolve(programs));
         //
@@ -76,7 +76,7 @@ QUnit.module('program/ProgramView', hooks => {
     function getRenderedProgramItems(rendered) {
         return itu.scryRenderedDOMElementsWithTag(rendered, 'tr').slice(1); // thead tr pois
     }
-    function getExpectedTrContent(p: Enj.API.ProgramRecord): string {
+    function getExpectedTrContent(p: Enj.API.Program): string {
         return (
             p.name +
             ptu.getExpectedDateStr(p.start) +

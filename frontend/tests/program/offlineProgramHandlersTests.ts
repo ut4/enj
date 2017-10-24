@@ -10,7 +10,7 @@ QUnit.module('program/offlineProgramHandlers', hooks => {
     let mockNewUuid: AAGUID = 'uuid90';
     let shallowProgramBackend: ProgramBackend;
     let programHandlerRegister: OfflineProgramHandlerRegister;
-    let mockCachedPrograms: Array<Enj.API.ProgramRecord>;
+    let mockCachedPrograms: Array<Enj.API.Program>;
     hooks.beforeEach(() => {
         shallowOffline = Object.create(Offline.prototype);
         shallowProgramBackend = Object.create(ProgramBackend.prototype);

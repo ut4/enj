@@ -5,7 +5,7 @@ import iocFactories from 'src/ioc';
 /**
  * Komponentti urlille #/liikevariantti/muokkaa/:id.
  */
-class ExerciseVariantEditView extends Component<any, {exerciseVariant: Enj.API.ExerciseVariantRecord}> {
+class ExerciseVariantEditView extends Component<any, {exerciseVariant: Enj.API.ExerciseVariant}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {exerciseVariant: context.router.exerciseVariant};

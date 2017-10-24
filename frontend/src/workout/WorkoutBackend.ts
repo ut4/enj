@@ -2,11 +2,11 @@ import RESTBackend  from 'src/common/RESTBackend';
 import UserState from 'src/user/UserState';
 import { arrayUtils } from 'src/common/utils';
 
-class Workout implements Enj.API.WorkoutRecord {
+class Workout implements Enj.API.Workout {
     public id: AAGUID;
     public start: number;
     public end: number;
-    public exercises: Array<Enj.API.WorkoutExerciseRecord>;
+    public exercises: Array<Enj.API.WorkoutExercise>;
     public userId: AAGUID;
     public constructor() {
         this.end = 0;
@@ -17,7 +17,7 @@ class Workout implements Enj.API.WorkoutRecord {
 /**
  * Vastaa /api/workout -REST-pyynnöistä.
  */
-class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
+class WorkoutBackend extends RESTBackend<Enj.API.Workout> {
     private userState: UserState;
     public workoutExerciseBackend: WorkoutExerciseBackend;
     public workoutExerciseSetBackend: WorkoutExerciseSetBackend;
@@ -58,33 +58,33 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     public getDaysWorkouts(date?: Date) {
         return this.getAll(this.makeTimeRangeUrlParams(date));
     }
-    public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
+    public addExercise(workoutExercise: Enj.API.WorkoutExercise) {
         return this.workoutExerciseBackend.insert(workoutExercise);
     }
-    public addExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
+    public addExercises(workoutExercises: Array<Enj.API.WorkoutExercise>) {
         return this.workoutExerciseBackend.insertAll(workoutExercises, '/all');
     }
-    public updateExercise(workoutExercise: Array<Enj.API.WorkoutExerciseRecord>|Enj.API.WorkoutExerciseRecord) {
+    public updateExercise(workoutExercise: Array<Enj.API.WorkoutExercise>|Enj.API.WorkoutExercise) {
         return this.workoutExerciseBackend.update(Array.isArray(workoutExercise) ? workoutExercise : [workoutExercise]);
     }
-    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
+    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExercise>) {
         return this.workoutExerciseBackend.swapExercises(direction, index, list);
     }
-    public deleteExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
+    public deleteExercise(workoutExercise: Enj.API.WorkoutExercise) {
         return this.workoutExerciseBackend.delete(workoutExercise);
     }
-    public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
+    public insertSet(set: Enj.API.WorkoutExerciseSet) {
         return this.workoutExerciseSetBackend.insert(set);
     }
-    public updateSet(set: Array<Enj.API.WorkoutExerciseSetRecord>|Enj.API.WorkoutExerciseSetRecord) {
+    public updateSet(set: Array<Enj.API.WorkoutExerciseSet>|Enj.API.WorkoutExerciseSet) {
         return this.workoutExerciseSetBackend.update(Array.isArray(set) ? set : [set]);
     }
-    public deleteSet(set: Enj.API.WorkoutExerciseSetRecord) {
+    public deleteSet(set: Enj.API.WorkoutExerciseSet) {
         return this.workoutExerciseSetBackend.delete(set);
     }
 }
 
-class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
+class WorkoutExercise implements Enj.API.WorkoutExercise {
     public id: AAGUID;
     public ordinal: number;
     public workoutId: AAGUID;
@@ -92,14 +92,14 @@ class WorkoutExercise implements Enj.API.WorkoutExerciseRecord {
     public exerciseName: string;
     public exerciseVariantId: AAGUID;
     public exerciseVariantContent: string;
-    public sets: Array<Enj.API.WorkoutExerciseSetRecord>;
+    public sets: Array<Enj.API.WorkoutExerciseSet>;
     public constructor() {
         this.ordinal = 0;
         this.sets = [];
     }
 }
 
-class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
+class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSet {
     public id: AAGUID;
     public weight: number;
     public reps: number;
@@ -113,12 +113,12 @@ class WorkoutExerciseSet implements Enj.API.WorkoutExerciseSetRecord {
 /**
  * Vastaa /api/workout/exercise -REST-pyynnöistä.
  */
-class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> {
+class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExercise> {
     /**
      * Päivittää treeniliikkeiden swapatut ordinal-arvot backendiin, sekä swappaa
      * itemit keskenään taulukossa {list}.
      */
-    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
+    public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExercise>) {
         const workoutExercise = list[index];
         if (arrayUtils.swap(list, direction, index)) {
             const swappedOrdinal = list[index].ordinal;
@@ -134,7 +134,7 @@ class WorkoutExerciseBackend extends RESTBackend<Enj.API.WorkoutExerciseRecord> 
 /**
  * Vastaa /api/workout/exercise/set -REST-pyynnöistä.
  */
-class WorkoutExerciseSetBackend extends RESTBackend<Enj.API.WorkoutExerciseSetRecord> {}
+class WorkoutExerciseSetBackend extends RESTBackend<Enj.API.WorkoutExerciseSet> {}
 
 export default WorkoutBackend;
 export { Workout, WorkoutExerciseBackend, WorkoutExercise, WorkoutExerciseSet };

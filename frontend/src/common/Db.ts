@@ -7,11 +7,11 @@ class Db extends Dexie {
     /**
      * Sisältää tiedon siitä, onko käyttäjä online/offline tai logged in/out.
      */
-    public userState: Dexie.Table<Enj.OfflineDbSchema.UserStateRecord, number>;
+    public userState: Dexie.Table<Enj.OfflineDbSchema.UserState, number>;
     /**
      * Offline-tilassa tapahtuneiden HTTP-pyyntöjen tiedot.
      */
-    public syncQueue: Dexie.Table<Enj.OfflineDbSchema.SyncQueueRecord, number>;
+    public syncQueue: Dexie.Table<Enj.OfflineDbSchema.SyncQueueItem, number>;
     /**
      * Avaa indexedDB-yhteyden kutsumalla Dexie:n konstruktoria, ja määrittelee
      * Dexie-scheman & indeksit.

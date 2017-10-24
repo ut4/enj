@@ -9,7 +9,7 @@ import { dateUtils } from 'src/common/utils';
  * Komponentti urlille #/ohjelmat. Listaa kaikki kirjautuneelle käyttäjälle
  * kuuluvat treeniohjelmat.
  */
-class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>}> {
+class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {programs: null};
@@ -55,7 +55,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.ProgramRecord>
             ) }
         </div>;
     }
-    private openDeleteModal(program: Enj.API.ProgramRecord, e) {
+    private openDeleteModal(program: Enj.API.Program, e) {
         e.preventDefault();
         Modal.open(() =>
             <ProgramDeleteModal

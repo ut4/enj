@@ -12,7 +12,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
     let testProgressSets: Array<Enj.API.ProgressSet>;
     let statBackendIocOverride: sinon.SinonStub;
     let shallowStatBackend: StatBackend;
-    let testDropdownExercises: Array<Enj.API.ExerciseRecord>;
+    let testDropdownExercises: Array<Enj.API.Exercise>;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     let fakeHistory;

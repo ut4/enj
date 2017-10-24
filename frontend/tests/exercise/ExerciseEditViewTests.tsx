@@ -17,7 +17,7 @@ QUnit.module('exercise/ExerciseEditView', hooks => {
         exerciseBackendIocOverride.restore();
     });
     QUnit.test('Tallentaa tiedot backendiin', assert => {
-        const testExercise: Enj.API.ExerciseRecord = {id: 'uid', name: 'tyu', variants: [], userId: 'u'};
+        const testExercise: Enj.API.Exercise = {id: 'uid', name: 'tyu', variants: [], userId: 'u'};
         const exerciseFetchStub = sinon.stub(shallowExerciseBackend, 'get')
             .returns(Promise.resolve(testExercise));
         const exerciseSaveStub = sinon.stub(shallowExerciseBackend, 'update')

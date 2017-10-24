@@ -4,7 +4,7 @@ import ExerciseSelector from 'src/exercise/ExerciseSelector';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    exerciseVariant: Enj.API.ExerciseVariantRecord;
+    exerciseVariant: Enj.API.ExerciseVariant;
     operationType: 'insert' | 'update';
 }
 

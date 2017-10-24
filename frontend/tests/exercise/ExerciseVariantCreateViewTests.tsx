@@ -8,7 +8,7 @@ import iocFactories from 'src/ioc';
 import exerciseTestUtils from 'tests/exercise/utils';
 
 QUnit.module('exercise/ExerciseVariantCreateView', hooks => {
-    let testDropdownExercises: Array<Enj.API.ExerciseRecord>;
+    let testDropdownExercises: Array<Enj.API.Exercise>;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {

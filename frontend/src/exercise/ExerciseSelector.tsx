@@ -2,17 +2,17 @@ import Component from 'inferno-component';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    onSelect: (selectedExercise: Enj.API.ExerciseRecord, selectedVariant: Enj.API.ExerciseVariantRecord) => void;
-    exerciseList?: Array<Enj.API.ExerciseRecord>;
+    onSelect: (selectedExercise: Enj.API.Exercise, selectedVariant: Enj.API.ExerciseVariant) => void;
+    exerciseList?: Array<Enj.API.Exercise>;
     initialExerciseId?: AAGUID;
     initialExerciseVariantId?: AAGUID;
     noVariant?: boolean;
     label?: string;
 }
 interface State {
-    exercises: Array<Enj.API.ExerciseRecord>;
-    selectedExercise: Enj.API.ExerciseRecord;
-    selectedVariant: Enj.API.ExerciseVariantRecord;
+    exercises: Array<Enj.API.Exercise>;
+    selectedExercise: Enj.API.Exercise;
+    selectedVariant: Enj.API.ExerciseVariant;
 }
 
 /**
@@ -29,10 +29,10 @@ class ExerciseSelector extends Component<Props, State> {
             );
         }
     }
-    public static assign<T extends Enj.API.WorkoutExerciseRecord|Enj.API.ProgramWorkoutExercise>(
+    public static assign<T extends Enj.API.WorkoutExercise|Enj.API.ProgramWorkoutExercise>(
         to: T,
-        selectedExercise: Enj.API.ExerciseRecord,
-        selectedVariant: Enj.API.ExerciseVariantRecord
+        selectedExercise: Enj.API.Exercise,
+        selectedVariant: Enj.API.ExerciseVariant
     ): T {
         to.exerciseId = selectedExercise.id || null;
         to.exerciseName = selectedExercise.name || null;
@@ -41,7 +41,7 @@ class ExerciseSelector extends Component<Props, State> {
         return to;
     }
     public render() {
-        return (<div>
+        return <div>
             <label class="input-set">
                 <span>{ this.props.label || 'Liikkeen nimi' }</span>
                 <select name="exercise" onChange={ this.receiveExerciseSelection.bind(this) } value={ this.getIndexOfSelectedExercise() }>
@@ -65,7 +65,7 @@ class ExerciseSelector extends Component<Props, State> {
                     </label>
                     : ''
             }
-        </div>);
+        </div>;
     }
     private makeState(exercises) {
         const selectedExercise = this.props.initialExerciseId

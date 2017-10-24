@@ -9,7 +9,7 @@ const emptyMessageRegExp: RegExp = /Ei liikkeitä/;
 const someUserId = 'uuid34';
 
 QUnit.module('exercise/ExerciseView', hooks => {
-    let someTestExercises: Array<Enj.API.ExerciseRecord>;
+    let someTestExercises: Array<Enj.API.Exercise>;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {
@@ -64,10 +64,10 @@ QUnit.module('exercise/ExerciseView', hooks => {
     function getRenderedExerciseItems(rendered) {
         return itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
     }
-    function getExpectedTrContent(exs: Enj.API.ExerciseRecord): string {
+    function getExpectedTrContent(exs: Enj.API.Exercise): string {
         return `${exs.name}${joinVariants(exs.variants)}MuokkaaPoista`;
     }
-    function joinVariants(variants: Array<Enj.API.ExerciseVariantRecord>): string {
+    function joinVariants(variants: Array<Enj.API.ExerciseVariant>): string {
         return variants.length
             ? variants
                 .filter(v => v.userId !== null) // Ei pitäisi sisältää globaaleja liikkeitä

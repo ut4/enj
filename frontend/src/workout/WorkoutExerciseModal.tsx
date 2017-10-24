@@ -6,7 +6,7 @@ import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    workoutExercise: Enj.API.WorkoutExerciseRecord;
+    workoutExercise: Enj.API.WorkoutExercise;
     afterInsert?: Function;
     afterUpdate?: Function;
 }
@@ -63,7 +63,7 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     /**
      * Lähettää päivitetyt sarjat backendiin tallennettavaksi.
      */
-    private saveModifiedSets(modified: Array<Enj.API.WorkoutExerciseSetRecord>): Promise<any> {
+    private saveModifiedSets(modified: Array<Enj.API.WorkoutExerciseSet>): Promise<any> {
         return modified.length
             ? iocFactories.workoutBackend().updateSet(modified)
             : Promise.resolve(null);
@@ -71,7 +71,7 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     /**
      * Lähettää poistetut sarjat backendiin poistettavaksi.
      */
-    private deleteDeletedSets(deleted: Array<Enj.API.WorkoutExerciseSetRecord>): Promise<any> {
+    private deleteDeletedSets(deleted: Array<Enj.API.WorkoutExerciseSet>): Promise<any> {
         if (deleted.length) {
             const workoutBackend = iocFactories.workoutBackend();
             return Promise.all(deleted.map(deletedSet => workoutBackend.deleteSet(deletedSet)));

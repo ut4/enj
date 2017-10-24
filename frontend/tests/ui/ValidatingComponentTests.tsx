@@ -22,13 +22,13 @@ class SomeComponent extends ValidatingComponent<any, {somekey: string, another: 
         return this.evaluators;
     }
     render() {
-        return (<div>
+        return <div>
             <input name="somekey" value={ this.state.somekey } onInput={ e => this.receiveInputValue(e) }/>
             { validationMessage(this.evaluators.somekey[0], () => 'Somekey ei ole "a"') }
             { validationMessage(this.evaluators.somekey[1], () => 'Somekey ei ole "b"') }
             <input name="another" value={ this.state.another } onInput={ e => this.receiveInputValue(e) }/>
             { validationMessage(this.evaluators.another[0], templates => templates.minLength('Another', 2)) }
-        </div>);
+        </div>;
     }
 }
 
@@ -46,9 +46,9 @@ class AnotherComponent extends ValidatingComponent<any, {ent: Entity}> {
         return this.evaluators;
     }
     render() {
-        return (<div>
+        return <div>
             <input name="val" value={ this.state.ent.val } onInput={ e => this.receiveInputValue(e) }/>
-        </div>);
+        </div>;
     }
 }
 

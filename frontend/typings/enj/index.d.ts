@@ -27,14 +27,14 @@ declare module Enj {
             password: string;
             newPassword?: string;
         }
-        interface WorkoutRecord {
+        interface Workout {
             id: AAGUID;
             start: number;
             end?: number;
-            exercises: Array<WorkoutExerciseRecord>;
+            exercises: Array<WorkoutExercise>;
             userId: string;
         }
-        interface WorkoutExerciseRecord {
+        interface WorkoutExercise {
             id: AAGUID;
             ordinal: number;
             workoutId: AAGUID;
@@ -42,9 +42,9 @@ declare module Enj {
             exerciseName: string;
             exerciseVariantId: AAGUID;
             exerciseVariantContent: string;
-            sets: Array<WorkoutExerciseSetRecord>;
+            sets: Array<WorkoutExerciseSet>;
         }
-        interface WorkoutExerciseSetRecord {
+        interface WorkoutExerciseSet {
             id: AAGUID;
             weight: number;
             reps: number;
@@ -74,19 +74,19 @@ declare module Enj {
             lifted: number;
             reps: number;
         }
-        interface ExerciseRecord {
+        interface Exercise {
             id: AAGUID;
             name: string;
             userId: AAGUID;
-            variants: Array<ExerciseVariantRecord>;
+            variants: Array<ExerciseVariant>;
         }
-        interface ExerciseVariantRecord {
+        interface ExerciseVariant {
             id?: AAGUID;
             content: string;
             exerciseId: AAGUID;
             userId: AAGUID;
         }
-        interface UserRecord {
+        interface User {
             id: AAGUID;
             username: string;
             email: string;
@@ -94,16 +94,16 @@ declare module Enj {
             isMale: number;
             signature?: string;
         }
-        interface ProgramRecord {
+        interface Program {
             id: AAGUID;
             name: string;
             start: number;
             end: number;
             description?: string;
             userId: AAGUID;
-            workouts: Array<ProgramWorkoutRecord>;
+            workouts: Array<ProgramWorkout>;
         }
-        interface ProgramWorkoutRecord {
+        interface ProgramWorkout {
             id?: AAGUID;
             name: string;
             occurrences: Array<ProgramWorkoutOccurrence>;
@@ -148,12 +148,12 @@ declare module Enj {
      * Määrittelee rajapinnat Dexie/indexedDb-selaintietokannalle.
      */
     module OfflineDbSchema {
-        interface UserStateRecord {
+        interface UserState {
             id?: number;
             token: string;
             isOffline: boolean;
         }
-        interface SyncQueueRecord {
+        interface SyncQueueItem {
             id?: number;
             route: SyncRoute;
             data: {[key: string]: any};

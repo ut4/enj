@@ -6,7 +6,7 @@ import iocFactories from 'src/ioc';
  * Komponentti urlille #/liikkeet. Listaa kaikki globaalit, ja kirjautuneelle
  * käyttäjälle kuuluvat liikkeet.
  */
-class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseRecord>}> {
+class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {exercises: null};
@@ -47,7 +47,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.ExerciseReco
             ) }
         </div>;
     }
-    private getVariantList(variants: Array<Enj.API.ExerciseVariantRecord>) {
+    private getVariantList(variants: Array<Enj.API.ExerciseVariant>) {
         return <ul>{ variants.map(variant =>
             <li>
                 <span>- {variant.content}</span>

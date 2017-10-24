@@ -5,7 +5,7 @@ import OfflineHttp from 'src/common/OfflineHttp';
  * Sisältää handerit, jotka vastaa /api/exercise/* -REST-pyynnöistä yhteydettömän
  * tilan aikana.
  */
-class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.ExerciseRecord> {
+class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Exercise> {
     /**
      * Rekisteröi kaikki /api/exercise/* offline-handlerit.
      */
@@ -24,7 +24,7 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
     /**
      * Handlaa POST /api/exercise/variant REST-pyynnön.
      */
-    public insertVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
+    public insertVariant(exerciseVariant: Enj.API.ExerciseVariant) {
         return this.updateCache(cachedExercises => {
             // Lisää uusi variantti sille kuuluvan liikeen varianttilistaan
             const parentExerciseRef = this.findItemById(exerciseVariant.exerciseId, cachedExercises);
@@ -37,7 +37,7 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
     /**
      * Handlaa PUT /api/exercise/variant/{exerciseVariantId} REST-pyynnön.
      */
-    public updateVariant(exerciseVariant: Enj.API.ExerciseVariantRecord) {
+    public updateVariant(exerciseVariant: Enj.API.ExerciseVariant) {
         return this.updateCache(cachedExercises => {
             // Päivitä liikevariantti sille kuuluvan liikeen varianttilistaan
             const exerciseVariantListRef = this.findItemById(exerciseVariant.exerciseId, cachedExercises).variants;

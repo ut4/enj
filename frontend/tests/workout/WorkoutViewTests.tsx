@@ -14,7 +14,7 @@ const noProgramWorkoutsMessage = 'Ei ohjelmatreeniä tälle päivälle';
 const someUserId = 'uuid56';
 
 QUnit.module('workout/WorkoutView', hooks => {
-    let someTestWorkouts: Array<Enj.API.WorkoutRecord>;
+    let someTestWorkouts: Array<Enj.API.Workout>;
     let workoutBackendIocOverride: sinon.SinonStub;
     let shallowWorkoutBackend: WorkoutBackend;
     let programBackendIocOverride: sinon.SinonStub;
@@ -276,7 +276,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     function getRenderedWorkoutItems(rendered) {
         return itu.scryRenderedVNodesWithType(rendered, EditableWorkout);
     }
-    function getExpectedNewWorkout(): Enj.API.WorkoutRecord {
+    function getExpectedNewWorkout(): Enj.API.Workout {
         const workout = new Workout();
         workout.start = Math.floor(Date.now() / 1000);
         workout.end = 0;
@@ -284,7 +284,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         workout.userId = someUserId;
         return workout;
     }
-    function getTestCurrentProgram(): Enj.API.ProgramRecord {
+    function getTestCurrentProgram(): Enj.API.Program {
         const testProgram = ptu.getSomeTestPrograms()[1];
         testProgram.start = Math.floor(new Date().getTime() / 1000);
         testProgram.workouts[0].occurrences[0].weekDay = new Date().getDay();

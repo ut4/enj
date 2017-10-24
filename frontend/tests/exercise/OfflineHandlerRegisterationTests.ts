@@ -9,7 +9,7 @@ import OfflineExerciseHandlerRegister from 'src/exercise/OfflineExerciseHandlerR
 import iocFactories from 'src/ioc';
 
 QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
-    let testExercise: Enj.API.ExerciseRecord;
+    let testExercise: Enj.API.Exercise;
     let fetchContainer: GlobalFetch = window;
     let exerciseBackend: ExerciseBackend;
     let handlerRegister: OfflineExerciseHandlerRegister;

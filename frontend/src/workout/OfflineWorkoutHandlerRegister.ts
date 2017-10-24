@@ -5,7 +5,7 @@ import AbstractOfflineHandlerRegister from 'src/offline/AbstractOfflineHandlerRe
  * Sisältää handerit, jotka vastaa /api/workout/* -REST-pyynnöistä yhteydettömän
  * tilan aikana.
  */
-class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.WorkoutRecord> {
+class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Workout> {
     /**
      * Rekisteröi kaikki /api/workout/* offline-handlerit.
      */
@@ -41,7 +41,7 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     /**
      * Handlaa PUT /api/workout REST-pyynnön.
      */
-    public updateAll(workoutsToUpdate: Array<Enj.API.WorkoutRecord>) {
+    public updateAll(workoutsToUpdate: Array<Enj.API.Workout>) {
         return this.updateCache(cachedWorkouts => {
             // Päivitä treenit niille kuuluviin cachetaulukon paikkoihin
             workoutsToUpdate.forEach(workout => {
@@ -53,23 +53,23 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     /**
      * Handlaa POST /api/workout/exercise REST-pyynnön.
      */
-    public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
+    public addExercise(workoutExercise: Enj.API.WorkoutExercise) {
         // Lisää liike sille kuuluvan treenin liikelistaan
-        return this.insertHasManyItem<Enj.API.WorkoutExerciseRecord>(workoutExercise, 'exercises', 'workoutId');
+        return this.insertHasManyItem<Enj.API.WorkoutExercise>(workoutExercise, 'exercises', 'workoutId');
     }
     /**
      * Handlaa POST /api/workout/exercise/all REST-pyynnön.
      */
-    public addExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
+    public addExercises(workoutExercises: Array<Enj.API.WorkoutExercise>) {
         // Lisää liikkeet niille kuuluvien treenien liikelistoihin
-        return this.insertHasManyItems<Enj.API.WorkoutExerciseRecord>(workoutExercises, 'exercises', 'workoutId');
+        return this.insertHasManyItems<Enj.API.WorkoutExercise>(workoutExercises, 'exercises', 'workoutId');
     }
     /**
      * Handlaa PUT /api/workout/exercise REST-pyynnön.
      */
-    public updateExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
+    public updateExercises(workoutExercises: Array<Enj.API.WorkoutExercise>) {
         // Päivitä liikkeet niille kuuluvien treenien liikelistoihin
-        return this.updateHasManyItem<Enj.API.WorkoutExerciseRecord>(workoutExercises, 'exercises', 'workoutId');
+        return this.updateHasManyItem<Enj.API.WorkoutExercise>(workoutExercises, 'exercises', 'workoutId');
     }
     /**
      * Handlaa DELETE /api/workout/exercise/:id REST-pyynnön.
@@ -81,23 +81,23 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     /**
      * Handlaa POST /api/workout/exercise/set REST-pyynnön.
      */
-    public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
+    public insertSet(set: Enj.API.WorkoutExerciseSet) {
         // Lisää uusi sarja sille kuuluvan treeniliikkeen sarjalistaan
-        return this.insertHasManySubItem<Enj.API.WorkoutExerciseSetRecord>(set, 'sets', 'workoutExerciseId', 'exercises');
+        return this.insertHasManySubItem<Enj.API.WorkoutExerciseSet>(set, 'sets', 'workoutExerciseId', 'exercises');
     }
     /**
      * Handlaa PUT /api/workout/exercise/set REST-pyynnön.
      */
-    public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>) {
+    public updateSets(workoutExerciseSets: Array<Enj.API.WorkoutExerciseSet>) {
         // Päivitä sarjat niille kuuluvien treeniliikkeiden sarjalistoihin
-        return this.updateHasManySubItems<Enj.API.WorkoutExerciseSetRecord>(workoutExerciseSets, 'sets', 'workoutExerciseId', 'exercises');
+        return this.updateHasManySubItems<Enj.API.WorkoutExerciseSet>(workoutExerciseSets, 'sets', 'workoutExerciseId', 'exercises');
     }
     /**
      * Handlaa DELETE /api/workout/exercise/set/:id REST-pyynnön.
      */
-    public deleteSet(workoutExerciseSet: Enj.API.WorkoutExerciseSetRecord) {
+    public deleteSet(workoutExerciseSet: Enj.API.WorkoutExerciseSet) {
         // Poista sarja sille kuuluvan treeniliikkeen sarjalistasta
-        return this.deleteHasManySubItem<Enj.API.WorkoutExerciseSetRecord>(workoutExerciseSet, 'sets', 'workoutExerciseId', 'exercises');
+        return this.deleteHasManySubItem<Enj.API.WorkoutExerciseSet>(workoutExerciseSet, 'sets', 'workoutExerciseId', 'exercises');
     }
 }
 

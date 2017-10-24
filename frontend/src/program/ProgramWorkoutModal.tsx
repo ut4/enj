@@ -5,7 +5,7 @@ import ExercisesManager from 'src/program/ProgramWorkoutExercisesManager';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    programWorkout: Enj.API.ProgramWorkoutRecord;
+    programWorkout: Enj.API.ProgramWorkout;
     programWeekCount: number;
     afterInsert?: Function;
     afterUpdate?: Function;
@@ -15,7 +15,7 @@ interface Props {
  * Ohjelmatreenin (esim. ohjelmassa joka maanantai toistuva liikeryhmä) luonti &
  * muokkaus-modal.
  */
-class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: Enj.API.ProgramWorkoutRecord}> {
+class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: Enj.API.ProgramWorkout}> {
     private isInsert: boolean;
     private occurrencesManager: OccurrencesManager;
     private exercisesManager: ExercisesManager;

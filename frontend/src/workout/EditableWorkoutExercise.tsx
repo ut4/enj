@@ -6,7 +6,7 @@ import { arrayUtils }  from 'src/common/utils';
 import Modal from 'src/ui/Modal';
 
 interface Props {
-    workoutExercise: Enj.API.WorkoutExerciseRecord;
+    workoutExercise: Enj.API.WorkoutExercise;
     onDelete: Function;
     moveExercise: Function;
 }
@@ -50,7 +50,7 @@ class EditableWorkoutExercise extends Component<Props, any> {
     }
     public render() {
         const totals = this.getTotals();
-        return (<li>
+        return <li>
             <div class="heading">
                 { this.props.workoutExercise.exerciseName }
                 { this.props.workoutExercise.exerciseVariantContent
@@ -79,7 +79,7 @@ class EditableWorkoutExercise extends Component<Props, any> {
                 <button class="icon-button arrow up" onClick={ () => this.props.moveExercise('up') } title="Siirrä ylös"></button>
                 <button class="icon-button arrow down" onClick={ () => this.props.moveExercise('down') } title="Siirrä alas"></button>
             </div>
-        </li>);
+        </li>;
     }
     /**
      * Palauttaa yhteenvedon tehdystä treeniliikkeestä, tai null, jos liikkeellä
@@ -100,7 +100,7 @@ class EditableWorkoutExercise extends Component<Props, any> {
     /**
      * Palauttaa viimeisimmän suoritetun sarjan, tai null, jos sarjoja ei ole.
      */
-    private getLastSet(): Enj.API.WorkoutExerciseSetRecord {
+    private getLastSet(): Enj.API.WorkoutExerciseSet {
         return this.props.workoutExercise.sets.length
             ? this.props.workoutExercise.sets[this.props.workoutExercise.sets.length - 1]
             : null;

@@ -25,13 +25,13 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
         );
     }
     public render() {
-        return (<div>
+        return <div>
             <h2>Muokkaa tiliä</h2>
             { this.state.credentials &&
                 <CredentialsForm credentials={ this.state.credentials } onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.credentialsForm = instance; } }/>
             }
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
-        </div>);
+        </div>;
     }
     private confirm() {
         const updatedCredentials = this.credentialsForm.getValues();

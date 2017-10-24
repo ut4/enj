@@ -156,7 +156,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     /**
      * Vastaanottaa ExerciseSelectorin valinnan, ja triggeröi urlin päivityksen.
      */
-    private onExerciseSelect(selectedExercise: Enj.API.ExerciseRecord) {
+    private onExerciseSelect(selectedExercise: Enj.API.Exercise) {
         this.props.params.exerciseId = selectedExercise.id;
         this.props.params.page = 0;
         this.props.params.before = undefined;

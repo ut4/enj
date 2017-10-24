@@ -9,7 +9,7 @@ import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
 QUnit.module('program/ProgramEditView', hooks => {
-    let testProgram: Enj.API.ProgramRecord;
+    let testProgram: Enj.API.Program;
     let programBackendIocOverride: sinon.SinonStub;
     let shallowProgramBackend: ProgramBackend;
     hooks.beforeEach(() => {

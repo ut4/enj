@@ -31,7 +31,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         userBackendIocOverride.restore();
     });
     QUnit.test('laskee parhaista voimanostoista kokonaistulokset', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', email: 's', bodyWeight: 45, isMale: 1};
+        const testUser: Enj.API.User = {id: 'uid', username: 'fo', email: 's', bodyWeight: 45, isMale: 1};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         //
         const [rendered, componentInstance] = renderComponent();
@@ -82,7 +82,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Laskee tulokset uudelleen Asetukset-lomakkeen arvoilla', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'uid', username: 'fo', email: 'fo', bodyWeight: 50, isMale: 1};
+        const testUser: Enj.API.User = {id: 'uid', username: 'fo', email: 'fo', bodyWeight: 50, isMale: 1};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateSpy = sinon.spy(shallowUserBackend, 'update');
         //
@@ -116,7 +116,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
         });
     });
     QUnit.test('Tallentaa uudet Asetukset-lomakkeen arvot, jos checkbox on valittuna', assert => {
-        const testUser: Enj.API.UserRecord = {id: 'ud', username: 'fo', email: 'fo', bodyWeight: 30, isMale: null};
+        const testUser: Enj.API.User = {id: 'ud', username: 'fo', email: 'fo', bodyWeight: 30, isMale: null};
         sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
         const userDataUpdateStub = sinon.stub(shallowUserBackend, 'update')
             .returns(Promise.resolve(1));
@@ -151,14 +151,14 @@ QUnit.module('stat/StatStrengthView', hooks => {
             done();
         });
     });
-    function getExpectedStrengthLevelsContent(testUser: Enj.API.UserRecord, expected = {} as any): string {
+    function getExpectedStrengthLevelsContent(testUser: Enj.API.User, expected = {} as any): string {
         return (
             'Jalkakyykky ' + (expected.squat || getExpectedStrengthLevel('squat', testBestSets[1], testUser)) +
             'Penkkipunnerrus ' + (expected.bench || getExpectedStrengthLevel('bench',testBestSets[0], testUser)) +
             'Maastaveto ' + (expected.deadlift || getExpectedStrengthLevel('deadlift', testBestSets[3], testUser))
         );
     }
-    function assertNewScores(assert, rendered, testUser: Enj.API.UserRecord, and?: Function) {
+    function assertNewScores(assert, rendered, testUser: Enj.API.User, and?: Function) {
         assert.deepEqual(itu.findRenderedDOMElementWithClass(rendered, 'inline-form'),
             undefined, 'Pitäisi sulkea asetuslomake');
         const scores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
@@ -177,7 +177,7 @@ QUnit.module('stat/StatStrengthView', hooks => {
     function getExpectedWilks(bodyWeight: number, isMale: boolean, includedTestSets?: Array<number>): number {
         return Math.round(formulae.wilksCoefficient(bodyWeight, isMale) * getExpectedTotal(includedTestSets));
     }
-    function getExpectedStrengthLevel(lift: keyof Enj.powerLift, set: Enj.API.BestSet, user: Enj.API.UserRecord): string {
+    function getExpectedStrengthLevel(lift: keyof Enj.powerLift, set: Enj.API.BestSet, user: Enj.API.User): string {
         return formulae.strengthLevel(lift, formulae.oneRepMax(set.bestWeight, set.bestWeightReps), user.bodyWeight, user.isMale !== 0);
     }
     function getExpectedPowerLiftDetails(set: Enj.API.BestSet): string {

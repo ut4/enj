@@ -5,7 +5,7 @@ import UserState from 'src/user/UserState';
 /**
  * Vastaa /api/user REST-pyynnöistä.
  */
-class UserBackend extends RESTBackend<Enj.API.UserRecord> {
+class UserBackend extends RESTBackend<Enj.API.User> {
     public constructor(http, urlNamespace) {
         super(http, urlNamespace);
     }
@@ -18,7 +18,7 @@ class UserBackend extends RESTBackend<Enj.API.UserRecord> {
     /**
      * Hakee kirjautuneen käyttäjän tiedot backendistä.
      */
-    public get(url?: string): Promise<Enj.API.UserRecord> {
+    public get(url?: string): Promise<Enj.API.User> {
         return super.get('/me' + (url || ''));
     }
     /**

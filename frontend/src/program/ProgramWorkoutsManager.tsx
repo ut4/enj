@@ -9,7 +9,7 @@ import Modal from 'src/ui/Modal';
  * Renderöidään osaksi ohjelmalomaketta, vastaa ohjelmatreenien lisäyksestä,
  * päivityksesta ja poistoista.
  */
-class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWorkoutRecord> {
+class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWorkout> {
     protected ModalClass = ProgramWorkoutModal;
     protected modalPropName = 'programWorkout';
     private weekNavigator: WeekNavigator;
@@ -24,7 +24,7 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
             <button class="nice-button" onClick={ () => this.openAddModal() }>Lisää treeni</button>
         </div>;
     }
-    protected clone(programWorkout: Enj.API.ProgramWorkoutRecord): Enj.API.ProgramWorkoutRecord {
+    protected clone(programWorkout: Enj.API.ProgramWorkout): Enj.API.ProgramWorkout {
         return {
             id: programWorkout.id,
             name: programWorkout.name,
@@ -38,7 +38,7 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
             ordinal: programWorkout.ordinal
         };
     }
-    protected new(): Enj.API.ProgramWorkoutRecord {
+    protected new(): Enj.API.ProgramWorkout {
         return {
             programId: this.props.program.id,
             ordinal: arrayUtils.max(this.state.list, 'ordinal') + 1,
@@ -50,7 +50,7 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
         props.programWeekCount = this.weekNavigator.getWeekCount();
         return props;
     }
-    protected isChanged(current: Enj.API.ProgramWorkoutRecord, original: Enj.API.ProgramWorkoutRecord): boolean {
+    protected isChanged(current: Enj.API.ProgramWorkout, original: Enj.API.ProgramWorkout): boolean {
         return (
             current.name !== original.name ||
             JSON.stringify(current.occurrences) !== JSON.stringify(original.occurrences)
@@ -85,7 +85,7 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
 }
 
 class WeekNavigator extends Component<
-    {program: Enj.API.ProgramRecord; nthWeek?: number},
+    {program: Enj.API.Program; nthWeek?: number},
     {nthWeek: number; start: Date; end: Date}
 > {
     private weekCount: number;

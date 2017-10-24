@@ -48,7 +48,7 @@ class OfflineEndView extends Component<any, any> {
         iocFactories.history().goBack();
     }
     public render() {
-        return (<div>
+        return <div>
             <h2>Palauta online-tila</h2>
             Palaa online-tilaan, ja synkronisoi yhteydettömän tilan aikana tehdyt muutokset? Toiminto voi kestää useita sekunteja.
             <div class="info-box">Muodostathan internet-yhteyden ennen lomakkeen lähettämistä.</div>
@@ -57,7 +57,7 @@ class OfflineEndView extends Component<any, any> {
                 <button class="nice-button nice-button-primary" type="button" onClick={ () => this.confirm() } disabled={ !this.state.goodToGo }>Palaa online-tilaan</button>
                 <button class="text-button" type="button" onClick={ () => this.done() }>Peruuta</button>
             </div>
-        </div>);
+        </div>;
     }
 }
 

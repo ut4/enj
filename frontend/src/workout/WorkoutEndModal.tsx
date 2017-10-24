@@ -4,7 +4,7 @@ import { notify } from 'src/ui/Notifier';
 import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
-class WorkoutEndModal extends Component<{workout: Enj.API.WorkoutRecord; afterEnd: Function}, any> {
+class WorkoutEndModal extends Component<{workout: Enj.API.Workout; afterEnd: Function}, any> {
     private hasValidSets: boolean;
     private workoutBackend: WorkoutBackend;
     private notify: notify;

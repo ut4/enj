@@ -9,8 +9,8 @@ import iocFactories from 'src/ioc';
  * Ohjelman luonti-, ja muokkauslomake.
  */
 class ProgramForm extends ValidatingComponent<
-    {program: Enj.API.ProgramRecord; afterInsert?: Function; afterUpdate?: Function;},
-    {program: Enj.API.ProgramRecord;}
+    {program: Enj.API.Program; afterInsert?: Function; afterUpdate?: Function;},
+    {program: Enj.API.Program;}
 > {
     private isInsert: boolean;
     private unixTimeNow: number;
@@ -106,7 +106,7 @@ class ProgramForm extends ValidatingComponent<
      * Lähettää ohjelmatreenit, ja ohjelmatreeniliikkeet backendiin
      * tallennettavaksi.
      */
-    private insertProgramWorkoutsAndExercises(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>): Promise<any> {
+    private insertProgramWorkoutsAndExercises(programWorkouts: Array<Enj.API.ProgramWorkout>): Promise<any> {
         const programWorkoutExerciseGroups = [];
         return programWorkouts.length
             ? (
@@ -155,7 +155,7 @@ class ProgramForm extends ValidatingComponent<
         program[prop] = Math.floor(date.getTime() / 1000);
         this.setState({program});
     }
-    private receiveProgramWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
+    private receiveProgramWorkouts(programWorkouts: Array<Enj.API.ProgramWorkout>) {
         if (this.isInsert) {
             const program = this.state.program;
             program.workouts = programWorkouts;
@@ -168,7 +168,7 @@ function datepickerFormatter(date: Date): string {
     return dateUtils.getLocaleDateString(date);
 }
 
-function serializeProgram(program: Enj.API.ProgramRecord): string {
+function serializeProgram(program: Enj.API.Program): string {
     return '{' +
         'name:' + program.name +
         ', start:' + program.start +

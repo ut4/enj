@@ -8,7 +8,7 @@ const programTestUtils = {
     getExpectedDateStr(unixTime: number): string {
         return dateUtils.getLocaleDateString(new Date(unixTime * 1000));
     },
-    getSomeTestPrograms(): Array<Enj.API.ProgramRecord> {
+    getSomeTestPrograms(): Array<Enj.API.Program> {
         return [
             {
                 id:'uuid1',
@@ -29,7 +29,7 @@ const programTestUtils = {
             }
         ];
     },
-    getSomeTestProgramWorkouts(nth: number = 0, programId: AAGUID = 'uuid1'): Array<Enj.API.ProgramWorkoutRecord> {
+    getSomeTestProgramWorkouts(nth: number = 0, programId: AAGUID = 'uuid1'): Array<Enj.API.ProgramWorkout> {
         const pwId1 = 'uuid' + (10 + nth * 2);
         const pwId2 = 'uuid' + (11 + nth * 2);
         return [

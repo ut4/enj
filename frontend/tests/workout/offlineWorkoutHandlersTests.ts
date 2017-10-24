@@ -9,7 +9,7 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
     let mockNewUuid: AAGUID = 'uuid32';
     let shallowWorkoutBackend: WorkoutBackend;
     let workoutHandlerRegister: OfflineWorkoutHandlerRegister;
-    let mockCachedWorkouts: Array<Enj.API.WorkoutRecord>;
+    let mockCachedWorkouts: Array<Enj.API.Workout>;
     hooks.beforeEach(() => {
         shallowOffline = Object.create(Offline.prototype);
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);

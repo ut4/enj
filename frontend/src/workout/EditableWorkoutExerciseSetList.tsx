@@ -5,7 +5,7 @@ import { arrayUtils } from 'src/common/utils';
 /**
  * Treenin sarjalista.
  */
-class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Array<Enj.API.WorkoutExerciseSetRecord>}, {sets: Array<Enj.API.WorkoutExerciseSetRecord>}> {
+class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Array<Enj.API.WorkoutExerciseSet>}, {sets: Array<Enj.API.WorkoutExerciseSet>}> {
     private initialValues: Array<{weight: number, reps: number, ordinal: number}>;
     public componentWillMount() {
         this.state = {sets: this.props.workoutExerciseSets.slice(0)};
@@ -18,7 +18,7 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
     /**
      * Palauttaa kaikki sarjat, joiden tietoja on muutettu.
      */
-    public getModifiedSets(): Array<Enj.API.WorkoutExerciseSetRecord> {
+    public getModifiedSets(): Array<Enj.API.WorkoutExerciseSet> {
         return this.state.sets.filter(set => {
             const originalItem = this.props.workoutExerciseSets.find(o => o.id === set.id);
             const initialValues = this.initialValues[this.props.workoutExerciseSets.indexOf(originalItem)];
@@ -30,7 +30,7 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
     /**
      * Palauttaa kaikki listalta poistetut sarjat.
      */
-    public getDeletedSets(): Array<Enj.API.WorkoutExerciseSetRecord> {
+    public getDeletedSets(): Array<Enj.API.WorkoutExerciseSet> {
         return this.props.workoutExerciseSets.filter(a =>
             !this.state.sets.some(b => b.id === a.id)
         );

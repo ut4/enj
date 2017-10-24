@@ -30,11 +30,11 @@ class LoginView extends Component<any, any> {
         });
     }
     public render() {
-        return (<div>
+        return <div>
             <h2>Kirjautuminen</h2>
             <LoginForm onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.loginForm = instance; } }/>
             <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
-        </div>);
+        </div>;
     }
 }
 

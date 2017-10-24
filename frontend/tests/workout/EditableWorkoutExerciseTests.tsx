@@ -10,7 +10,7 @@ import iocFactories from 'src/ioc';
 import utils from 'tests/utils';
 
 QUnit.module('workout/EditableWorkoutExercise', hooks => {
-    let testDropdownExercises: Array<Enj.API.ExerciseRecord>;
+    let testDropdownExercises: Array<Enj.API.Exercise>;
     let testWorkoutExercise: WorkoutExercise;
     let shallowWorkoutBackend: WorkoutBackend;
     let workoutBackendIocOverride: sinon.SinonStub;
@@ -284,10 +284,10 @@ QUnit.module('workout/EditableWorkoutExercise', hooks => {
     function getRenderedSetItems(rendered): HTMLCollection {
         return itu.findRenderedDOMElementWithClass(rendered, 'content').children;
     }
-    function getExpectedSetContent(data: Enj.API.WorkoutExerciseSetRecord) {
+    function getExpectedSetContent(data: Enj.API.WorkoutExerciseSet) {
         return `${data.weight}kg x ${data.reps}`;
     }
-    function getExpectedTotals(sets: Array<Enj.API.WorkoutExerciseSetRecord>) {
+    function getExpectedTotals(sets: Array<Enj.API.WorkoutExerciseSet>) {
         const reps = sets.reduce((a, b) => a + b.reps, 0);
         const lifted = sets.reduce((a, b) => a + b.weight * b.reps, 0);
         const count = sets.length;

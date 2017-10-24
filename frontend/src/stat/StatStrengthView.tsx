@@ -12,7 +12,7 @@ type powerLiftSets = {
 
 interface State {
     scores: Scores;
-    userData: Enj.API.UserRecord;
+    userData: Enj.API.User;
     configMode: boolean;
 }
 
@@ -23,7 +23,7 @@ interface State {
  */
 class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, State> {
     private powerLiftSets: powerLiftSets;
-    private userDataFetch: Promise<Enj.API.UserRecord>;
+    private userDataFetch: Promise<Enj.API.User>;
     public constructor(props, context) {
         super(props, context);
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);
@@ -38,7 +38,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             this.setState({scores: this.makeScores(userData), userData});
         });
     }
-    private makeScores(userData: Enj.API.UserRecord): Scores {
+    private makeScores(userData: Enj.API.User): Scores {
         return new Scores(this.powerLiftSets, userData);
     }
     /**
@@ -55,7 +55,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
     /**
      * Vastaanottaa päivitetyn käyttäjädatan {newUser} Asetukset-lomakkeelta.
      */
-    private applyNewUserData(newUser?: Enj.API.UserRecord) {
+    private applyNewUserData(newUser?: Enj.API.User) {
         const newState = {configMode: false} as any;
         if (newUser) {
             newState.userData = newUser;
@@ -135,7 +135,7 @@ class Scores {
         bench: string;
         deadlift: string;
     };
-    public constructor(powerLiftSets: powerLiftSets, userData: Enj.API.UserRecord) {
+    public constructor(powerLiftSets: powerLiftSets, userData: Enj.API.User) {
         if (userData) {
             this.bodyWeight = userData.bodyWeight || 0;
             this.isMale = userData.isMale !== 0;
@@ -202,7 +202,7 @@ class Scores {
     }
 }
 
-class StrengthLevelTable extends Component<{user: Enj.API.UserRecord}, {tableIsVisible: boolean; lift: keyof Enj.powerLift; table: any}> {
+class StrengthLevelTable extends Component<{user: Enj.API.User}, {tableIsVisible: boolean; lift: keyof Enj.powerLift; table: any}> {
     private table: Array<[number, number, number, number, number, number]>;
     public constructor(props, context) {
         super(props, context);

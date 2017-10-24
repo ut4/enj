@@ -7,7 +7,7 @@ const exerciseTestUtils = {
         exerciseSelectEl.options[nth].selected = true; // note 0 == tyhjä option...
         utils.triggerEvent('change', exerciseSelectEl);
     },
-    getSomeDropdownExercises(): Array<Enj.API.ExerciseRecord> {
+    getSomeDropdownExercises(): Array<Enj.API.Exercise> {
          return [
              {id: 'someuuid', name: 'bar', variants: [], userId: 'u'},
              {id: 'someuuid2', name: 'byr', variants: [], userId: 'u'}

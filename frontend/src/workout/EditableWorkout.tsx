@@ -63,7 +63,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
         );
     }
     public render() {
-        return (<div class="editable-workout">
+        return <div class="editable-workout">
             <div class="workout-timer">
                 Kesto <Timer start={ this.props.workout.start } end={ this.props.workout.end } ref={ timer => { this.timer = timer; }}/>
             </div>
@@ -79,7 +79,7 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
                 }
             </ul>
             <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
-        </div>);
+        </div>;
     }
 }
 

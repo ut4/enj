@@ -2,7 +2,7 @@ import Db from 'src/common/Db';
 
 const FIXED_ROW_ID = 1;
 
-type stateChangeSubscribeFn = (newState: Enj.OfflineDbSchema.UserStateRecord) => void;
+type stateChangeSubscribeFn = (newState: Enj.OfflineDbSchema.UserState) => void;
 
 /**
  * Vastaa käyttäjän tilan (kirjautunut/ei kirjautunut|offline/online)
@@ -23,7 +23,7 @@ class UserState {
      * Palauttaa tiedon käyttäjän tilasta. Palauttaa aina objektin, vaikkei
      * indexedDb:ssä olisikaan dataa.
      */
-    public getState(): Promise<Enj.OfflineDbSchema.UserStateRecord> {
+    public getState(): Promise<Enj.OfflineDbSchema.UserState> {
         return this.db.userState.get(FIXED_ROW_ID).then(state => {
             return state || {
                 token: '',
@@ -87,7 +87,7 @@ class UserState {
      * Kirjoittaa uuden arvon indexedDb:hen ja tiedottaa uuden arvon
      * subscribeFn:lle mikäli tietoja muuttui.
      */
-    private updateState(updater: (state: Enj.OfflineDbSchema.UserStateRecord) => void): Promise<number> {
+    private updateState(updater: (state: Enj.OfflineDbSchema.UserState) => void): Promise<number> {
         let updatedState;
         return this.getState().then(state => {
             updatedState = state;

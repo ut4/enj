@@ -3,7 +3,7 @@ import RESTBackend  from 'src/common/RESTBackend';
 /**
  * Vastaa /api/program -REST-pyynnöistä.
  */
-class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
+class ProgramBackend extends RESTBackend<Enj.API.Program> {
     public programWorkoutBackend: ProgramWorkoutBackend;
     public programWorkoutExerciseBackend: ProgramWorkoutExerciseBackend;
     public constructor(http, urlNamespace) {
@@ -11,13 +11,13 @@ class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
         this.programWorkoutBackend = new ProgramWorkoutBackend(http, 'program/workout');
         this.programWorkoutExerciseBackend = new ProgramWorkoutExerciseBackend(http, 'program/workout/exercise');
     }
-    public insertWorkouts(programWorkouts: Array<Enj.API.ProgramWorkoutRecord>) {
+    public insertWorkouts(programWorkouts: Array<Enj.API.ProgramWorkout>) {
         return this.programWorkoutBackend.insertAll(programWorkouts, '/all');
     }
-    public updateWorkout(pw: Array<Enj.API.ProgramWorkoutRecord>|Enj.API.ProgramWorkoutRecord) {
+    public updateWorkout(pw: Array<Enj.API.ProgramWorkout>|Enj.API.ProgramWorkout) {
         return this.programWorkoutBackend.update(Array.isArray(pw) ? pw : [pw]);
     }
-    public deleteWorkout(programWorkout: Enj.API.ProgramWorkoutRecord) {
+    public deleteWorkout(programWorkout: Enj.API.ProgramWorkout) {
         return this.programWorkoutBackend.delete(programWorkout);
     }
     public insertWorkoutExercises(programWorkoutExercises: Array<Enj.API.ProgramWorkoutExercise>) {
@@ -34,7 +34,7 @@ class ProgramBackend extends RESTBackend<Enj.API.ProgramRecord> {
 /**
  * Vastaa /api/program/workout -REST-pyynnöistä.
  */
-class ProgramWorkoutBackend extends RESTBackend<Enj.API.ProgramWorkoutRecord> { }
+class ProgramWorkoutBackend extends RESTBackend<Enj.API.ProgramWorkout> { }
 
 /**
  * Vastaa /api/program/workout/exercise -REST-pyynnöistä.

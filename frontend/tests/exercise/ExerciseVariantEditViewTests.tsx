@@ -15,7 +15,7 @@ class ContextFakingExerciseVariantViewCmp extends ExerciseVariantEditView {
 }
 
 QUnit.module('exercise/ExerciseVariantEditView', hooks => {
-    let testDropdownExercises: Array<Enj.API.ExerciseRecord>;
+    let testDropdownExercises: Array<Enj.API.Exercise>;
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
     hooks.beforeEach(() => {

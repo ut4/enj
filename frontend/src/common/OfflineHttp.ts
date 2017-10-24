@@ -75,7 +75,7 @@ class OfflineHttp {
      * @param {Object} request logattava pyyntö {method, url, data}
      * @return {Promise|void}
      */
-    public logRequestToSyncQueue(request: Enj.OfflineDbSchema.SyncQueueRecord) {
+    public logRequestToSyncQueue(request: Enj.OfflineDbSchema.SyncQueueItem) {
         if (OfflineHttp.urlsToIgnore.hasOwnProperty(request.route.method + ':' + request.route.url)) {
             return;
         }
@@ -84,7 +84,7 @@ class OfflineHttp {
     /**
      * @return {Promise} -> ({Array} queue, {Object} error)
      */
-    public getRequestSyncQueue(): Promise<Array<Enj.OfflineDbSchema.SyncQueueRecord>> {
+    public getRequestSyncQueue(): Promise<Array<Enj.OfflineDbSchema.SyncQueueItem>> {
         return this.db.syncQueue.toArray();
     }
     /**

@@ -9,7 +9,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
     let mockNewUuid: AAGUID = 'uuid90';
     let shallowExerciseBackend: ExerciseBackend;
     let exerciseHandlerRegister: OfflineExerciseHandlerRegister;
-    let mockCachedExercises: Array<Enj.API.ExerciseRecord>;
+    let mockCachedExercises: Array<Enj.API.Exercise>;
     hooks.beforeEach(() => {
         shallowOffline = Object.create(Offline.prototype);
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
@@ -65,7 +65,7 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
         const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
-        const newExerciseVariant: Enj.API.ExerciseVariantRecord = {
+        const newExerciseVariant: Enj.API.ExerciseVariant = {
             content: 'rte',
             exerciseId: cachedExercisesCopy[1].id,
             userId: 'u'

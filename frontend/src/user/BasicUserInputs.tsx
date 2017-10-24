@@ -6,7 +6,7 @@ import iocFactories from 'src/ioc';
 /**
  * Validoituva input-joukko käyttäjätietojen muokkaukseen.
  */
-class BasicUserInputs extends ValidatingComponent<{user: Enj.API.UserRecord;}, any> {
+class BasicUserInputs extends ValidatingComponent<{user: Enj.API.User;}, any> {
     public constructor(props, context) {
         super(props, context);
         this.evaluators = {

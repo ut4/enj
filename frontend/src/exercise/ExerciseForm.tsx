@@ -3,13 +3,13 @@ import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    exercise: Enj.API.ExerciseRecord;
+    exercise: Enj.API.Exercise;
     afterInsert?: Function;
     afterUpdate?: Function;
 }
 
 interface State {
-    exercise: Enj.API.ExerciseRecord;
+    exercise: Enj.API.Exercise;
     name: string;
 }
 

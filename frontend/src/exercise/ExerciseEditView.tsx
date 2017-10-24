@@ -5,7 +5,7 @@ import iocFactories from 'src/ioc';
 /**
  * Komponentti urlille #/liikkeet/muokkaa/:id.
  */
-class ExerciseEditView extends Component<any, {exercise: Enj.API.ExerciseRecord}> {
+class ExerciseEditView extends Component<any, {exercise: Enj.API.Exercise}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {exercise: null};

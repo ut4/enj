@@ -36,7 +36,7 @@ class OfflineStartView extends Component<any, any> {
         iocFactories.history().goBack();
     }
     public render() {
-        return (<div>
+        return <div>
             <h2>Aloita offline-tila</h2>
             <div>
                 Aloita offline-tila, joka mahdollistaa ohjelman käytön ilman internet-yhteyttä? Toiminto voi kestää useita sekunteja.
@@ -46,7 +46,7 @@ class OfflineStartView extends Component<any, any> {
                 <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) }>Aloita offline-tila</button>
                 <button class="text-button" type="button" onClick={ this.close }>Peruuta</button>
             </div>
-        </div>);
+        </div>;
     }
 }
 

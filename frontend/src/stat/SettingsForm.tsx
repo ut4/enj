@@ -4,8 +4,8 @@ import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    user: Enj.API.UserRecord;
-    onDone: (newUser?: Enj.API.UserRecord) => any;
+    user: Enj.API.User;
+    onDone: (newUser?: Enj.API.User) => any;
     onCancel: () => any;
 }
 

@@ -49,7 +49,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
         this.receiveInputValue({target: {value: this.state[prop], name: prop}});
     }
     public render() {
-        return (<div>
+        return <div>
             <label class="input-set">
                 <span>Käyttäjänimi</span>
                 <input name="username" value={ this.state.username } onInput={ e => this.receiveInputValue(e) }/>
@@ -80,7 +80,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
                 { validationMessage(this.evaluators.newPasswordConfirmation[0], templates => templates.minLength('Uusi salasana uudelleen', 4)) }
                 { validationMessage(this.evaluators.newPasswordConfirmation[1], () => 'Uudet salasanat ei täsmää') }
             </label>
-        </div>);
+        </div>;
     }
     private newNewPasswordEvaluators(mustMatch: 'newPassword' | 'newPasswordConfirmation') {
         return [

@@ -9,7 +9,7 @@ import OfflineProgramHandlerRegister from 'src/program/OfflineProgramHandlerRegi
 import iocFactories from 'src/ioc';
 
 QUnit.module('program/OfflineHandlerRegisteration', hooks => {
-    let testProgram: Enj.API.ProgramRecord;
+    let testProgram: Enj.API.Program;
     let fetchContainer: GlobalFetch = window;
     let programBackend: ProgramBackend;
     let handlerRegister: OfflineProgramHandlerRegister;

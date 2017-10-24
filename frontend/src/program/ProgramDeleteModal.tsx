@@ -6,7 +6,7 @@ import iocFactories from 'src/ioc';
 /**
  * /#ohjelmat -näkymän ohjelmalistan Poista-linkistä avautuva modal.
  */
-class ProgramDeleteModal extends Component<{program: Enj.API.ProgramRecord; afterDelete: Function}, any> {
+class ProgramDeleteModal extends Component<{program: Enj.API.Program; afterDelete: Function}, any> {
     public render() {
         return <div>
             <h3>Poista ohjelma?</h3>

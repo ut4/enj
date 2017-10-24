@@ -5,7 +5,7 @@ import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 interface Props {
-    workoutExerciseSet: Enj.API.WorkoutExerciseSetRecord;
+    workoutExerciseSet: Enj.API.WorkoutExerciseSet;
 }
 
 /**
