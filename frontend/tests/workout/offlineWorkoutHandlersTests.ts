@@ -103,7 +103,35 @@ QUnit.module('workout/offlineWorkoutHandlers', hooks => {
                 }), mockCachedWorkouts[2]]
             ], 'Pitäisi lisätä uusi liike treenicachen oikeaan treeniin');
             assert.equal(result, JSON.stringify({insertCount: 1, insertId: mockNewUuid}), 'Pitäisi palauttaa insertResponse');
-            assert.equal(newWorkoutExercise.id, mockNewUuid, 'Pitäisi luoda treenille id');
+            assert.equal(newWorkoutExercise.id, mockNewUuid, 'Pitäisi luoda liikkeelle id');
+            done();
+        });
+    });
+    QUnit.test('addExercises lisää uudet liikkeet treenicacheen, ja palauttaa multiInsertResponse:n', assert => {
+        const cachedWorkoutsCopy = JSON.parse(JSON.stringify(mockCachedWorkouts));
+        sinon.stub(shallowWorkoutBackend, 'getAll').returns(Promise.resolve(cachedWorkoutsCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        const newWorkoutExercise = new WorkoutExercise();
+        newWorkoutExercise.ordinal = 0;
+        newWorkoutExercise.workoutId = cachedWorkoutsCopy[1].id;
+        const newWorkoutExercise2 = new WorkoutExercise();
+        newWorkoutExercise2.ordinal = 1;
+        newWorkoutExercise2.workoutId = cachedWorkoutsCopy[1].id;
+        // Lisää liike cachen keskimmäiseen treeniin
+        const done = assert.async();
+        const newWorkoutExercises = [newWorkoutExercise, newWorkoutExercise2];
+        workoutHandlerRegister.addExercises(newWorkoutExercises).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'workout',
+                // Ei pitäisi muuttaa [0] & [2], koska eri treeni (id != newWorkoutExercise.workoutId)
+                [mockCachedWorkouts[0], Object.assign(mockCachedWorkouts[1], {
+                    exercises: mockCachedWorkouts[1].exercises.concat(newWorkoutExercises)
+                }), mockCachedWorkouts[2]]
+            ], 'Pitäisi lisätä uusi liike treenicachen oikeaan treeniin');
+            assert.equal(result, JSON.stringify({insertCount: 2, insertIds: [mockNewUuid, mockNewUuid]}), 'Pitäisi palauttaa multiInsertResponse');
+            assert.equal(newWorkoutExercise.id, mockNewUuid, 'Pitäisi luoda liikkeelle id');
+            assert.equal(newWorkoutExercise2.id, mockNewUuid, 'Pitäisi luoda liikkeelle id');
             done();
         });
     });

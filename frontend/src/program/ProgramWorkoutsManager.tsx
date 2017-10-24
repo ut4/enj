@@ -110,13 +110,13 @@ class WeekNavigator extends Component<
     public render() {
         const isLastWeek = this.state.nthWeek + 1 === this.weekCount;
         return <div class="week-navigation">
-            <button class="text-button heavy" title="Edellinen viikko" onClick={ e => this.navigate('-') } disabled={ this.state.nthWeek === 0 }>&lt;</button>
+            <button class="text-button heavy" title="Edellinen viikko" onClick={ () => this.navigate('-') } disabled={ this.state.nthWeek === 0 }>&lt;</button>
             <div title="Ajanjakso">
                 <div class="heading">Viikko { this.state.nthWeek + 1 + '/' + this.weekCount }</div>{
                     dateUtils.getLocaleDateString(this.state.start) + ' - ' +
                     dateUtils.getLocaleDateString(this.state.end)
                 }</div>
-            <button class="text-button heavy" title="Seuraava viikko" onClick={ e => this.navigate('+') } disabled={ isLastWeek }>&gt;</button>
+            <button class="text-button heavy" title="Seuraava viikko" onClick={ () => this.navigate('+') } disabled={ isLastWeek }>&gt;</button>
         </div>;
     }
     private makeState(props) {

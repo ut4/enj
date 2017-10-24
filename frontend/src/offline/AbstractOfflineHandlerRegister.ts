@@ -72,6 +72,28 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
         }, cacheUrl);
     }
     /**
+     * Etsii {item}eille kuuluvat vanhemmat <T>-cachesta, ja lisää ne niiden <I>-
+     * taulukkoon {propName}.
+     */
+    protected insertHasManyItems<I extends {id?: AAGUID}>(
+        items: Array<I>,
+        propName: keyof T,
+        foreignKeyName: keyof I,
+        cacheUrl?: string
+    ) {
+        return this.updateCache(cachedParents => {
+            return {
+                insertCount: items.length,
+                insertIds: items.map(item => {
+                    const parentRef = this.findItemById(item[foreignKeyName], cachedParents);
+                    item.id = this.backend.utils.uuidv4();
+                    (parentRef[propName] as Array<I>).push(item);
+                    return item.id;
+                }
+            )};
+        }, cacheUrl);
+    }
+    /**
      * Etsii {item}ille kuuluvan vanhemman <T>-cachesta, ja päivittää sen sen
      * <I>-taulukkoon {propName}.
      */

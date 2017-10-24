@@ -14,7 +14,8 @@ interface State {
 }
 
 /**
- * Komponentti urlille #/treeni/:date.
+ * Komponentti urlille #/treeni/:date, jossa :date on päivämäärä ISO-muodossa
+ * esim. '2017-10-24', tai merkkijono 'tanaan'.
  */
 class WorkoutView extends Component<{params: {date: string}}, State> {
     private workoutBackend: WorkoutBackend;
@@ -68,16 +69,16 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         }
         return <div class={ 'workout-view' + (!this.state.isToday ? ' not-current' : '') }>
             <h2>{ (!this.state.isToday || !this.state.programs ? 'Treeni ' : 'Ohjelmassa ') + (this.state.isToday ? 'tänään' : toFinDate(this.selectedDate)) }
-                <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ e => this.datePicker.open() }></button>
+                <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ () => this.datePicker.open() }></button>
                 <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ this.state.isToday ? undefined : this.selectedDate } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             { this.state.workouts.length
                 ? this.state.workouts.map(workout =>
-                    <EditableWorkout workout={ workout } onDelete={ () => this.removeFromList(workout) }/>
+                    <EditableWorkout workout={ workout } onDelete={ () => this.componentWillReceiveProps(this.props) }/>
                 )
                 : this.state.programs ? this.getProgramWorkoutsList() : <p>Ei treenejä</p>
             }
-            <button class="nice-button" onClick={ e => this.startWorkout() }>Aloita uusi</button>
+            <button class="nice-button" onClick={ () => this.startWorkout() }>Aloita uusi</button>
         </div>;
     }
     /**
@@ -92,12 +93,27 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     /**
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
      */
-    private startWorkout() {
-        let newWorkout;
-        this.workoutBackend.newWorkout().then(workout => {
+    private startWorkout(pwe?: Array<Enj.API.ProgramWorkoutExercise>) {
+        let newWorkout: Enj.API.WorkoutRecord;
+        return this.workoutBackend.newWorkout().then(workout => {
             newWorkout = workout;
             newWorkout.start = Math.floor(Date.now() / 1000);
             return this.workoutBackend.insert(newWorkout);
+        }).then(() => {
+            if (pwe) {
+                newWorkout.exercises = pwe.map((programWorkoutExercise, i) => {
+                    return {
+                        ordinal: i,
+                        workoutId: newWorkout.id,
+                        exerciseId: programWorkoutExercise.exerciseId,
+                        exerciseName: programWorkoutExercise.exerciseName,
+                        exerciseVariantId: programWorkoutExercise.exerciseVariantId,
+                        exerciseVariantContent: programWorkoutExercise.exerciseVariantContent,
+                        sets: []
+                    } as Enj.API.WorkoutExerciseRecord;
+                });
+                return this.workoutBackend.addExercises(newWorkout.exercises);
+            }
         }).then(() => {
             this.state.workouts.unshift(newWorkout);
             this.setState({workouts: this.state.workouts});
@@ -127,14 +143,9 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                         <span class="text-small">({ pwe.exerciseVariantContent })</span>
                     }</div>
                 ) }</div>
-                <button class="nice-button large" onClick={ e => this.startWorkout() }>Aloita</button>
+                <button class="nice-button large" onClick={ () => this.startWorkout(programWorkout.exercises) }>Aloita</button>
             </li>) }</ul>
         : <p>Ei ohjelmatreeniä tälle päivälle.</p>;
-    }
-    private removeFromList(workout: Enj.API.WorkoutRecord) {
-        const workouts = this.state.workouts;
-        workouts.splice(workouts.indexOf(workout), 1);
-        this.setState({ workouts });
     }
 }
 

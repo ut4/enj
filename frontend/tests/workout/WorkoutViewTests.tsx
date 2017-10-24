@@ -55,9 +55,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     });
     QUnit.test('mount näyttää current-ohjelman ohjelmatreenin, jos current-treeniä ei löytynyt', assert => {
         sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
-        const testProgram = ptu.getSomeTestPrograms()[1];
-        testProgram.start = Math.floor(new Date().getTime() / 1000);
-        testProgram.workouts[0].occurrences[0].weekDay = new Date().getDay();
+        const testProgram = getTestCurrentProgram();
         const programsFetch = sinon.stub(shallowProgramBackend, 'getAll').returns(
             Promise.resolve([testProgram])
         );
@@ -124,7 +122,11 @@ QUnit.module('workout/WorkoutView', hooks => {
             .returns(Promise.resolve([]));
         const currentProgramsFetch = sinon.spy(shallowProgramBackend, 'getAll');
         //
-        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        const notToday = new Date();
+        notToday.setDate(notToday.getDate() + 2);
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {
+            date: notToday.toISOString().split('T')[0]
+        } }/>);
         //
         const done = assert.async();
         currentWorkoutsFetch.firstCall.returnValue.then(() => {
@@ -205,9 +207,10 @@ QUnit.module('workout/WorkoutView', hooks => {
         const workoutFromService = new Workout();
         workoutFromService.userId = someUserId;
         const newWorkoutStub = sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
-        const workoutsInsertStub = sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve());
+        const workoutInsertStub = sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve(1));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        const startWorkoutHook = sinon.spy(itu.findRenderedVNodeWithType(rendered, WorkoutView).children, 'startWorkout');
         // odota, että näkymä latautuu
         const done = assert.async();
         workoutFetchStub.firstCall.returnValue.then(() => {
@@ -215,14 +218,12 @@ QUnit.module('workout/WorkoutView', hooks => {
             const workoutCountBefore = workoutsBefore.length;
             //
             const addWorkoutButton = utils.findButtonByContent(rendered, 'Aloita uusi');
-            const expectedWorkout = getExpectedNewWorkout();
+            const expectedWorkout = getExpectedNewWorkout(); // luodaan jos tässä, että start-unixTime tulee oikein
             addWorkoutButton.click();
             //
-            assert.ok(newWorkoutStub.calledOnce, 'Pitäisi hakea uusi treeni');
-            newWorkoutStub.firstCall.returnValue.then(() => {
-                assert.ok(workoutsInsertStub.calledOnce, 'Pitäisi postata treeni backendiin');
-                return workoutsInsertStub.firstCall.returnValue;
-            }).then(() => {
+            startWorkoutHook.firstCall.returnValue.then(() => {
+                assert.ok(workoutInsertStub.calledOnce, 'Pitäisi postata treeni backendiin');
+                assert.deepEqual(workoutInsertStub.firstCall.args, [workoutFromService]);
                 const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
                 assert.equal(renderedWorkoutsAfter.length, workoutCountBefore + 1, 'Pitäisi renderöidä uusi treeni');
                 assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listan alkuun');
@@ -231,15 +232,62 @@ QUnit.module('workout/WorkoutView', hooks => {
             });
         });
     });
+    QUnit.test('Ohjelmatreenin "Aloita"-painike lisää ohjelmatreenin liikkeet luotuun treeniin automaattisesti', assert => {
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
+        const testProgram = getTestCurrentProgram();
+        const programFetchStub = sinon.stub(shallowProgramBackend, 'getAll').returns(Promise.resolve([testProgram]));
+        const workoutFromService = new Workout();
+        workoutFromService.id = 'someuuid';
+        workoutFromService.userId = someUserId;
+        sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
+        sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve(1));
+        const inserWorkoutExercisesStub = sinon.stub(shallowWorkoutBackend, 'addExercises').returns(Promise.resolve(1));
+        //
+        const componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
+        const startWorkoutHook = sinon.spy(itu.findRenderedVNodeWithType(rendered, WorkoutView).children, 'startWorkout');
+        // odota, että näkymä latautuu
+        const done = assert.async();
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
+            //
+            const expectedWorkout = getExpectedNewWorkout(); // luodaan jos tässä, että start-unixTime tulee oikein
+            expectedWorkout.id = workoutFromService.id;
+            utils.findButtonByContent(rendered, 'Aloita').click();
+            //
+            startWorkoutHook.firstCall.returnValue.then(() => {
+                // Lisäsikö myös ohjelmassa esiintyvät liikkeet treeniin?
+                assert.ok(inserWorkoutExercisesStub.calledOnce, 'Pitäisi postata treeniliikkeitä backendiin');
+                expectedWorkout.exercises = testProgram.workouts[0].exercises.map((pwe, i) => ({
+                    ordinal: i,
+                    workoutId: workoutFromService.id,
+                    exerciseId: pwe.exerciseId,
+                    exerciseName: pwe.exerciseName,
+                    exerciseVariantId: pwe.exerciseVariantId,
+                    exerciseVariantContent: pwe.exerciseVariantContent,
+                    sets: []
+                })) as any;
+                assert.deepEqual(inserWorkoutExercisesStub.firstCall.args, [expectedWorkout.exercises]);
+                const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
+                assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout);
+                done();
+            });
+        });
+    });
     function getRenderedWorkoutItems(rendered) {
         return itu.scryRenderedVNodesWithType(rendered, EditableWorkout);
     }
-    function getExpectedNewWorkout() {
+    function getExpectedNewWorkout(): Enj.API.WorkoutRecord {
         const workout = new Workout();
         workout.start = Math.floor(Date.now() / 1000);
         workout.end = 0;
         workout.exercises = [];
         workout.userId = someUserId;
         return workout;
+    }
+    function getTestCurrentProgram(): Enj.API.ProgramRecord {
+        const testProgram = ptu.getSomeTestPrograms()[1];
+        testProgram.start = Math.floor(new Date().getTime() / 1000);
+        testProgram.workouts[0].occurrences[0].weekDay = new Date().getDay();
+        return testProgram;
     }
 });

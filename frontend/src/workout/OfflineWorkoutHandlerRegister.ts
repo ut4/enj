@@ -18,6 +18,9 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
         offlineHttp.addHandler('POST', 'workout/exercise', workoutExercise =>
             this.addExercise(workoutExercise)
         );
+        offlineHttp.addHandler('POST', 'workout/exercise/all', workoutExercises =>
+            this.addExercises(workoutExercises)
+        );
         offlineHttp.addHandler('PUT', 'workout/exercise', workoutExercises =>
             this.updateExercises(workoutExercises)
         );
@@ -51,7 +54,15 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
      * Handlaa POST /api/workout/exercise REST-pyynnön.
      */
     public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
+        // Lisää liike sille kuuluvan treenin liikelistaan
         return this.insertHasManyItem<Enj.API.WorkoutExerciseRecord>(workoutExercise, 'exercises', 'workoutId');
+    }
+    /**
+     * Handlaa POST /api/workout/exercise/all REST-pyynnön.
+     */
+    public addExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
+        // Lisää liikkeet niille kuuluvien treenien liikelistoihin
+        return this.insertHasManyItems<Enj.API.WorkoutExerciseRecord>(workoutExercises, 'exercises', 'workoutId');
     }
     /**
      * Handlaa PUT /api/workout/exercise REST-pyynnön.

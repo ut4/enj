@@ -58,45 +58,27 @@ class WorkoutBackend extends RESTBackend<Enj.API.WorkoutRecord> {
     public getDaysWorkouts(date?: Date) {
         return this.getAll(this.makeTimeRangeUrlParams(date));
     }
-    /**
-     * Sama kuin WorkoutExerciseBackend.insert.
-     */
     public addExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
         return this.workoutExerciseBackend.insert(workoutExercise);
     }
-    /**
-     * Sama kuin WorkoutExerciseBackend.update.
-     */
+    public addExercises(workoutExercises: Array<Enj.API.WorkoutExerciseRecord>) {
+        return this.workoutExerciseBackend.insertAll(workoutExercises, '/all');
+    }
     public updateExercise(workoutExercise: Array<Enj.API.WorkoutExerciseRecord>|Enj.API.WorkoutExerciseRecord) {
         return this.workoutExerciseBackend.update(Array.isArray(workoutExercise) ? workoutExercise : [workoutExercise]);
     }
-    /**
-     * Sama kuin WorkoutExerciseBackend.swapExercises.
-     */
     public swapExercises(direction: keyof Enj.direction, index: number, list: Array<Enj.API.WorkoutExerciseRecord>) {
         return this.workoutExerciseBackend.swapExercises(direction, index, list);
     }
-    /**
-     * Sama kuin WorkoutExerciseBackend.delete.
-     */
     public deleteExercise(workoutExercise: Enj.API.WorkoutExerciseRecord) {
         return this.workoutExerciseBackend.delete(workoutExercise);
     }
-    /**
-     * Sama kuin WorkoutExerciseSetBackend.insert.
-     */
     public insertSet(set: Enj.API.WorkoutExerciseSetRecord) {
         return this.workoutExerciseSetBackend.insert(set);
     }
-    /**
-     * Sama kuin WorkoutExerciseSetBackend.update.
-     */
     public updateSet(set: Array<Enj.API.WorkoutExerciseSetRecord>|Enj.API.WorkoutExerciseSetRecord) {
         return this.workoutExerciseSetBackend.update(Array.isArray(set) ? set : [set]);
     }
-    /**
-     * Sama kuin WorkoutExerciseSetBackend.delete.
-     */
     public deleteSet(set: Enj.API.WorkoutExerciseSetRecord) {
         return this.workoutExerciseSetBackend.delete(set);
     }
