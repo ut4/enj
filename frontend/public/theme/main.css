@@ -506,8 +506,12 @@ input[type="checkbox"]:checked:disabled + label:after {
     width: 100%;
 }
 .input-set .datepicker > div {
-    position: absolute;
+    position: relative;
     z-index: 1;
+}
+.input-set .datepicker .pika-single:not(.is-hidden) {
+    display: inline-block;
+    position: absolute !important
 }
 .input-set .crud-table th:last-of-type, .input-set .crud-table td:last-of-type {
     width: 63px;
@@ -642,6 +646,12 @@ table .input-set .text-error {
 /* ylimmäinen pointlabel */.ct-series .ct-label[y="10"] { display: none; }
 .ct-series .ct-line, .ct-series .ct-point { stroke-width: 2px; stroke: #30636E; }
 .ct-series .ct-area { fill: #30636E; fill-opacity: 0.05; }
+
+/* Pikaday */
+.pika-time-container { position: relative; top: -10px; }
+table.pika-time { margin: 0 auto; width: auto; }
+.pika-time td { padding: 0 1px 0; font-weight: bold; line-height: 25px; }
+.pika-time select { padding: 2px; margin-bottom: 0; }
 
 /* ==== App ====
 ==============================================================================*/
@@ -847,7 +857,8 @@ footer a {
     z-index: 1; }
 .workout-view > div { margin-top: -10px; }
 .workout-timer { float: left; margin-bottom: 10px; }
-.workout-timer + button { float: right; margin-top: -7px; }
+.workout-timer + div { float: right; margin-top: -7px; }
+.workout-timer + div > edit-dark { margin-right: 5px; }
 .editable-workout > ul:first-of-type { clear: both;}
 .workout-view.not-current > .nice-button,                                /* Treenin aloituspainike */
 .workout-view.not-current .editable-workout > .nice-button:last-of-type, /* Liikeen lisäyspainike */

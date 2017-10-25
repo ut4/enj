@@ -42,7 +42,7 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
         // Aseta invalid nimi
         utils.setInputValue('f', nameInputEl);
-        assert.equal(getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
+        assert.equal(vtu.getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta validi nimi
         utils.setInputValue('jokinohjelma', nameInputEl);
@@ -50,7 +50,7 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');
         // Liian pitkä description
         utils.setInputValue('a'.repeat(129), descriptionEl);
-        assert.equal(getFirstValidationError(rendered), templates.maxLength('Kuvaus', 128));
+        assert.equal(vtu.getFirstValidationError(rendered), templates.maxLength('Kuvaus', 128));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Validi description takaisin
         utils.setInputValue('Dis is my new brogram', descriptionEl);
@@ -108,7 +108,4 @@ QUnit.module('program/ProgramForm', hooks => {
             done();
         });
     });
-    function getFirstValidationError(rendered): string {
-        return vtu.getRenderedValidationErrors(rendered)[0].textContent;
-    }
 });

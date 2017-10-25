@@ -77,6 +77,9 @@ const validationTestUtils = {
     getRenderedValidationErrors(rendered) {
         return itu.scryRenderedDOMElementsWithClass(rendered, 'text-error');
     },
+    getFirstValidationError(rendered): string {
+        return this.getRenderedValidationErrors(rendered)[0].textContent;
+    },
     isValid(rendered, Component: ConcreteValidatingComponent) {
         const cmp = itu.findRenderedVNodeWithType(rendered, Component).children as any;
         return cmp.state.validity;

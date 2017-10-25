@@ -37,14 +37,14 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         assertFormIsValid(assert, rendered);
         // Aseta invalid nimi
         utils.setInputValue('f', nameInputEl);
-        assert.equal(getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
+        assert.equal(vtu.getFirstValidationError(rendered), templates.lengthBetween('Nimi', 2, 64));
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta validi nimi
         utils.setInputValue('jokinohjelma', nameInputEl);
         assertFormIsValid(assert, rendered);
         // Poista valittu treenipäivä OccurrencesManager-listasta
         utils.findButtonByAttribute(rendered, 'title', 'Poista päivä').click();
-        assert.equal(getFirstValidationError(rendered), 'Ainakin yksi päivä vaaditaan');
+        assert.equal(vtu.getFirstValidationError(rendered), 'Ainakin yksi päivä vaaditaan');
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
         // Aseta uusi valittu treenipäivä
         utils.findButtonByContent(rendered, 'Lisää päivä').click();
@@ -54,7 +54,7 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         assertFormIsValid(assert, rendered);
         // Poista valittu ohjelmatreeniliike ProgramWorkoutExercisesManager-listasta
         utils.findButtonByAttribute(rendered, 'title', 'Poista liike').click();
-        assert.equal(getFirstValidationError(rendered), 'Ainakin yksi liike vaaditaan');
+        assert.equal(vtu.getFirstValidationError(rendered), 'Ainakin yksi liike vaaditaan');
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     QUnit.test('OccurrencesManager mutatoi occurrences-taulukkoa', assert => {
@@ -121,9 +121,6 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
             done();
         });
     });
-    function getFirstValidationError(rendered): string {
-        return vtu.getRenderedValidationErrors(rendered)[0].textContent;
-    }
     function assertFormIsValid(assert, rendered) {
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
         assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla klikattava');

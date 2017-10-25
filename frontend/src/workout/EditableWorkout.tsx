@@ -1,6 +1,7 @@
 import Component from 'inferno-component';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
 import WorkoutEndModal from 'src/workout/WorkoutEndModal';
+import WorkoutEditModal from 'src/workout/WorkoutEditModal';
 import WorkoutExerciseModal from 'src/workout/WorkoutExerciseModal';
 import { arrayUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
@@ -10,11 +11,40 @@ import Modal from 'src/ui/Modal';
 /**
  * #/treeni/:id -näkymään renderöitävän treenilistan yksi itemi.
  */
-class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelete: Function}, any> {
+class EditableWorkout extends Component<{workout: Enj.API.Workout, onDelete: Function}, any> {
     private timer?: Timer;
     public componentWillMount() {
         this.props.workout.exercises.sort((we, we2) =>
             we.ordinal < we2.ordinal ? -1 : 1
+        );
+    }
+    public render() {
+        return <div class="editable-workout">
+            <div class="workout-timer">
+                Kesto <Timer start={ this.props.workout.start } end={ this.props.workout.end } ref={ timer => { this.timer = timer; }}/>
+            </div>
+            <div>
+                <button class="icon-button edit-dark" onClick={ () => this.openWorkoutEditModal() } title="Muokkaa treeniä"></button>
+                { !this.props.workout.end &&
+                    <button class="nice-button" onClick={ () => this.openWorkoutEndModal() } title="Merkkaa treeni valmiiksi">Valmis!</button>
+                }
+            </div>
+            <ul class="dark-list">
+                { this.props.workout.exercises.length
+                    ? this.props.workout.exercises.map((workoutExercise, i) =>
+                        <EditableWorkoutExercise workoutExercise={ workoutExercise } onDelete={ () => this.removeExerciseFromList(workoutExercise) } moveExercise={ direction => this.moveExercise(direction, i) }/>
+                    )
+                    : <li>Ei vielä liikkeitä.</li>
+                }
+            </ul>
+            <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
+        </div>;
+    }
+    private openWorkoutEditModal() {
+        Modal.open(() =>
+            <WorkoutEditModal workout={ this.props.workout } afterUpdate={ workout => {
+                this.setState({workout});
+            } }/>
         );
     }
     private openWorkoutEndModal() {
@@ -61,25 +91,6 @@ class EditableWorkout extends Component<{workout: Enj.API.WorkoutRecord, onDelet
             () => { this.props.workout.exercises = copy; this.forceUpdate(); },
             () => iocFactories.notify()('Liikkeen siirto epäonnistui', 'error')
         );
-    }
-    public render() {
-        return <div class="editable-workout">
-            <div class="workout-timer">
-                Kesto <Timer start={ this.props.workout.start } end={ this.props.workout.end } ref={ timer => { this.timer = timer; }}/>
-            </div>
-            { !this.props.workout.end &&
-                <button class="nice-button" onClick={ () => this.openWorkoutEndModal() }>Valmis!</button>
-            }
-            <ul class="dark-list">
-                { this.props.workout.exercises.length
-                    ? this.props.workout.exercises.map((workoutExercise, i) =>
-                        <EditableWorkoutExercise workoutExercise={ workoutExercise } onDelete={ () => this.removeExerciseFromList(workoutExercise) } moveExercise={ direction => this.moveExercise(direction, i) }/>
-                    )
-                    : <li>Ei vielä liikkeitä.</li>
-                }
-            </ul>
-            <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
-        </div>;
     }
 }
 

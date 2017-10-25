@@ -9,7 +9,7 @@ interface time {
 class Timer extends Component<{start: number, end: number}, {time: time, intervalId?: number}> {
     public constructor(props, context) {
         super(props, context);
-        this.state = {time: this.makeTime()};
+        this.state = {time: this.makeTime(this.props)};
     }
     public componentDidMount() {
         !this.props.end && this.start();
@@ -17,8 +17,11 @@ class Timer extends Component<{start: number, end: number}, {time: time, interva
     public componentWillUnmount() {
         this.state.intervalId && this.stop();
     }
-    private makeTime(): time {
-        const {start, end} = this.props;
+    public componentWillReceiveProps(props) {
+        this.setState({time: this.makeTime(props)});
+    }
+    private makeTime(props): time {
+        const {start, end} = props;
         const diff = (end || Math.floor(Date.now() / 1000)) - start;
         const hours = Math.floor(diff / 3600);
         const minutes = Math.floor((diff % 3600) / 60);
@@ -31,7 +34,7 @@ class Timer extends Component<{start: number, end: number}, {time: time, interva
     }
     public start() {
         this.setState({intervalId: setInterval(() => {
-            this.setState({time: this.makeTime()});
+            this.setState({time: this.makeTime(this.props)});
         }, 1000)});
     }
     public stop() {

@@ -40,8 +40,14 @@ const domUtils = {
 };
 
 const dateUtils = {
-    getLocaleDateString(date: Date): string {
-        return date.getDate() + '.' + (date.getMonth() + 1) + ' ' + date.getFullYear();
+    getLocaleDateString(date: Date, showTime?: boolean): string {
+        return (
+            date.getDate() + '.' + (date.getMonth() + 1) + ' ' + date.getFullYear() +
+            (!showTime ? '' : ', ' + this.getLocaleTimeString(date))
+        );
+    },
+    getLocaleTimeString(date: Date) {
+        return date.getHours() + ':' + date.getMinutes();
     },
     getShortWeekDay(weekDay: number): string {
         const shortWeekDays = {

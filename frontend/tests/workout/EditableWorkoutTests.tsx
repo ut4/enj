@@ -20,17 +20,8 @@ QUnit.module('workout/EditableWorkout', hooks => {
     let shallowExerciseBackend: ExerciseBackend;
     let exerciseBackendIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
-        testWorkout = new Workout();
-        testWorkout.id = 'someuuid';
-        testWorkoutExercise = new WorkoutExercise();
-        testWorkoutExercise.ordinal = 1;
-        testWorkoutExercise.exerciseId = 'someuuid2';
-        testWorkoutExercise.exerciseName = 'exs';
-        testWorkoutExercise2 = new WorkoutExercise();
-        testWorkoutExercise2.ordinal = 2;
-        testWorkoutExercise2.exerciseId = 'someuuid3';
-        testWorkoutExercise2.exerciseName = 'exs2';
-        testWorkout.exercises = [testWorkoutExercise, testWorkoutExercise2];
+        testWorkout = workoutTestUtils.getSomeTestWorkouts()[0];
+        [testWorkoutExercise, testWorkoutExercise2] = testWorkout.exercises;
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         shallowWorkoutBackend.workoutExerciseBackend = Object.create(WorkoutExerciseBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
@@ -41,6 +32,35 @@ QUnit.module('workout/EditableWorkout', hooks => {
         workoutBackendIocOverride.restore();
         exerciseBackendIocOverride.restore();
     });
+    QUnit.test('Muokkaus-modalin hyväksyminen lähettää tiedot backendiin ja uudelleenrenderöi komponentin', assert => {
+        const updateCallStub = sinon.stub(shallowWorkoutBackend, 'update').returns(Promise.resolve(1));
+        const newData = {start: testWorkout.start + 86400, notes: 'jotain huomioita'};
+        //
+        const rendered = itu.renderIntoDocument(<div>
+            <Modal/>
+            <EditableWorkout workout={ testWorkout } onDelete={ () => null }/>
+        </div>);
+        const renderedTimeBefore = itu.findRenderedDOMElementWithClass(rendered, 'workout-timer').textContent;
+        // Muokkaa treenin tietoja modalin kautta
+        const editWorkoutButton = utils.findButtonByAttribute(rendered, 'title', 'Muokkaa treeniä');
+        editWorkoutButton.click();
+        const [startInputEl] = utils.getInputs(rendered);
+        utils.selectDatepickerDate(new Date(newData.start * 1000).getDate(), startInputEl);
+        const notesInputEl = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'notes');
+        utils.setInputValue(newData.notes, notesInputEl);
+        // Hyväksy modal
+        const modalConfirmButton = utils.findButtonByContent(rendered, 'Tallenna');
+        modalConfirmButton.click();
+        //
+        assert.ok(updateCallStub.calledOnce, 'Pitäisi lähettää treeni backendiin');
+        const done = assert.async();
+        updateCallStub.firstCall.returnValue.then(() => {
+            assert.equal(JSON.stringify(updateCallStub.firstCall.args), JSON.stringify([[
+                Object.assign(testWorkout, newData)
+            ]]), 'Pitäisi PUT:ata päivitetyt tiedot backendiin');
+            done();
+        });
+    });
     QUnit.test('"Valmis!" päivittää treenin lopetusajan backendiin, ja uudelleenrenderöi komponentin', assert => {
         testWorkoutExercise.sets = [{id: 'someuuid3', weight: 10, reps: 5, ordinal: 0, workoutExerciseId: testWorkoutExercise.id}];
         const rendered = itu.renderIntoDocument(<div>
@@ -48,7 +68,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             <EditableWorkout workout={ testWorkout } onDelete={ () => null }/>
         </div>);
         const timerStopSpy = sinon.spy(itu.findRenderedVNodeWithType(rendered, Timer).children, 'stop');
-        const updateCallStub = sinon.stub(shallowWorkoutBackend, 'update').returns(Promise.resolve('fo'));
+        const updateCallStub = sinon.stub(shallowWorkoutBackend, 'update').returns(Promise.resolve(1));
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
         endWorkoutButton.click();
@@ -77,7 +97,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
             <Modal/>
             <EditableWorkout workout={ testWorkout } onDelete={ onDelete }/>
         </div>);
-        const deleteCallStub = sinon.stub(shallowWorkoutBackend, 'delete').returns(Promise.resolve('fo'));
+        const deleteCallStub = sinon.stub(shallowWorkoutBackend, 'delete').returns(Promise.resolve(1));
         // Klikkaa Valmis!-painiketta
         const endWorkoutButton = utils.findButtonByContent(rendered, 'Valmis!');
         endWorkoutButton.click();

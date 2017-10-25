@@ -5,11 +5,13 @@ import { arrayUtils } from 'src/common/utils';
 class Workout implements Enj.API.Workout {
     public id: AAGUID;
     public start: number;
-    public end: number;
+    public end?: number;
+    public notes?: string;
     public exercises: Array<Enj.API.WorkoutExercise>;
     public userId: AAGUID;
     public constructor() {
         this.end = 0;
+        this.notes = '';
         this.exercises = [];
     }
 }
@@ -31,7 +33,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.Workout> {
      * Palauttaa uuden treenin jonka userId-arvona kirjautuneen käyttäjän id, tai
      * rejektoi jos käyttäjää ei löydy.
      */
-    public newWorkout(): Promise<Workout> {
+    public newWorkout(): Promise<Enj.API.Workout> {
         return this.userState.getUserId().then(userId => {
             const workout = new Workout();
             workout.userId = userId;

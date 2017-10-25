@@ -28,12 +28,13 @@ interface Props {
  * Lomakkeiden submit&cancel-painikkeiden oletustoiminnallisuus.
  */
 class FormButtons extends Component<Props, any> {
-    public componentWillMount() {
-        if (!this.props.shouldConfirmButtonBeDisabled) {
-            this.props.shouldConfirmButtonBeDisabled = () => false;
-        }
+    public render() {
+        return <div class="form-buttons">
+            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.shouldConfirmButtonBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
+            <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
+        </div>;
     }
-    protected close() {
+    private close() {
         if (this.props.close) {
             this.props.close();
             return;
@@ -57,11 +58,10 @@ class FormButtons extends Component<Props, any> {
         this.props.onCancel && this.props.onCancel(e);
         this.close();
     }
-    public render() {
-        return <div class="form-buttons">
-            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.props.shouldConfirmButtonBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
-            <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
-        </div>;
+    public shouldConfirmButtonBeDisabled(): boolean {
+        return typeof this.props.shouldConfirmButtonBeDisabled === 'function'
+            ? this.props.shouldConfirmButtonBeDisabled()
+            : false;
     }
 }
 

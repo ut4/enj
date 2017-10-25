@@ -8,6 +8,7 @@ interface Props {
     minDate?: Date;
     maxDate?: Date;
     showInput?: boolean;
+    showTime?: boolean;
 }
 
 class Datepicker extends Component<Props, any> {
@@ -34,12 +35,13 @@ class Datepicker extends Component<Props, any> {
     }
     private makeSettings(): Object {
         const settings = {
-            onSelect: this.props.onSelect,
+            onSelect: date => this.onSelect(date),
             field: this.field,
             container: this.container,
             showWeekNumber: true,
-            firstDay: 1,
-            bound: true
+            showTime: this.props.showTime === true,
+            use24hour: true,
+            firstDay: 1
         } as any;
         if (this.props.displayFormatFn) {
             settings.toString = this.props.displayFormatFn;
@@ -55,6 +57,10 @@ class Datepicker extends Component<Props, any> {
             settings.maxDate = this.props.maxDate;
         }
         return settings;
+    }
+    private onSelect(date: Date) {
+        this.props.onSelect(date);
+        setTimeout(() => this.pikaday.hide(), 0);
     }
     private updateBounds(props) {
         if (props.minDate) {

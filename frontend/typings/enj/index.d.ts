@@ -31,6 +31,7 @@ declare module Enj {
             id: AAGUID;
             start: number;
             end?: number;
+            notes?: string;
             exercises: Array<WorkoutExercise>;
             userId: string;
         }

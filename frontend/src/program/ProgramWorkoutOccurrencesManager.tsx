@@ -92,7 +92,7 @@ class OccurrenceModal extends Component<
                     ) }
                 </select>
             </label>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } shouldConfirmButtonBeDisabled={ () => false } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
+            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
         </div>;
     }
     private getWeekNumbers(): Array<number> {
