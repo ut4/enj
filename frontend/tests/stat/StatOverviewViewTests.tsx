@@ -16,8 +16,9 @@ QUnit.module('stat/StatOverviewView', hooks => {
             averageWorkoutTime: 3460,
             longestWorkoutTime: 3866,
             shortestWorkoutTime: 1560,
-            lifted: 45769,
-            reps: 23674
+            totalSetCount: 23,
+            totalLifted: 45769,
+            totalReps: 23674
         };
     });
     QUnit.test('Renderöi yleiset statistiikkatiedot', assert => {
@@ -28,15 +29,21 @@ QUnit.module('stat/StatOverviewView', hooks => {
         componentInstance.componentWillReceiveProps({stats: testStats});
         //
         const statBoxes = itu.scryRenderedDOMElementsWithClass(rendered, 'box');
-        assert.equal(statBoxes.length, 4, '$("div.box").length');
-        assert.equal(statBoxes[0].textContent, getExpectedTotalCount(testStats));
-        assert.equal(statBoxes[1].textContent, getExpectedWeightAndReps(testStats));
-        const times = statBoxes[2].querySelectorAll('tr'); // otsikko pois
-        assert.equal(times[0].textContent, getExpectedTime(testStats, 0));
-        assert.equal(times[1].textContent, getExpectedTime(testStats, 1));
-        assert.equal(times[2].textContent, getExpectedTime(testStats, 2));
-        assert.equal(times[3].textContent, getExpectedTime(testStats, 3));
-        assert.equal(statBoxes[3].textContent, 'todo');
+        assert.equal(statBoxes.length, 5, '$("div.box").length');
+        const totalWorkoutCountBox = statBoxes[0];
+        const totalSetCountBox = statBoxes[1];
+        const totalRepsBox = statBoxes[2];
+        const totalLiftedBox = statBoxes[3];
+        const workoutDurationsBox = statBoxes[4];
+        assert.equal(totalWorkoutCountBox.textContent, getExpectedInfoBoxContent('totalWorkoutCount', testStats));
+        assert.equal(totalSetCountBox.textContent, getExpectedInfoBoxContent('totalSetCount', testStats));
+        assert.equal(totalRepsBox.textContent, getExpectedInfoBoxContent('totalReps', testStats));
+        assert.equal(totalLiftedBox.textContent, getExpectedInfoBoxContent('totalLifted', testStats));
+        const durations = workoutDurationsBox.querySelectorAll('li');
+        assert.equal(durations[0].textContent, getExpectedDuration(testStats, 0));
+        assert.equal(durations[1].textContent, getExpectedDuration(testStats, 1));
+        assert.equal(durations[2].textContent, getExpectedDuration(testStats, 2));
+        assert.equal(durations[3].textContent, getExpectedDuration(testStats, 3));
     });
     QUnit.test('näyttää viestin mikäli dataa ei ole', assert => {
         //
@@ -47,29 +54,35 @@ QUnit.module('stat/StatOverviewView', hooks => {
         const content = itu.findRenderedDOMElementWithTag(rendered, 'div');
         assert.equal(content.textContent, 'Ei löytynyt mitään.');
     });
-    function getExpectedTotalCount(stats: Enj.API.Statistics): string {
-        return `Treenejä${stats.totalWorkoutCount} kpl`;
+    function getExpectedInfoBoxContent(infoType: keyof Enj.API.Statistics, stats: Enj.API.Statistics) {
+        switch (infoType) {
+            case 'totalWorkoutCount':
+                return `Treenejä${stats.totalWorkoutCount} kpl`;
+            case 'totalSetCount':
+                return `Sarjoja${stats.totalSetCount} kpl`;
+            case 'totalLifted':
+                return `Nostettu yhteensä${stats.totalLifted} kg`;
+            case 'totalReps':
+                return `Toistoja${stats.totalReps} kpl`;
+        }
     }
-    function getExpectedWeightAndReps(stats: Enj.API.Statistics): string {
-        return `Nostettu yhteensä${stats.lifted} kg${stats.reps} toistoa`;
-    }
-    function getExpectedTime(stats: Enj.API.Statistics, nth): string {
+    function getExpectedDuration(stats: Enj.API.Statistics, nth): string {
         switch (nth) {
             case 0 :
-                return `${getExpectedReadableTime(stats.totalWorkoutTime)}Yhteensä`;
+                return `Yhteensä${getExpectedReadableDuration(stats.totalWorkoutTime)}`;
             case 1 :
-                return `${getExpectedReadableTime(stats.averageWorkoutTime)}Keskimäärin`;
+                return `Keskimäärin${getExpectedReadableDuration(stats.averageWorkoutTime)}`;
             case 2 :
-                return `${getExpectedReadableTime(stats.longestWorkoutTime)}Pisin`;
+                return `Pisin${getExpectedReadableDuration(stats.longestWorkoutTime)}`;
             case 3 :
-                return `${getExpectedReadableTime(stats.shortestWorkoutTime)}Lyhin`;
+                return `Lyhin${getExpectedReadableDuration(stats.shortestWorkoutTime)}`;
         }
     }
     // https://stackoverflow.com/questions/8211744/convert-time-interval-given-in-seconds-into-more-human-readable-form#answer-8211778
-    function getExpectedReadableTime(seconds: number): string {
+    function getExpectedReadableDuration(seconds: number): string {
         const numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
         const numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
         const numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
-        return `${numhours}h${numminutes}m${numseconds}s`;
+        return `${numhours}h ${numminutes}m ${numseconds}s`;
     }
 });

@@ -5,7 +5,7 @@ import iocFactories from 'src/ioc';
  * Komponentti #/statistiikka/yleistä alinäkymälle. Listaa yleistä stistiikkaa
  * käyttäjän suorittamista treeneistä.
  */
-class StatsOverviewView extends Component<any, any> {
+class StatsOverviewView extends Component<any, {stats?: Enj.API.Statistics}> {
     public constructor(props, context) {
         super(props, context);
         this.state = {};
@@ -14,54 +14,45 @@ class StatsOverviewView extends Component<any, any> {
         this.setState({stats: props.stats});
     }
     public render() {
+        if (!this.state.hasOwnProperty('stats')) {
+            return;
+        }
         return <div class="stats-overview-view">
-            { this.state.hasOwnProperty('stats') && (
-                this.state.stats ? <div>
-                    <div class="box">
-                        <div>Treenejä</div>
-                        <div><span class="score">{ this.state.stats.totalWorkoutCount } kpl</span></div>
+            { this.state.stats ? <div class="row">
+                <div class="col-4"><div class="box">
+                    <div>Treenejä</div>
+                    <div><span class="score medium">{ this.state.stats.totalWorkoutCount } kpl</span></div>
+                </div><div class="box">
+                    <div>Sarjoja</div>
+                    <div><span class="score medium">{ this.state.stats.totalSetCount } kpl</span></div>
+                </div><div class="box">
+                    <div>Toistoja</div>
+                    <div><span class="score medium">{ this.state.stats.totalReps } kpl</span></div>
+                </div></div>
+                <div class="col-8"><div class="box">
+                    <div>Nostettu yhteensä</div>
+                    <div>
+                        <div><span class="score medium">{ this.state.stats.totalLifted } kg</span></div>
                     </div>
-                    <div class="box">
-                        <div>Nostettu yhteensä</div>
-                        <div>
-                            <div><span class="score">{ this.state.stats.lifted }</span> kg</div>
-                            <div><span class="score">{ this.state.stats.reps }</span> toistoa</div>
-                        </div>
-                    </div>
-                    <div class="box">
-                        <div>Treeniaika</div>
-                        <table class="fixed"><tbody>
-                            <tr><td><span class="score">{ readableTime(this.state.stats.totalWorkoutTime) }</span></td><td>Yhteensä</td></tr>
-                            <tr><td><span class="score">{ readableTime(this.state.stats.averageWorkoutTime) }</span></td><td>Keskimäärin</td></tr>
-                            <tr><td><span class="score">{ readableTime(this.state.stats.longestWorkoutTime) }</span></td><td>Pisin</td></tr>
-                            <tr><td><span class="score">{ readableTime(this.state.stats.shortestWorkoutTime) }</span></td><td>Lyhin</td></tr>
-                        </tbody></table>
-                    </div>
-                    <div class="box">
-                        <div>TOP-liikkeet</div>
-                        <div>
-                            <div><span class="score">1.</span>TODO</div>
-                            <div><span class="score">2.</span>TODO</div>
-                            <div><span class="score">3.</span>TODO</div>
-                            <div><span class="score">4.</span>TODO</div>
-                            <div><span class="score">5.</span>TODO</div>
-                        </div>
-                    </div>
-                </div> : <p>
-                    Ei löytynyt mitään.
-                </p>
-            ) }
+                </div><div class="box">
+                    <div>Treeniaika</div>
+                    <ul>
+                        <li><div class="lined-title">Yhteensä</div><span class="score small">{ readableTime(this.state.stats.totalWorkoutTime) }</span></li>
+                        <li><div class="lined-title">Keskimäärin</div><span class="score small">{ readableTime(this.state.stats.averageWorkoutTime) }</span></li>
+                        <li><div class="lined-title">Pisin</div><span class="score small">{ readableTime(this.state.stats.longestWorkoutTime) }</span></li>
+                        <li><div class="lined-title">Lyhin</div><span class="score small">{ readableTime(this.state.stats.shortestWorkoutTime) }</span></li>
+                    </ul>
+                </div></div>
+            </div> : <p>
+                Ei löytynyt mitään.
+            </p> }
         </div>;
     }
 }
 
-function readableTime(unixTime: number) {
+function readableTime(unixTime: number): string {
     const d = new Date(unixTime * 1000);
-    return [
-        d.getUTCHours(), <span>h</span>,
-        d.getUTCMinutes(), <span>m</span>,
-        d.getUTCSeconds(), <span>s</span>
-    ];
+    return `${d.getUTCHours()}h ${d.getUTCMinutes()}m ${d.getUTCSeconds()}s`;
 }
 
 export default StatsOverviewView;

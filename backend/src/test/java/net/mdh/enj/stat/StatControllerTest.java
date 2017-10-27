@@ -156,7 +156,6 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         Workout yesterdaysTestWorkout = new Workout();
         yesterdaysTestWorkout.setStart(System.currentTimeMillis() / 1000L - 86400);
         yesterdaysTestWorkout.setUserId(TestData.TEST_USER_ID);
-        yesterdaysTestWorkout.setExercises(new ArrayList<>());
         utils.insertWorkout(yesterdaysTestWorkout);
         Workout.Exercise we = this.insertWorkoutExercise(yesterdaysTestWorkout.getId());
         Workout.Exercise.Set set = new Workout.Exercise.Set();
@@ -193,6 +192,70 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         );
         Assert.assertEquals(1, progressSets2.size());
         Assert.assertEquals(set2.getReps(), progressSets2.get(0).getReps());
+    }
+
+    @Test
+    public void GETGeneralStuffEiPalautaMitäänJosKäyttäjältäEiLöydyEnnätyksiä() {
+        //
+        TestData.testUserAwareRequestContext.setUserId(TestData.TEST_USER_ID2);
+        Response response = newGetRequest("stat/general-stuff");
+        TestData.testUserAwareRequestContext.setUserId(TestData.TEST_USER_ID);
+        //
+        Assert.assertEquals(204, response.getStatus());
+        Assert.assertNull(response.readEntity(GeneralStatsMapper.GeneralStats.class));
+    }
+
+    @Test
+    public void GETGeneralStuffPalauttaaYleistäStatistiikkaaKirjautuneenKäyttäjänTreeneistä() {
+        // Simuloi käyttäjän suorittama treeni #1
+        Workout testWorkout = new Workout();
+        testWorkout.setStart(System.currentTimeMillis() / 1000L - 86400);
+        testWorkout.setUserId(TestData.TEST_USER_ID2);
+        utils.insertWorkout(testWorkout);
+        Workout.Exercise we = this.insertWorkoutExercise(testWorkout.getId());
+        Workout.Exercise.Set set = new Workout.Exercise.Set();
+        set.setWeight(60);
+        set.setReps(7);
+        set.setWorkoutExerciseId(we.getId());
+        utils.insertWorkoutExerciseSet(set);
+        testWorkout.setEnd(testWorkout.getStart() + 3550);
+        utils.update("UPDATE workout SET end = :end WHERE id = :id", testWorkout);
+        // Simuloi käyttäjän suorittama treeni #2
+        Workout testWorkout2 = new Workout();
+        testWorkout2.setStart(System.currentTimeMillis() / 1000L);
+        testWorkout2.setUserId(TestData.TEST_USER_ID2);
+        utils.insertWorkout(testWorkout2);
+        Workout.Exercise we2 = this.insertWorkoutExercise(testWorkout2.getId());
+        Workout.Exercise.Set set2 = new Workout.Exercise.Set();
+        set2.setWeight(60);
+        set2.setReps(8);
+        set2.setWorkoutExerciseId(we2.getId());
+        utils.insertWorkoutExerciseSet(set2);
+        Workout.Exercise.Set set3 = new Workout.Exercise.Set();
+        set3.setWeight(60);
+        set3.setReps(6);
+        set3.setWorkoutExerciseId(we2.getId());
+        utils.insertWorkoutExerciseSet(set3);
+        testWorkout2.setEnd(testWorkout2.getStart() + 3456);
+        utils.update("UPDATE workout SET end = :end WHERE id = :id", testWorkout2);
+        // Lähetä pyyntö
+        TestData.testUserAwareRequestContext.setUserId(TestData.TEST_USER_ID2);
+        Response response = newGetRequest("stat/general-stuff");
+        TestData.testUserAwareRequestContext.setUserId(TestData.TEST_USER_ID);
+        Assert.assertEquals(200, response.getStatus());
+        // Koostiko statistiikan vain edellä insertoiduista treeneistä?
+        GeneralStatsMapper.GeneralStats data = response.readEntity(new GenericType<GeneralStatsMapper.GeneralStats>(){});
+        Assert.assertEquals(2, data.getTotalWorkoutCount());
+        Assert.assertEquals(3550 + 3456, data.getTotalWorkoutTime());
+        Assert.assertEquals(Math.round((3550 + 3456) / 2.0), data.getAverageWorkoutTime());
+        Assert.assertEquals(3550, data.getLongestWorkoutTime());
+        Assert.assertEquals(3456, data.getShortestWorkoutTime());
+        Assert.assertEquals(3, data.getTotalSetCount());
+        Assert.assertEquals(Math.round(60*7+60*8+60*6), Math.round(data.getTotalLifted()));
+        Assert.assertEquals(7+8+6, data.getTotalReps());
+        // Siivoa
+        utils.delete("workoutExercise", we.getId(), we2.getId());
+        utils.delete("workout", testWorkout.getId(), testWorkout2.getId());
     }
 
     private List<BestSetMapper.BestSet> fetchBestSets() {

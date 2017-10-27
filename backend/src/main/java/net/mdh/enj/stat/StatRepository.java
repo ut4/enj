@@ -21,6 +21,21 @@ public class StatRepository {
     static final String FORMULA_EPLEY = "epley";
     static final String FORMULA_WATHAN = "wathan";
     static final String FORMULA_TOTAL_LIFTED = "total-lifted";
+    private static final String generalStatSelectQ = (
+        "SELECT" +
+            " COUNT(DISTINCT w.id)          AS totalWorkoutCount," +
+            " SUM(DISTINCT `end` - `start`) AS totalWorkoutTime," +
+            " AVG(DISTINCT `end` - `start`) AS averageWorkoutTime," +
+            " MAX(`end` - `start`)          AS longestWorkoutTime," +
+            " MIN(`end` - `start`)          AS shortestWorkoutTime," +
+            " COUNT(wes.id)                 AS totalSetCount," +
+            " SUM(wes.reps * wes.weight)    AS totalLifted," +
+            " SUM(wes.reps)                 AS totalReps" +
+        " FROM workout w" +
+        " JOIN workoutExercise we ON (we.workoutId = w.id)" +
+        " JOIN workoutExerciseSet wes ON (wes.workoutExerciseId = we.id)" +
+        " WHERE w.`end` IS NOT NULL AND w.`end` > 0 AND w.userId = :userId"
+    );
 
     @Inject
     public StatRepository(DataSourceFactory dataSourceFac) {
@@ -46,6 +61,15 @@ public class StatRepository {
             new BeanPropertySqlParameterSource(filters),
             new ProgressSetMapper()
         );
+    }
+
+    GeneralStatsMapper.GeneralStats selectGeneralStats(String userId) {
+        List<GeneralStatsMapper.GeneralStats> data = this.qTemplate.query(
+            generalStatSelectQ,
+            new MapSqlParameterSource("userId", userId),
+            new GeneralStatsMapper()
+        );
+        return !data.isEmpty() ? data.get(0) : null;
     }
 
     private String newProgressSelectQ(ProgressSelectFilters filters) {

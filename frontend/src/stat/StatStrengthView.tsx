@@ -100,9 +100,12 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
                     <li><span>Jalkakyykky</span> <div class="score">{ this.state.scores.levels.squat }</div></li>
                     <li><span>Penkkipunnerrus</span> <div class="score">{ this.state.scores.levels.bench }</div></li>
                     <li><span>Maastaveto</span> <div class="score">{ this.state.scores.levels.deadlift }</div></li>
-                </ul>,
-                <StrengthLevelTable user={ this.state.userData }/>
-            ] }
+                </ul>
+            ].concat(
+                this.state.scores.total
+                    ? [<StrengthLevelTable user={ this.state.userData }/>]
+                    : []
+            ) }
         </div>;
     }
     private makeBestLiftDetailEls(lift: keyof Enj.powerLift) {

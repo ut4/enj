@@ -55,4 +55,13 @@ public class StatController {
             throw new BadRequestException(e.getMessage());
         }
     }
+
+    /**
+     * Palauttaa sekalaista statistiikkaa käyttäjän suorittamista treeneistä.
+     */
+    @GET
+    @Path("/general-stuff")
+    public GeneralStatsMapper.GeneralStats getGeneralStats() {
+        return this.statRepository.selectGeneralStats(this.requestContext.getUserId());
+    }
 }

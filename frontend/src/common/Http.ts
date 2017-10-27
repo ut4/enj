@@ -132,7 +132,7 @@ class Http {
      * @throws SyntaxError
      */
     private parseResponseData<T>(response: Response): Promise<T> {
-        return response.json();
+        return response.status !== 204 ? response.json() : Promise.resolve(null);
     }
     /**
      * Tarjoaa Request|Response {arg}:n {method}-tyyppisten interceptorien

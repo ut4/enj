@@ -34,15 +34,7 @@ class StatBackend {
             });
     }
     public getStats(): Promise<Enj.API.Statistics> {
-        return Promise.resolve({
-            totalWorkoutCount: 34,
-            totalWorkoutTime: 122400,
-            averageWorkoutTime: 3550,
-            longestWorkoutTime: 3690,
-            shortestWorkoutTime: 1456,
-            lifted: 576980,
-            reps: 457663
-        });
+        return this.http.get<Enj.API.Statistics>('stat/general-stuff');
     }
 }
 
