@@ -72,8 +72,9 @@ declare module Enj {
             averageWorkoutTime: number;
             longestWorkoutTime: number;
             shortestWorkoutTime: number;
-            lifted: number;
-            reps: number;
+            totalSetCount: number;
+            totalLifted: number;
+            totalReps: number;
         }
         interface Exercise {
             id: AAGUID;

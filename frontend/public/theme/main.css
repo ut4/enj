@@ -319,6 +319,12 @@ li:first-of-type .up {
 li:last-of-type .down {
     display: none;
 }
+.box {
+    background-color: #3B3938;
+    margin-bottom: 3px;
+    border-radius: 2px;
+    color: #FFFFFF;
+}
 
 /* -- Listat ---------- */
 .dark-list {
@@ -872,6 +878,11 @@ footer a {
     opacity: 0.85;
 }
 
+/* -- Kotinäkymä ------------ */
+.home-view .icon-button { display: block; padding: 100px 0 15px;
+    background-size: 62px auto;  font-size: 13px; text-decoration: none;
+    background-position: center 25px; }
+
 /* -- Treeninäkymät ---------- */
 .workout-view h2 .arrow-dark { padding: 14px 16px; margin: 0 -5px -7px 2px; top: -3px; position: relative; }
 .workout-view .datepicker { position: absolute; display: inline-block; transform: translate(-97%, 45px);
@@ -898,6 +909,8 @@ footer a {
 /* -- Statistiikkanäkymät ---------- */
 .stats-view .sub-nav .text-button { padding: 8px 20px; }
 .stats-view .score { font: 60px "Fira sans heavy"; margin: -30px 0px 5px; }
+.stats-view .score.medium { font-size: 49px; line-height: 49px; }
+.stats-view .score.small { font-size: 40px; line-height: 40px; }
 .stats-view .score + table { width: auto; margin: 0 auto; }
 .stats-view td { padding: 2px 10px 2px 0 }
 .stats-view .inline-form { background-color: #F5F5F5; padding: 20px;
@@ -909,16 +922,13 @@ footer a {
     margin-bottom: 7px; }
 .stats-strength-view li .score { font-size: 55px; }
 
-.stats-overview-view .box { background-color: #3B3938; margin-bottom: 10px; border-radius: 2px;
-    padding: 18px; color: #FFFFFF; }
-.stats-overview-view .box > div:first-of-type { text-transform: uppercase; letter-spacing: 2px;
-    font-size: 14px; }
-.stats-overview-view table { font-size: 13px; margin: 10px auto; width: auto; }
-.stats-overview-view table td:last-of-type { padding-bottom: 10px; vertical-align: bottom; }
-.stats-overview-view .score { color: #FFFFFF; line-height: 65px; text-shadow: 1px 1px 4px rgba(0,0,0,0.4); }
-.stats-overview-view .box:nth-of-type(2) .score { font-size: 52px; line-height: 56px; }
-.stats-overview-view .box:nth-of-type(3) .score { font-size: 40px; line-height: 44px; }
-.stats-overview-view .box:nth-of-type(3) .score > span { font-size: 24px; }
+.stats-overview-view .box { padding: 26px; }
+.stats-overview-view .box > div:first-of-type { text-transform: uppercase;
+    letter-spacing: 2px; font-size: 12px; margin-bottom: 12px }
+.stats-overview-view .score { color: #FFFFFF; text-shadow: 1px 1px 4px rgba(0,0,0,0.4); }
+.stats-overview-view li { padding: 6px 10px 6px 16px; }
+.stats-overview-view li span:last-of-type { font-size: 11px; position: relative;
+    top: 24px; opacity: 0.9; float: right; }
 
 .line-chart:not(.icon-button) { height: 300px; margin-left: -12px; }
 
@@ -942,11 +952,6 @@ footer a {
 .profile-pic:before { display: inline-block; height: 100%; vertical-align: middle;
     content: " "; }
 .profile-pic img { width: 80%; display: inline-block; vertical-align: middle; opacity: 0.1; }
-
-.home-view .icon-button { display: block; margin: 0 5px 12px 0; padding: 100px 0 15px;
-    background-size: 62px auto; background-color: #3B3938; font-size: 13px;
-    color: #fff; text-decoration: none; border-radius: 2px; background-position: center 25px; }
-.home-view .col-6:last-of-type .icon-button { margin-right: 0; margin-left: 5px; }
 
 /* ==== Media queries ====
 ==============================================================================*/
@@ -1000,13 +1005,13 @@ footer a {
         position: absolute;
         left: 15px;
     }
-    #view {
-        padding: 10px 5px;
-    }
     [class*='col-'] {
         float: none;
         margin: 0 0 2px;
         width: 100%;
+    }
+    #view {
+        padding: 10px 5px;
     }
     .home-view .col-6 .icon-button { margin-right: 0; }
     .home-view .col-6:last-of-type .icon-button { margin-left: 0; }

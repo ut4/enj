@@ -16,27 +16,27 @@ class StatsView extends Component<any, any> {
      */
     public componentWillReceiveProps() {
         return (this.context.router.url.indexOf('/yleista') < 0
-            ? this.fetchAndCache('getBestSets', 'bestSets', [])
-            : this.fetchAndCache('getStats', 'stats', null)).then(ok => {
+            ? this.fetchAndCache('getBestSets', 'bestSets')
+            : this.fetchAndCache('getStats', 'stats')).then(ok => {
                 ok && this.forceUpdate();
             });
     }
     /**
      * Hakee parhaat sarjat, tai yleistä statistiikkaa backendistä.
      */
-    private fetchAndCache(method: 'getBestSets' | 'getStats', prop: 'bestSets' | 'stats', fallbackValue) {
+    private fetchAndCache(method: 'getBestSets' | 'getStats', prop: 'bestSets' | 'stats') {
         return (this[prop]
             ? Promise.resolve(this[prop])
             : iocFactories.statBackend()[method]()).then(
                 data => data,
                 () => {
                     iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
-                    return fallbackValue;
+                    return undefined;
                 }
             ).then(data => {
                 this[prop] = data;
                 this.props.children.props[prop] = data;
-                return Array.isArray(data) ? data.length > 0 : data !== null;
+                return data !== undefined;
             });
     }
     public render() {
