@@ -8,10 +8,12 @@ package net.mdh.enj.sync;
 class Pointer {
     final int syncQueueItemIndex;
     final int batchDataIndex;
+    final SyncRoute routeInfo;
     boolean isProcessed;
-    Pointer(int syncQueueItemIndex, Integer batchDataIndex) {
+    Pointer(int syncQueueItemIndex, Integer batchDataIndex, SyncRoute routeInfo) {
         this.syncQueueItemIndex = syncQueueItemIndex;
         this.batchDataIndex = batchDataIndex != null ? batchDataIndex : -1;
+        this.routeInfo = routeInfo;
         this.isProcessed = false;
     }
     @Override
@@ -25,6 +27,7 @@ class Pointer {
         return "Pointer{" +
             "syncQueueItemIndex=" + syncQueueItemIndex +
             ", batchDataIndex=" + batchDataIndex +
+            ", routeInfo=" + routeInfo +
             ", isProcessed=" + isProcessed +
         "}";
     }

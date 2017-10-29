@@ -8,10 +8,10 @@ import java.util.HashSet;
  */
 public class SyncRouteRegister extends HashSet<SyncRoute> {
     /**
-     * Palauttaa rekisteröidyn @Syncable-reitin, jolla nimi {routeName}, tai null,
+     * Palauttaa rekisteröidyn @Syncable-reitin joka täsmää {route}:en, tai null,
      * jos sitä ei löytynyt.
      */
-    public SyncRoute find(Route route) {
+    SyncRoute find(Route route) {
         for (SyncRoute registered: this) {
             String pattern = registered.getPattern();
             if (registered.getMethod().equals(route.getMethod()) && (
@@ -24,7 +24,7 @@ public class SyncRouteRegister extends HashSet<SyncRoute> {
         return null;
     }
     /**
-     * Palauttaa tiedon, onko nimellä {routeNameToLookFor} rekisteröity
+     * Palauttaa tiedon, onko {routeToLookFor} tiedoilla rekisteröity
      * \@Syncable-reittiä.
      */
     public boolean contains(Route routeToLookFor) {

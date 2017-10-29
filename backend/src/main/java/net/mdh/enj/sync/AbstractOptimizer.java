@@ -33,10 +33,12 @@ abstract class AbstractOptimizer {
                 // Löytyikö PUT|DELETE-${uuid} operaatio?
                 if (operation.equals(operationMethod + "-" + dataUUID)) {
                     hasNewerData = true;
+                    p.isProcessed = true;
                     outdated.add(p);
                     // Itemillä oli PUT|DELETE-${uuid} operaatio, lisää listaan
                 } else if (hasNewerData && operation.endsWith(dataUUID)) {
                     outdated.add(p);
+                    p.isProcessed = true;
                 }
             }
         }
@@ -57,21 +59,23 @@ abstract class AbstractOptimizer {
      * (PUT & POST), tai urlista (DELETE).
      */
     String getDataId(SyncQueueItem item, Pointer p) {
+        return this.getDataId(item, p, "id");
+    }
+    String getDataId(SyncQueueItem item, Pointer p, String idProp) {
         String id;
         // POST & PUT pyynnöissä uuid pitäisi löytyä bodystä,
         if (!item.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-            id = (String)((Map)this.getData(p)).get("id");
+            id = (String)((Map)this.getData(p)).get(idProp);
             // mutta DELETE:ssä se löytyy aina urlista
         } else {
             String url = item.getRoute().getUrl();
             id = url.substring(url.lastIndexOf("/") + 1);
         }
         if (id == null || id.isEmpty()) {
-            throw new RuntimeException("Optimoitavalla itemillä tulisi olla uuid");
+            throw new RuntimeException("Optimoitavalla itemillä tulisi olla uuid " + idProp);
         }
         return id;
     }
-
     /**
      * Palauttaa merkkijonon, jolla voidaan identifioida synkattavan itemin CRUD-
      * operaatio, ja siihen liittyvä data.

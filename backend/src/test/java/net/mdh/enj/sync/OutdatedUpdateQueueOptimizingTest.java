@@ -20,7 +20,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (2)
         Assert.assertEquals("Pitäisi poistaa ylikirjoitetut esiintymät & korvata ensimmäisen" +
             "updaten data viimeisellä ko. itemin datalla",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -38,7 +38,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(0).getData()).get(1)
         )));
         // Pitäisi poistaa (1)
-        List<SyncQueueItem> o = new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED);
+        List<SyncQueueItem> o = newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED);
         Assert.assertEquals("Pitäisi korvata batch-datan itemi uusimmalla datalla",
             expected.toString(), o.toString()
         );
@@ -60,7 +60,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(0).getData()).get(2)
         )));
         // Pitäisi poistaa (1)
-        List<SyncQueueItem> o = new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED);
+        List<SyncQueueItem> o = newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED);
         Assert.assertEquals("Pitäisi korvata batch-datan itemi uusimmalla datalla",
             expected.toString(), o.toString()
         );
@@ -82,7 +82,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(1).getData()).get(1)
         )));
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -104,7 +104,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(1).getData()).get(2)
         )));
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -129,7 +129,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
             ((List)input.get(1).getData()).get(1)
         )));
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -152,7 +152,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         // Kumpikin kohta siirtyi ylempää, joten pitäisi skipata
         //
         Assert.assertEquals("Pitäisi poistaa ylikirjoitettu itemi batch-datasta",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -179,7 +179,7 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(this.clone(input.get(4), ((List)input.get(5).getData()).get(1)));
         //
         Assert.assertEquals(
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
 }

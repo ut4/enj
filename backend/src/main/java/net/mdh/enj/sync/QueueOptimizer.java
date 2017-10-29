@@ -11,12 +11,14 @@ class QueueOptimizer {
     static final int ALL                = 7;
 
     private final List<SyncQueueItem> queue;
+    private final SyncRouteRegister syncRouteRegister;
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
     private final InsertGroupingOptimizer insertGroupingOptimizer;
 
-    QueueOptimizer(List<SyncQueueItem> queue) {
+    QueueOptimizer(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
         this.queue = new ArrayList<>(queue);
+        this.syncRouteRegister = syncRouteRegister;
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
         this.futureUpdateOptimizer = new FutureUpdateOptimizer();
         this.insertGroupingOptimizer = new InsertGroupingOptimizer();
@@ -68,14 +70,15 @@ class QueueOptimizer {
         List<Pointer> newList = new ArrayList<>();
         for (int i = 0; i < this.queue.size(); i++) {
             SyncQueueItem syncable = this.queue.get(i);
+            SyncRoute routeInfo = this.syncRouteRegister.find(syncable.getRoute());
             // Objekti tai vastaava {foo: 'bar'}
             if (!(syncable.getData() instanceof List)) {
-                newList.add(new Pointer(i, null));
+                newList.add(new Pointer(i, null, routeInfo));
             // Taulukko [{foo: 'bar'}]
             } else {
                 List batch = (List) syncable.getData();
                 for (int i2 = 0; i2 < batch.size(); i2++) {
-                    newList.add(new Pointer(i, i2));
+                    newList.add(new Pointer(i, i2, routeInfo));
                 }
             }
         }

@@ -6,6 +6,8 @@ package net.mdh.enj.sync;
 public class SyncRoute extends Route {
 
     private String pattern;
+    private String parent;
+    private String foreignKey;
 
     public SyncRoute() {}
     public SyncRoute(String url, String method) {
@@ -17,6 +19,20 @@ public class SyncRoute extends Route {
     }
     public void setPattern(String pattern) {
         this.pattern = pattern;
+    }
+
+    public String getParent() {
+        return this.parent;
+    }
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
+    public String getForeignKey() {
+        return this.foreignKey;
+    }
+    public void setForeignKey(String foreignKey) {
+        this.foreignKey = foreignKey;
     }
 
     /**
@@ -38,6 +54,8 @@ public class SyncRoute extends Route {
             "url=" + this.getUrl() +
             ", method=" + this.getMethod() +
             ", pattern=" + this.getPattern() +
+            ", parent=" + this.getParent() +
+            ", foreignKey=" + this.getForeignKey() +
         "}";
     }
 }

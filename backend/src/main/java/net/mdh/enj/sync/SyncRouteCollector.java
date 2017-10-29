@@ -7,6 +7,7 @@ import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.inject.Inject;
 
 /**
@@ -45,6 +46,13 @@ public class SyncRouteCollector implements ApplicationEventListener {
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
             syncRoute.setPattern(parentPath + resource.getPathPattern().getRegex());
+            String urlNamespace = syncRoute.getUrlNamespace();
+            if (urlNamespace.replace("/all", "").contains("/")) {
+                String[] parts = urlNamespace.split("/");
+                syncRoute.setParent(String.join("/", Arrays.copyOf(parts, parts.length - 1)));
+                syncRoute.setForeignKey(this.makeForeignKeyFromUrlSegments(parts));
+
+            }
             this.routeRegister.add(syncRoute);
         }
     }
@@ -57,6 +65,14 @@ public class SyncRouteCollector implements ApplicationEventListener {
             }
         }
         return out;
+    }
+
+    private String makeForeignKeyFromUrlSegments(String[] urlSegments) {
+        StringBuilder out = new StringBuilder(urlSegments[0]);
+        for (int i = 1; i < urlSegments.length - 1; i++) {
+            out.append(urlSegments[i].substring(0, 1).toUpperCase()).append(urlSegments[i].substring(1));
+        }
+        return out.toString() + "Id";
     }
 
     @Override

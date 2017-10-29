@@ -9,6 +9,10 @@ import java.util.List;
 
 class QueueOptimizingTestCase {
     private final ObjectMapper objectMapper;
+    private static SyncRouteRegister syncRouteRegister;
+    static {
+        syncRouteRegister = SyncingTestUtils.getManuallyPopulatedSyncRouteRegister();
+    }
     QueueOptimizingTestCase() {
         this.objectMapper = new ObjectMapper();
     }
@@ -29,5 +33,8 @@ class QueueOptimizingTestCase {
         List<Object> list = new ArrayList<>();
         list.addAll(Arrays.asList(batchItems));
         return list;
+    }
+    static QueueOptimizer newOptimizer(List<SyncQueueItem> queue) {
+        return new QueueOptimizer(queue, syncRouteRegister);
     }
 }

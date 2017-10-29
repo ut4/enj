@@ -10,7 +10,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void handlaaTyhjänInputin() throws IOException {
         List<SyncQueueItem> empty = new ArrayList<>();
-        Assert.assertEquals(0, new QueueOptimizer(empty).optimize(QueueOptimizer.ALL).size());
+        Assert.assertEquals(0, newOptimizer(empty).optimize(QueueOptimizer.ALL).size());
     }
     @Test
     public void optimisaatiotToimiiYhdessä() throws IOException {
@@ -19,8 +19,8 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':2}}," +
             "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid4','start':3}}," +
             "{'id':4,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
-            "{'id':5,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','foo':1}}," +
-            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid2','foo':2}}" +
+            "{'id':5,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','workoutId':'unrelated'}}," +
+            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid2','workoutId':'unrelated'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         // Pitäisi poistaa (0)
@@ -32,7 +32,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (2)
         // Pitäisi siirtää (3) 1. kohtaan
         expected.add(this.clone(input.get(4), input.get(5).getData()));
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expected.toString(), i.toString());
     }
     @Test
@@ -50,7 +50,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (1)
         // Pitäisi poistaa (2)
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
             expected.toString(), i.toString()
         );
@@ -73,7 +73,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi siirtää (1) 0[1]
         // Pitäisi poistaa (2)
         // Pitäisi siirtää (3) 0[0]
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
             expected.toString(), i.toString()
         );
@@ -81,12 +81,12 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
     @Test
     public void ryhmitteleeMyösOptimoidutItemit3() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout/all','method':'POST'},'data':[" +
-                "{'id':'uid1','start':1}," +
-                "{'id':'uid2','start':2}" +
+            "{'id':1,'route':{'url':'workout/exercise/all','method':'POST'},'data':[" +
+                "{'id':'uid1','workoutId':'unrelated'}," +
+                "{'id':'uid2','workoutId':'unrelated'}" +
             "]}," +
-            "{'id':2,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':4}}," +
-            "{'id':3,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':3}}" +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3','workoutId':'unrelated'}}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid1','workoutId':'unrelated'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(this.clone(input.get(0), this.makeBatch(
@@ -96,7 +96,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         // Pitäisi siirtää (1) 0
         // Pitäisi siirtää (2) 0[0]
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi ryhmitellä itemit, joilla jo REPLACE optimointi",
             expected.toString(), i.toString()
         );
@@ -105,11 +105,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
     public void optimisaatiotToimiiYhdessäComplex() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'exercise','method':'POST'},'data':{'id':'uid3','name':'uusiliike'}}," +
-            "{'id':2,'route':{'url':'exercise/variant','method':'POST'},'data':{'id':'uid5','name':'fus'}}," +
+            "{'id':2,'route':{'url':'exercise/variant','method':'POST'},'data':{'id':'uid5','name':'fus','exerciseId':'uid3'}}," +
             "{'id':3,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
-            "{'id':4,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','exs':'foo'}}," +
-            "{'id':5,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid4','exs':'uusiliike'}}," +
-            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid4','variant':'fus'}}" +
+            "{'id':4,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','exs':'foo','workoutId':'uid1'}}," +
+            "{'id':5,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid4','exs':'uusiliike','workoutId':'uid1'}}," +
+            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid4','variant':'fus','workoutId':'uid1'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
@@ -122,7 +122,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.get(3).getRoute().setUrl("workout/exercise/all");
         // Pitäisi poistaa (4)
         // Pitäisi poistaa (5)
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expected.toString(), i.toString());
     }
     @Test
@@ -221,7 +221,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi siirtää (19) 2. itemin batchiin
         // Pitäisi siirtää (20) 2. itemin batchiin
         String expectedStr = expected.toString();
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expectedStr, i.toString());
     }
     @Test
@@ -268,11 +268,11 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
                 "{'id':'uid12','workoutId':'uid1'}," +
                 "{'id':'uid13','workoutId':'uid1'}" +
             "]}," +
-            "{'id':4,'route':{'url':'workout/exercise/all','method':'PUT'},'data':[" +
-                "{'id':'uid11','foo':'bar'}," +
-                "{'id':'uid12','baz':'hax'}" +
+            "{'id':4,'route':{'url':'workout/exercise','method':'PUT'},'data':[" +
+                "{'id':'uid11','foo':'bar','workoutId':'uid1'}," +
+                "{'id':'uid12','baz':'hax','workoutId':'uid1'}" +
             "]}," +
-            "{'id':5,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid11','variant':'fus'}}," +
+            "{'id':5,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid11','variant':'fus','workoutId':'uid1'}}," +
             "{'id':6,'route':{'url':'workout/exercise/uid13','method':'DELETE'},'data':null}," +
             "{'id':7,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid20','workoutExerciseId':'uid10','reps':10}}," +
             "{'id':8,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid21','workoutExerciseId':'uid10','reps':11}}," +
@@ -319,7 +319,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         expected.get(2).getRoute().setUrl("workout/exercise/set/all");
         String expectedStr = expected.toString();
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expectedStr, i.toString());
     }
     @Test
@@ -360,14 +360,14 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         "]" */
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'exercise','method':'POST'},'data':{'id':'uid40','start':1}}," +
-            "{'id':2,'route':{'url':'exercise/variant','method':'POST'},'data':{'id':'uid20','content':'name'}}," +
-            "{'id':3,'route':{'url':'exercise/variant','method':'PUT'},'data':{'id':'uid20','content':'newname'}}," +
+            "{'id':2,'route':{'url':'exercise/variant','method':'POST'},'data':{'id':'uid20','content':'name','exerciseId':'uid40'}}," +
+            "{'id':3,'route':{'url':'exercise/variant','method':'PUT'},'data':{'id':'uid20','content':'newname','exerciseId':'uid40'}}," +
             "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
             "{'id':5,'route':{'url':'workout','method':'POST'},'data':{'id':'uid2','start':3}}," +
             "{'id':6,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid2','start':4}}," +
             "{'id':7,'route':{'url':'workout','method':'PUT'},'data':{'id':'uid1','start':2}}," +
-            "{'id':8,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid10','start':1}}," +
-            "{'id':9,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid11','start':1}}," +
+            "{'id':8,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid10','start':1,'workoutId':'uid1'}}," +
+            "{'id':9,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid11','start':1,'workoutId':'uid1'}}," +
             "{'id':10,'route':{'url':'workout/exercise/all','method':'POST'},'data':[" +
                 "{'id':'uid12','workoutId':'uid2'}," +
                 "{'id':'uid13','workoutId':'uid2'}," +
@@ -427,7 +427,7 @@ public class OverallQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         expected.get(4).getRoute().setUrl("workout/exercise/set/all");
         String expectedStr = expected.toString();
-        List<SyncQueueItem> i = new QueueOptimizer(input).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> i = newOptimizer(input).optimize(QueueOptimizer.ALL);
         Assert.assertEquals("Pitäisi suorittaa kaikki optimoinnit", expectedStr, i.toString());
     }
 }

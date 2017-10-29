@@ -24,7 +24,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (1)
         // Pitäisi poistaa (2)
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
     @Test
@@ -45,7 +45,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(2));
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen vaikkei ne olisi järjestyksessä",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
     @Test
@@ -67,7 +67,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi ottaa batch-data huomioon ryhmitellessä insertoinnit",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
     @Test
@@ -90,7 +90,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.get(0).getRoute().setUrl("workout/all");
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi ottaa batch-data huomioon ryhmitellessä insertoinnit",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
     @Test
@@ -118,7 +118,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi ottaa batch-data huomioon ryhmitellessä insertoinnit",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
     @Test
@@ -154,7 +154,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (6)                                // 6
         expected.add(input.get(7));                           // 7
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
         );
     }
 }

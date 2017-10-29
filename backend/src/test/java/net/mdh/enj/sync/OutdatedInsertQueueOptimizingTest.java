@@ -21,7 +21,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         // Pitäisi poistaa (2)
         expected.add(input.get(3));
         Assert.assertEquals("Pitäisi korvata insert uusimmalla datalla",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -40,7 +40,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(2));
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi korvata insertin batch-datan ainoa itemi uusimmalla datalla",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -59,7 +59,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi korvata insertin batch-datan 1. itemi uusimmalla datalla",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -80,7 +80,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(input.get(1));
         // Pitäisi poistaa (2)
         Assert.assertEquals("Pitäisi korvata insertin batch-datan 2. itemi uusimmalla datalla",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -96,7 +96,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(this.clone(input.get(0), ((List)input.get(1).getData()).get(1)));
         expected.add(this.clone(input.get(1), this.makeBatch(((List)input.get(1).getData()).get(0))));
         Assert.assertEquals("Pitäisi korvata insert uudemman datan batch-itemillä",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -121,7 +121,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         )));
         // Pitäisi poistaa (1)
         Assert.assertEquals("Pitäisi korvata insertin batch item uudemmalla batch-itemillä",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
     @Test
@@ -136,7 +136,7 @@ public class OutdatedInsertQueueOptimizingTest extends QueueOptimizingTestCase {
         expected.add(this.clone(input.get(1), ((List)input.get(2).getData()).get(0)));
         // Pitäisi poistaa (2), koska sinne ei jäänyt enää itemeitä
         Assert.assertEquals("Pitäisi korvata insert uudemman datan batch-itemillä",
-            expected.toString(), new QueueOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
+            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()
         );
     }
 }

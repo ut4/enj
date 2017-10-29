@@ -77,7 +77,7 @@ public class SyncController {
         //
         logger.debug("Alkuperäinen jono: ((" + syncQueue + "))");
         this.sortQueueByPriority(syncQueue);
-        List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue).optimize(QueueOptimizer.ALL);
+        List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue, this.syncRouteRegister).optimize(QueueOptimizer.ALL);
         logger.debug("Optimoitu jono: ((" + optimized + "))");
         //
         return this.doSyncAll(syncQueue, optimized, (syncable, idsOfSuccesfullySyncedItems) -> {
