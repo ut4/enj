@@ -26,7 +26,9 @@ class Offline {
     ) {
         this.userState = userState;
         this.serviceWorkerContainer = serviceWorkerContainer || window.navigator.serviceWorker;
-        this.controllingServiceWorker = this.serviceWorkerContainer.controller;
+        this.controllingServiceWorker = this.serviceWorkerContainer
+            ? this.serviceWorkerContainer.controller
+            : undefined;
     }
     /**
      * Rekisteröi tai uudelleenaktivoi Service workerin, ja asettaa
@@ -109,6 +111,12 @@ class Offline {
                 [messageChannel.port2]
             );
         });
+    }
+    /**
+     * Palauttaa tiedon, onko selaimessa ServiceWorker-tuki.
+     */
+    public isSupported(): boolean {
+        return this.serviceWorkerContainer !== undefined;
     }
 }
 

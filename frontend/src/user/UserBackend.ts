@@ -16,12 +16,6 @@ class UserBackend extends RESTBackend<Enj.API.User> {
         throw new Error('Disabled');
     }
     /**
-     * Hakee kirjautuneen käyttäjän tiedot backendistä.
-     */
-    public get(url?: string): Promise<Enj.API.User> {
-        return super.get('/me' + (url || ''));
-    }
-    /**
      * Disabled.
      */
     public delete(data, url?): Promise<any> {

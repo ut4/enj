@@ -84,9 +84,9 @@ QUnit.module('ui/ValidatingComponent', hooks => {
     });
     QUnit.test('mount asettaa vain kokonaisvaliditeetin, jos props.setEvaluatorValiditiesOnMount = false', assert => {
         renderSomeComponent(false);
-        assert.equal(componentEvaluators.somekey[0].validity, undefined);
-        assert.equal(componentEvaluators.somekey[1].validity, undefined);
-        assert.equal(componentEvaluators.another[0].validity, undefined);
+        assert.strictEqual(componentEvaluators.somekey[0].validity, undefined);
+        assert.strictEqual(componentEvaluators.somekey[1].validity, undefined);
+        assert.strictEqual(componentEvaluators.another[0].validity, undefined);
         assert.equal(componentEvaluators.somekey[0].touched, false);
         assert.equal(componentEvaluators.somekey[1].touched, false);
         assert.equal(componentEvaluators.another[0].touched, false);

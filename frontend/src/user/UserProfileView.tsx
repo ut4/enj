@@ -22,7 +22,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
         };
     }
     public componentWillMount() {
-        iocFactories.userBackend().get().then(
+        iocFactories.userBackend().get('/me').then(
             user => this.setState({ user }),
             () => iocFactories.notify()('Tietojen haku epäonnistui', 'error')
         );

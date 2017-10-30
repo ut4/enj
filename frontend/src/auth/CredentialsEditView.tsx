@@ -15,7 +15,7 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
         this.state = {credentials: null, goodToGo: false};
     }
     public componentWillMount() {
-        iocFactories.userBackend().get().then(
+        iocFactories.userBackend().get('/me').then(
             user => this.setState({credentials: {
                 username: user.username,
                 email: user.email,

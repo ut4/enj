@@ -162,7 +162,7 @@ ul {
     font-size: 13px;
     padding: 10px 15px;
     margin: 10px 0;
-    background-color: #EEEEEE;
+    background: #e7f1f9;
     border-radius: 2px;
 }
 .nice-button {
@@ -548,7 +548,6 @@ input[type="checkbox"]:checked:disabled + label:after {
 }
 .form-buttons .nice-button {
     min-width: 60px;
-    width: 20%;
 }
 table .input-set {
     max-width: 48%;

@@ -30,7 +30,7 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
         this.state = {configMode: false, userData: null, scores: this.makeScores(null)};
     }
     public componentWillMount() {
-        this.userDataFetch = iocFactories.userBackend().get();
+        this.userDataFetch = iocFactories.userBackend().get('/me');
     }
     public componentWillReceiveProps(props) {
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);

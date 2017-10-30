@@ -42,7 +42,7 @@ QUnit.module('workout/WorkoutEditModal', hooks => {
         const rendered = itu.renderIntoDocument(
             <WorkoutEditModal workout={ testWorkout } afterUpdate={ () => {} }/>
         );
-        assert.equal(utils.findInputByName(rendered, 'end'), undefined);
+        assert.strictEqual(utils.findInputByName(rendered, 'end'), undefined);
     });
     function getExpectedDateInputValue(unixTime: number): string {
         const date = new Date(unixTime * 1000);

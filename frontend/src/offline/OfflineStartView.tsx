@@ -1,16 +1,31 @@
 import Component from 'inferno-component';
-import Offline from 'src/offline/Offline';
 import { domUtils } from 'src/common/utils';
+import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
 /**
  * Näkymä #/aloita-offline.
  */
 class OfflineStartView extends Component<any, any> {
-    private offline: Offline;
+    private userHasOfflineSupport: boolean;
     public constructor(props, context) {
         super(props, context);
-        this.offline = iocFactories.offline();
+        this.userHasOfflineSupport = iocFactories.offline().isSupported();
+    }
+    public render() {
+        return this.userHasOfflineSupport
+            ? <div>
+                <h2>Aloita offline-tila</h2>
+                <div>
+                    <div>Aloita offline-tila, joka mahdollistaa ohjelman käytön ilman internet-yhteyttä?</div>
+                    <div class="info-box">Offline-tilan aikana tehdyt muutokset kirjataan käyttämääsi selaimeen, ja synronoidaan tilan päätyttyä. Jos tyhjennät selaimen väliaikaistiedostot ennen online-tilaan palaamista, tiedot häviävät.</div>
+                </div>
+                <FormButtons onConfirm={ () => this.confirm() } confirmButtonText="Aloita offline-tila" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            </div>
+            : <div>
+                <h2>Hrmh..</h2>
+                <div>Käyttämäsi selain ei tue Serviceworker-API:a, joka on välttämätön offline-tilan aktivoimiseksi. Teknologia on melko uusi, ja useissa selaimissa vasta kehitysvaiheessa, ks. <a href="http://caniuse.com/#feat=serviceworkers" rel="noopener noreferrer" target="_blank">caniuse.com</a>. <p><a href="" onClick={ e => { e.preventDefault(); this.goBack(); } }>Takaisin</a></p></div>
+            </div>;
     }
     /**
      * Asettaa applikaation tilaksi "offline", jonka aikana serviceworker
@@ -19,34 +34,21 @@ class OfflineStartView extends Component<any, any> {
      * POST etc. -tyyppisten api-kutsujen pyynnöt (loggaa tiedot indexedDb-
      * selaintietokantaan).
      */
-    public confirm() {
+    private confirm() {
         domUtils.revealLoadingIndicator();
-        return this.offline.enable()
+        return iocFactories.userBackend().get('/me')
+            .then(() => iocFactories.offline().enable())
             .then(() => {
                 // TODO userService.setMaybeIsAuthenticated(false);
                 iocFactories.notify()('Offline-tila asetettu, voit nyt sulkea internet-yhteyden', 'success');
                 domUtils.hideLoadingIndicator();
-                this.close();
             }, () => {
                 iocFactories.notify()('Offline-tilaan asettaminen epäonnistui', 'error');
                 domUtils.hideLoadingIndicator();
             });
     }
-    public close() {
+    private goBack() {
         iocFactories.history().goBack();
-    }
-    public render() {
-        return <div>
-            <h2>Aloita offline-tila</h2>
-            <div>
-                Aloita offline-tila, joka mahdollistaa ohjelman käytön ilman internet-yhteyttä? Toiminto voi kestää useita sekunteja.
-                <div class="info-box">Offline-tilan aikana tehdyt muutokset kirjataan käyttämääsi selaimeen, ja synronoidaan tilan päätyttyä. Jos tyhjennät selaimen väliaikaistiedostot ennen online-tilaan palaamista, tiedot häviävät.</div>
-            </div>
-            <div class="form-buttons">
-                <button class="nice-button nice-button-primary" type="button" onClick={ this.confirm.bind(this) }>Aloita offline-tila</button>
-                <button class="text-button" type="button" onClick={ this.close }>Peruuta</button>
-            </div>
-        </div>;
     }
 }
 

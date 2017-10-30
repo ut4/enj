@@ -17,6 +17,8 @@ QUnit.module('offline/OfflineEndView', hooks => {
     let authServiceStubIocFactoryOverride: sinon.SinonStub;
     let shallowSyncBackend: SyncBackend;
     let syncBackendIocFactoryOverride: sinon.SinonStub;
+    let fakeHistory: {goBack: sinon.SinonSpy};
+    let historyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         userStateStub = Object.create(UserState.prototype);
         userStateStubIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(userStateStub);
@@ -26,12 +28,15 @@ QUnit.module('offline/OfflineEndView', hooks => {
         authServiceStubIocFactoryOverride = sinon.stub(iocFactories, 'authService').returns(shallowAuthService);
         shallowSyncBackend = Object.create(SyncBackend.prototype);
         syncBackendIocFactoryOverride = sinon.stub(iocFactories, 'syncBackend').returns(shallowSyncBackend);
+        fakeHistory = {goBack: sinon.spy()};
+        historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
     });
     hooks.afterEach(() => {
         userStateStubIocFactoryOverride.restore();
         offlineStubIocFactoryOverride.restore();
         authServiceStubIocFactoryOverride.restore();
         syncBackendIocFactoryOverride.restore();
+        historyIocOverride.restore();
     });
     QUnit.test('submit-painike on oletuksena disabloituna', assert => {
         //
@@ -44,7 +49,6 @@ QUnit.module('offline/OfflineEndView', hooks => {
         const loginCallStub = sinon.stub(shallowAuthService, 'login').returns(Promise.resolve(1));
         const resumeOnlineCallStub = sinon.stub(shallowUserState, 'disable').returns(Promise.resolve(1));
         const backendSyncCallStub = sinon.stub(shallowSyncBackend, 'syncAll').returns(Promise.resolve(2));
-        const allDoneCallSpy = sinon.spy(OfflineEndView.prototype, 'done');
         //
         const confirmSpy = renderViewAndTriggerConfirm();
         //
@@ -53,9 +57,8 @@ QUnit.module('offline/OfflineEndView', hooks => {
             assert.ok(loginCallStub.calledOnce, 'Pitäisi kirjata käyttäjä sisään');
             assert.ok(resumeOnlineCallStub.calledAfter(loginCallStub), 'Sen jälkeen pitäisi asettaa käyttäjän tila takaisin online');
             assert.ok(backendSyncCallStub.calledAfter(loginCallStub), 'Sen jälkeen pitäisi synkata syncQueue backendiin');
-            assert.ok(allDoneCallSpy.calledAfter(backendSyncCallStub), 'Pitäisi lopuksi sulkea näkymä');
+            assert.ok(fakeHistory.goBack.calledAfter(backendSyncCallStub), 'Pitäisi lopuksi sulkea näkymä');
             confirmSpy.restore();
-            allDoneCallSpy.restore();
             done();
         });
     });

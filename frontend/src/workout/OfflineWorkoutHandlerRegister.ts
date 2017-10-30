@@ -2,8 +2,8 @@ import OfflineHttp from 'src/common/OfflineHttp';
 import AbstractOfflineHandlerRegister from 'src/offline/AbstractOfflineHandlerRegister';
 
 /**
- * Sisältää handerit, jotka vastaa /api/workout/* -REST-pyynnöistä yhteydettömän
- * tilan aikana.
+ * Sisältää handerit, jotka vastaa /api/workout/* -REST-pyynnöistä offline-tilan
+ * aikana.
  */
 class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Workout> {
     /**

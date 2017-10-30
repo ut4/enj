@@ -1,10 +1,9 @@
 import Db from 'src/common/Db';
 
 /**
- * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan
- * yhteydettömän tilan aikana, sekä loggaa suoritettujen api-kutsujen tiedot
- * selaintietokantaan, jolloin ne voidaan synkata kollektiivisesti backendiin
- * yhteyden palautuessa.
+ * Hallinnoi kokoelmaa funktioita, joilla backend-kutsut korvataan offline-tilan
+ * aikana, sekä loggaa suoritettujen api-kutsujen tiedot selaintietokantaan,
+ * jolloin ne voidaan synkata kollektiivisesti backendiin yhteyden palautuessa.
  */
 class OfflineHttp {
     public static requestHandlers: {[_: string]: Enj.offlineHandler} = {};
