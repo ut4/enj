@@ -7,6 +7,7 @@ public class SyncRoute extends Route {
 
     private String pattern;
     private String parent;
+    DependeeInfo dependee;
     private String foreignKey;
 
     public SyncRoute() {}
@@ -57,5 +58,10 @@ public class SyncRoute extends Route {
             ", parent=" + this.getParent() +
             ", foreignKey=" + this.getForeignKey() +
         "}";
+    }
+
+    static class DependeeInfo {
+        String url;
+        String foreignKey;
     }
 }
