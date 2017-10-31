@@ -22,11 +22,13 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     private programBackend: ProgramBackend;
     private datePicker: Datepicker;
     private selectedDate: Date;
+    private dateNow: Date;
     public constructor(props, context) {
         super(props, context);
-        this.state = {workouts: null, programs: null, isToday: null};
+        this.state = {workouts: null, programs: [], isToday: null};
         this.workoutBackend = iocFactories.workoutBackend();
         this.programBackend = iocFactories.programBackend();
+        this.dateNow = new Date();
     }
     /**
      * Hakee urlin daten {prop.params.date} treenit backendistä ja asettaa ne stateen.
@@ -39,8 +41,9 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
      * Mikäli treeniä ei löytynyt, hakee päivän ohjelman.
      */
     public componentWillReceiveProps(props) {
-        const newState = {isToday: props.params.date === 'tanaan', program: null, workouts: []};
-        this.selectedDate = newState.isToday ? new Date() : new Date(props.params.date);
+        const newState: State = this.state;
+        newState.isToday = props.params.date === 'tanaan';
+        this.selectedDate = newState.isToday ? this.dateNow : new Date(props.params.date);
         // Hae ensin päivän treeniä...
         return this.workoutBackend.getDaysWorkouts(this.selectedDate).then(
             workouts => {
@@ -50,16 +53,19 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             },
             err => {
                 iocFactories.notify()('Treenien haku epäonnistui', 'error');
+                newState.workouts = [];
                 this.setState(newState);
                 return false;
             }
         // ...jos ei löytynyt (ja params.date on tänään), hae ohjelmaa
         ).then((noWorkoutsFound: boolean) => {
-            if (noWorkoutsFound && this.props.params.date === 'tanaan') {
+            if (noWorkoutsFound && this.selectedDate >= this.dateNow) {
                 this.programBackend.getAll('/mine?when=' + Math.floor(this.selectedDate.getTime() / 1000)).then(
                     programs => programs.length && this.setState({programs}),
                     () => iocFactories.notify()('Ohjelman haku epäonnistui', 'error')
                 );
+            } else if (this.state.programs.length) {
+                this.setState({programs: []});
             }
         });
     }
@@ -68,7 +74,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             return;
         }
         return <div class={ 'workout-view' + (!this.state.isToday ? ' not-current' : '') }>
-            <h2>{ (!this.state.isToday || !this.state.programs ? 'Treeni ' : 'Ohjelmassa ') + (this.state.isToday ? 'tänään' : toFinDate(this.selectedDate)) }
+            <h2>{ (!this.state.programs.length ? 'Treeni ' : 'Ohjelmassa ') + (this.state.isToday ? 'tänään' : toFinDate(this.selectedDate)) }
                 <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ () => this.datePicker.open() }></button>
                 <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ this.state.isToday ? undefined : this.selectedDate } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
@@ -76,7 +82,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                 ? this.state.workouts.map(workout =>
                     <EditableWorkout workout={ workout } onDelete={ () => this.componentWillReceiveProps(this.props) }/>
                 )
-                : this.state.programs ? this.getProgramWorkoutsList() : <p>Ei treenejä</p>
+                : this.state.programs.length ? this.getProgramWorkoutsList() : <p>Ei treenejä</p>
             }
             <button class="nice-button" onClick={ () => this.startWorkout() }>Aloita uusi</button>
         </div>;

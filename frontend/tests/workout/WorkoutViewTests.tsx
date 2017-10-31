@@ -117,13 +117,13 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('mount ei hae ohjelmaa, jos params.date ei ole tänään', assert => {
+    QUnit.test('mount ei hae ohjelmaa, jos params.date < tänään', assert => {
         const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.resolve([]));
         const currentProgramsFetch = sinon.spy(shallowProgramBackend, 'getAll');
         //
         const notToday = new Date();
-        notToday.setDate(notToday.getDate() + 2);
+        notToday.setDate(notToday.getDate() - 2);
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {
             date: notToday.toISOString().split('T')[0]
         } }/>);

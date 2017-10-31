@@ -47,7 +47,7 @@ public class SearchFilters implements SelectQueryFilters {
 
     /**
      * Palauttaa tietokantakyselyn osaksi kelpaavan merkkijonon, esim.
-     * "`start` >= :startFrom AND `start` <= :startTo".
+     * "`workoutStart` >= :startFrom AND `workoutStart` <= :startTo".
      */
     @Override
     public String toSql() {
