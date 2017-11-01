@@ -263,8 +263,8 @@ CREATE TABLE program (
     `name` VARCHAR(64) NOT NULL,
     `start` INT UNSIGNED NOT NULL,
     `end` INT UNSIGNED NOT NULL,
-    description VARCHAR(128) DEFAULT NULL,
-    userId CHAR(36) NOT NULL,
+    description VARCHAR(320) DEFAULT NULL,
+    userId CHAR(36), -- NULL = Ohjelmatemplaatti, !NULL = Käyttäjäkohtainen ohjelma
     FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;

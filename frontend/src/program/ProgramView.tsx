@@ -1,6 +1,7 @@
 import Component from 'inferno-component';
 import SubMenu from 'src/ui/SubMenu';
 import Modal from 'src/ui/Modal';
+import ProgramPreCreateModal from 'src/program/ProgramPreCreateModal';
 import ProgramDeleteModal from 'src/program/ProgramDeleteModal';
 import iocFactories from 'src/ioc';
 import { dateUtils } from 'src/common/utils';
@@ -27,7 +28,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
         return <div class="program-view">
             <h2>Treeniohjelmat</h2>
             <SubMenu>
-                <a href="#/ohjelmat/luo-uusi">Luo uusi ohjelma</a>
+                <a href="" onClick={ e => this.openPreCreateModal(e) }>Luo uusi ohjelma</a>
             </SubMenu>
             { this.state.programs && (
                 this.state.programs.length > 0 ?
@@ -51,9 +52,13 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
                         </tr>
                     ) }
                 </tbody></table> :
-                <p>Ei vielä ohjelmia. <a href="#/ohjelmat/luo-uusi">Luo uusi ohjelma</a>.</p>
+                <p>Ei vielä ohjelmia. <a href={ e => this.openPreCreateModal(e) }>Luo uusi ohjelma</a>.</p>
             ) }
         </div>;
+    }
+    private openPreCreateModal(e) {
+        e.preventDefault();
+        Modal.open(() => <ProgramPreCreateModal/>);
     }
     private openDeleteModal(program: Enj.API.Program, e) {
         e.preventDefault();

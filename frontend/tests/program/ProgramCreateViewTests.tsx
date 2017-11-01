@@ -9,6 +9,16 @@ import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 import ptu from 'tests/program/utils';
 
+function newContextfulProgramCreateViewClass(programTemplateSetByPreCreateModal?: Enj.API.Program) {
+    const ProgramCreateViewWithContext = class extends ProgramCreateView {
+        public constructor(props, context) {
+            context.router = {programTemplate: programTemplateSetByPreCreateModal};
+            super(props, context);
+        }
+    };
+    return ProgramCreateViewWithContext;
+}
+
 QUnit.module('program/ProgramCreateView', hooks => {
     let programBackendIocOverride: sinon.SinonStub;
     let shallowProgramBackend: ProgramBackend;
@@ -18,6 +28,20 @@ QUnit.module('program/ProgramCreateView', hooks => {
     });
     hooks.afterEach(() => {
         programBackendIocOverride.restore();
+    });
+    QUnit.test('lataa props.router.programTemplate:n ohjelmatreenit lomakkeeseen', assert => {
+        // Aseta props.context:in programTemplate manuaalisesti, jonka ProgramPreCreateModal normaalisti asettaa
+        const programTemplateSetByPreCreateModal = ptu.getSomeTestPrograms()[1];
+        const actualProgramWorkouts = programTemplateSetByPreCreateModal.workouts;
+        // Renderöi näkymä
+        const Cls = newContextfulProgramCreateViewClass(programTemplateSetByPreCreateModal);
+        const rendered = itu.renderIntoDocument(<div><Modal/><Cls/></div>);
+        // Asettiko props.context programTemplaten ohjelmatreenit lomakkeeseen?
+        const populatedProgramWorkoutEls = itu.scryRenderedDOMElementsWithTag(rendered, 'li');
+        const actualMondaysProgramWorkoutEl = populatedProgramWorkoutEls[actualProgramWorkouts[0].occurrences[0].weekDay-1];
+        const actualWednesdaysProgramWorkoutEl = populatedProgramWorkoutEls[actualProgramWorkouts[1].occurrences[0].weekDay-1];
+        assert.ok(actualMondaysProgramWorkoutEl.textContent.indexOf(programTemplateSetByPreCreateModal.workouts[0].name) > -1);
+        assert.ok(actualWednesdaysProgramWorkoutEl.textContent.indexOf(programTemplateSetByPreCreateModal.workouts[1].name) > -1);
     });
     QUnit.test('lähettää tiedot backendiin', assert => {
         const insertCallStub = sinon.stub(shallowProgramBackend, 'insert').returns(Promise.resolve(1));
@@ -44,7 +68,8 @@ QUnit.module('program/ProgramCreateView', hooks => {
             exerciseVariantId: null
         }];
         // Renderöi näkymä & assertoi initial-arvot
-        const rendered = itu.renderIntoDocument(<div><Modal/><ProgramCreateView/></div>);
+        const Cls = newContextfulProgramCreateViewClass();
+        const rendered = itu.renderIntoDocument(<div><Modal/><Cls/></div>);
         const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
         assert.equal(startInputEl.value, getExpectedInitialStartDateStr());
         assert.equal(endInputEl.value, getExpectedInitialEndDateStr());
@@ -87,7 +112,8 @@ QUnit.module('program/ProgramCreateView', hooks => {
         const insertWorkoutsSpy = sinon.spy(shallowProgramBackend, 'insertWorkouts');
         const insertWorkoutExercisesSpy = sinon.spy(shallowProgramBackend, 'insertWorkoutExercises');
         // Renderöi näkymä & assertoi initial-arvot
-        const rendered = itu.renderIntoDocument(<div><Modal/><ProgramCreateView/></div>);
+        const Cls = newContextfulProgramCreateViewClass();
+        const rendered = itu.renderIntoDocument(<div><Modal/><Cls/></div>);
         const [nameInputEl, startInputEl, endInputEl] = utils.getInputs(rendered);
         // Täytä name & start & end & description
         utils.setInputValue('foo', nameInputEl);

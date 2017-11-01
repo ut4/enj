@@ -76,6 +76,15 @@ public class ProgramController {
     }
 
     /**
+     * Palauttaa globaalit ohjelmatemplaatit tietokannasta.
+     */
+    @GET
+    @Path("/templates")
+    public List<Program> getProgramTemplates() {
+        return this.programRepository.selectAll(new QueryFilters(null));
+    }
+
+    /**
      * Palauttaa kirjautuneen käyttäjän ohjelman id:llä {programId}.
      */
     @GET
