@@ -43,7 +43,7 @@ class QueryFilters implements SelectQueryFilters {
     @Override
     public String toSql() {
         ArrayList<String> out = new ArrayList<>();
-        out.add("programUserId = :userId");
+        out.add("programUserId " + (this.userId != null ? "= :userId" : "IS NULL"));
         if (this.id != null) {
             out.add("programId = :id");
         }

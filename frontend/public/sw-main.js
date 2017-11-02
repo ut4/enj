@@ -37,6 +37,7 @@ self.CACHE_FILES = [
     prefixWithApiNamespace('workout'),
     prefixWithApiNamespace('exercise'),
     prefixWithApiNamespace('program/mine'),
+    prefixWithApiNamespace('program/templates'),
     // == Teema ==============
     'theme/favicon.ico',
     'theme/favicon.png',
@@ -52,6 +53,12 @@ self.CACHE_FILES = [
     'theme/user-icon-sprite.svg'
 ];
 self.DYNAMIC_CACHE = [{
+    urlMatcher: prefixWithApiNamespace('exercise/(.{36})'),
+    dataGetter: ([exerciseId]) => swManager.findFromCachedArrayBy(
+        {id: {$eq: exerciseId}},
+        prefixWithApiNamespace('exercise')
+    ).then(array => array[0])
+}, {
     urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),
     dataGetter: ([startFrom, startTo]) => swManager.findFromCachedArrayBy(
         {start: {$where: function () { // ei fat-arrow -syntaksia, koska tarvitaan "this"
@@ -74,8 +81,19 @@ self.DYNAMIC_CACHE = [{
         {id: {$eq: programId}},
         prefixWithApiNamespace('program/mine')
     ).then(array => array[0])
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/best-sets'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/general-stuff'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/progress.*'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('user/me'),
+    dataGetter: () => () => swManager.new404()
 }];
-
 // == Workerin staten manipulointi ==
 // =============================================================================
 self.addEventListener('message', event => {

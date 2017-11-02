@@ -27,6 +27,7 @@ import 'tests/program/offlineProgramHandlersTests';
 import 'tests/program/ProgramCreateViewTests';
 import 'tests/program/ProgramEditViewTests';
 import 'tests/program/ProgramFormTests';
+import 'tests/program/ProgramPreCreateModalTests';
 import 'tests/program/ProgramViewTests';
 import 'tests/program/ProgramWorkoutModalTests';
 import 'tests/serviceworker/SWManagerTests';

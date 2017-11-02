@@ -116,6 +116,24 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
     }
 
     @Test
+    public void GETTemplatesPalauttaaGlobaalitOhjelmaTemplaatit() {
+        // Luo ohjelmatemplaatti (ohjelma, jonka userId = null)
+        Program testProgramTemplate = insertTestData("Program template", null, p -> {
+            p.setStart(0L);
+            p.setEnd(0L);
+        });
+        // Lähetä pyyntö
+        Response response = newGetRequest("program/templates");
+        Assert.assertEquals(200, response.getStatus());
+        // Palauttiko ohjelmatemplaatit relaatioineen?
+        List<Program> actualProgramTemplates = response.readEntity(new GenericType<List<Program>>() {});
+        Assert.assertTrue(actualProgramTemplates.size() > 0);
+        // Sisällyttikö testissä insertoidun templaatin?
+        Program actualTestProgramTemplate = findProgram(actualProgramTemplates, testProgramTemplate.getId());
+        Assert.assertEquals(testProgramTemplate.toString(), actualTestProgramTemplate.toString());
+    }
+
+    @Test
     public void PUTPäivittääOhjelmanTietokantaan() {
         // Luo ensin testiohjelma.
         Program program = makeNewProgramEntity("Inserted");

@@ -63,6 +63,7 @@ QUnit.module('program/ProgramForm', hooks => {
     QUnit.test('"Lisää treeni"-painikkeesta voi lisätä uuden treenin ohjelmaan', assert => {
         const exerciseDropdownFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(etu.getSomeDropdownExercises()));
         const newProgram = ptu.getSomeTestPrograms()[0];
+        newProgram.id = null;
         const programWorkoutLengthBefore = newProgram.workouts.length;
         const rendered = itu.renderIntoDocument(<div>
             <Modal/>

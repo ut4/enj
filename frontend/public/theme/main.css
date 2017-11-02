@@ -22,7 +22,10 @@
     display: none !important;
 }
 .end {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+}
+.airy {
+    padding: 10px 13px;
 }
 .left-aligned {
     text-align: left;
@@ -144,6 +147,9 @@ h2:after, .lined-title:after {
 }
 h4 {
     margin: 8px auto;
+}
+h4:first-of-type {
+    margin-top: 0;
 }
 p {
     margin: 10px 0;
@@ -324,6 +330,10 @@ li:last-of-type .down {
     margin-bottom: 3px;
     border-radius: 2px;
     color: #FFFFFF;
+}
+.box.light {
+    background-color: #F5F5F5;
+    color: inherit;
 }
 
 /* -- Listat ---------- */
@@ -547,7 +557,7 @@ input[type="checkbox"]:checked:disabled + label:after {
     text-align: left;
 }
 .form-buttons .nice-button {
-    min-width: 60px;
+    min-width: 85px;
 }
 table .input-set {
     max-width: 48%;
@@ -891,7 +901,7 @@ footer a {
 .workout-timer + div { float: right; margin-top: -7px; }
 .workout-timer + div > .edit-dark { margin-right: 5px; }
 .editable-workout > ul:first-of-type { clear: both;}
-.editable-workout li .icon-button.add { margin-top: 5px; }
+.editable-workout li .icon-button.add, .workout-view button.large { margin-top: 10px; }
 .workout-view.not-current > .nice-button,                                /* Treenin aloituspainike */
 .workout-view.not-current .editable-workout > .nice-button:last-of-type, /* Liikeen lisäyspainike */
 .workout-view.not-current .dark-list > li > button { display: none; }    /* Sarjan lisäyspainike */

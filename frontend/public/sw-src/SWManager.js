@@ -25,11 +25,16 @@ function SWManager(mainSWScope) {
      * @return {Promise|null} -> ({Response} response, {any} any)
      */
     this.makeResponder = url => {
-        const dynamicDataPromise = callDataGetter(url);
-        if (!dynamicDataPromise) {
+        const dataProvider = callDataGetter(url);
+        // Urlille {url} ei löytynyt rekisteröityä DYNAMIC_CACHE-handleria
+        if (!dataProvider) {
             return null;
+        // Rekisteröity DYNAMIC_CACHE-handleri tarjoaa itse datan ja Response-objektin
+        } else if (typeof dataProvider === 'function') {
+            return dataProvider();
         }
-        return dynamicDataPromise.then(data =>
+        // Rekisteröity DYNAMIC_CACHE-handleri tarjoaa vai datan
+        return dataProvider.then(data =>
             new Response(data ? JSON.stringify(data) : '[]')
         );
     };
@@ -97,7 +102,13 @@ function SWManager(mainSWScope) {
                 reject('IndexedDb-yhteyden avaaminen epäonnistui ' + e.target.errorCode);
             };
         });
-
+    /**
+     * @return {Response}
+     */
+    this.new404 = () => new Response('Tämä reitti ei ole käytettävissä offline-tilassa.', {
+        status: 454,
+        statusText: 'Offline handler not found'
+    });
 
 
     function getCachedJson(url) {

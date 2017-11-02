@@ -153,4 +153,3 @@ class Http {
 }
 
 export default Http;
-export { ResponseError };

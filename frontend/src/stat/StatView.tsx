@@ -29,8 +29,12 @@ class StatsView extends Component<any, any> {
             ? Promise.resolve(this[prop])
             : iocFactories.statBackend()[method]()).then(
                 data => data,
-                () => {
-                    iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
+                err => {
+                    if ((err.response || {}).status === 454) {
+                        iocFactories.notify()('Tämä toiminto käytettävissä vain online-tilassa', 'info');
+                    } else {
+                        iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
+                    }
                     return undefined;
                 }
             ).then(data => {
