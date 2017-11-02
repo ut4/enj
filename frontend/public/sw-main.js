@@ -81,8 +81,19 @@ self.DYNAMIC_CACHE = [{
         {id: {$eq: programId}},
         prefixWithApiNamespace('program/mine')
     ).then(array => array[0])
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/best-sets'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/general-stuff'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('stat/progress.*'),
+    dataGetter: () => () => swManager.new404()
+}, {
+    urlMatcher: prefixWithApiNamespace('user/me'),
+    dataGetter: () => () => swManager.new404()
 }];
-
 // == Workerin staten manipulointi ==
 // =============================================================================
 self.addEventListener('message', event => {

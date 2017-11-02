@@ -94,7 +94,10 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             parseInt(params.after as any, 10)
         ).then(
             progress => { return progress; },
-            () => { return []; }
+            err => {
+                (err.response || {}).status === 454 && iocFactories.notify()('Tämä toiminto käytettävissä vain online-tilassa', 'info');
+                return [];
+            }
         ).then(progressSets => {
             const data = progressSets.length ? this.makeData(progressSets) : null;
             this.setState({data, dataCount: data ? data.labels.length : 0});
