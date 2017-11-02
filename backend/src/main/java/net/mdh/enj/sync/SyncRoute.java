@@ -7,8 +7,8 @@ public class SyncRoute extends Route {
 
     private String pattern;
     private String parent;
-    DependeeInfo dependee;
     private String foreignKey;
+    SubRoute dependent;
 
     public SyncRoute() {}
     public SyncRoute(String url, String method) {
@@ -43,7 +43,7 @@ public class SyncRoute extends Route {
      * "workout/foo/all"        -> "workout/foo"
      * "workout/foo/{p1}/{p2}"  -> "workout/foo"
      */
-    public String getUrlNamespace() {
+    String getUrlNamespace() {
         return (
             this.getPattern() == null ? this.getUrl() : this.getUrl().split("/\\{")[0]
         ).replace("/all", "");
@@ -60,8 +60,8 @@ public class SyncRoute extends Route {
         "}";
     }
 
-    static class DependeeInfo {
-        String url;
+    static class SubRoute {
+        String urlNamespace;
         String foreignKey;
     }
 }

@@ -10,9 +10,8 @@ class QueueOptimizer {
     static final int GROUP_INSERTS      = 4;
     static final int ALL                = 7;
 
-    private final Map<String, OperationTreeNode> operationTree;
     private final List<SyncQueueItem> queue;
-    private final SyncRouteRegister syncRouteRegister;
+    private final Map<String, OperationTreeNode> operationTree;
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
     private final InsertGroupingOptimizer insertGroupingOptimizer;
@@ -20,7 +19,6 @@ class QueueOptimizer {
     QueueOptimizer(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
         this.queue = queue;
         this.operationTree = this.queue.size() > 1 ? OperationTreeFactory.makeTree(this.queue, syncRouteRegister) : null;
-        this.syncRouteRegister = syncRouteRegister;
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
         this.futureUpdateOptimizer = new FutureUpdateOptimizer();
         this.insertGroupingOptimizer = new InsertGroupingOptimizer();

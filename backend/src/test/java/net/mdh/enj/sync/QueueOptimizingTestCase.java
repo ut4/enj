@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 class QueueOptimizingTestCase {
+    static SyncRouteRegister syncRouteRegister;
     private final ObjectMapper objectMapper;
-    private static SyncRouteRegister syncRouteRegister;
     static {
         syncRouteRegister = SyncingTestUtils.getManuallyPopulatedSyncRouteRegister();
     }
