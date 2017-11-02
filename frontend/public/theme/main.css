@@ -901,7 +901,7 @@ footer a {
 .workout-timer + div { float: right; margin-top: -7px; }
 .workout-timer + div > .edit-dark { margin-right: 5px; }
 .editable-workout > ul:first-of-type { clear: both;}
-.editable-workout li .icon-button.add { margin-top: 5px; }
+.editable-workout li .icon-button.add, .workout-view button.large { margin-top: 10px; }
 .workout-view.not-current > .nice-button,                                /* Treenin aloituspainike */
 .workout-view.not-current .editable-workout > .nice-button:last-of-type, /* Liikeen lisäyspainike */
 .workout-view.not-current .dark-list > li > button { display: none; }    /* Sarjan lisäyspainike */

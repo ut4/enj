@@ -60,6 +60,7 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
     QUnit.test('OccurrencesManager mutatoi occurrences-taulukkoa', assert => {
         const afterInsertSpy = sinon.spy();
         const programWorkout = ptu.getSomeTestProgramWorkouts()[0];
+        programWorkout.programId = null;
         const rendered = itu.renderIntoDocument(<div><Modal/>
             <ProgramWorkoutModal programWorkout={ programWorkout } afterInsert={ afterInsertSpy }/>
         </div>);

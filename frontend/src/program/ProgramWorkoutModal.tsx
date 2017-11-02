@@ -17,11 +17,13 @@ interface Props {
  */
 class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: Enj.API.ProgramWorkout}> {
     private isInsert: boolean;
+    private parentProgramExists: boolean;
     private occurrencesManager: OccurrencesManager;
     private exercisesManager: ExercisesManager;
     protected propertyToValidate: string = 'programWorkout';
     public constructor(props, context) {
         super(props, context);
+        this.parentProgramExists = typeof this.props.programWorkout.programId === 'string';
         this.isInsert = this.props.hasOwnProperty('afterInsert');
         this.evaluators = {
             name: [(input: any) => input.length >= 2 && input.length <= 64],
@@ -55,10 +57,16 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
         </div>;
     }
     private confirm(): Promise<any> {
+        // Ohjelmatreenin lisäys uuteen, tai olemassaolevaan ohjelmaan.
         if (this.isInsert) {
             this.props.afterInsert(this.state.programWorkout);
             return;
+        // Uuden ohjelman ohjelmatreenin muokkaus.
+        } else if (!this.parentProgramExists) {
+            this.props.afterUpdate(this.state.programWorkout);
+            return;
         }
+        // Olemassaolevan ohjelman ohjelmatreenin muokkaus.
         const inserted = this.exercisesManager.getInsertedItems();
         const modified = this.exercisesManager.getModifiedItems();
         const deleted = this.exercisesManager.getDeletedItems();

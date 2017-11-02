@@ -37,6 +37,7 @@ self.CACHE_FILES = [
     prefixWithApiNamespace('workout'),
     prefixWithApiNamespace('exercise'),
     prefixWithApiNamespace('program/mine'),
+    prefixWithApiNamespace('program/templates'),
     // == Teema ==============
     'theme/favicon.ico',
     'theme/favicon.png',
@@ -52,6 +53,12 @@ self.CACHE_FILES = [
     'theme/user-icon-sprite.svg'
 ];
 self.DYNAMIC_CACHE = [{
+    urlMatcher: prefixWithApiNamespace('exercise/(.{36})'),
+    dataGetter: ([exerciseId]) => swManager.findFromCachedArrayBy(
+        {id: {$eq: exerciseId}},
+        prefixWithApiNamespace('exercise')
+    ).then(array => array[0])
+}, {
     urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),
     dataGetter: ([startFrom, startTo]) => swManager.findFromCachedArrayBy(
         {start: {$where: function () { // ei fat-arrow -syntaksia, koska tarvitaan "this"
