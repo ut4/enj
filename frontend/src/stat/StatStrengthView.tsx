@@ -29,12 +29,10 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);
         this.state = {configMode: false, userData: null, scores: this.makeScores(null)};
     }
-    public componentWillMount() {
-        this.userDataFetch = iocFactories.userBackend().get('/me');
-    }
     public componentWillReceiveProps(props) {
+        if (this.state.userData) { return; }
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);
-        return this.userDataFetch.then(userData => {
+        return iocFactories.userBackend().get('/me').then(userData => {
             this.setState({scores: this.makeScores(userData), userData});
         });
     }

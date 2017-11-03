@@ -151,6 +151,13 @@ QUnit.module('stat/StatStrengthView', hooks => {
             done();
         });
     });
+    QUnit.test('Ei hae käyttäjätietoja ennen kuin StatView-parent on valmis', assert => {
+        const userFetchSpy = sinon.spy(shallowUserBackend, 'get');
+        //
+        renderComponent();
+        // Jäikö odottelemaan?
+        assert.ok(userFetchSpy.notCalled);
+    });
     function getExpectedStrengthLevelsContent(testUser: Enj.API.User, expected = {} as any): string {
         return (
             'Jalkakyykky ' + (expected.squat || getExpectedStrengthLevel('squat', testBestSets[1], testUser)) +

@@ -149,6 +149,6 @@ function SWManager(mainSWScope) {
         });
     }
     function makeApiRequest(url) {
-        return new Request(mainSWScope.baseUrl.href + url);
+        return new Request(mainSWScope.BASE_URL + '/' + url);
     }
 }
