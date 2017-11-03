@@ -14,7 +14,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.ArrayList;
@@ -140,7 +140,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Exercise e1 = insertTestExercise("global", null);
         Exercise e2 = insertTestExercise("global-but-has-my-variant", null);
         Exercise.Variant e2v = insertTestVariant("my-variant", e2.getId(), TestData.TEST_USER_ID);
-        e2.setVariants(Arrays.asList(e2v));
+        e2.setVariants(Collections.singletonList(e2v));
         Exercise e3 = insertTestExercise("not-mine", TestData.TEST_USER_ID2);
         //
         Response response = target("exercise/mine").request().get();

@@ -512,7 +512,7 @@ input[type="checkbox"] + label:after {
 }
 input[type="checkbox"]:checked + label:after {
     background-image: url(icon-sprite.svg#checked);
-    background-color: #3daee2;
+    background-color: #52a5e2;
     border: none;
     padding: 3px;
     background-size: 21px auto;

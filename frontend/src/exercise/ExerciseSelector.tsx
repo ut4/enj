@@ -40,6 +40,11 @@ class ExerciseSelector extends Component<Props, State> {
         to.exerciseVariantContent = selectedVariant.content || null;
         return to;
     }
+    public componentWillReceiveProps(props) {
+        if (this.state.selectedExercise && this.state.selectedExercise.id !== props.initialExerciseId) {
+            this.setState({selectedExercise: this.state.exercises.find(exs => exs.id === props.initialExerciseId)});
+        }
+    }
     public render() {
         return <div>
             <label class="input-set">
@@ -92,8 +97,9 @@ class ExerciseSelector extends Component<Props, State> {
             return;
         }
         const selectedExercise = this.state.exercises[e.target.value];
-        this.setState({selectedExercise});
-        this.props.onSelect(selectedExercise, this.state.selectedVariant);
+        const selectedVariant = null;
+        this.setState({selectedExercise, selectedVariant});
+        this.props.onSelect(selectedExercise, selectedVariant);
     }
     /**
      * Liikkeen varianttilista-alasvetovalikon onChange-handleri; päivittää

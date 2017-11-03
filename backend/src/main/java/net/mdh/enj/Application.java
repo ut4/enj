@@ -32,6 +32,8 @@ public class Application {
         applicationConfig.register(ResponseFilter.class);
         applicationConfig.register(SyncRouteCollector.class);
         applicationConfig.register(new InjectionBinder(appProperties));
+        applicationConfig.property(ServerProperties.WADL_FEATURE_DISABLE, true);
+        applicationConfig.property(ServerProperties.METAINF_SERVICES_LOOKUP_DISABLE, true);
         if (!appProperties.envIsProduction()) {
             applicationConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         }
