@@ -20,12 +20,6 @@ abstract class CrudList<T> extends Component<
         this.state = {list: this.props.list};
         this.originals = this.props.list.map(item => this.clone(item));
     }
-    /**
-     * Palauttaa modifoimattoman staten.
-     */
-    public getOriginalList(): Array<T> {
-        return this.originals;
-    }
     public render() {
         let fieldCount = 1;
         return <div>
@@ -46,6 +40,12 @@ abstract class CrudList<T> extends Component<
                 </tr></tfoot>
             </table>
         </div>;
+    }
+    /**
+     * Palauttaa modifioimattoman staten.
+     */
+    public getOriginalList(): Array<T> {
+        return this.originals;
     }
     /**
      * Palauttaa kopion <T>:stä {item}. Tarvitaan originals-listan luomisessa.

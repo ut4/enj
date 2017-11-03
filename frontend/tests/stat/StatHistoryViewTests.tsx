@@ -64,7 +64,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
                 ? new Promise(resolve => {
                     historyView.getChart().on('created', () => resolve({rendered, progressFetch, historyView}));
                 })
-                : Promise.resolve({rendered, progressFetch, historyView: null}) as any
+                : Promise.resolve({rendered, progressFetch, historyView}) as any
         );
     }
     QUnit.test('mount hakee historian backendistä ja renderöi ne chartiin', assert => {
@@ -196,15 +196,16 @@ QUnit.module('stat/StatHistoryView', hooks => {
                 'Pitäisi ohjautua tänne'
             );
             // Simuloi routerin normaalisti triggeröimä componentWillReceiveProps
+            const reloadSpy = sinon.spy(historyView, 'fetchAndRenderView');
             historyView.componentWillReceiveProps({params: expectedParams});
-            return progressFetch.secondCall.returnValue;
+            return reloadSpy.firstCall.returnValue;
         }).then(() => {
             // Klikkaa "< Vanhemmat" -painiketta uudestaan
             prevPaginationButton.click();
             // Ohjautuiko?
             const expectedParams2 = Object.assign(expectedParams, {
                 page: '-2',
-                before: testProgressSets[2].liftedAt,
+                before: testProgressSets[0].liftedAt,
                 after: 0
             });
             assert.ok(redirectSpy.calledTwice, 'Pitäisi päivittää urliin before, ja after-unixTime');

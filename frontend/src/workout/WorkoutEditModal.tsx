@@ -52,7 +52,7 @@ class WorkoutEditModal extends ValidatingComponent<
                 <textarea name="notes" value={ this.state.workout.notes } onInput={ e => this.receiveInputValue(e) }></textarea>
                 { validationMessage(this.evaluators.notes[0], templates => templates.maxLength('Muistiinpanot', 1000)) }
             </label>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } isModal={ true } confirmButtonText="Tallenna" closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ true } confirmButtonText="Tallenna" closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
     /**

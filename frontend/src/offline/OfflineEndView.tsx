@@ -17,7 +17,7 @@ class OfflineEndView extends Component<any, any> {
             <div>Palaa online-tilaan, ja synkronisoi offline-tilan aikana tehdyt muutokset?</div>
             <div class="info-box">Muodostathan internet-yhteyden ennen lomakkeen lähettämistä.</div>
             <LoginForm onValidityChange={ newValidity => this.setState({goodToGo: newValidity}) } ref={ cmp => { this.loginForm = cmp; } }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
         </div>;
     }
     /**

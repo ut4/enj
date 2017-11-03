@@ -30,7 +30,7 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
             { this.state.credentials &&
                 <CredentialsForm credentials={ this.state.credentials } onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.credentialsForm = instance; } }/>
             }
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
         </div>;
     }
     private confirm() {

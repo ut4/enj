@@ -20,18 +20,6 @@ class Timer extends Component<{start: number, end: number}, {time: time, interva
     public componentWillReceiveProps(props) {
         this.setState({time: this.makeTime(props)});
     }
-    private makeTime(props): time {
-        const {start, end} = props;
-        const diff = (end || Math.floor(Date.now() / 1000)) - start;
-        const hours = Math.floor(diff / 3600);
-        const minutes = Math.floor((diff % 3600) / 60);
-        const seconds = Math.floor(diff % 60);
-        return {
-            hours: hours > 9 ? hours.toString() : '0' + hours,
-            minutes: minutes > 9 ? minutes.toString() : '0' + minutes,
-            seconds: seconds > 9 ? seconds.toString() : '0' + seconds
-        };
-    }
     public start() {
         this.setState({intervalId: setInterval(() => {
             this.setState({time: this.makeTime(this.props)});
@@ -44,6 +32,18 @@ class Timer extends Component<{start: number, end: number}, {time: time, interva
         return <span>
             { this.state.time.hours }:{ this.state.time.minutes }:{ this.state.time.seconds }
         </span>;
+    }
+    private makeTime(props): time {
+        const {start, end} = props;
+        const diff = (end || Math.floor(Date.now() / 1000)) - start;
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = Math.floor(diff % 60);
+        return {
+            hours: hours > 9 ? hours.toString() : '0' + hours,
+            minutes: minutes > 9 ? minutes.toString() : '0' + minutes,
+            seconds: seconds > 9 ? seconds.toString() : '0' + seconds
+        };
     }
 }
 

@@ -17,7 +17,7 @@ interface Props {
     onConfirm: (e: Event) => any;
     onCancel?: (e: Event) => any;
     close?: Function;
-    shouldConfirmButtonBeDisabled?: () => boolean;
+    confirmButtonShouldBeDisabled?: () => boolean;
     closeBehaviour?: keyof CloseBehaviour;
     isModal?: false;
     confirmButtonText?: string;
@@ -30,9 +30,14 @@ interface Props {
 class FormButtons extends Component<Props, any> {
     public render() {
         return <div class="form-buttons">
-            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.shouldConfirmButtonBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
+            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.confirmButtonShouldBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
             <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
         </div>;
+    }
+    public confirmButtonShouldBeDisabled(): boolean {
+        return typeof this.props.confirmButtonShouldBeDisabled === 'function'
+            ? this.props.confirmButtonShouldBeDisabled()
+            : false;
     }
     private close() {
         if (this.props.close) {
@@ -57,11 +62,6 @@ class FormButtons extends Component<Props, any> {
     private cancel(e) {
         this.props.onCancel && this.props.onCancel(e);
         this.close();
-    }
-    public shouldConfirmButtonBeDisabled(): boolean {
-        return typeof this.props.shouldConfirmButtonBeDisabled === 'function'
-            ? this.props.shouldConfirmButtonBeDisabled()
-            : false;
     }
 }
 

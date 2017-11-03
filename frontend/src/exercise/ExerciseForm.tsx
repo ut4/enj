@@ -30,6 +30,21 @@ class ExerciseForm extends ValidatingComponent<Props, State> {
             validity: true
         };
     }
+    public render() {
+        return <div>
+            <label class="input-set">
+                <span>Nimi</span>
+                { this.isInsert || this.state.exercise.userId // userId = oma, !userId = globaali
+                    ? [
+                        <input name="name" value={ this.state.name } onInput={ e => this.receiveInputValue(e) }/>,
+                        validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64))
+                    ]
+                    : <input name="name" value={ this.state.name } disabled="disabled"/>
+                }
+            </label>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+        </div>;
+    }
     private confirm() {
         this.state.exercise.name = this.state.name;
         return (this.isInsert
@@ -43,21 +58,6 @@ class ExerciseForm extends ValidatingComponent<Props, State> {
                 iocFactories.notify()('Liikkeen ' + (this.isInsert ? 'lisä' : 'päivit') + 'ys epäonnistui', 'error');
             }
         );
-    }
-    public render() {
-        return <div>
-            <label class="input-set">
-                <span>Nimi</span>
-                { this.isInsert || this.state.exercise.userId // userId = oma, !userId = globaali
-                    ? [
-                        <input name="name" value={ this.state.name } onInput={ e => this.receiveInputValue(e) }/>,
-                        validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64))
-                    ]
-                    : <input name="name" value={ this.state.name } disabled="disabled"/>
-                }
-            </label>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
-        </div>;
     }
 }
 

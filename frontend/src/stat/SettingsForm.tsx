@@ -21,6 +21,16 @@ class SettingsForm extends Component<Props, any> {
             saveValues: false
         };
     }
+    public render() {
+        return <div class="inline-form">
+            <BasicUserInputs user={ this.props.user } ref={ cmp => { this.userInputs = cmp; } }/>
+            { this.props.user && <div class="input-set">
+                <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
+                <label for="saveValuesCb">Tallenna asetukset</label>
+            </div> }
+            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } confirmButtonShouldBeDisabled={ () => this.userInputs.state.validity === false }/>
+        </div>;
+    }
     private confirm() {
         const newData = Object.assign({}, this.props.user, this.userInputs.getValues());
         return (this.props.user && this.state.saveValues
@@ -35,16 +45,6 @@ class SettingsForm extends Component<Props, any> {
     }
     private receiveCheckboxValue(e) {
         this.setState({saveValues: e.target.checked});
-    }
-    public render() {
-        return <div class="inline-form">
-            <BasicUserInputs user={ this.props.user } ref={ cmp => { this.userInputs = cmp; } }/>
-            { this.props.user && <div class="input-set">
-                <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
-                <label for="saveValuesCb">Tallenna asetukset</label>
-            </div> }
-            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } shouldConfirmButtonBeDisabled={ () => this.userInputs.state.validity === false }/>
-        </div>;
     }
 }
 

@@ -69,7 +69,7 @@ class ProgramWorkoutExerciseModal extends Component<
                     programWorkoutExercise: ExerciseSelector.assign(this.state.programWorkoutExercise, exs || {}, variant || {})
                 }) }
                 noVariant={ false }/>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } shouldConfirmButtonBeDisabled={ () => !this.state.programWorkoutExercise.exerciseId } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
+            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonShouldBeDisabled={ () => !this.state.programWorkoutExercise.exerciseId } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
         </div>;
     }
     private confirm() {

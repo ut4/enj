@@ -35,25 +35,6 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
             !this.state.sets.some(b => b.id === a.id)
         );
     }
-    private swapSets(direction, index) {
-        const sets = this.state.sets;
-        const set = sets[index];
-        if (arrayUtils.swap(sets, direction, index)) {
-            const swappedOrdinal = sets[index].ordinal;
-            sets[index].ordinal = set.ordinal;
-            set.ordinal = swappedOrdinal;
-        } else {
-            return;
-        }
-        this.setState({sets});
-        this.props.onChange(this.state.sets);
-    }
-    private removeSet(index) {
-        const sets = this.state.sets;
-        sets.splice(index, 1);
-        this.setState({sets});
-        this.props.onChange(this.state.sets);
-    }
     public render() {
         const setCount = this.state.sets.length;
         if (!setCount) {
@@ -74,6 +55,25 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
                 </tr>
             ) }</tbody>
         </table>;
+    }
+    private swapSets(direction, index) {
+        const sets = this.state.sets;
+        const set = sets[index];
+        if (arrayUtils.swap(sets, direction, index)) {
+            const swappedOrdinal = sets[index].ordinal;
+            sets[index].ordinal = set.ordinal;
+            set.ordinal = swappedOrdinal;
+        } else {
+            return;
+        }
+        this.setState({sets});
+        this.props.onChange(this.state.sets);
+    }
+    private removeSet(index) {
+        const sets = this.state.sets;
+        sets.splice(index, 1);
+        this.setState({sets});
+        this.props.onChange(this.state.sets);
     }
 }
 

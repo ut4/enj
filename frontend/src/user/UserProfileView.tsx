@@ -27,19 +27,6 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
             () => iocFactories.notify()('Tietojen haku epäonnistui', 'error')
         );
     }
-    private confirm() {
-        const newData = Object.assign(this.state.user, this.userInputs.getValues());
-        return iocFactories.userBackend().update(newData, '/me')
-            .then(
-                updateCount => {
-                    if (updateCount) {
-                        iocFactories.notify()('Tiedot tallennettu', 'success');
-                        this.setState({user: newData});
-                    }
-                },
-                () => iocFactories.notify()('Tietojen tallennus epäonnistui', 'error')
-            );
-    }
     public render() {
         return <div>
             <h2>Profiili</h2>
@@ -64,9 +51,22 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
                     </div>
                 </div>,
                 <BasicUserInputs user={ this.state.user } ref={ cmp => { this.userInputs = cmp; } } onValidityChange={ validity => this.setState({validity}) }/>,
-                <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
+                <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText="Tallenna" cancelButtonText="Takaisin" isModal={ false }/>
             ] }
         </div>;
+    }
+    private confirm() {
+        const newData = Object.assign(this.state.user, this.userInputs.getValues());
+        return iocFactories.userBackend().update(newData, '/me')
+            .then(
+                updateCount => {
+                    if (updateCount) {
+                        iocFactories.notify()('Tiedot tallennettu', 'success');
+                        this.setState({user: newData});
+                    }
+                },
+                () => iocFactories.notify()('Tietojen tallennus epäonnistui', 'error')
+            );
     }
 }
 

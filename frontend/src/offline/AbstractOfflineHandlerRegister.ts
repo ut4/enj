@@ -127,7 +127,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Etsii {subItem}ille kuuluvan vanhemman <T>-cachen <I>-taulukosta
      * {parentPropName}, ja lisää sen sen <S>-taulukkoon {propName}.
      */
-    public insertHasManySubItem<S extends {id?: AAGUID}>(
+    protected insertHasManySubItem<S extends {id?: AAGUID}>(
         subItem: S,
         propName: string,
         foreignKeyName: keyof S,
@@ -146,7 +146,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Etsii {subItem}eille kuuluvat vanhemmat <T>-cachen <I>-taulukoista
      * {parentPropName}, ja lisää ne niiden <S>-taulukoihin {propName}.
      */
-    public insertHasManySubItems<S extends {id?: AAGUID}>(
+    protected insertHasManySubItems<S extends {id?: AAGUID}>(
         subItems: Array<S>,
         propName: string,
         foreignKeyName: keyof S,
@@ -169,7 +169,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Etsii {subItem}eille kuuluvat vanhemmat <T>-cachen <I>-taulukoista
      * {parentPropName}, ja päivittää ne niiden <S>-taulukoihin {propName}.
      */
-    public updateHasManySubItems<S extends {id?: AAGUID}>(
+    protected updateHasManySubItems<S extends {id?: AAGUID}>(
         subItems: Array<S>,
         propName: string,
         foreignKeyName: keyof S,
@@ -189,7 +189,7 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Etsii {subItem}ille kuuluvan vanhemman <T>-cachen <I>-taulukosta
      * {parentPropName}, ja poistaa sen sen <S>-taulukosta {propName}.
      */
-    public deleteHasManySubItem<S extends {id?: AAGUID}>(
+    protected deleteHasManySubItem<S extends {id?: AAGUID}>(
         subItem: S,
         propName: string,
         foreignKeyName: keyof S,

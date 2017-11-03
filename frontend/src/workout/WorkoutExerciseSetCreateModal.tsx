@@ -14,6 +14,13 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
         super(props, context);
         this.state = {validity: true};
     }
+    public render() {
+        return <div>
+            <h3>Lisää sarja</h3>
+            <WorkoutExerciseSetForm workoutExerciseSet={ this.props.workoutExerciseSet } ref={ instance => { this.workoutExerciseSetForm = instance; } } onValidityChange={ validity => this.setState({validity}) }/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+        </div>;
+    }
     /**
      * Lähettää sarjan backendiin tallennettavaksi, ja ohjaa käyttäjän takaisin
      * mikäli tallennus onnistui.
@@ -23,13 +30,6 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
             () => this.props.afterInsert(this.props.workoutExerciseSet),
             () => iocFactories.notify()('Sarjan lisäys epäonnistui', 'error')
         );
-    }
-    public render() {
-        return <div>
-            <h3>Lisää sarja</h3>
-            <WorkoutExerciseSetForm workoutExerciseSet={ this.props.workoutExerciseSet } ref={ instance => { this.workoutExerciseSetForm = instance; } } onValidityChange={ validity => this.setState({validity}) }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
-        </div>;
     }
 }
 

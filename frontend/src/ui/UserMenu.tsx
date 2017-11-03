@@ -25,13 +25,6 @@ class UserMenu extends Component<any, any> {
         // offlineIsEnabled-, tai token-arvo muuttuu
         this.userState.subscribe(receiveUserState);
     }
-    public logout(e) {
-        e && e.preventDefault();
-        iocFactories.authService().logout().then(
-            () => iocFactories.history().push('/'),
-            () => iocFactories.notify()('Uloskirjautuminen epäonnistui', 'error')
-        );
-    }
     public render() {
         return <nav id="user-menu">
             <ul>
@@ -48,6 +41,13 @@ class UserMenu extends Component<any, any> {
                 ] }
             </ul>
         </nav>;
+    }
+    private logout(e) {
+        e && e.preventDefault();
+        iocFactories.authService().logout().then(
+            () => iocFactories.history().push('/'),
+            () => iocFactories.notify()('Uloskirjautuminen epäonnistui', 'error')
+        );
     }
 }
 

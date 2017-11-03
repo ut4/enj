@@ -28,6 +28,21 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
         };
         this.state = { workoutExercise: this.props.workoutExercise };
     }
+    public render() {
+        return <div class="workout-exercise-modal">
+            <h3>{ this.isInsert ? 'Lisää liike treeniin' : 'Muokkaa treeniliikettä' }</h3>
+            <ExerciseSelector
+                initialExerciseId={ this.state.workoutExercise.exerciseId }
+                initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
+                onSelect={ (exs, variant) => this.setState({
+                    workoutExercise: ExerciseSelector.assign(this.state.workoutExercise, exs || {}, variant || {})
+                }) }/>
+            { this.state.workoutExercise.sets.length > 0 &&
+                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
+            }
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.workoutExercise.exerciseId } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+        </div>;
+    }
     /**
      * Lähettää lomakkeeseen tapahtuneet muutokset backendiin tallennettavaksi,
      * ja ohjaa käyttäjän takaisin mikäli tallennus onnistui.
@@ -77,21 +92,6 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
             return Promise.all(deleted.map(deletedSet => workoutBackend.deleteSet(deletedSet)));
         }
         return Promise.resolve(null);
-    }
-    public render() {
-        return <div class="workout-exercise-modal">
-            <h3>{ this.isInsert ? 'Lisää liike treeniin' : 'Muokkaa treeniliikettä' }</h3>
-            <ExerciseSelector
-                initialExerciseId={ this.state.workoutExercise.exerciseId }
-                initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
-                onSelect={ (exs, variant) => this.setState({
-                    workoutExercise: ExerciseSelector.assign(this.state.workoutExercise, exs || {}, variant || {})
-                }) }/>
-            { this.state.workoutExercise.sets.length > 0 &&
-                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
-            }
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => !this.state.workoutExercise.exerciseId } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
-        </div>;
     }
 }
 
