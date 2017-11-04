@@ -29,12 +29,10 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);
         this.state = {configMode: false, userData: null, scores: this.makeScores(null)};
     }
-    public componentWillMount() {
-        this.userDataFetch = iocFactories.userBackend().get('/me');
-    }
     public componentWillReceiveProps(props) {
+        if (this.state.userData) { return; }
         this.powerLiftSets = this.collectPowerLiftSets(props.bestSets || []);
-        return this.userDataFetch.then(userData => {
+        return iocFactories.userBackend().get('/me').then(userData => {
             this.setState({scores: this.makeScores(userData), userData});
         });
     }
@@ -205,35 +203,38 @@ class Scores {
     }
 }
 
-class StrengthLevelTable extends Component<{user: Enj.API.User}, {tableIsVisible: boolean; lift: keyof Enj.powerLift; table: any}> {
+class StrengthLevelTable extends Component<
+    {user: Enj.API.User},
+    {tableIsVisible: boolean; lift: keyof Enj.powerLift; settingsIsMale: boolean}
+> {
     private table: Array<[number, number, number, number, number, number]>;
     public constructor(props, context) {
         super(props, context);
         this.state = {
             tableIsVisible: false,
             lift: 'squat',
-            table: formulae.getStrengthLevelTable('squat', props.user.isMale !== 0)
+            settingsIsMale: props.user.isMale !== 0
         };
     }
-    private changeTable(lift: keyof Enj.powerLift) {
-        this.setState({lift, table: formulae.getStrengthLevelTable(lift, this.props.user.isMale !== 0)});
-    }
     public componentWillReceiveProps(props) {
-        props.user.isMale !== this.props.user.isMale && this.setState({
-            table: formulae.getStrengthLevelTable(this.state.lift, props.user.isMale !== 0)
-        });
+        const settingsIsMale = props.user.isMale !== 0;
+        settingsIsMale !== this.state.settingsIsMale && this.setState({settingsIsMale});
     }
     public render() {
+        const table = this.state.tableIsVisible
+            ? formulae.getStrengthLevelTable(this.state.lift, this.state.settingsIsMale)
+            : null;
         return <div>
-            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () =>
-                this.setState({tableIsVisible: !this.state.tableIsVisible})
-            }></button>
+            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () => this.setState({tableIsVisible: !this.state.tableIsVisible}) }></button>
             { this.state.tableIsVisible && <div>
-                <div class="end"><select onChange={ e => this.changeTable(e.target.value) }>
-                    <option value="squat">Jalkakyykky</option>
-                    <option value="bench">Penkkipunnerrus</option>
-                    <option value="deadlift">Maastaveto</option>
-                </select></div>
+                <div class="end">
+                    <select onChange={ e => this.setState({lift: e.target.value}) }>
+                        <option value="squat">Jalkakyykky</option>
+                        <option value="bench">Penkkipunnerrus</option>
+                        <option value="deadlift">Maastaveto</option>
+                    </select>
+                    <span> ({ this.state.settingsIsMale ? 'Miehet' : 'Naiset' })</span>
+                </div>
                 <table id="score-lookup-table" class="striped responsive tight end"><thead>
                     <tr>
                         <th>Paino <span class="text-small">(kg)</span></th>
@@ -244,9 +245,9 @@ class StrengthLevelTable extends Component<{user: Enj.API.User}, {tableIsVisible
                         <th>Advanced</th>
                         <th>Elite</th>
                     </tr>
-                </thead><tbody>{ this.state.table.map((row, i) =>
+                </thead><tbody>{ table.map((row, i) =>
                     <tr>
-                        <td data-th="Paino (kg)">{ this.state.table[i+1] ? (Math.round(row[0]) + '-' + Math.round(this.state.table[i+1][0])) : row[0] + '+' }</td>
+                        <td data-th="Paino (kg)">{ table[i+1] ? (Math.round(row[0]) + '-' + Math.round(table[i+1][0])) : row[0] + '+' }</td>
                         <td data-th="Subpar">&lt;{ row[1] }</td>
                         <td data-th="Untrained">{ row[1] }</td>
                         <td data-th="Novice">{ row[2] }</td>
@@ -256,13 +257,13 @@ class StrengthLevelTable extends Component<{user: Enj.API.User}, {tableIsVisible
                     </tr>
                 ) }</tbody></table>
                 { this.state.lift === 'squat' &&
-                    <a href="http://www.exrx.net/Testing/WeightLifting/SquatStandards.html">exrx.net/Testing/WeightLifting/SquatStandards.html</a>
+                    <a href="http://www.exrx.net/Testing/WeightLifting/SquatStandards.html" rel="noopener noreferrer" target="_blank">exrx.net/Testing/WeightLifting/SquatStandards.html</a>
                 }
                 { this.state.lift === 'bench' &&
-                    <a href="http://www.exrx.net/Testing/WeightLifting/BenchStandards.html">exrx.net/Testing/WeightLifting/BenchStandards.html</a>
+                    <a href="http://www.exrx.net/Testing/WeightLifting/BenchStandards.html" rel="noopener noreferrer" target="_blank">exrx.net/Testing/WeightLifting/BenchStandards.html</a>
                 }
                 { this.state.lift === 'deadlift' &&
-                    <a href="http://www.exrx.net/Testing/WeightLifting/DeadliftStandards.html">exrx.net/Testing/WeightLifting/DeadliftStandards.html</a>
+                    <a href="http://www.exrx.net/Testing/WeightLifting/DeadliftStandards.html" rel="noopener noreferrer" target="_blank">exrx.net/Testing/WeightLifting/DeadliftStandards.html</a>
                 }
             </div> }
         </div>;

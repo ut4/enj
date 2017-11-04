@@ -7,12 +7,14 @@ const testApiNamespace = 'api/v2';
 QUnit.module('SWManager', hooks => {
     hooks.beforeEach(() => {
         this.fakeSWScope = utils.fakeSWScope('somecache');
-        this.fakeSWScope.baseUrl = {href: 'http://a.b:3000/'};
-        this.buildFullUrl = url => this.fakeSWScope.baseUrl.href + url;
+        this.fakeSWScope.APP_DIR_NAME = 'fos';
+        this.fakeSWScope.BASE_URL = 'http://a.b:3000';
+        this.buildFullUrl = url => this.fakeSWScope.BASE_URL + '/' + url;
         this.swManager = new SWManager(this.fakeSWScope);
     });
     hooks.afterEach(() => {
-        delete this.fakeSWScope.baseUrl;
+        delete this.fakeSWScope.APP_DIR_NAME;
+        delete this.fakeSWScope.BASE_URL;
         delete this.fakeSWScope.devMode;
         delete this.fakeSWScope.isOnline;
         delete this.fakeSWScope.DYNAMIC_CACHE;
@@ -20,7 +22,7 @@ QUnit.module('SWManager', hooks => {
         delete this.fakeSWScope.CACHE_FILES;
     });
     QUnit.test('findFromCachedArrayBy etsii taulusta filttereitä vastaavan objektin', assert => {
-        const cachedUrl = 'foo/bar'; // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain baseUrlista...
+        const cachedUrl = 'foo/bar'; // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain BASE_URLista...
         const cachedData = [{akey: 'fo', bkey: 'foo'}, {akey: 'fy', bkey: 'fyy'}];
         const prep = this.fakeSWScope.putTestCache({
             url: this.buildFullUrl(cachedUrl),
@@ -96,7 +98,7 @@ QUnit.module('SWManager', hooks => {
         assert.equal(getter.called, false);
     });
     QUnit.test('updateCache asettaa uuden cache-arvon', assert => {
-        // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain baseUrlista...
+        // notetoself: api-prefix pitää asettaa itse, SWmanager on tietoinen vain BASE_URLista...
         const urlToUpdate = testApiNamespace + '/' + 'foo/bar';
         const fullUrl = this.buildFullUrl(urlToUpdate);
         const dataToCache = {foo: 'bar'};

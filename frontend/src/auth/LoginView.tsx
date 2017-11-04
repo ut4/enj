@@ -13,8 +13,12 @@ class LoginView extends Component<any, any> {
         this.state = {goodToGo: false};
         this.returnPath = this.context.router.location.search.split('?returnTo=')[1];
     }
-    private setValidity(newValidity) {
-        this.setState({goodToGo: newValidity});
+    public render() {
+        return <div>
+            <h2>Kirjautuminen</h2>
+            <LoginForm onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.loginForm = instance; } }/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
+        </div>;
     }
     private confirm() {
         return ioc.authService().login(this.loginForm.getValues()).then(wasOk => {
@@ -29,12 +33,8 @@ class LoginView extends Component<any, any> {
             }
         });
     }
-    public render() {
-        return <div>
-            <h2>Kirjautuminen</h2>
-            <LoginForm onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.loginForm = instance; } }/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
-        </div>;
+    private setValidity(newValidity) {
+        this.setState({goodToGo: newValidity});
     }
 }
 

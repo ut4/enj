@@ -53,7 +53,7 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
                 <ExercisesManager list={ this.state.programWorkout.exercises } programWorkoutId={ this.state.programWorkout.id } onChange={ exercises => this.receiveInputValue({target: {value: exercises, name: 'exercises'}}) } ref={ cmp => { this.exercisesManager = cmp; }}/>
                 { validationMessage(this.evaluators.exercises[0], () => 'Ainakin yksi liike vaaditaan') }
             </div>
-            <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
     private confirm(): Promise<any> {

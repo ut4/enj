@@ -52,7 +52,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
                         </tr>
                     ) }
                 </tbody></table> :
-                <p>Ei vielä ohjelmia. <a href={ e => this.openPreCreateModal(e) }>Luo uusi ohjelma</a>.</p>
+                <p>Ei vielä ohjelmia. <a href="" onClick={ e => this.openPreCreateModal(e) }>Luo uusi ohjelma</a>.</p>
             ) }
         </div>;
     }

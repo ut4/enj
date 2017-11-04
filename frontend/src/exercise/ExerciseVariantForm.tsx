@@ -30,6 +30,21 @@ class ExerciseVariantForm extends ValidatingComponent<Props, State> {
             validity: true
         };
     }
+    public render() {
+        return <div>
+            <label class="input-set">
+                <span>Nimi</span>
+                <input name="content" value={ this.state.content } onInput={ e => this.receiveInputValue(e) }/>
+                { validationMessage(this.evaluators.content[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
+            </label>
+            <ExerciseSelector
+                onSelect={ exs => this.onExerciseSelect(exs || {}) }
+                initialExerciseId={ this.props.exerciseVariant.exerciseId }
+                noVariant={ true }
+                label="Liike"/>
+            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false || !this.state.exerciseId } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+        </div>;
+    }
     private confirm() {
         this.props.exerciseVariant.content = this.state.content;
         this.props.exerciseVariant.exerciseId = this.state.exerciseId;
@@ -45,21 +60,6 @@ class ExerciseVariantForm extends ValidatingComponent<Props, State> {
     }
     private onExerciseSelect(selectedExercise) {
         this.setState({exerciseId: selectedExercise.id || null});
-    }
-    public render() {
-        return <div>
-            <label class="input-set">
-                <span>Nimi</span>
-                <input name="content" value={ this.state.content } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.content[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
-            </label>
-            <ExerciseSelector
-                onSelect={ exs => this.onExerciseSelect(exs || {}) }
-                initialExerciseId={ this.props.exerciseVariant.exerciseId }
-                noVariant={ true }
-                label="Liike"/>
-            <FormButtons onConfirm={ () => this.confirm() } shouldConfirmButtonBeDisabled={ () => this.state.validity === false || !this.state.exerciseId } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
-        </div>;
     }
 }
 

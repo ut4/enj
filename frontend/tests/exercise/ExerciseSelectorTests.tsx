@@ -58,6 +58,26 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
             null
         ]);
     });
+    QUnit.test('resetoi variantin, jos liike vaihtuu', assert => {
+        const onSelectSpy = sinon.spy();
+        //
+        const rendered = infernoUtils.renderIntoDocument(
+            <ExerciseSelector exerciseList={ testExerciseList } onSelect={ onSelectSpy }/>
+        );
+        // Valitse ensin liike, ja sen yksi variantti
+        const exerciseSelectInput = getSelectInput(rendered);
+        utils.setDropdownIndex(1, exerciseSelectInput);
+        const variantSelectInput = getSelectInput(rendered, 1);
+        utils.setDropdownIndex(1, variantSelectInput); // valinta
+        onSelectSpy.reset();
+        // Valitse sitten toinen liike
+        utils.setDropdownIndex(2, exerciseSelectInput);
+        // Resetoiko edellisestä liikkeestä valitun variantin?
+        assert.deepEqual(onSelectSpy.firstCall.args, [
+            testExerciseList[1], // selectedExercise
+            null                 // selectedVariant
+        ]);
+    });
     QUnit.test('asettaa initial-treeniliikkeen valituksi dropdowniin', assert => {
         //
         const rendered = infernoUtils.renderIntoDocument(

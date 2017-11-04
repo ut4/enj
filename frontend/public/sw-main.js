@@ -5,11 +5,15 @@ if (!self || !(self instanceof ServiceWorkerGlobalScope)) {
         '(window.navigator.serviceWorker.register(<urlTähänTiedostoon>).');
 }
 
-self.importScripts('vendor/sw-vendor.bundle.js');
-self.importScripts('sw-src/SWManager.js');
+// Koska sw-main.js tulee olla aina serverin juuressa, tämä kertoo missä kansiossa
+// applikaatio sijaitsee. Esimerkkiarvo '', tai 'app'.
+self.APP_DIR_NAME = '';
+// http://mysite.com
+self.BASE_URL = new URL(self.location.href).origin;
 
-// http://mysite.com/sw.js -> /, http://mysite.com/afoo/sw.js -> /afoo/
-self.baseUrl = new URL('./', self.location.href);
+self.importScripts(prefixWithAppDirName('vendor/sw-vendor.bundle.js'));
+self.importScripts(prefixWithAppDirName('sw-src/SWManager.js'));
+
 // Jos true, disabloi cachen kokonaan (ohittaa kaikkien fetch-eventien
 // hijackauksen)
 self.isOnline = false;
@@ -23,15 +27,18 @@ const apiNamespace = 'api';
 function prefixWithApiNamespace(url) {
     return apiNamespace + '/' + url;
 }
+function prefixWithAppDirName(url) {
+    return self.APP_DIR_NAME + '/' + url;
+}
 
 self.CACHE_NAME = 'enjOffline-v0.0';
 self.CACHE_FILES = [
-    '',
-    'index.html',
+    prefixWithAppDirName(''),
+    prefixWithAppDirName('index.html'),
     // == Skriptit ===========
-    'vendor/app-vendor.bundle.js',
-    'vendor/app-vendor.bundle.css',
-    'app.bundle.js',
+    prefixWithAppDirName('vendor/app-vendor.bundle.js'),
+    prefixWithAppDirName('vendor/app-vendor.bundle.css'),
+    prefixWithAppDirName('app.bundle.js'),
     // == API-pyynnöt ========
     // (pidettävä päivitettynä manuaalisesti)
     prefixWithApiNamespace('workout'),
@@ -39,18 +46,18 @@ self.CACHE_FILES = [
     prefixWithApiNamespace('program/mine'),
     prefixWithApiNamespace('program/templates'),
     // == Teema ==============
-    'theme/favicon.ico',
-    'theme/favicon.png',
-    'theme/firasans-heavy-webfont.eot',
-    'theme/firasans-heavy-webfont.ttf',
-    'theme/firasans-heavy-webfont.woff2',
-    'theme/firasans-light-webfont.eot',
-    'theme/firasans-light-webfont.ttf',
-    'theme/firasans-light-webfont.woff2',
-    'theme/icon-sprite.svg',
-    'theme/main.css',
-    'theme/polygons.png',
-    'theme/user-icon-sprite.svg'
+    prefixWithAppDirName('theme/favicon.ico'),
+    prefixWithAppDirName('theme/favicon.png'),
+    prefixWithAppDirName('theme/firasans-heavy-webfont.eot'),
+    prefixWithAppDirName('theme/firasans-heavy-webfont.ttf'),
+    prefixWithAppDirName('theme/firasans-heavy-webfont.woff2'),
+    prefixWithAppDirName('theme/firasans-light-webfont.eot'),
+    prefixWithAppDirName('theme/firasans-light-webfont.ttf'),
+    prefixWithAppDirName('theme/firasans-light-webfont.woff2'),
+    prefixWithAppDirName('theme/icon-sprite.svg'),
+    prefixWithAppDirName('theme/main.css'),
+    prefixWithAppDirName('theme/polygons.png'),
+    prefixWithAppDirName('theme/user-icon-sprite.svg')
 ];
 self.DYNAMIC_CACHE = [{
     urlMatcher: prefixWithApiNamespace('exercise/(.{36})'),
@@ -62,7 +69,7 @@ self.DYNAMIC_CACHE = [{
     urlMatcher: prefixWithApiNamespace('workout\\?startFrom=(.+)&startTo=(.+)'),
     dataGetter: ([startFrom, startTo]) => swManager.findFromCachedArrayBy(
         {start: {$where: function () { // ei fat-arrow -syntaksia, koska tarvitaan "this"
-            return this >= startFrom && this <= startTo
+            return this >= startFrom && this <= startTo;
         }}},
         prefixWithApiNamespace('workout')
     )
@@ -141,8 +148,7 @@ self.addEventListener('install', event => {
             const headers = new Headers();
             headers.set('Authorization', 'Bearer ' + token);
             return cache.addAll(self.CACHE_FILES.map(url =>
-                // file.ext -> /afoo/file.ext
-                new Request(self.baseUrl.pathname + url, {headers})
+                new Request(self.BASE_URL + '/' + url, {headers})
             ));
         }).then(() =>
             // forces the waiting service worker to become the active

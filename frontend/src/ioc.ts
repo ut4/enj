@@ -45,9 +45,6 @@ class IocFactories extends IocContainer {
     public workoutBackend(): WorkoutBackend {
         return this.memoize('workoutBackend', () => new WorkoutBackend(this.http(), 'workout', this.userState()));
     }
-    public workoutExerciseHttp(): any {
-        return null;
-    }
 
     // == Program ==============================================================
     public programBackend(): ProgramBackend {

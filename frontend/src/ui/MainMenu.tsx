@@ -6,9 +6,6 @@ class MainMenu extends Component<any, any> {
         super(props, context);
         this.state = {isMenuOpen: false};
     }
-    public toggleIsMenuOpen() {
-        this.setState({isMenuOpen: !this.state.isMenuOpen});
-    }
     public render() {
         return <nav id="main-menu" class={ this.state.isMenuOpen ? 'open' : '' }>
             <ul>
@@ -32,8 +29,11 @@ class MainMenu extends Component<any, any> {
                 </li>
             </ul>
             <UserMenu/>
-            <button class="icon-button arrow down" onClick={ this.toggleIsMenuOpen.bind(this) }></button>
+            <button class="icon-button arrow down" onClick={ () => this.toggleIsMenuOpen() }></button>
         </nav>;
+    }
+    protected toggleIsMenuOpen() {
+        this.setState({isMenuOpen: !this.state.isMenuOpen});
     }
 }
 

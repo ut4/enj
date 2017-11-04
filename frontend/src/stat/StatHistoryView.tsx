@@ -87,7 +87,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
      * Hakee kehityshistorian liikkeelle {exerciseId}, ja renderöi ne chartiin.
      */
     private fetchAndRenderView(params: Params) {
-        iocFactories.statBackend().getProgress(
+        return iocFactories.statBackend().getProgress(
             params.exerciseId,
             params.formula,
             parseInt(params.before as any, 10),

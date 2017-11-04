@@ -30,11 +30,6 @@ class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: any, re
             reps: props.workoutExerciseSet.reps
         });
     }
-    protected receiveInputValue(e) {
-        super.receiveInputValue(e);
-        this.props.workoutExerciseSet.weight = parseFloat(this.state.weight);
-        this.props.workoutExerciseSet.reps = parseFloat(this.state.reps);
-    }
     public render() {
         return <div>
             <label class="input-set">
@@ -48,6 +43,11 @@ class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: any, re
                 { validationMessage(this.evaluators.reps[0], templates => templates.between('Toistot', 1, 4000)) }
             </label>
         </div>;
+    }
+    protected receiveInputValue(e) {
+        super.receiveInputValue(e);
+        this.props.workoutExerciseSet.weight = parseFloat(this.state.weight);
+        this.props.workoutExerciseSet.reps = parseFloat(this.state.reps);
     }
 }
 

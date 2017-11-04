@@ -21,6 +21,16 @@ class StatsView extends Component<any, any> {
                 ok && this.forceUpdate();
             });
     }
+    public render() {
+        return <div class="stats-view">
+            <div class="tab-menu">
+                <a class={ this.makeLinkClass('kehitys') } href="#/statistiikka/kehitys">Kehitys</a>
+                <a class={ this.makeLinkClass('voima') } href="#/statistiikka/voima">Voimatasoni</a>
+                <a class={ this.makeLinkClass('yleista') } href="#/statistiikka/yleista">Yleistietoja</a>
+            </div>
+            { this.props.children }
+        </div>;
+    }
     /**
      * Hakee parhaat sarjat, tai yleistä statistiikkaa backendistä.
      */
@@ -42,16 +52,6 @@ class StatsView extends Component<any, any> {
                 this.props.children.props[prop] = data;
                 return data !== undefined;
             });
-    }
-    public render() {
-        return <div class="stats-view">
-            <div class="tab-menu">
-                <a class={ this.makeLinkClass('kehitys') } href="#/statistiikka/kehitys">Kehitys</a>
-                <a class={ this.makeLinkClass('voima') } href="#/statistiikka/voima">Voimatasoni</a>
-                <a class={ this.makeLinkClass('yleista') } href="#/statistiikka/yleista">Yleistietoja</a>
-            </div>
-            { this.props.children }
-        </div>;
     }
     private makeLinkClass(url: string): string {
         return 'text-button' + (this.context.router.url.indexOf('/' + url) > -1 ? ' current' : '');

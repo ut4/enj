@@ -17,13 +17,14 @@ import net.mdh.enj.JsonMapperProvider;
 import net.mdh.enj.AppConfig;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.function.Supplier;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Map;
 
 public class TokenService {
 
-    private final JwtParser jwtParser;
+    private final Supplier<JwtParser> jwtParserFactory;
     private final ObjectMapper objectMapper;
     private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static SecureRandom random = new SecureRandom();
@@ -31,17 +32,21 @@ public class TokenService {
     final byte[] JWT_KEY;
     final static long JWT_AGE_IN_MS = AuthService.TOKEN_EXPIRATION * 1000;
     final SignatureAlgorithm SIGNATURE_ALGO = SignatureAlgorithm.HS512; // HMAC using SHA-512
-    final JwtBuilder jwtBuilder;
+    final Supplier<JwtBuilder> jwtBuilderFactory;
 
     @Inject
     TokenService(AppConfig appConfig) {
-        this(Jwts.builder(), Jwts.parser(), appConfig);
+        this(Jwts::builder, Jwts::parser, appConfig);
     }
-    TokenService(JwtBuilder jwtBuilder, JwtParser jwtParser, AppConfig appConfig) {
+    TokenService(
+        Supplier<JwtBuilder> jwtBuilderFactory,
+        Supplier<JwtParser> jwtParserFactory,
+        AppConfig appConfig
+    ) {
         this.JWT_KEY = appConfig.authTokenSigningKey.getBytes();
         this.objectMapper = JsonMapperProvider.getInstance();
-        this.jwtBuilder = jwtBuilder;
-        this.jwtParser = jwtParser;
+        this.jwtBuilderFactory = jwtBuilderFactory;
+        this.jwtParserFactory = jwtParserFactory;
     }
 
     /**
@@ -53,7 +58,7 @@ public class TokenService {
      * @return Signattu JWT
      */
     String generateNew(String userId) {
-        return this.jwtBuilder
+        return this.jwtBuilderFactory.get()
             .setSubject(userId)
             .setExpiration(new Date(System.currentTimeMillis() + JWT_AGE_IN_MS))
             .signWith(SIGNATURE_ALGO, JWT_KEY)
@@ -77,7 +82,7 @@ public class TokenService {
      */
     Jws<Claims> parse(String token) throws MalformedJwtException, ExpiredJwtException,
         SignatureException, UnsupportedJwtException {
-        return this.jwtParser.setSigningKey(JWT_KEY).parseClaimsJws(token);
+        return this.jwtParserFactory.get().setSigningKey(JWT_KEY).parseClaimsJws(token);
     }
 
     Claims getClaimsFromExpiredToken(String expiredButValidToken) throws RuntimeException {

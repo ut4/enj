@@ -20,34 +20,6 @@ class EditableWorkoutExercise extends Component<Props, any> {
             wes.ordinal < wes2.ordinal ? -1 : 1
         );
     }
-    private openEditModal() {
-        Modal.open(() =>
-            <WorkoutExerciseModal workoutExercise={ this.props.workoutExercise } afterUpdate={ () => {
-                this.forceUpdate();
-            } }/>
-        );
-    }
-    private openDeleteModal() {
-        Modal.open(() =>
-            <WorkoutExerciseDeleteModal workoutExercise={ this.props.workoutExercise } afterDelete={ () => {
-                this.props.onDelete();
-            } }/>
-        );
-    }
-    private openSetAddModal() {
-        const lastSet = this.getLastSet();
-        Modal.open(() =>
-            <WorkoutExerciseSetCreateModal workoutExerciseSet={ {
-                weight: lastSet ? lastSet.weight : 8,
-                reps: lastSet ? lastSet.reps : 6,
-                ordinal: arrayUtils.max(this.props.workoutExercise.sets, 'ordinal') + 1,
-                workoutExerciseId: this.props.workoutExercise.id
-            } } afterInsert={ insertedWorkoutExerciseSet => {
-                this.props.workoutExercise.sets.push(insertedWorkoutExerciseSet);
-                this.forceUpdate();
-            } }/>
-        );
-    }
     public render() {
         const totals = this.getTotals();
         return <li>
@@ -80,6 +52,34 @@ class EditableWorkoutExercise extends Component<Props, any> {
                 <button class="icon-button arrow down" onClick={ () => this.props.moveExercise('down') } title="Siirrä alas"></button>
             </div>
         </li>;
+    }
+    private openEditModal() {
+        Modal.open(() =>
+            <WorkoutExerciseModal workoutExercise={ this.props.workoutExercise } afterUpdate={ () => {
+                this.forceUpdate();
+            } }/>
+        );
+    }
+    private openDeleteModal() {
+        Modal.open(() =>
+            <WorkoutExerciseDeleteModal workoutExercise={ this.props.workoutExercise } afterDelete={ () => {
+                this.props.onDelete();
+            } }/>
+        );
+    }
+    private openSetAddModal() {
+        const lastSet = this.getLastSet();
+        Modal.open(() =>
+            <WorkoutExerciseSetCreateModal workoutExerciseSet={ {
+                weight: lastSet ? lastSet.weight : 8,
+                reps: lastSet ? lastSet.reps : 6,
+                ordinal: arrayUtils.max(this.props.workoutExercise.sets, 'ordinal') + 1,
+                workoutExerciseId: this.props.workoutExercise.id
+            } } afterInsert={ insertedWorkoutExerciseSet => {
+                this.props.workoutExercise.sets.push(insertedWorkoutExerciseSet);
+                this.forceUpdate();
+            } }/>
+        );
     }
     /**
      * Palauttaa yhteenvedon tehdystä treeniliikkeestä, tai null, jos liikkeellä

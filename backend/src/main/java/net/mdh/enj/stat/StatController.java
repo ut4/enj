@@ -7,6 +7,7 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.BadRequestException;
 import net.mdh.enj.api.RequestContext;
+import javax.validation.Valid;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class StatController {
      */
     @GET
     @Path("/progress")
-    public List<ProgressSetMapper.ProgressSet> getProgress(@BeanParam ProgressSelectFilters filters) {
+    public List<ProgressSetMapper.ProgressSet> getProgress(@Valid @BeanParam ProgressSelectFilters filters) {
         try {
             filters.setUserId(requestContext.getUserId());
             return this.statRepository.selectProgress(filters);
