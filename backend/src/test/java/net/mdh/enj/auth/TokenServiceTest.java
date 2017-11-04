@@ -36,7 +36,7 @@ public class TokenServiceTest {
     }
     @Before
     public void beforeEach() {
-        this.tokenService = new TokenService(mockJwtBuilder, mockJwtParser, appConfig);
+        this.tokenService = new TokenService(() -> this.mockJwtBuilder, () -> this.mockJwtParser, appConfig);
     }
     /**
      * Testaa, että isValid palauttaa true mikäli jwtParser.parseClaimsJws onnistuu

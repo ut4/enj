@@ -10,11 +10,11 @@ import java.util.Date;
 class FixableTokenService extends TokenService {
 
     FixableTokenService(AppConfig appConfig) {
-        super(Jwts.builder(), Jwts.parser(), appConfig);
+        super(Jwts::builder, Jwts::parser, appConfig);
     }
 
     String generateNew(String userId, Long age) {
-        return this.jwtBuilder
+        return this.jwtBuilderFactory.get()
             .setSubject(userId)
             .setExpiration(new Date(System.currentTimeMillis() + age))
             .signWith(SIGNATURE_ALGO, JWT_KEY)
