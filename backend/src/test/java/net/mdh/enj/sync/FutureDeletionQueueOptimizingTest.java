@@ -40,9 +40,7 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
         // Pitäisi poistaa (1)
-        expected.add(this.clone(input.get(2), this.makeBatch(
-            ((List)input.get(2).getData()).get(0)
-        )));
+        expected.add(this.clone(input.get(2),  ((List)input.get(2).getData()).get(0)));
         // Pitäisi poistaa (3)
         Assert.assertEquals("Pitäisi poistaa arvo batch-datasta, eikä sync-itemiä itsessään," +
             " koska batch-datan toista arvoa ei poisteta",
@@ -111,9 +109,9 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
             "{'id':2,'route':{'url':'workout/uid1','method':'DELETE'},'data':null}," +
             "{'id':3,'route':{'url':'program','method':'POST'},'data':{'id':'uid10','foo':2}}," +
-            "{'id':4,'route':{'url':'program/uid10','method':'DELETE'},'data':null}," +
-            "{'id':5,'route':{'url':'program/workout','method':'POST'},'data':{'id':'uid20','programId':'uid10'}}," +
-            "{'id':6,'route':{'url':'program/workout/exercise','method':'PUT'},'data':{'id':'uid30','programWorkoutId':'uid20'}}" +
+            "{'id':4,'route':{'url':'program/workout','method':'POST'},'data':{'id':'uid20','programId':'uid10'}}," +
+            "{'id':5,'route':{'url':'program/workout/exercise','method':'PUT'},'data':{'id':'uid30','programWorkoutId':'uid20'}}," +
+            "{'id':6,'route':{'url':'program/uid10','method':'DELETE'},'data':null}" +
         "]");
         Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun itemin kaikki esiintymät, ja sen lapset",
             "[]", newOptimizer(queue).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()

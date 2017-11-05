@@ -3,24 +3,80 @@ package net.mdh.enj.sync;
 import javax.ws.rs.HttpMethod;
 import java.util.stream.Collectors;
 import java.util.regex.Pattern;
+import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 class OperationTreeFactory {
-    private static List<SyncQueueItem> expandedQueue;
-    private static SyncRouteRegister syncRouteRegister;
-    private static Map<String, Integer> alreadyProcessedParentIds;
+    private List<SyncQueueItem> expandedQueue;
+    private SyncRouteRegister syncRouteRegister;
+    private Map<String, Integer> alreadyProcessedParentIds;
+
+    OperationTreeFactory(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
+        this.expandedQueue = makeExpandedQueue(queue);
+        this.syncRouteRegister = syncRouteRegister;
+        this.alreadyProcessedParentIds = new HashMap<>();
+    }
+
     /**
+     * input = [
+     *     {route: {url:"workout":method:"POST"}, data: {id:"u1",foo:"foo"}},
+     *     {route: {url:"workout":method:"PUT"}, data: {id:"u1",foo:"bar"}},
+     *     {route: {url:"workout/exercise":method:"POST"}, data: {id:"u2",workoutId:"u1"}},
+     *     {route: {url:"workout/exercise/u2/u1":method:"DELETE"}, data: null}
+     * ],
+     * output = {
+     *     "u1": {
+     *         "POST": {route: {url:"workout":method:"POST"}, data: {id:"u1",foo:"foo"}},
+     *         "PUT": [
+     *             {route: {url:"workout":method:"PUT"}, data: {id:"u1",foo:"bar"}}
+     *         ],
+     *         "DELETE": null,
+     *         "children": {
+     *              "uid2": {
+     *                  "POST": {route: {url:"workout/exercise":method:"POST"}, data: {id:"u2",workoutId:"u1"}},
+     *                  "PUT": [],
+     *                  "DELETE": {route: {url:"workout/exercise/u2/u1":method:"DELETE"}, data: null},
+     *                  "children": {}
+     *              }
+     *         }
+     *     }
+     * }
      */
-    static Map<String, OperationTreeNode> makeTree(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
-        OperationTreeFactory.expandedQueue = makeExpandedQueue(queue);
-        OperationTreeFactory.syncRouteRegister = syncRouteRegister;
-        OperationTreeFactory.alreadyProcessedParentIds = new HashMap<>();
+    Map<String, OperationTreeNode> makeTree() {
         //
-        Map<String, OperationTreeNode> out = new HashMap<>();
+        Map<String, OperationTreeNode> out = new LinkedHashMap<>();
         populateBranch(expandedQueue, out);
+        return out;
+    }
+    /**
+     * Muodosta uuden, optimoidun synkkausjonon operaatiopuusta {tree}.
+     */
+    List<SyncQueueItem> unmakeTree(Map<String, OperationTreeNode> tree) {
+        List<SyncQueueItem> out = new ArrayList<>();
+        return unmakeTree(tree, out);
+    }
+    private List<SyncQueueItem> unmakeTree(Map<String, OperationTreeNode> tree, List<SyncQueueItem> out) {
+        for (OperationTreeNode item: tree.values()) {
+            if (item.isEmpty()) {
+                continue;
+            }
+            if (item.POST != null) {
+                out.add(item.POST);
+            }
+            if (!item.PUT.isEmpty()) {
+                out.addAll(item.PUT);
+            }
+            if (item.DELETE != null) {
+                out.add(item.DELETE);
+            }
+            //
+            if (item.hasChildren()) {
+                unmakeTree(item.children, out);
+            }
+        }
         return out;
     }
     /**
@@ -35,7 +91,7 @@ class OperationTreeFactory {
      *     ...
      * ]
      */
-    private static List<SyncQueueItem> makeExpandedQueue(List<SyncQueueItem> queue) {
+    private List<SyncQueueItem> makeExpandedQueue(List<SyncQueueItem> queue) {
         List<SyncQueueItem> expanded = new ArrayList<>();
         for (SyncQueueItem syncable: queue) {
             // Normaali ei-batch data -> lisää listaan sellaisenaan
@@ -51,6 +107,7 @@ class OperationTreeFactory {
             );
             for (Object data: ((List) syncable.getData())) {
                 SyncQueueItem noMoreArray = new SyncQueueItem();
+                noMoreArray.setId(syncable.getId());
                 noMoreArray.setRoute(route);
                 noMoreArray.setData(data);
                 expanded.add(noMoreArray);
@@ -60,13 +117,13 @@ class OperationTreeFactory {
     }
     /**
      */
-    private static void populateBranch(
+    private void populateBranch(
         List<SyncQueueItem> syncables,
         Map<String, OperationTreeNode> branch
     ) {
         for (SyncQueueItem syncable: syncables) {
             //
-            if (syncable == null) { return; }
+            if (syncable == null) { continue; }
             //
             String id = getIdentity(syncable);
             addOperation(id, syncable, branch);
@@ -89,7 +146,7 @@ class OperationTreeFactory {
      * Palauttaa synkkausjonosta itemit, joiden urlNamespace ja id täsmää
      * {routeToSeek}n urlNamespaceen ja foreignKey-arvoon.
      */
-    private static List<SyncQueueItem> getChildren(String toId, SyncRoute.SubRoute routeToSeek, SyncQueueItem not) {
+    private List<SyncQueueItem> getChildren(String toId, SyncRoute.SubRoute routeToSeek, SyncQueueItem not) {
         return expandedQueue.stream().filter((possibleChildren) ->
             possibleChildren != null &&
             !possibleChildren.equals(not) &&
@@ -99,7 +156,7 @@ class OperationTreeFactory {
     }
     /**
      */
-    private static void addOperation(String id, SyncQueueItem syncable, Map<String, OperationTreeNode> toBranch) {
+    private void addOperation(String id, SyncQueueItem syncable, Map<String, OperationTreeNode> toBranch) {
         OperationTreeNode node = toBranch.computeIfAbsent(id, k -> new OperationTreeNode());
         switch (syncable.getRoute().getMethod()) {
             case HttpMethod.POST:
@@ -116,27 +173,21 @@ class OperationTreeFactory {
     /**
      * Palauttaa merkkijonon/UUID:n joka identifioi tämän syncQueueItemin datan.
      */
-    private static String getIdentity(SyncQueueItem syncable, String idProp) {
-        String id;
+    private String getIdentity(SyncQueueItem syncable, String idProp) {
         // POST & PUT pyynnöissä uuid pitäisi löytyä bodystä,
         if (!syncable.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-            id = (String)((Map)syncable.getData()).get(idProp);
+            return (String)((Map)syncable.getData()).get(idProp);
+        }
         // mutta DELETE:ssä se löytyy aina urlista
-        } else {
-            String[] segments = syncable.getRoute().getUrl().split("/");
-            String lastSegment = segments[segments.length - 1];
-            id = idProp.equals("id")
-            // Primääriavain, aina urlin viimeinen segmentti
-                ? lastSegment.split("\\?")[0]
-            // Viiteavain, löytyy url-parametrista
-                : Pattern.compile("\\?" + idProp + "=(.[^&]+)").matcher(lastSegment).group(1);
-        }
-        if (id == null || id.isEmpty()) {
-            throw new RuntimeException("Optimoitavalla itemillä tulisi olla uuid " + idProp);
-        }
-        return id;
+        String[] segments = syncable.getRoute().getUrl().split("/");
+        String lastSegment = segments[segments.length - 1];
+        return idProp.equals("id")
+        // Primääriavain, aina urlin viimeinen segmentti
+            ? lastSegment.split("\\?")[0]
+        // Viiteavain, löytyy url-parametrista
+            : Pattern.compile("\\?" + idProp + "=(.[^&]+)").matcher(lastSegment).group(1);
     }
-    private static String getIdentity(SyncQueueItem syncable) {
+    private String getIdentity(SyncQueueItem syncable) {
         return getIdentity(syncable, "id");
     }
 }

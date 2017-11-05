@@ -18,10 +18,18 @@ class OperationTreeNode {
     Map<String, OperationTreeNode> children;
 
     OperationTreeNode() {
+        this.reset();
+    }
+
+    void reset() {
         this.POST = null;
         this.PUT = new ArrayList<>();
         this.DELETE = null;
         this.children = new HashMap<>();
+    }
+
+    boolean isEmpty() {
+        return this.POST == null && this.PUT.isEmpty() && this.DELETE == null;
     }
 
     boolean hasChildren() {

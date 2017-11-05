@@ -15,10 +15,17 @@ class QueueOptimizer {
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
     private final InsertGroupingOptimizer insertGroupingOptimizer;
+    private final OperationTreeFactory operationTreeFactory;
 
     QueueOptimizer(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
         this.queue = queue;
-        this.operationTree = this.queue.size() > 1 ? OperationTreeFactory.makeTree(this.queue, syncRouteRegister) : null;
+        if (this.queue.size() > 1) {
+            this.operationTreeFactory = new OperationTreeFactory(this.queue, syncRouteRegister);
+            this.operationTree = this.operationTreeFactory.makeTree();
+        } else {
+            this.operationTreeFactory = null;
+            this.operationTree = null;
+        }
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
         this.futureUpdateOptimizer = new FutureUpdateOptimizer();
         this.insertGroupingOptimizer = new InsertGroupingOptimizer();
@@ -36,8 +43,35 @@ class QueueOptimizer {
         if (this.operationTree == null) {
             return this.queue;
         }
-        if ((optimizations & REMOVE_NONEXISTING) > 0) {
+        //
+        this.doOptimize(optimizations, this.operationTree);
+        //
+        return this.operationTreeFactory.unmakeTree(this.operationTree);
+    }
 
+    /**
+     * Traversoi operaationpuun {tree} rekursiivisesti, ja suorittaa sen jokaiselle
+     * itemille optimaatiot {optimizations}.
+     */
+    private void doOptimize(int optimizations, Map<String, OperationTreeNode> tree) {
+        for (OperationTreeNode item: tree.values()) {
+            //
+            boolean wasTotallyOptimized = this.runOptimizations(optimizations, item);
+            // Jos jäi vielä jotain optimoitavaa -> rekursoi
+            if (!wasTotallyOptimized && item.hasChildren()) {
+                doOptimize(optimizations, item.children);
+            }
+        }
+    }
+
+    /**
+     * Suorittaa operaatiopuun itemille {item} optimaatiot {optimizations}, ja
+     * palauttaa tiedon voiko itemille (ja sen lapsille) suorittaa enempää
+     * optimaatioita.
+     */
+    private boolean runOptimizations(int optimizations, OperationTreeNode item) {
+        if ((optimizations & REMOVE_NONEXISTING) > 0 && this.futureDeleteOptimizer.optimize(item)) {
+            return true;
         }
         if ((optimizations & REMOVE_OUTDATED) > 0 && this.queue.size() > 1) {
 
@@ -45,6 +79,6 @@ class QueueOptimizer {
         if ((optimizations & GROUP_INSERTS) > 0 && this.queue.size() > 1) {
 
         }
-        return this.queue;
+        return false;
     }
 }
