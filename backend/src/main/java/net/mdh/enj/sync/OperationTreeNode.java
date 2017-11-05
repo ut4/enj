@@ -33,7 +33,7 @@ class OperationTreeNode {
     }
 
     boolean hasChildren() {
-        return this.children.isEmpty();
+        return !this.children.isEmpty();
     }
 
     @Override

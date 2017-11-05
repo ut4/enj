@@ -133,7 +133,7 @@ class OperationTreeFactory {
                 // Tämän itemin id:hen linkittyvät lapset
                 List<SyncQueueItem> children = getChildren(id, dependent, syncable);
                 if (!children.isEmpty()) {
-                    // Merkkaa childrenit prosessoiduiksi
+                    // Merkkaa lapset prosessoiduiksi
                     for (SyncQueueItem child: children) { expandedQueue.set(expandedQueue.indexOf(child), null); }
                     //
                     populateBranch(children, branch.get(id).children);

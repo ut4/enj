@@ -73,10 +73,10 @@ class QueueOptimizer {
         if ((optimizations & REMOVE_NONEXISTING) > 0 && this.futureDeleteOptimizer.optimize(item)) {
             return true;
         }
-        if ((optimizations & REMOVE_OUTDATED) > 0 && this.queue.size() > 1) {
-
+        if ((optimizations & REMOVE_OUTDATED) > 0) {
+            this.futureUpdateOptimizer.optimize(item);
         }
-        if ((optimizations & GROUP_INSERTS) > 0 && this.queue.size() > 1) {
+        if ((optimizations & GROUP_INSERTS) > 0) {
 
         }
         return false;

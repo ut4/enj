@@ -1,52 +1,25 @@
 package net.mdh.enj.sync;
 
-import javax.ws.rs.HttpMethod;
-import java.util.List;
+import java.util.ArrayList;
 
-class FutureUpdateOptimizer extends AbstractOptimizer {
+class FutureUpdateOptimizer implements Optimizer {
     /**
-     * Poistaa, tai korvaa uudemmalla jonon kaikki CRUD-operaatiot, joiden data
-     * päivitetään myöhemmin jonossa (miksi lisätä tai päivittää useita kertoja
-     * turhaan, jos data kuitenkin päätyy tilaan x?).
+     * Korvaa, tai poistaa itemin POST- tai PUT-operaatiot, jotka yliajetaan myö-
+     * hemmin jonossa (miksi lisätä tai päivittää useita kertoja turhaan, jos data
+     * kuitenkin päätyy tilaan x?).
      */
     @Override
-    public void optimize(List<SyncQueueItem> queue, List<Pointer> pointerList) {
-        this.queue = queue;
-        this.pointerList = pointerList;
-        //
-        for (Pointer p: pointerList) {
-            if (!p.isProcessed) {
-                SyncQueueItem item = queue.get(p.syncQueueItemIndex);
-                String method = item.getRoute().getMethod();
-                if (method.equals(HttpMethod.POST) ||
-                    method.equals(HttpMethod.PUT)) {
-                    this.makeOptimizations(getDataId(item, p), pointerList.indexOf(p));
-                }
-            }
+    public boolean optimize(OperationTreeNode item) {
+        int updateCount = item.PUT.size();
+        // itemillä ei insertiä mutta useita päivityksiä -> poimi vain viimeisin
+        if (item.POST == null && updateCount > 1) {
+            item.PUT.get(0).setData(item.PUT.get(updateCount - 1).getData());
+            item.PUT = item.PUT.subList(0, 1);
+        // itemillä insert ja päivitys -> poimi insertiksi viimeisin päivitysdata + tyhjennä muut
+        } else if (item.POST != null && updateCount > 0) {
+            item.POST.setData(item.PUT.get(updateCount - 1).getData());
+            item.PUT = new ArrayList<>();
         }
-        this.removeNullifiedOperations();
-    }
-
-    private void makeOptimizations(String dataUUID, int index) {
-        List<Pointer> removables = this.getOutdatedOperations(dataUUID, index, HttpMethod.PUT);
-        if (removables.size() < 2) {
-            return;
-        }
-        // Korvaa ensimmäinen esiintymä viimeisellä
-        Pointer last = removables.get(0);
-        Pointer first = removables.get(removables.size() - 1);
-        this.replaceOperation(first, last);
-        first.isProcessed = true;
-        removables.remove(first);
-        // Merkkaa loput poistettavaksi
-        removables.forEach(this::nullifyOperation);
-    }
-
-    private void replaceOperation(Pointer a, Pointer b) {
-        if (a.batchDataIndex < 0) {
-            this.queue.get(a.syncQueueItemIndex).setData(this.getData(b));
-        } else {
-            ((List)this.queue.get(a.syncQueueItemIndex).getData()).set(a.batchDataIndex, this.getData(b));
-        }
+        return false; // aina voi optimoida lisää tämän jälkeen
     }
 }
