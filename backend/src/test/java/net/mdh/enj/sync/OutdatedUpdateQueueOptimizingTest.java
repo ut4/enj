@@ -153,9 +153,9 @@ public class OutdatedUpdateQueueOptimizingTest extends QueueOptimizingTestCase {
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
         expected.add(input.get(0));
-        expected.add(this.clone(input.get(4), ((List)input.get(5).getData()).get(1)));
         expected.add(this.clone(input.get(1), ((List)input.get(3).getData()).get(1)));
         expected.add(this.clone(input.get(2), ((List)input.get(5).getData()).get(0)));
+        expected.add(this.clone(input.get(4), ((List)input.get(5).getData()).get(1)));
         //
         Assert.assertEquals(
             expected.toString(), newOptimizer(input).optimize(QueueOptimizer.REMOVE_OUTDATED).toString()

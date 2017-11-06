@@ -31,8 +31,8 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
     public void optimizeRyhmitteleeInsertOperaatiot2() throws IOException {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
-            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','foo':1}}," +
-            "{'id':3,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid2','foo':2}}," +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid2','foo':1,'workoutId':'uid1'}}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'PUT'},'data':{'id':'uid2','foo':2,'workoutId':'uid1'}}," +
             "{'id':4,'route':{'url':'workout','method':'POST'},'data':{'id':'uid3','start':2}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -77,7 +77,7 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
             "{'id':2,'route':{'url':'workout/all','method':'POST'},'data':[" +
                 "{'id':'uid2','start':2}," +
                 "{'id':'uid3','start':3}," +
-                "{'id':'uid3','start':4}" +
+                "{'id':'uid4','start':4}" +
             "]}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
@@ -126,35 +126,34 @@ public class InsertGroupingQueueOptimizingTest extends QueueOptimizingTestCase {
         List<SyncQueueItem> input = this.jsonToSyncQueue("[" +
             "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1'}}," +
             "{'id':2,'route':{'url':'workout','method':'PUT'},'data':[{'id':'uid2'}]}," +
-            "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3'}}," +
-            "{'id':4,'route':{'url':'workout/exercise/set/all','method':'POST'},'data':[{'id':'uid4'}]}," +
-            "{'id':5,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid5'}}," +
-            "{'id':6,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid6'}}," +
+            "{'id':3,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid3','workoutId':'uid1'}}," +
+            "{'id':4,'route':{'url':'workout/exercise/set/all','method':'POST'},'data':[{'id':'uid4','workoutExerciseId':'uid3'}]}," +
+            "{'id':5,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid5','workoutExerciseId':'uid3'}}," +
+            "{'id':6,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid6','workoutId':'uid1'}}," +
             "{'id':7,'route':{'url':'workout','method':'POST'},'data':{'id':'uid7'}}," +
-            "{'id':8,'route':{'url':'workout/exercise/set','method':'PUT'},'data':{'id':'uid8'}}" +
+            "{'id':8,'route':{'url':'workout/exercise/set','method':'PUT'},'data':{'id':'uid8','workoutExerciseId':'uid6'}}" +
         "]");
         List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(this.clone(input.get(0), this.makeBatch( // 0
+        expected.add(this.clone(input.get(0), this.makeBatch(
             input.get(0).getData(),
             input.get(6).getData()
         )));
-        expected.get(0).getRoute().setUrl("workout/all");
-        expected.add(input.get(1));                           // 1
-        expected.add(this.clone(input.get(2), this.makeBatch( // 2
+        expected.add(this.clone(input.get(2), this.makeBatch(
             input.get(2).getData(),
             input.get(5).getData()
         )));
-        expected.get(2).getRoute().setUrl("workout/exercise/all");
-        expected.add(this.clone(input.get(3), this.makeBatch( // 3
+        expected.add(this.clone(input.get(3), this.makeBatch(
             ((List)input.get(3).getData()).get(0),
             input.get(4).getData()
         )));
-        // Pitäisi poistaa (4)                                // 4
-        // Pitäisi poistaa (5)                                // 5
-        // Pitäisi poistaa (6)                                // 6
-        expected.add(input.get(7));                           // 7
+        expected.add(input.get(7));
+        expected.add(this.clone(input.get(1), ((List)input.get(1).getData()).get(0)));
+        String o = newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString();
+        expected.get(0).setRoute(new Route("workout/all", "POST"));
+        expected.get(2).setRoute(new Route("workout/exercise/set/all", "POST"));
+        expected.get(1).setRoute(new Route("workout/exercise/all", "POST"));
         Assert.assertEquals("Pitäisi ryhmitellä insertoinnit yhteen",
-            expected.toString(), newOptimizer(input).optimize(QueueOptimizer.GROUP_INSERTS).toString()
+            expected.toString(), o
         );
     }
 }

@@ -47,18 +47,21 @@ class OperationTreeFactory {
      */
     Map<String, OperationTreeNode> makeTree() {
         //
-        Map<String, OperationTreeNode> out = new LinkedHashMap<>();
-        populateBranch(expandedQueue, out);
-        return out;
+        Map<String, OperationTreeNode> tree = new LinkedHashMap<>();
+        populateBranch(expandedQueue, tree);
+        return tree;
     }
     /**
-     * Muodosta uuden, optimoidun synkkausjonon operaatiopuusta {tree}.
+     * Palauttaa uuden, optimoidun synkkausjonon.
      */
-    List<SyncQueueItem> unmakeTree(Map<String, OperationTreeNode> tree) {
-        List<SyncQueueItem> out = new ArrayList<>();
-        return unmakeTree(tree, out);
+    List<SyncQueueItem> getOutput(Map<String, OperationTreeNode> tree, boolean doGroupInserts) {
+        List<SyncQueueItem> optimizedQueue = new ArrayList<>();
+        //
+        unmakeTree(tree, optimizedQueue);
+        //
+        return doGroupInserts ? makeUnexpandedQueue(optimizedQueue) : optimizedQueue;
     }
-    private List<SyncQueueItem> unmakeTree(Map<String, OperationTreeNode> tree, List<SyncQueueItem> out) {
+    private void unmakeTree(Map<String, OperationTreeNode> tree, List<SyncQueueItem> out) {
         for (OperationTreeNode item: tree.values()) {
             if (item.isEmpty()) {
                 continue;
@@ -77,15 +80,14 @@ class OperationTreeFactory {
                 unmakeTree(item.children, out);
             }
         }
-        return out;
     }
     /**
-     * Luo kopioidun synkkausjonon, joissa batch-operaatiot on eroteltu yksit-
-     * täisiin operaatioihin. Esim. jos input = [
+     * Palauttaa kopioidun synkkausjonon, joissa batch-operaatiot on eroteltu
+     * yksittäisiin operaatioihin. Esim. jos input = [
      *     {route: ${someroute}, data: [${data1}, ${data2}]},
      *     ...
      * ],
-     * output = [
+     * niin output = [
      *     {route: ${someroute}, data: ${data1}},
      *     {route: ${someroute}, data: ${data2}},
      *     ...
@@ -114,6 +116,38 @@ class OperationTreeFactory {
             }
         }
         return expanded;
+    }
+    /**
+     * Sama kuin makeExpandedQueue, mutta käänteisenä: erilliset + samalla urlilla
+     * varustetut POST-operaatiot ryhmitellään yhdeksi batch-operaatioksi.
+     */
+    private List<SyncQueueItem> makeUnexpandedQueue(List<SyncQueueItem> queue) {
+        List<SyncQueueItem> unexpanded = new ArrayList<>();
+        for (SyncQueueItem syncable: queue) {
+            if (syncable == null) {
+                continue;
+            }
+            if (syncable.getRoute().getMethod().equals(HttpMethod.POST)) {
+                // Kerää kaikki tämän urlin POSTit
+                List<SyncQueueItem> inserts = queue.stream().filter((item) ->
+                    item != null && item.getRoute().equals(syncable.getRoute())
+                ).collect(Collectors.toList());
+                int insertBatchCount = inserts.size();
+                // Jos oli enemmän kuin 1, siirrä ne yhteen batchiin ja poista loput
+                if (insertBatchCount > 1) {
+                    List<Object> batch = new ArrayList<>();
+                    for (int i = 0; i < insertBatchCount; i++) {
+                        SyncQueueItem item = inserts.get(i);
+                        batch.add(item.getData());
+                        if (i > 0) queue.set(queue.indexOf(item), null);
+                    }
+                    syncable.setData(batch);
+                    syncable.getRoute().setUrl(syncable.getRoute().getUrl() + "/all");
+                }
+            }
+            unexpanded.add(syncable);
+        }
+        return unexpanded;
     }
     /**
      */

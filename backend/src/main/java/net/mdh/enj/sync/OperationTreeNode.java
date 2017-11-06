@@ -1,7 +1,7 @@
 package net.mdh.enj.sync;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ class OperationTreeNode {
         this.POST = null;
         this.PUT = new ArrayList<>();
         this.DELETE = null;
-        this.children = new HashMap<>();
+        this.children = new LinkedHashMap<>();
     }
 
     boolean isEmpty() {

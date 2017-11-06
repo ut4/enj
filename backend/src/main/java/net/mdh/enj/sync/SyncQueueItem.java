@@ -36,7 +36,7 @@ public class SyncQueueItem {
 
     @Override
     public boolean equals(Object o) {
-        return o != null && o instanceof SyncQueueItem && ((SyncQueueItem) o).getId() == this.getId();
+        return o != null && o instanceof SyncQueueItem && o.toString().equals(this.toString());
     }
 
     @Override

@@ -14,7 +14,6 @@ class QueueOptimizer {
     private final Map<String, OperationTreeNode> operationTree;
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
-    private final InsertGroupingOptimizer insertGroupingOptimizer;
     private final OperationTreeFactory operationTreeFactory;
 
     QueueOptimizer(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
@@ -28,7 +27,6 @@ class QueueOptimizer {
         }
         this.futureDeleteOptimizer = new FutureDeleteOptimizer();
         this.futureUpdateOptimizer = new FutureUpdateOptimizer();
-        this.insertGroupingOptimizer = new InsertGroupingOptimizer();
     }
 
     /**
@@ -36,7 +34,7 @@ class QueueOptimizer {
      *
      * optimize(QueueOptimizer.REMOVE_NONEXISTING) - Poistaa CRUD-operaatiot, joiden data poistetaan myöhemmin
      * optimize(QueueOptimizer.REMOVE_OUTDATED)    - Poistaa CRUD-operaatiot, joiden data yliajetaan myöhemmin
-     * optimize(QueueOptimizer.GROUP_INSERTS)      - Ryhmittelee samantyyppiset CREATE-operaatiot
+     * optimize(QueueOptimizer.GROUP_INSERTS)      - Ryhmittelee samantyyppiset POST-operaatiot
      * optimize(QueueOptimizer.ALL)                - Kaikki optimisaatiot
      */
     List<SyncQueueItem> optimize(int optimizations) {
@@ -46,7 +44,7 @@ class QueueOptimizer {
         //
         this.doOptimize(optimizations, this.operationTree);
         //
-        return this.operationTreeFactory.unmakeTree(this.operationTree);
+        return this.operationTreeFactory.getOutput(this.operationTree, (optimizations & GROUP_INSERTS) > 0);
     }
 
     /**
@@ -75,9 +73,6 @@ class QueueOptimizer {
         }
         if ((optimizations & REMOVE_OUTDATED) > 0) {
             this.futureUpdateOptimizer.optimize(item);
-        }
-        if ((optimizations & GROUP_INSERTS) > 0) {
-
         }
         return false;
     }
