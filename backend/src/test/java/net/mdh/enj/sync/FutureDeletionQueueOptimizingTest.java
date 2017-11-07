@@ -117,4 +117,21 @@ public class FutureDeletionQueueOptimizingTest extends QueueOptimizingTestCase {
             "[]", newOptimizer(queue).optimize(QueueOptimizer.REMOVE_NONEXISTING).toString()
         );
     }
+    @Test
+    public void optimizePoistaaLapsenLapsen() throws IOException {
+        List<SyncQueueItem> queue = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','start':1}}," +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid20','workoutId':'uid1'}}," +
+            "{'id':3,'route':{'url':'workout/exercise/set','method':'POST'},'data':{'id':'uid30','workoutExerciseId':'uid20'}}," +
+            "{'id':4,'route':{'url':'workout/exercise/set/uid30?workoutExerciseId=uid20','method':'DELETE'},'data':null}" +
+        "]");
+        List<SyncQueueItem> expected = new ArrayList<>();
+        expected.add(queue.get(0));
+        expected.add(queue.get(1));
+        QueueOptimizer op = newOptimizer(queue);
+        String o = op.optimize(QueueOptimizer.REMOVE_NONEXISTING).toString();
+        Assert.assertEquals("Pitäisi poistaa jonossa myöhemmin poistetun lapsenlapsen",
+            expected.toString(), o
+        );
+    }
 }

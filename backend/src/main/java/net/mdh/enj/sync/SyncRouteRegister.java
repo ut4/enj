@@ -16,7 +16,11 @@ public class SyncRouteRegister extends HashSet<SyncRoute> {
             String pattern = registered.getPattern();
             if (registered.getMethod().equals(route.getMethod()) && (
                     pattern == null && route.getUrl().equals(registered.getUrl()) ||
-                    pattern != null && route.getUrl().matches(pattern)
+                    pattern != null && route.getUrl().matches(
+                        // Tee Jerseyn luomasta regexpistä non-greedy, esim.
+                        // workout/([^/]+)(/.*)? -> jälkimmäinen group pois
+                        pattern.replace("(/.*)?", ""
+                    ))
                 )) {
                 return registered;
             }

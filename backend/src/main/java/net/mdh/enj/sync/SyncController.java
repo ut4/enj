@@ -38,8 +38,6 @@ public class SyncController {
     private final HttpClient appHttpClient;
     private final RequestContext requestContext;
     private final SyncRouteRegister syncRouteRegister;
-    private final Map<String, Integer> operationPriorities;
-    private final Map<String, Integer> methodPriorities;
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
@@ -51,20 +49,6 @@ public class SyncController {
         this.appHttpClient = appHttpClient;
         this.requestContext = requestContext;
         this.syncRouteRegister = syncRouteRegister;
-        // Järjestys, jossa operaatiot tulee suorittaa, key = url, value = priority.
-        operationPriorities = new HashMap<>();
-        operationPriorities.put("exercise",         0);
-        operationPriorities.put("exercise/variant", 1);
-        operationPriorities.put("program",          2);
-        operationPriorities.put("program/workout",  3);
-        operationPriorities.put("program/workout/exercise", 4);
-        operationPriorities.put("workout",          5);
-        operationPriorities.put("workout/exercise", 6);
-        operationPriorities.put("workout/exercise/set", 7);
-        methodPriorities = new HashMap<>();
-        methodPriorities.put(HttpMethod.POST, 0);
-        methodPriorities.put(HttpMethod.PUT, 1);
-        methodPriorities.put(HttpMethod.DELETE, 2);
     }
 
     /**
@@ -76,7 +60,6 @@ public class SyncController {
     public Set<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
         //
         logger.debug("Alkuperäinen jono: ((" + syncQueue + "))");
-        this.sortQueueByPriority(syncQueue);
         List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue, this.syncRouteRegister).optimize(QueueOptimizer.ALL);
         logger.debug("Optimoitu jono: ((" + optimized + "))");
         //
@@ -116,7 +99,7 @@ public class SyncController {
     ) {
         Set<Integer> idsOfSuccesfullySyncedItems = new HashSet<>();
         for (SyncQueueItem syncable: queue) {
-            int pos = optimizedQueue.indexOf(syncable);
+            int pos = this.getIndexById(optimizedQueue, syncable.getId());
             if (
                 // Itemi optimoitu pois -> lisää id listaan
                 pos < 0 ||
@@ -148,17 +131,12 @@ public class SyncController {
             );
     }
 
-    /**
-     * Järjestää listan niin, että muista riippumattomat itemit siirretään jonon
-     * alkuun.
-     */
-    void sortQueueByPriority(List<SyncQueueItem> queue) {
-        queue.sort(Comparator.comparingInt(a ->
-            methodPriorities.get(a.getRoute().getMethod())
-        ));
-        queue.sort(Comparator.comparingInt(a -> {
-            SyncRoute route = syncRouteRegister.find(a.getRoute());
-            return operationPriorities.get(route.getUrlNamespace());
-        }));
+    private int getIndexById(List<SyncQueueItem> list, int id) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getId() == id) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

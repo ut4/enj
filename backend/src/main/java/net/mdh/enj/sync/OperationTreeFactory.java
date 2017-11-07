@@ -2,7 +2,6 @@ package net.mdh.enj.sync;
 
 import javax.ws.rs.HttpMethod;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,8 +149,8 @@ class OperationTreeFactory {
         return idProp.equals("id")
         // Primääriavain, aina urlin viimeinen segmentti
             ? lastSegment.split("\\?")[0]
-        // Viiteavain, löytyy url-parametrista
-            : Pattern.compile("\\?" + idProp + "=(.[^&]+)").matcher(lastSegment).group(1);
+        // Viiteavain, löytyy viimeisestä url-parametrista
+            : lastSegment.split(idProp + "=")[1];
     }
     private String getIdentity(SyncQueueItem syncable) {
         return getIdentity(syncable, "id");

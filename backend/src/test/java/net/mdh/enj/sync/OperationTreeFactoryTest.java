@@ -66,4 +66,23 @@ public class OperationTreeFactoryTest extends QueueOptimizingTestCase {
         Assert.assertNull(expectedFirstNodeChildChild.DELETE);
         Assert.assertEquals(0, expectedFirstNodeChildChild.children.size());
     }
+    @Test
+    public void lisääDeleteLapsetParentiin() throws IOException {
+        List<SyncQueueItem> testQueue = this.jsonToSyncQueue("[" +
+            "{'id':1,'route':{'url':'workout','method':'POST'},'data':{'id':'uid1','foo':1}}," +
+            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':{'id':'uid10','workoutId':'uid1'}}," +
+            "{'id':3,'route':{'url':'workout/exercise/uid10?workoutId=uid1','method':'DELETE'},'data':null}" +
+        "]");
+        Map<String, OperationTreeNode> tree = new OperationTreeFactory(testQueue, syncRouteRegister).makeTree();
+        // Lisäsikö treenin?
+        OperationTreeNode expectedFirstNode = tree.get("uid1");
+        Assert.assertNotNull(expectedFirstNode);
+        // Lisäsikö treeniliikkeen treenin lapseksi?
+        OperationTreeNode expectedFirstNodeChild = expectedFirstNode.children.get("uid10");
+        Assert.assertNotNull(expectedFirstNodeChild);
+        Assert.assertEquals(testQueue.get(1), expectedFirstNodeChild.POST);
+        Assert.assertEquals(0, expectedFirstNodeChild.PUT.size());
+        Assert.assertEquals(testQueue.get(2), expectedFirstNodeChild.DELETE);
+        Assert.assertEquals(0, expectedFirstNodeChild.children.size());
+    }
 }

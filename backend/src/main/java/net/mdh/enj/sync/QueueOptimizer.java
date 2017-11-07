@@ -1,6 +1,7 @@
 package net.mdh.enj.sync;
 
 import javax.ws.rs.HttpMethod;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +16,24 @@ class QueueOptimizer {
     static final int ALL                = 15;
 
     private final List<SyncQueueItem> queue;
+    private final SyncRouteRegister syncRouteRegister;
     private final Map<String, OperationTreeNode> operationTree;
     private final FutureDeleteOptimizer futureDeleteOptimizer;
     private final FutureUpdateOptimizer futureUpdateOptimizer;
     private final OperationTreeFactory operationTreeFactory;
+    private static final Map<String, Integer> operationPriorities;
+
+    static {
+        operationPriorities = new HashMap<>();
+        operationPriorities.put("exercise", 1);
+        operationPriorities.put("exercise/variant", 2);
+        operationPriorities.put("program", 3);
+        operationPriorities.put("program/workout", 4);
+    }
 
     QueueOptimizer(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
         this.queue = queue;
+        this.syncRouteRegister = syncRouteRegister;
         if (this.queue.size() > 1) {
             this.operationTreeFactory = new OperationTreeFactory(this.queue, syncRouteRegister);
             this.operationTree = this.operationTreeFactory.makeTree();
@@ -90,6 +102,12 @@ class QueueOptimizer {
         }
         if ((optimizations & GROUP_UPDATES) > 0) {
             optimized = Batchifier.batchify(optimized, HttpMethod.PUT, "");
+        }
+        if (optimizations == ALL) {
+            optimized.sort((a, b) ->
+                operationPriorities.getOrDefault(syncRouteRegister.find(a.getRoute()).getUrlNamespace(), 5) <
+                operationPriorities.getOrDefault(syncRouteRegister.find(b.getRoute()).getUrlNamespace(), 5) ? -1 : 0
+            );
         }
         return optimized;
     }

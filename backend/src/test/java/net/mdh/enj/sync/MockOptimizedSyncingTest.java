@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import java.util.function.BiFunction;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -22,39 +21,6 @@ public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
             SyncingTestUtils.getManuallyPopulatedSyncRouteRegister()
         );
         this.spyingFunction = new SpyingFunction();
-    }
-
-    @Test
-    public void syncControllerSortQueueByPriorityJärjestääQueuen() throws IOException {
-        List<SyncQueueItem> queue = this.jsonToSyncQueue("[" +
-            "{'id':1,'route':{'url':'workout','method':'POST'},'data':null}," +
-            "{'id':2,'route':{'url':'workout/exercise','method':'POST'},'data':null}," +
-            "{'id':3,'route':{'url':'exercise/variant','method':'POST'},'data':null}," +
-            "{'id':4,'route':{'url':'exercise','method':'POST'},'data':null}," +
-            "{'id':5,'route':{'url':'workout/exercise/1','method':'DELETE'},'data':null}," +
-            "{'id':6,'route':{'url':'workout/exercise','method':'PUT'},'data':null}," +
-            "{'id':7,'route':{'url':'exercise/uuid','method':'PUT'},'data':null}," +
-            "{'id':8,'route':{'url':'workout/exercise/all','method':'POST'},'data':null}," +
-            "{'id':9,'route':{'url':'program/workout/exercise','method':'PUT'},'data':null}," +
-            "{'id':10,'route':{'url':'program','method':'POST'},'data':null}," +
-            "{'id':11,'route':{'url':'program/workout','method':'POST'},'data':null}" +
-        "]");
-        List<SyncQueueItem> expected = new ArrayList<>();
-        expected.add(queue.get(3));
-        expected.add(queue.get(6));
-        expected.add(queue.get(2));
-        expected.add(queue.get(9));
-        expected.add(queue.get(10));
-        expected.add(queue.get(8));
-        expected.add(queue.get(0));
-        expected.add(queue.get(1));
-        expected.add(queue.get(7));
-        expected.add(queue.get(5));
-        expected.add(queue.get(4));
-        this.syncController.sortQueueByPriority(queue);
-        Assert.assertEquals("Pitäisi järjestää jono urlin, ja HTTP-metodien perusteella",
-            expected.toString(), queue.toString()
-        );
     }
 
     @Test
