@@ -15,7 +15,7 @@ class OperationTreeFactory {
     private Map<String, Integer> alreadyProcessedParentIds;
 
     OperationTreeFactory(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
-        this.expandedQueue = makeExpandedQueue(queue);
+        this.expandedQueue = QueueOptimizer.Batchifier.unbatchify(queue);
         this.syncRouteRegister = syncRouteRegister;
         this.alreadyProcessedParentIds = new HashMap<>();
     }
@@ -54,12 +54,12 @@ class OperationTreeFactory {
     /**
      * Palauttaa uuden, optimoidun synkkausjonon.
      */
-    List<SyncQueueItem> getOutput(Map<String, OperationTreeNode> tree, boolean doGroupInserts) {
+    List<SyncQueueItem> getOutput(Map<String, OperationTreeNode> tree) {
         List<SyncQueueItem> optimizedQueue = new ArrayList<>();
         //
         unmakeTree(tree, optimizedQueue);
         //
-        return doGroupInserts ? makeUnexpandedQueue(optimizedQueue) : optimizedQueue;
+        return optimizedQueue;
     }
     private void unmakeTree(Map<String, OperationTreeNode> tree, List<SyncQueueItem> out) {
         for (OperationTreeNode item: tree.values()) {
@@ -80,74 +80,6 @@ class OperationTreeFactory {
                 unmakeTree(item.children, out);
             }
         }
-    }
-    /**
-     * Palauttaa kopioidun synkkausjonon, joissa batch-operaatiot on eroteltu
-     * yksittäisiin operaatioihin. Esim. jos input = [
-     *     {route: ${someroute}, data: [${data1}, ${data2}]},
-     *     ...
-     * ],
-     * niin output = [
-     *     {route: ${someroute}, data: ${data1}},
-     *     {route: ${someroute}, data: ${data2}},
-     *     ...
-     * ]
-     */
-    private List<SyncQueueItem> makeExpandedQueue(List<SyncQueueItem> queue) {
-        List<SyncQueueItem> expanded = new ArrayList<>();
-        for (SyncQueueItem syncable: queue) {
-            // Normaali ei-batch data -> lisää listaan sellaisenaan
-            if (!(syncable.getData() instanceof List) ||
-                syncable.getRoute().getMethod().equals(HttpMethod.DELETE)) {
-                expanded.add(syncable);
-                continue;
-            }
-            // Batch-data -> luo jokaisesta taulukon itemistä erillinen pyyntö / SyncQueueItem
-            Route route = new Route(
-                syncable.getRoute().getUrl().replace("/all", ""),
-                syncable.getRoute().getMethod()
-            );
-            for (Object data: ((List) syncable.getData())) {
-                SyncQueueItem noMoreArray = new SyncQueueItem();
-                noMoreArray.setId(syncable.getId());
-                noMoreArray.setRoute(route);
-                noMoreArray.setData(data);
-                expanded.add(noMoreArray);
-            }
-        }
-        return expanded;
-    }
-    /**
-     * Sama kuin makeExpandedQueue, mutta käänteisenä: erilliset + samalla urlilla
-     * varustetut POST-operaatiot ryhmitellään yhdeksi batch-operaatioksi.
-     */
-    private List<SyncQueueItem> makeUnexpandedQueue(List<SyncQueueItem> queue) {
-        List<SyncQueueItem> unexpanded = new ArrayList<>();
-        for (SyncQueueItem syncable: queue) {
-            if (syncable == null) {
-                continue;
-            }
-            if (syncable.getRoute().getMethod().equals(HttpMethod.POST)) {
-                // Kerää kaikki tämän urlin POSTit
-                List<SyncQueueItem> inserts = queue.stream().filter((item) ->
-                    item != null && item.getRoute().equals(syncable.getRoute())
-                ).collect(Collectors.toList());
-                int insertBatchCount = inserts.size();
-                // Jos oli enemmän kuin 1, siirrä ne yhteen batchiin ja poista loput
-                if (insertBatchCount > 1) {
-                    List<Object> batch = new ArrayList<>();
-                    for (int i = 0; i < insertBatchCount; i++) {
-                        SyncQueueItem item = inserts.get(i);
-                        batch.add(item.getData());
-                        if (i > 0) queue.set(queue.indexOf(item), null);
-                    }
-                    syncable.setData(batch);
-                    syncable.getRoute().setUrl(syncable.getRoute().getUrl() + "/all");
-                }
-            }
-            unexpanded.add(syncable);
-        }
-        return unexpanded;
     }
     /**
      */
