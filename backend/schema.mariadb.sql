@@ -66,7 +66,9 @@ CREATE VIEW authUserView AS
         u.lastLogin    AS userLastLogin,
         u.currentToken AS userCurrentToken,
         u.isActivated  AS userIsActivated,
-        u.activationKey AS userActivationKey
+        u.activationKey AS userActivationKey,
+        u.passwordResetKey AS userPasswordResetKey,
+        u.passwordResetTime AS userPasswordResetTime
     FROM `user` AS u;
 
 -- == Exercise ====

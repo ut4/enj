@@ -136,7 +136,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
     @Test
     public void GETActivateEiKirjoitaTietokantaanMitäänJosAvainEiTäsmää() {
         AuthUser testUser = insertNewUser("dr.pepper", null, 0);
-        testUser.setActivationKey(mockActicavationKey.replace('a', 'b'));
+        testUser.setActivationKey(mockActivationKey.replace('a', 'b'));
         try {
             this.sendActivationRequest(testUser);
             Assert.fail("Olisi pitänyt heittää poikkeus");

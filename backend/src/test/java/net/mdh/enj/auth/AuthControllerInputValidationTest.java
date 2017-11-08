@@ -130,7 +130,7 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
     }
 
     @Test
-    public void POSTRequestPasswordResetValidoiInputin() {
+    public void POSTRequestPasswordResetValidoiInputDatan() {
         EmailCredentials badData = new EmailCredentials();
         badData.setEmail("not-valid-email");
         Response response = this.newPostRequest("auth/request-password-reset", badData);
@@ -138,6 +138,37 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals("AuthController.requestPasswordReset.arg0.email", errors.get(0).getPath());
         Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTPasswordEiSalliNullArvoja() {
+        NewPasswordCredentials nulls = new NewPasswordCredentials();
+        Response response = this.newPutRequest("auth/password", nulls);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.updatePassword.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.newPassword", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.passwordResetKey", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(2).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTPasswordValidoiInputDatan() {
+        NewPasswordCredentials badData = new NewPasswordCredentials();
+        badData.setEmail("fos");
+        badData.setNewPassword("f".toCharArray());
+        badData.setPasswordResetKey("dus");
+        Response response = this.newPutRequest("auth/password", badData);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.updatePassword.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.newPassword", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.passwordResetKey", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(2).getMessageTemplate());
     }
 
     @Test

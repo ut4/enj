@@ -7,8 +7,11 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
 import net.mdh.enj.db.UnaffectedOperationException;
 import net.mdh.enj.user.SelectFilters;
+import net.mdh.enj.Application;
 import net.mdh.enj.AppConfig;
 import net.mdh.enj.Mailer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,9 +22,10 @@ import java.util.List;
  */
 public class AuthService {
 
-    static final int LOGIN_EXPIRATION = 5259600;        // ~2kk
-    static final int TOKEN_EXPIRATION = 1800;           // 30min
-    static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
+    static final int LOGIN_EXPIRATION = 5259600;           // ~2kk
+    static final int TOKEN_EXPIRATION = 1800;              // 30min
+    static final int ACTIVATION_KEY_EXPIRATION = 86400;    // 24h
+    static final int PASSWORD_RESET_KEY_EXPIRATION = 1800; // 30min
     static final int ACTIVATION_KEY_LENGTH = 64;
     static final int PASSWORD_RESET_KEY_LENGTH = 64;
     static final String ERRORNAME_RESERVED_USERNAME = "reservedUsername";
@@ -34,6 +38,8 @@ public class AuthService {
     private final HashingProvider hashingProvider;
     private final AppConfig appConfig;
     private final Mailer mailer;
+
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
     AuthService(
@@ -191,7 +197,7 @@ public class AuthService {
             }
             // 3. Lähetä salasanan palautuslinkki-email
             String link = String.format(
-                "%s#/palauta-salasana/%s/%s",
+                "%s#/tili/uusi-salasana/%s/%s",
                 appConfig.appPublicFrontendUrl,
                 newData.getPasswordResetKey(),
                 TextCodec.BASE64URL.encode(user.getEmail())
@@ -206,6 +212,51 @@ public class AuthService {
             }
         });
         // Kaikki ok
+    }
+
+    /**
+     * Luo uuden salasanan käyttäjälle, jos pyynnön passwordResetKey täsmää
+     * tietokantaan tallennettuun avaimeen, ja avain ei ole liian vanha (oletus
+     * 30min).
+     *
+     * @throws RuntimeException Jos passwordResetKey + email ei löydy tietokannasta tai key on liian vanha
+     */
+    void resetPassword(NewPasswordCredentials credentials) throws RuntimeException {
+        // 1. Hae salasanan palautusta pyytänyt käyttäjä tietokannasta
+        SelectFilters selectFilters = new SelectFilters();
+        selectFilters.setEmail(credentials.getEmail());
+        selectFilters.setPasswordResetKey(credentials.getPasswordResetKey());
+        AuthUser requester = this.authUserRepository.selectOne(selectFilters);
+        if (requester == null) {
+            logger.warn("Yritettiin resetoida salasana väärällä emaililla ja avaimella");
+            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+        }
+        if (!requester.getEmail().equals(credentials.getEmail())) {
+            logger.warn("Yritettiin resetoida salasana väärällä emaililla");
+            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+        }
+        if (requester.getPasswordResetKey() == null ||
+            !requester.getPasswordResetKey().equals(credentials.getPasswordResetKey())) {
+            logger.warn("Yritettiin resetoida salasana väärällä avaimella");
+            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+        }
+        if (requester.getPasswordResetTime() == null ||
+            System.currentTimeMillis() / 1000L > requester.getPasswordResetTime() + PASSWORD_RESET_KEY_EXPIRATION) {
+            logger.warn("Yritettiin resetoida salasana vanhentuneella avaimella");
+            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+        }
+        // 2. Aseta uusi salasana & tyhjennä passwordResetKey|Time
+        AuthUser newData = new AuthUser();
+        newData.setId(requester.getId());
+        newData.setPasswordHash(this.hashingProvider.hash(credentials.getNewPassword()));
+        newData.setPasswordResetKey(null);
+        newData.setPasswordResetTime(null);
+        newData.setUpdateColumns(
+            AuthUser.UpdateColumn.PASSWORD_HASH,
+            AuthUser.UpdateColumn.PASSWORD_RESET_KEY,
+            AuthUser.UpdateColumn.PASSWORD_RESET_TIME
+        );
+        this.authUserRepository.update(newData);
     }
 
     /**

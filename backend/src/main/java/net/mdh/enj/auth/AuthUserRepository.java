@@ -50,6 +50,8 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
             user.setCurrentToken(rs.getString("userCurrentToken"));
             user.setIsActivated(rs.getInt("userIsActivated"));
             user.setActivationKey(rs.getString("userActivationKey"));
+            user.setPasswordResetKey(rs.getString("userPasswordResetKey"));
+            user.setPasswordResetTime(rs.getObject("userPasswordResetTime", Long.class));
             return user;
         }
     }

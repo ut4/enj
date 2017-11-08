@@ -1,6 +1,7 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.db.UnaffectedOperationException;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.NotAuthorizedException;
@@ -138,6 +139,27 @@ public class AuthController {
     public Responses.Ok requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
         try {
             this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
+        } catch (RuntimeException e) {
+            if (!(e instanceof UnaffectedOperationException)) {
+                throw new BadRequestException("[\"" + e.getMessage() + "\"]");
+            } else {
+                throw e;
+            }
+        }
+        return new Responses.Ok();
+    }
+
+    /**
+     * Asettaa käyttäjälle uuden salasanan mikäli pyynnön passwordResetKey, ja
+     * email täsmäsi tietokantaan tallennettuihin arvoihin.
+     */
+    @PUT
+    @PermitAll
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok updatePassword(@Valid @NotNull NewPasswordCredentials credentials) {
+        try {
+            this.authService.resetPassword(credentials);
         } catch (RuntimeException e) {
             throw new BadRequestException("[\"" + e.getMessage() + "\"]");
         }

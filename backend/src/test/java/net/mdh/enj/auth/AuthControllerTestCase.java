@@ -27,7 +27,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
     Mailer mockMailer;
     static TokenService mockTokenService;
     static DbTestUtils utils;
-    static String mockActicavationKey = String.join("", Collections.nCopies(
+    static String mockActivationKey = String.join("", Collections.nCopies(
         AuthService.ACTIVATION_KEY_LENGTH, "a"
     ));
 
@@ -85,7 +85,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
         testUser.setCreatedAt(createdAt == null ? System.currentTimeMillis() / 1000L : createdAt);
         testUser.setPasswordHash("foo");
         testUser.setIsActivated(isActivated);
-        testUser.setActivationKey(mockActicavationKey);
+        testUser.setActivationKey(mockActivationKey);
         utils.insertAuthUser(testUser);
         return testUser;
     }
