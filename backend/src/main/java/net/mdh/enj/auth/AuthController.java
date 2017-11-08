@@ -1,21 +1,21 @@
 package net.mdh.enj.auth;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.validation.Valid;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.validation.constraints.Size;
+import net.mdh.enj.api.RequestContext;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
-import net.mdh.enj.api.RequestContext;
+import javax.ws.rs.NotAuthorizedException;
+import javax.validation.constraints.Size;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.QueryParam;
+import javax.validation.Valid;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
+import javax.inject.Inject;
+import javax.ws.rs.Path;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.GET;
 import java.util.List;
 
 /**
@@ -30,11 +30,15 @@ public class AuthController {
 
     private static final String ACTIVATION_EMAIL_TEMPLATE = (
         "Moi %s,<br><br>kiitos rekisteröitymisestä Treenikirjaan, tässä aktivointilinkkisi:" +
-            "<a href=\"%s\">%s</a>. Tervetuloa mukaan!"
+            "<a href=\"%s\">%s</a>. Tervetuloa mukaan!<br><br>Terveisin,<br>treenikirja.com"
     );
-    private static final String REGISTER_SUCCESS_TEMPLATE = (
+    private static final String PASSWORD_RESET_EMAIL_TEMPLATE = (
+        "Moi %s,<br><br>voit luoda uuden salasanan tästä linkistä:" +
+            "<a href=\"%s\">%s</a>.<br><br>Terveisin,<br>treenikirja.com"
+    );
+    private static final String ACTIVATION_SUCCESS_TEMPLATE = (
         "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan " +
-            "osoitteessa <a href=\"%s\">%s</a>"
+            "osoitteessa <a href=\"%s\">%s</a>."
     );
 
     @Inject
@@ -117,10 +121,27 @@ public class AuthController {
         String loginLink = this.authService.activate(base64mail, key);
         return String.format(
             "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" " +
-                "content=\"noindex, nofollow\">" + REGISTER_SUCCESS_TEMPLATE,
+                "content=\"noindex, nofollow\">" + ACTIVATION_SUCCESS_TEMPLATE,
             loginLink,
             loginLink
         );
+    }
+
+    /**
+     * Tallentaa tietokantaan random-avaimen salasanan palautusta varten, ja
+     * lähettää sen käyttäjälle linkkinä sähköpostiin.
+     */
+    @POST
+    @PermitAll
+    @Path("/request-password-reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
+        try {
+            this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
+        } catch (RuntimeException e) {
+            throw new BadRequestException("[\"" + e.getMessage() + "\"]");
+        }
+        return new Responses.Ok();
     }
 
     /**

@@ -1,6 +1,8 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.mapping.SelectQueryFilters;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Menee AuthUserin filters-kenttään, josta SpringJDBC osaa poimia arvoja
@@ -40,8 +42,16 @@ class UpdateFilters implements SelectQueryFilters {
 
     @Override
     public String toSql() {
-        return "email = :filters.email" +
-            " AND createdAt > :filters.minCreatedAt" +
-            " AND activationKey = :filters.activationKey";
+        List<String> out = new ArrayList<>();
+        if (this.email != null) {
+            out.add("email = :filters.email");
+        }
+        if (this.minCreatedAt != null) {
+            out.add("createdAt > :filters.minCreatedAt");
+        }
+        if (this.activationKey != null) {
+            out.add("activationKey = :filters.activationKey");
+        }
+        return String.join(" AND ", out);
     }
 }

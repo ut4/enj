@@ -62,7 +62,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
             "Email pitäisi sisältää tilin aktivointilinkki",
             captor.getValue().contains(String.format(
                 "%s/auth/activate?key=%s&email=%s",
-                appConfig.appPublicUrl,
+                appConfig.appPublicBackendUrl,
                 mockActivationKey,
                 (TextCodec.BASE64URL.encode(credentials.getEmail()))
             ))
@@ -113,7 +113,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         Assert.assertTrue(message.contains("Tilisi on nyt aktivoitu"));
         Assert.assertTrue(message.contains(String.format(
             "%s#/kirjaudu",
-            appConfig.appPublicUrl.replace("/api", "/app")
+            appConfig.appPublicFrontendUrl
         )));
     }
 

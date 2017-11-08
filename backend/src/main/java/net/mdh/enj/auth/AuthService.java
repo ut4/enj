@@ -22,9 +22,12 @@ public class AuthService {
     static final int LOGIN_EXPIRATION = 5259600;        // ~2kk
     static final int TOKEN_EXPIRATION = 1800;           // 30min
     static final int ACTIVATION_KEY_EXPIRATION = 86400; // 24h
-    static final int ACTIVATION_KEY_LENGTH = 32;
+    static final int ACTIVATION_KEY_LENGTH = 64;
+    static final int PASSWORD_RESET_KEY_LENGTH = 64;
     static final String ERRORNAME_RESERVED_USERNAME = "reservedUsername";
     static final String ERRORNAME_RESERVED_EMAIL = "reservedEmail";
+    static final String ERRORNAME_USER_NOT_FOUND = "userNotFound";
+    static final String ERRORNAME_MAIL_FAILURE = "mailFailure";
 
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
@@ -116,7 +119,7 @@ public class AuthService {
             // 2. Lähetä aktivointi-email
             String link = String.format(
                 "%s/auth/activate?key=%s&email=%s",
-                appConfig.appPublicUrl,
+                appConfig.appPublicBackendUrl,
                 user.getActivationKey(),
                 TextCodec.BASE64URL.encode(user.getEmail())
             );
@@ -141,10 +144,10 @@ public class AuthService {
         AuthUser activated = new AuthUser();
         activated.setIsActivated(1);
         activated.setActivationKey(null);
-        activated.setUpdateColumns(new AuthUser.UpdateColumn[]{
+        activated.setUpdateColumns(
             AuthUser.UpdateColumn.IS_ACTIVATED,
-            AuthUser.UpdateColumn.ACTIVATION_KEY,
-        });
+            AuthUser.UpdateColumn.ACTIVATION_KEY
+        );
         // WHERE-osioon tulevat kentät
         UpdateFilters filters = new UpdateFilters();
         filters.setEmail(TextCodec.BASE64URL.decodeToString(base64email));
@@ -154,7 +157,55 @@ public class AuthService {
         if (this.authUserRepository.update(activated) < 1) {
             throw new UnaffectedOperationException("Käyttäjän aktivointi epäonnistui");
         }
-        return String.format("%s#/kirjaudu", appConfig.appPublicUrl.replace("/api", "/app"));
+        return String.format("%s#/kirjaudu", appConfig.appPublicFrontendUrl);
+    }
+
+    /**
+     * Luo random-avaimen salasanan palautusta varten, päivittää sen tietokantaan,
+     * ja lähettää sen lopuksi sähköpostilla käyttäjälle.
+     *
+     * @throws RuntimeException Jos käyttäjää ei löyty, tai mailin lähetys epäonnistuu
+     */
+    void handlePasswordResetRequest(EmailCredentials credentials, String successEmailTemplate) throws RuntimeException {
+        // 1. Hae käyttäjä tietokannasta
+        SelectFilters selectFilters = new SelectFilters();
+        selectFilters.setEmail(credentials.getEmail());
+        AuthUser user = this.authUserRepository.selectOne(selectFilters);
+        if (user == null) {
+            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+        }
+        // 2. Tallenna resetointi-avain tietokantaan
+        AuthUser newData = new AuthUser();
+        newData.setPasswordResetKey(this.tokenService.generateRandomString(PASSWORD_RESET_KEY_LENGTH));
+        newData.setPasswordResetTime(System.currentTimeMillis() / 1000L);
+        newData.setUpdateColumns(
+            AuthUser.UpdateColumn.PASSWORD_RESET_KEY,
+            AuthUser.UpdateColumn.PASSWORD_RESET_TIME
+        );
+        UpdateFilters filters = new UpdateFilters();
+        filters.setEmail(credentials.getEmail());
+        newData.setFilters(filters);
+        this.authUserRepository.runInTransaction(() -> {
+            if (this.authUserRepository.update(newData) < 1) {
+                throw new UnaffectedOperationException("Salasanan resetointiavaimen kirjoitus epäonnistui");
+            }
+            // 3. Lähetä salasanan palautuslinkki-email
+            String link = String.format(
+                "%s#/palauta-salasana/%s/%s",
+                appConfig.appPublicFrontendUrl,
+                newData.getPasswordResetKey(),
+                TextCodec.BASE64URL.encode(user.getEmail())
+            );
+            if (!this.mailer.sendMail(
+                user.getEmail(),
+                user.getUsername(),
+                "Salasanan palautus",
+                String.format(successEmailTemplate, user.getUsername(), link, link)
+            )) {
+                throw new RuntimeException(ERRORNAME_MAIL_FAILURE);
+            }
+        });
+        // Kaikki ok
     }
 
     /**
@@ -269,7 +320,6 @@ public class AuthService {
         if (!newCredentials.getEmail().equals(currentCredentials.getEmail())) {
             filters.setEmail(newCredentials.getEmail());
         }
-        System.out.println(filters);
         if (filters.getUsername() == null && filters.getEmail() == null) {
             return null;
         }

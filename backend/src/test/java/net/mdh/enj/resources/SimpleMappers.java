@@ -9,7 +9,6 @@ import net.mdh.enj.exercise.Exercise;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.Arrays;
 
 public class SimpleMappers {
     public static class WorkoutMapper implements RowMapper<Workout> {
@@ -94,6 +93,8 @@ public class SimpleMappers {
             user.setCurrentToken(rs.getString("currentToken"));
             user.setIsActivated(rs.getInt("isActivated"));
             user.setActivationKey(rs.getString("activationKey"));
+            user.setPasswordResetKey(rs.getString("passwordResetKey"));
+            user.setPasswordResetTime(rs.getObject("passwordResetTime", Long.class));
             return user;
         }
     }

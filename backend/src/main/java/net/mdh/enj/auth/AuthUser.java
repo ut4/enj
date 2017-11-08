@@ -13,6 +13,8 @@ public class AuthUser extends DbEntity {
     private String currentToken;
     private int isActivated;
     private String activationKey;
+    private String passwordResetKey;
+    private Long passwordResetTime;
 
     private UpdateFilters filters;
     private UpdateColumn[] updateColumns;
@@ -24,7 +26,9 @@ public class AuthUser extends DbEntity {
         LAST_LOGIN("lastLogin = :lastLogin"),
         CURRENT_TOKEN("currentToken = :currentToken"),
         IS_ACTIVATED("isActivated = :isActivated"),
-        ACTIVATION_KEY("activationKey = :activationKey");
+        ACTIVATION_KEY("activationKey = :activationKey"),
+        PASSWORD_RESET_KEY("passwordResetKey = :passwordResetKey"),
+        PASSWORD_RESET_TIME("passwordResetTime = :passwordResetTime");
         private final String pair;
         UpdateColumn(final String pair) {
             this.pair = pair;
@@ -91,6 +95,20 @@ public class AuthUser extends DbEntity {
         this.activationKey = activationKey;
     }
 
+    public String getPasswordResetKey() {
+        return this.passwordResetKey;
+    }
+    public void setPasswordResetKey(String passwordResetKey) {
+        this.passwordResetKey = passwordResetKey;
+    }
+
+    public Long getPasswordResetTime() {
+        return this.passwordResetTime;
+    }
+    public void setPasswordResetTime(Long passwordResetTime) {
+        this.passwordResetTime = passwordResetTime;
+    }
+
     public UpdateFilters getFilters() {
         return this.filters;
     }
@@ -98,7 +116,7 @@ public class AuthUser extends DbEntity {
         this.filters = filters;
     }
 
-    public void setUpdateColumns(UpdateColumn[] updateColumns) {
+    public void setUpdateColumns(UpdateColumn... updateColumns) {
         this.updateColumns = updateColumns;
     }
 

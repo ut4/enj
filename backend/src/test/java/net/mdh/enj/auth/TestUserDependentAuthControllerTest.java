@@ -1,17 +1,20 @@
 package net.mdh.enj.auth;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.MockHashingProvider;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 /**
- * Testaa AuthControllerin reitit /login, /logout, ja PUT /credentials.
+ * Testaa AuthControllerin reitit /login, /logout, /request-password-reset,
+ * ja PUT /credentials.
  */
 public class TestUserDependentAuthControllerTest extends AuthControllerTestCase {
 
@@ -37,6 +40,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         testUser.setPasswordHash(String.valueOf(correctPassword));
         testUser.setLastLogin(mockLastLogin);
         testUser.setCurrentToken(mockCurrentToken);
+        testUser.setPasswordResetKey(null);
+        testUser.setPasswordResetTime(null);
         utils.update("UPDATE `user` SET " +
             "email = :email, lastLogin = :lastLogin, currentToken = :currentToken," +
             "username = :username, passwordhash = :passwordHash, isActivated = 1 " +
@@ -116,6 +121,85 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         AuthUser loginDataAfter = this.getUserFromDb(testUser, true);
         Assert.assertNull(loginDataAfter.getLastLogin());
         Assert.assertNull(loginDataAfter.getCurrentToken());
+    }
+
+    @Test
+    public void POSTRequestPasswordResetPäivittääResetointilinkinTietokantaanJaLähettääSenEmailillaKäyttäjälle() {
+        // Setup
+        Mockito.when(mockMailer.sendMail(
+            Mockito.eq(testUser.getEmail()),
+            Mockito.eq(testUser.getUsername()),
+            Mockito.anyString(),
+            Mockito.anyString()
+        )).thenReturn(true);
+        String mockKey = "fake-random-chars";
+        Mockito.when(mockTokenService.generateRandomString(AuthService.PASSWORD_RESET_KEY_LENGTH))
+            .thenReturn(mockKey);
+        // Lähetä pyyntö
+        EmailCredentials postData = new EmailCredentials();
+        postData.setEmail(testUser.getEmail());
+        long unixTimeBeforeRequest = System.currentTimeMillis() / 1000L;
+        Response response = this.newPostRequest("auth/request-password-reset", postData);
+        Assert.assertEquals(200, response.getStatus());
+        // Päivittikö avaimen tietokantaan?
+        AuthUser userAfterRequest = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(mockKey, userAfterRequest.getPasswordResetKey());
+        Assert.assertTrue(userAfterRequest.getPasswordResetTime() >= unixTimeBeforeRequest);
+        // Lähettikö mailin?
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
+            Mockito.eq(testUser.getEmail()),
+            Mockito.eq(testUser.getUsername()),
+            Mockito.anyString(), // subject
+            captor.capture()     // content
+        );
+        String actualEmail = captor.getValue();
+        Assert.assertTrue("Email pitäis alkaa näin",
+            actualEmail.startsWith("Moi " + testUser.getUsername() +
+                ",<br><br>voit luoda uuden salasanan tästä"
+            )
+        );
+        Assert.assertTrue(
+            "Email pitäisi sisältää linkki salasanan palautussivulle",
+            actualEmail.contains(String.format(
+                "%s#/palauta-salasana/%s/%s",
+                appConfig.appPublicFrontendUrl,
+                mockKey,
+                (TextCodec.BASE64URL.encode(postData.getEmail()))
+            ))
+        );
+    }
+
+    @Test
+    public void POSTRequestPasswordResetHylkääPyynnönJosKäyttäjääEiLöydy() {
+        EmailCredentials invalid = new EmailCredentials();
+        invalid.setEmail("not@found.biz");
+        //
+        Response response = this.newPostRequest("auth/request-password-reset", invalid);
+        Assert.assertEquals(400, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_USER_NOT_FOUND));
+    }
+
+    @Test
+    public void POSTRequestPasswordResetEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
+        // Tilanne, jossa emailin lähetys epäonnistuu
+        Mockito.when(mockMailer.sendMail(
+            Mockito.anyString(), // toAddress
+            Mockito.anyString(), // toPersonal
+            Mockito.anyString(), // subject
+            Mockito.anyString()  // content
+        )).thenReturn(false);
+        // Lähetä pyyntö
+        EmailCredentials postData = new EmailCredentials();
+        postData.setEmail(testUser.getEmail());
+        Response response = this.newPostRequest("auth/request-password-reset", postData);
+        // Failasiko?
+        Assert.assertEquals(400, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_MAIL_FAILURE));
+        // Jättikö avaimen kirjoittamatta tietokantaan?
+        AuthUser userDataAfter = this.getUserFromDb(testUser, true);
+        Assert.assertNull(userDataAfter.getPasswordResetKey());
+        Assert.assertNull(userDataAfter.getPasswordResetTime());
     }
 
     @Test

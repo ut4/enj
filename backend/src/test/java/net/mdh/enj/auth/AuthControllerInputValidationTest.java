@@ -115,6 +115,32 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
     }
 
     @Test
+    public void POSTRequestPasswordResetHylkääPyynnönJosDataPuuttuuKokonaan() {
+        this.assertRequestFailsOnNullInput("auth/request-password-reset", "AuthController.requestPasswordReset");
+    }
+
+    @Test
+    public void POSTRequestPasswordResetEiSalliNullArvoja() {
+        EmailCredentials nulls = new EmailCredentials();
+        Response response = this.newPostRequest("auth/request-password-reset", nulls);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.requestPasswordReset.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTRequestPasswordResetValidoiInputin() {
+        EmailCredentials badData = new EmailCredentials();
+        badData.setEmail("not-valid-email");
+        Response response = this.newPostRequest("auth/request-password-reset", badData);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.requestPasswordReset.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
     public void PUTUpdateCredentialsEiSalliNullArvoja() {
         UpdateCredentials nulls = new UpdateCredentials();
         nulls.setUsername(null);

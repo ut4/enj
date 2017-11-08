@@ -36,6 +36,8 @@ CREATE TABLE `user` (
     currentToken VARCHAR(255) DEFAULT NULL,
     isActivated TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     activationKey VARCHAR(64) DEFAULT NULL,
+    passwordResetKey VARCHAR(64) DEFAULT NULL,
+    passwordResetTime INT UNSIGNED DEFAULT NULL,
     -- Vapaaehtoiset kentät
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) UNSIGNED DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
