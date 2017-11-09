@@ -1,4 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
+import PasswordInputsMixin from 'src/auth/PasswordInputsMixin';
 
 interface State {
     username: string;
@@ -9,6 +10,7 @@ interface State {
 }
 
 class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credentials}, State> {
+    private getPasswordInputs: Function;
     private static reservedUsernames: {[username: string]: any} = {};
     private static reservedEmails: {[email: string]: any} = {};
     public constructor(props, context) {
@@ -23,9 +25,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
                 (input: string) => input.length <= 191,
                 (input: string) => !CredentialsForm.reservedEmails.hasOwnProperty(input)
             ],
-            currentPassword: [(input: string) => input.length >= 4],
-            newPassword: this.newNewPasswordEvaluators('newPasswordConfirmation'),
-            newPasswordConfirmation: this.newNewPasswordEvaluators('newPassword')
+            currentPassword: [(input: string) => input.length >= 4]
         };
         this.state = {
             username: props.credentials.username || '',
@@ -35,6 +35,7 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
             newPasswordConfirmation: '',
             validity: false
         };
+        PasswordInputsMixin.call(this, true);
     }
     public getValues(): Enj.API.Credentials {
         return {
@@ -68,34 +69,8 @@ class CredentialsForm extends ValidatingComponent<{credentials: Enj.API.Credenti
                 <input type="password" name="currentPassword" value={ this.state.currentPassword } onInput={ e => this.receiveInputValue(e) }/>
                 { validationMessage(this.evaluators.currentPassword[0], templates => templates.minLength('Nykyinen salasana', 4)) }
             </label>
-            <label class="input-set">
-                <span>Uusi salasana <span class="text-small">(vapaaehtoinen)</span></span>
-                <input type="password" name="newPassword" value={ this.state.newPassword } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.newPassword[0], templates => templates.minLength('Uusi salasana', 4)) }
-                { validationMessage(this.evaluators.newPassword[1], () => 'Uudet salasanat ei täsmää') }
-            </label>
-            <label class="input-set">
-                <span>Uusi salasana uudelleen <span class="text-small">(vapaaehtoinen)</span></span>
-                <input type="password" name="newPasswordConfirmation" value={ this.state.newPasswordConfirmation } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.newPasswordConfirmation[0], templates => templates.minLength('Uusi salasana uudelleen', 4)) }
-                { validationMessage(this.evaluators.newPasswordConfirmation[1], () => 'Uudet salasanat ei täsmää') }
-            </label>
+            { this.getPasswordInputs() }
         </div>;
-    }
-    private newNewPasswordEvaluators(mustMatch: 'newPassword' | 'newPasswordConfirmation') {
-        return [
-            (input: string) => !input.length || input.length >= 4,
-            (input: string) => {
-                if (!input.length && !this.state[mustMatch]) {
-                    return true;
-                }
-                if (input === this.state[mustMatch]) {
-                    this.evaluators[mustMatch][1].validity = true;
-                    return true;
-                }
-                return false;
-            }
-        ];
     }
 }
 

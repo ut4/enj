@@ -4,6 +4,7 @@ import 'tests/auth/CredentialsFormTests';
 import 'tests/auth/CredentialsEditViewTests';
 import 'tests/auth/LoginFormTests';
 import 'tests/auth/LoginViewTests';
+import 'tests/auth/PasswordCreateViewTests';
 import 'tests/common/DbTests';
 import 'tests/common/HttpTests';
 import 'tests/common/RESTBackendTests';
