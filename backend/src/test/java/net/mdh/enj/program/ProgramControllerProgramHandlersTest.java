@@ -177,7 +177,8 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         Exercise testExercise = new Exercise();
         testExercise.setName("DELETEProgramTestExercise");
         utils.insertExercise(testExercise);
-        utils.insertProgramWorkoutExercise(makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise));
+        Program.Workout.Exercise pwe = makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise);
+        utils.insertProgramWorkoutExercise(pwe);
         // Lähetä DELETE-pyyntö
         Response response = this.newDeleteRequest("program/" + program.getId());
         Assert.assertEquals(200, response.getStatus());
@@ -188,6 +189,16 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
             "SELECT * FROM program WHERE id = :id",
             new MapSqlParameterSource("id", program.getId()),
             new SimpleMappers.ProgramMapper()
+        ));
+        Assert.assertNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkout WHERE id = :programWorkoutId",
+            new MapSqlParameterSource("programWorkoutId", programWorkout.getId()),
+            new SimpleMappers.ProgramWorkoutMapper()
+        ));
+        Assert.assertNull(utils.selectOneWhere(
+            "SELECT * FROM programWorkoutExercise WHERE id = :programWorkoutExerciseId",
+            new MapSqlParameterSource("programWorkoutExerciseId", pwe.getId()),
+            new SimpleMappers.ProgramWorkoutExerciseMapper()
         ));
     }
 

@@ -269,11 +269,16 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
             this.selectDataCount(workout.getId()));
     }
 
-    private List<Workout> makeCoupleOfWorkouts() {
+    public static Workout makeNewWorkoutEntity(String userId) {
         Workout data = new Workout();
         data.setStart(System.currentTimeMillis() / 1000L);
         data.setNotes("fus");
-        data.setUserId(TestData.TEST_USER_ID);
+        data.setUserId(userId);
+        return data;
+    }
+
+    private List<Workout> makeCoupleOfWorkouts() {
+        Workout data = makeNewWorkoutEntity(TestData.TEST_USER_ID);
         Workout data2 = new Workout();
         data2.setStart(data.getStart() + 1);
         data2.setNotes("ro");

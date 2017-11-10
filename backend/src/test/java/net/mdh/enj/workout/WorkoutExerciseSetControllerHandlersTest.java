@@ -184,12 +184,17 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         Assert.assertNull(this.selectWorkoutExerciseSet(workoutExerciseSet.getId()));
     }
 
-    private List<Workout.Exercise.Set> makeCoupleOfWorkoutExerciseSets(String workoutExerciseId) {
+    public static Workout.Exercise.Set makeNewWorkoutExerciseSetEntity(String workoutExerciseId) {
         Workout.Exercise.Set data = new Workout.Exercise.Set();
         data.setWeight(100);
         data.setReps(8);
         data.setOrdinal(1);
         data.setWorkoutExerciseId(workoutExerciseId);
+        return data;
+    }
+
+    private List<Workout.Exercise.Set> makeCoupleOfWorkoutExerciseSets(String workoutExerciseId) {
+        Workout.Exercise.Set data = makeNewWorkoutExerciseSetEntity(workoutExerciseId);
         Workout.Exercise.Set data2 = new Workout.Exercise.Set();
         data2.setWeight(102.25);
         data2.setReps(6);

@@ -231,15 +231,18 @@ public class WorkoutExerciseControllerHandlersTest extends WorkoutControllerTest
         Assert.assertEquals((Integer)0, this.selectDataCount(workoutExercise.getId()));
     }
 
-    private List<Workout.Exercise> makeCoupleOfWorkoutExercises() {
+    public static Workout.Exercise makeNewWorkoutExerciseEntity(String workoutId, String exerciseId) {
         Workout.Exercise data = new Workout.Exercise();
         data.setOrdinal(1);
-        data.setWorkoutId(testWorkout.getId());
-        data.setExerciseId(testExercise.getId());
-        Workout.Exercise data2 = new Workout.Exercise();
+        data.setWorkoutId(workoutId);
+        data.setExerciseId(exerciseId);
+        return data;
+    }
+
+    private List<Workout.Exercise> makeCoupleOfWorkoutExercises() {
+        Workout.Exercise data = makeNewWorkoutExerciseEntity(testWorkout.getId(), testExercise.getId());
+        Workout.Exercise data2 = makeNewWorkoutExerciseEntity(testWorkout.getId(), testExercise.getId());
         data2.setOrdinal(2);
-        data2.setWorkoutId(testWorkout.getId());
-        data2.setExerciseId(testExercise.getId());
         //
         List<Workout.Exercise> array = new ArrayList<>();
         array.add(data);

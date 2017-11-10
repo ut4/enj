@@ -1,6 +1,8 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.validation.AuthenticatedUserId;
+import net.mdh.enj.validation.UUID;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.NotAuthorizedException;
@@ -8,10 +10,12 @@ import javax.validation.constraints.Size;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.PathParam;
 import javax.validation.Valid;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -169,6 +173,19 @@ public class AuthController {
             throw new BadRequestException("Invalid credentials");
         }
         this.authService.updateCredentials(user, newCredentials);
+        return new Responses.Ok();
+    }
+
+    /**
+     * Poistaa käyttäjän, ja kaikki siihen liittyvän datan peruuttamattomasti.
+     *
+     * @return Responses.Ok
+     */
+    @DELETE
+    @Path("/{userId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok deleteAllUserData(@UUID @AuthenticatedUserId @PathParam("userId") String userId) {
+        this.authService.deleteAllUserData(userId);
         return new Responses.Ok();
     }
 }

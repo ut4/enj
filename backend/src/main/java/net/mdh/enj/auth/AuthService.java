@@ -36,6 +36,7 @@ public class AuthService {
 
     private final TokenService tokenService;
     private final AuthUserRepository authUserRepository;
+    private final AccountManager accountManager;
     private final HashingProvider hashingProvider;
     private final AppConfig appConfig;
     private final Mailer mailer;
@@ -46,12 +47,14 @@ public class AuthService {
     AuthService(
         TokenService tokenService,
         AuthUserRepository authUserRepository,
+        AccountManager accountManager,
         HashingProvider hashingProvider,
         AppConfig appConfig,
         Mailer mailer
     ) {
         this.tokenService = tokenService;
         this.authUserRepository = authUserRepository;
+        this.accountManager = accountManager;
         this.hashingProvider = hashingProvider;
         this.appConfig = appConfig;
         this.mailer = mailer;
@@ -158,6 +161,7 @@ public class AuthService {
         // WHERE-osioon tulevat kentät
         UpdateFilters filters = new UpdateFilters();
         filters.setEmail(TextCodec.BASE64URL.decodeToString(base64email));
+        System.out.println(filters.getEmail());
         filters.setMinCreatedAt(System.currentTimeMillis() / 1000L - ACTIVATION_KEY_EXPIRATION);
         filters.setActivationKey(activationKey);
         activated.setFilters(filters);
@@ -293,6 +297,10 @@ public class AuthService {
         newCredentials.nuke();
         user.setUpdateColumns(cols.toArray(new AuthUser.UpdateColumn[cols.size()]));
         this.authUserRepository.update(user);
+    }
+
+    void deleteAllUserData(String userId) {
+        this.accountManager.destroy(userId);
     }
 
     /**

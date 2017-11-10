@@ -19,6 +19,7 @@ DROP TABLE   IF EXISTS workout;
 DROP VIEW    IF EXISTS exerciseView;
 DROP TABLE   IF EXISTS exerciseVariant;
 DROP TABLE   IF EXISTS exercise;
+DROP TRIGGER IF EXISTS exerciseDeleteTrg;
 DROP VIEW    IF EXISTS authUserView;
 DROP VIEW    IF EXISTS userView;
 DROP TABLE   IF EXISTS `user`;
@@ -90,6 +91,14 @@ CREATE TABLE exerciseVariant (
     FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
+
+DELIMITER //
+-- Poistaa kaikki liikkeen liikevariantit poiston yhteydessä
+CREATE TRIGGER exerciseDeleteTrg BEFORE DELETE ON exercise
+FOR EACH ROW BEGIN
+    DELETE FROM exerciseVariant WHERE exerciseId = OLD.id;
+END;//
+DELIMITER ;
 
 CREATE VIEW exerciseView AS
     SELECT

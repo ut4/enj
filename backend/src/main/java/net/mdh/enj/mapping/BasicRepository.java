@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.jdbc.core.RowMapper;
 import java.util.stream.IntStream;
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.List;
@@ -41,9 +42,10 @@ public abstract class BasicRepository<T extends DbEntity> {
     }
 
     public void runInTransaction(Runnable fn) {
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(
-            this.dataSourceFactory.getDataSource()
-        );
+        runInTransaction(fn, this.dataSourceFactory.getDataSource());
+    }
+    public static void runInTransaction(Runnable fn, DataSource ds) {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(ds);
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_NESTED);
         TransactionStatus status = transactionManager.getTransaction(def);

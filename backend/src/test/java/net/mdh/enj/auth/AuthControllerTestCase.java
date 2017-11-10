@@ -58,6 +58,7 @@ public class AuthControllerTestCase extends RollbackingDBJerseyTest {
                 @Override
                 protected void configure() {
                     bind(AuthUserRepository.class).to(AuthUserRepository.class);
+                    bind(AccountManager.class).to(AccountManager.class);
                     bind(appConfig).to(AppConfig.class);
                     bind(TestData.testUserAwareRequestContext).to(RequestContext.class);
                     bind(mockHasherSpy).to(HashingProvider.class);
