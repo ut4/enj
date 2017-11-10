@@ -1,5 +1,5 @@
 import ValidatingComponent from 'src/ui/ValidatingComponent';
-import PasswordInputsMixin from 'src/auth/PasswordInputsMixin';
+import { PasswordInputsMixin } from 'src/auth/ValidatingFormMixins';
 import FormButtons from 'src/ui/FormButtons';
 import iocFactories from 'src/ioc';
 
@@ -17,7 +17,7 @@ class PasswordCreateView extends ValidatingComponent<
     {params: {resetKey: string; base64Email: string}},
     {newPassword: string; newPasswordConfirmation: string; putData: NewPasswordCredentials}
 > {
-    private getPasswordInputs: Function;
+    private getPasswordInputEls: Function;
     public constructor(props, context) {
         super(props, context);
         this.evaluators = {};
@@ -41,7 +41,7 @@ class PasswordCreateView extends ValidatingComponent<
         }
         return <div>
             <h2>Luo uusi salasana</h2>
-            { this.getPasswordInputs() }
+            { this.getPasswordInputEls() }
             <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }/>
         </div>;
     }

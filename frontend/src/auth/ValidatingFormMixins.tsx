@@ -1,13 +1,46 @@
-import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
+import { validationMessage } from 'src/ui/ValidatingComponent';
+
+declare namespace EmailInputMixin {
+    export var reservedEmails: {[email: string]: any};
+}
 
 /**
- * Lisää newPassword & newPasswordConfirmation kutsujan evaluaattoreihin & stateen. Käyttö:
+ * Lisää email-evaluaattorin kutsuja/this-objektiin. Käyttö:
  *
  * class SomeClass extends ValidatingComponent<something, something> {
  *     public constructor() {
  *         // tässä SomeClassin omien evaluaattorien & staten määrittely
  *         ...
  *         // Tässä lisätään yllä kuvatut setit SomeClass-luokkaan
+ *         EmailInputMixin.call(this);
+ *     }
+ * }
+ */
+function EmailInputMixin() {
+    this.evaluators.email = [
+        (input: string) => /\S+@\S+/.test(input),
+        (input: string) => input.length <= 191,
+        (input: string) => !EmailInputMixin.reservedEmails.hasOwnProperty(input)
+    ];
+    this.getEmailInputEl = function () {
+        return <label class="input-set">
+            <span>E-mail</span>
+            <input type="text" name="email" value={ this.state.email } onInput={ e => this.receiveInputValue(e) }/>
+            { validationMessage(this.evaluators.email[0], templates => templates.valid('E-mail')) }
+            { validationMessage(this.evaluators.email[1], templates => templates.maxLength('E-mail', 191)) }
+            { validationMessage(this.evaluators.email[2], () => `E-mail ${this.state.email} on jo käytössä`) }
+        </label>;
+    };
+}
+EmailInputMixin.reservedEmails = {};
+
+/**
+ * Lisää newPassword & newPasswordConfirmation evaluaattorit, ja state-propertyt
+ * kutsuja/this-objektiin. Käyttö:
+ *
+ * class SomeClass extends ValidatingComponent<something, something> {
+ *     public constructor() {
+ *         ...
  *         PasswordInputsMixin.call(this, isOptional);
  *     }
  * }
@@ -19,7 +52,7 @@ function PasswordInputsMixin(isOptional: boolean) {
     this.state.newPassword = '';
     this.state.newPasswordConfirmation = '';
     this.isOptional = isOptional;
-    this.getPasswordInputs = function () {
+    this.getPasswordInputEls = function () {
         const optionalText = this.isOptional ? '(vapaaehtoinen)' : '';
         return <div>
             <label class="input-set">
@@ -37,7 +70,6 @@ function PasswordInputsMixin(isOptional: boolean) {
         </div>;
     };
 }
-
 function makePasswordEvaluators(mustMatch: 'newPassword' | 'newPasswordConfirmation') {
     return [
         (input: string) => (this.isOptional && !input.length) || input.length >= 4,
@@ -57,4 +89,5 @@ function makePasswordEvaluators(mustMatch: 'newPassword' | 'newPasswordConfirmat
     ];
 }
 
-export default PasswordInputsMixin;
+export { EmailInputMixin };
+export { PasswordInputsMixin };
