@@ -40,11 +40,10 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         testUser.setPasswordHash(String.valueOf(correctPassword));
         testUser.setLastLogin(mockLastLogin);
         testUser.setCurrentToken(mockCurrentToken);
-        testUser.setPasswordResetKey(null);
-        testUser.setPasswordResetTime(null);
         utils.update("UPDATE `user` SET " +
             "email = :email, lastLogin = :lastLogin, currentToken = :currentToken," +
-            "username = :username, passwordhash = :passwordHash, isActivated = 1 " +
+            "username = :username, passwordhash = :passwordHash, isActivated = 1, " +
+            "passwordResetKey = NULL, passwordResetTime = NULL" +
             "WHERE id = :id", testUser);
     }
 
@@ -194,7 +193,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         postData.setEmail(testUser.getEmail());
         Response response = this.newPostRequest("auth/request-password-reset", postData);
         // Failasiko?
-        Assert.assertEquals(400, response.getStatus());
+        Assert.assertEquals(500, response.getStatus());
         Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_MAIL_FAILURE));
         // Jättikö avaimen kirjoittamatta tietokantaan?
         AuthUser userDataAfter = this.getUserFromDb(testUser, true);
@@ -274,7 +273,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPäivittääKirjautuneenKäyttäjänTiedotTietokantaan() {
+    public void PUTCredentialsPäivittääKirjautuneenKäyttäjänTiedotTietokantaan() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         char[] newPassword = "newpass".toCharArray();
         newCredentials.setUserId(testUser.getId());
@@ -295,7 +294,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsEiVaadiUuttaSalasanaa() {
+    public void PUTCredentialsEiVaadiUuttaSalasanaa() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         // note. ei userId:tä eikä newPassword:iä
         newCredentials.setUsername(testUser.getUsername());
@@ -313,7 +312,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiTaiEmailOnJoKäytössä() {
+    public void PUTCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiTaiEmailOnJoKäytössä() {
         AuthUser existing = new AuthUser();
         existing.setUsername("taken");
         existing.setEmail("taken@fus.ro");
@@ -349,7 +348,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsHylkääPyynnönJosCredentialsitEiTäsmää() {
+    public void PUTCredentialsHylkääPyynnönJosCredentialsitEiTäsmää() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         newCredentials.setPassword(inCorrectPassword);
         newCredentials.setUserId(testUser.getId());

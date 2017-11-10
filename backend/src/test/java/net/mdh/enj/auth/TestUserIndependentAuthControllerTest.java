@@ -80,21 +80,16 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
             Mockito.anyString()  // content
         )).thenReturn(false);
         // Lähetä register-pyyntö
-        try {
-            this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
-            Assert.fail("Olisi pitänyt heittää poikkeus");
-        } catch (ProcessingException e) {
-            Assert.assertEquals(
-                "Aktivointimailin lähetys epäonnistui",
-                e.getCause().getMessage()
-            );
-            // Peruuttiko käyttäjän lisäyksen?
-            AuthUser notExpectedUser = new AuthUser();
-            notExpectedUser.setUsername(username);
-            Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
-                this.getUserFromDb(notExpectedUser, true)
-            );
-        }
+        Response response = this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
+        // Failasiko?
+        Assert.assertEquals(500, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_MAIL_FAILURE));
+        // Peruuttiko käyttäjän lisäyksen?
+        AuthUser notExpectedUser = new AuthUser();
+        notExpectedUser.setUsername(username);
+        Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
+            this.getUserFromDb(notExpectedUser, true)
+        );
     }
 
     @Test
@@ -102,7 +97,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         // Rekisteröi jokin käyttäjä
         AuthUser testUser = insertNewUser("someuser", null, 0);
         // Lähetä GET /auth/activate?key={key}&email={email}
-        Response response = sendActivationRequest(testUser);
+        Response response = this.sendActivationRequest(testUser);
         Assert.assertEquals(200, response.getStatus());
         // Päivittikö tiedot?
         AuthUser testUserAfter = this.getUserFromDb(testUser, false);

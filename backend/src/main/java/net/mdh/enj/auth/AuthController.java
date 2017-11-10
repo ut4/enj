@@ -1,7 +1,6 @@
 package net.mdh.enj.auth;
 
 import net.mdh.enj.api.RequestContext;
-import net.mdh.enj.db.UnaffectedOperationException;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.NotAuthorizedException;
@@ -17,7 +16,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.GET;
-import java.util.List;
 
 /**
  * Vastaa /api/auth REST-pyynnöistä
@@ -137,15 +135,7 @@ public class AuthController {
     @Path("/request-password-reset")
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.Ok requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
-        try {
-            this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
-        } catch (RuntimeException e) {
-            if (!(e instanceof UnaffectedOperationException)) {
-                throw new BadRequestException("[\"" + e.getMessage() + "\"]");
-            } else {
-                throw e;
-            }
-        }
+        this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
         return new Responses.Ok();
     }
 
@@ -158,11 +148,7 @@ public class AuthController {
     @Path("/password")
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.Ok updatePassword(@Valid @NotNull NewPasswordCredentials credentials) {
-        try {
-            this.authService.resetPassword(credentials);
-        } catch (RuntimeException e) {
-            throw new BadRequestException("[\"" + e.getMessage() + "\"]");
-        }
+        this.authService.resetPassword(credentials);
         return new Responses.Ok();
     }
 
@@ -182,10 +168,7 @@ public class AuthController {
         if (user == null) {
             throw new BadRequestException("Invalid credentials");
         }
-        List<String> errorNames = this.authService.updateCredentials(user, newCredentials);
-        if (!errorNames.isEmpty()) {
-            throw new BadRequestException("[\"" + String.join("\",\"", errorNames) + "\"]");
-        }
+        this.authService.updateCredentials(user, newCredentials);
         return new Responses.Ok();
     }
 }

@@ -5,7 +5,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.TextCodec;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.ExpiredJwtException;
-import net.mdh.enj.db.UnaffectedOperationException;
+import net.mdh.enj.api.FrontendFacingErrorException;
+import net.mdh.enj.db.IneffectualOperationException;
 import net.mdh.enj.user.SelectFilters;
 import net.mdh.enj.Application;
 import net.mdh.enj.AppConfig;
@@ -90,7 +91,7 @@ public class AuthService {
     /**
      * Poistaa JWT:n, ja lastLogin-timestampin tietokannasta.
      *
-     * @throws RuntimeException Jos tietojen kirjoitus tietokantaan epäonnistuu.
+     * @throws IneffectualOperationException Jos tietojen kirjoitus tietokantaan epäonnistuu.
      */
     void logout(String userId) {
         AuthUser cleared = new AuthUser();
@@ -98,7 +99,7 @@ public class AuthService {
         cleared.setLastLogin(null);
         cleared.setCurrentToken(null);
         if (this.authUserRepository.updateLogin(cleared) < 1) {
-            throw new UnaffectedOperationException("Tietokantaan kirjoitus epäonnistui");
+            throw new IneffectualOperationException("Tietokantaan kirjoitus epäonnistui");
         }
     }
 
@@ -107,9 +108,9 @@ public class AuthService {
      * aktivointilinkin sähköpostilla käyttäjälle. Hylkää transactionin mikäli
      * sähköpostin lähetys, tai tietojen kirjoitus tietokantaan epäonnistui.
      *
-     * @throws RuntimeException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
+     * @throws FrontendFacingErrorException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
      */
-    void register(RegistrationCredentials credentials, String successEmailTemplate) throws RuntimeException {
+    void register(RegistrationCredentials credentials, String successEmailTemplate) throws FrontendFacingErrorException {
         // 1. Lisää käyttäjä
         AuthUser user = new AuthUser();
         user.setUsername(credentials.getUsername());
@@ -120,7 +121,7 @@ public class AuthService {
         user.setActivationKey(this.tokenService.generateRandomString(ACTIVATION_KEY_LENGTH));
         this.authUserRepository.runInTransaction(() -> {
             if (this.authUserRepository.insert(user) < 1) {
-                throw new UnaffectedOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
+                throw new IneffectualOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
             }
             // 2. Lähetä aktivointi-email
             String link = String.format(
@@ -135,7 +136,7 @@ public class AuthService {
                 "Tilin aktivointi",
                 String.format(successEmailTemplate, user.getUsername(), link, link)
             )) {
-                throw new RuntimeException("Aktivointimailin lähetys epäonnistui");
+                throw new FrontendFacingErrorException(ERRORNAME_MAIL_FAILURE);
             }
         });
         // Kaikki ok
@@ -145,7 +146,7 @@ public class AuthService {
      * Aktivoi käyttäjän, tai heittää poikkeuksen jos email, tai aktivointiavain
      * ei ollut validi, tai avain oli liian vanha. Palauttaa kirjautumislinkin.
      */
-    String activate(String base64email, String activationKey) throws RuntimeException {
+    String activate(String base64email, String activationKey) throws IneffectualOperationException {
         // Päivitettävät kentät
         AuthUser activated = new AuthUser();
         activated.setIsActivated(1);
@@ -161,7 +162,7 @@ public class AuthService {
         filters.setActivationKey(activationKey);
         activated.setFilters(filters);
         if (this.authUserRepository.update(activated) < 1) {
-            throw new UnaffectedOperationException("Käyttäjän aktivointi epäonnistui");
+            throw new IneffectualOperationException("Käyttäjän aktivointi epäonnistui");
         }
         return String.format("%s#/kirjaudu", appConfig.appPublicFrontendUrl);
     }
@@ -170,15 +171,15 @@ public class AuthService {
      * Luo random-avaimen salasanan palautusta varten, päivittää sen tietokantaan,
      * ja lähettää sen lopuksi sähköpostilla käyttäjälle.
      *
-     * @throws RuntimeException Jos käyttäjää ei löyty, tai mailin lähetys epäonnistuu
+     * @throws FrontendFacingErrorException Jos käyttäjää ei löyty, tai mailin lähetys epäonnistuu
      */
-    void handlePasswordResetRequest(EmailCredentials credentials, String successEmailTemplate) throws RuntimeException {
+    void handlePasswordResetRequest(EmailCredentials credentials, String successEmailTemplate) throws FrontendFacingErrorException {
         // 1. Hae käyttäjä tietokannasta
         SelectFilters selectFilters = new SelectFilters();
         selectFilters.setEmail(credentials.getEmail());
         AuthUser user = this.authUserRepository.selectOne(selectFilters);
         if (user == null) {
-            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+            throw new FrontendFacingErrorException(ERRORNAME_USER_NOT_FOUND, 400);
         }
         // 2. Tallenna resetointi-avain tietokantaan
         AuthUser newData = new AuthUser();
@@ -193,7 +194,7 @@ public class AuthService {
         newData.setFilters(filters);
         this.authUserRepository.runInTransaction(() -> {
             if (this.authUserRepository.update(newData) < 1) {
-                throw new UnaffectedOperationException("Salasanan resetointiavaimen kirjoitus epäonnistui");
+                throw new IneffectualOperationException("Salasanan resetointiavaimen kirjoitus epäonnistui");
             }
             // 3. Lähetä salasanan palautuslinkki-email
             String link = String.format(
@@ -208,7 +209,7 @@ public class AuthService {
                 "Salasanan palautus",
                 String.format(successEmailTemplate, user.getUsername(), link, link)
             )) {
-                throw new RuntimeException(ERRORNAME_MAIL_FAILURE);
+                throw new FrontendFacingErrorException(ERRORNAME_MAIL_FAILURE);
             }
         });
         // Kaikki ok
@@ -219,31 +220,32 @@ public class AuthService {
      * tietokantaan tallennettuun avaimeen, ja avain ei ole liian vanha (oletus
      * 30min).
      *
-     * @throws RuntimeException Jos passwordResetKey + email ei löydy tietokannasta tai key on liian vanha
+     * @throws FrontendFacingErrorException Jos passwordResetKey + email ei löydy tietokannasta tai key on liian vanha
      */
-    void resetPassword(NewPasswordCredentials credentials) throws RuntimeException {
+    void resetPassword(NewPasswordCredentials credentials) throws FrontendFacingErrorException {
         // 1. Hae salasanan palautusta pyytänyt käyttäjä tietokannasta
         SelectFilters selectFilters = new SelectFilters();
         selectFilters.setEmail(credentials.getEmail());
         selectFilters.setPasswordResetKey(credentials.getPasswordResetKey());
         AuthUser requester = this.authUserRepository.selectOne(selectFilters);
+        FrontendFacingErrorException e = new FrontendFacingErrorException(ERRORNAME_USER_NOT_FOUND, 400);
         if (requester == null) {
             logger.warn("Yritettiin resetoida salasana väärällä emaililla ja avaimella");
-            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+            throw e;
         }
         if (!requester.getEmail().equals(credentials.getEmail())) {
             logger.warn("Yritettiin resetoida salasana väärällä emaililla");
-            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+            throw e;
         }
         if (requester.getPasswordResetKey() == null ||
             !requester.getPasswordResetKey().equals(credentials.getPasswordResetKey())) {
             logger.warn("Yritettiin resetoida salasana väärällä avaimella");
-            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+            throw e;
         }
         if (requester.getPasswordResetTime() == null ||
             System.currentTimeMillis() / 1000L > requester.getPasswordResetTime() + PASSWORD_RESET_KEY_EXPIRATION) {
             logger.warn("Yritettiin resetoida salasana vanhentuneella avaimella");
-            throw new RuntimeException(ERRORNAME_USER_NOT_FOUND);
+            throw e;
         }
         // 2. Aseta uusi salasana & tyhjennä passwordResetKey|Time
         AuthUser newData = new AuthUser();
@@ -263,18 +265,18 @@ public class AuthService {
      * Päivittää käyttäjän {user} emailin, ja luo uuden salasanan mikäli se
      * vaihtui.
      */
-    List<String> updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
-        List<String> errors = new ArrayList<>();
+    void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
         // Tsekkaa onko vaihtunut käyttäjänimi jo käytössä
         AuthUser reserved = this.getReservedCredentials(newCredentials, user);
         if (reserved != null) {
+            List<String> errors = new ArrayList<>();
             if (reserved.getUsername().equals(newCredentials.getUsername())) {
                 errors.add(ERRORNAME_RESERVED_USERNAME);
             }
             if (reserved.getEmail().equals(newCredentials.getEmail())) {
                 errors.add(ERRORNAME_RESERVED_EMAIL);
             }
-            return errors;
+            throw new FrontendFacingErrorException(String.join("\",\"", errors), 400);
         }
         // Aseta käyttäjänimi & email aina
         List<AuthUser.UpdateColumn> cols = new ArrayList<>();
@@ -290,10 +292,7 @@ public class AuthService {
         }
         newCredentials.nuke();
         user.setUpdateColumns(cols.toArray(new AuthUser.UpdateColumn[cols.size()]));
-        if (this.authUserRepository.update(user) < 1) {
-            throw new UnaffectedOperationException("Tietojen päivitys epäonnistui");
-        }
-        return errors;
+        this.authUserRepository.update(user);
     }
 
     /**
@@ -318,7 +317,7 @@ public class AuthService {
      * expiredToken ei täsmännyt viimeisimpään tietokantaan tallennettuun tokeniin,
      * tai käyttäjän viimeisimmästä kirjautumisesta on yli 2kk.
      */
-    private String renewToken(String expiredToken, String userId) throws RuntimeException {
+    private String renewToken(String expiredToken, String userId) {
         SelectFilters filters = new SelectFilters();
         filters.setId(userId);
         filters.setCurrentToken(expiredToken);
@@ -336,7 +335,7 @@ public class AuthService {
         String tokenHash = this.tokenService.generateNew(user.getId());
         user.setCurrentToken(tokenHash);
         if (this.authUserRepository.updateToken(user) < 1) {
-            throw new UnaffectedOperationException("Uusitun tokenin tallennus epäonnistui");
+            throw new IneffectualOperationException("Uusitun tokenin tallennus epäonnistui");
         }
         return tokenHash;
     }
