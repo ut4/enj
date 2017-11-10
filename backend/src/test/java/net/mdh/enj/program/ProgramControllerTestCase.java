@@ -67,7 +67,6 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         programWorkoutExercise.setExerciseId(exercise.getId());
         programWorkoutExercise.setExerciseName(exercise.getName());
         programWorkoutExercise.setExerciseVariantId(null);
-        System.out.println(programWorkoutExercise);
         return programWorkoutExercise;
     }
 

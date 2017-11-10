@@ -161,7 +161,6 @@ public class AuthService {
         // WHERE-osioon tulevat kentät
         UpdateFilters filters = new UpdateFilters();
         filters.setEmail(TextCodec.BASE64URL.decodeToString(base64email));
-        System.out.println(filters.getEmail());
         filters.setMinCreatedAt(System.currentTimeMillis() / 1000L - ACTIVATION_KEY_EXPIRATION);
         filters.setActivationKey(activationKey);
         activated.setFilters(filters);
