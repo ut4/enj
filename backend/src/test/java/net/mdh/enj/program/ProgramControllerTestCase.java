@@ -40,7 +40,7 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
             });
     }
 
-    static Program makeNewProgramEntity(String name) {
+    public static Program makeNewProgramEntity(String name) {
         Program program = new Program();
         program.setName(name);
         program.setStart(123L);
@@ -49,7 +49,7 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         return program;
     }
 
-    static Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
+    public static Program.Workout makeNewProgramWorkoutEntity(String name, String programId) {
         Program.Workout programWorkout = new Program.Workout();
         programWorkout.setName(name);
         // Joka maanantai, alkaa viikosta 0, ei toistu
@@ -60,7 +60,7 @@ public class ProgramControllerTestCase extends RollbackingDBJerseyTest {
         return programWorkout;
     }
 
-    static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, Exercise exercise) {
+    public static Program.Workout.Exercise makeNewProgramWorkoutExerciseEntity(String programWorkoutId, Exercise exercise) {
         Program.Workout.Exercise programWorkoutExercise = new Program.Workout.Exercise();
         programWorkoutExercise.setOrdinal(1);
         programWorkoutExercise.setProgramWorkoutId(programWorkoutId);

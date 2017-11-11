@@ -32,6 +32,9 @@ asyncBoot.then(() => render(
             <Route path="kirjaudu" component={ views.AuthLoginView }/>
             <Route path="profiili" component={ views.UserProfileView }/>
             <Route path="tili/muokkaa" component={ views.UserCredentialsEditView }/>
+            <Route path="tili/uusi-salasana/:resetKey/:base64Email" component={ views.PasswordCreateView }/>
+            <Route path="tili/uusi-salasanan-palautus" component={ views.RequestPasswordResetView }/>
+            <Route path="tili/poista" component={ views.UserCredentialsDeleteView }/>
             <Route path="aloita-offline" component={ views.OfflineStartView }/>
             <Route path="palauta-online" component={ views.OfflineEndView }/>
         </Route>

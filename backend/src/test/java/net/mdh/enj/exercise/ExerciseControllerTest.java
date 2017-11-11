@@ -302,19 +302,27 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         utils.delete("exerciseVariant", variant.getId());
     }
 
-    private static Exercise insertTestExercise(String name, String userId) {
+    public static Exercise makeNewExerciseEntity(String name, String userId) {
         Exercise e = new Exercise();
         e.setName(name);
         e.setUserId(userId);
+        return e;
+    }
+    private static Exercise insertTestExercise(String name, String userId) {
+        Exercise e = makeNewExerciseEntity(name, userId);
         utils.insertExercise(e);
         return e;
     }
 
-    private static Exercise.Variant insertTestVariant(String content, String exerciseId, String userId) {
+    public static Exercise.Variant makeNewExerciseVariantEntity(String content, String exerciseId, String userId) {
         Exercise.Variant v = new Exercise.Variant();
         v.setContent(content);
         v.setExerciseId(exerciseId);
         v.setUserId(userId);
+        return v;
+    }
+    private static Exercise.Variant insertTestVariant(String content, String exerciseId, String userId) {
+        Exercise.Variant v = makeNewExerciseVariantEntity(content, exerciseId, userId);
         utils.insertExerciseVariant(v);
         return v;
     }

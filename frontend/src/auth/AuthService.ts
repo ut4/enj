@@ -34,6 +34,15 @@ class AuthService {
             this.userState.setToken('');
         });
     }
+    /**
+     * Lähettää tilin poistopyynnön backendiin, ja poistaa tokenin selaintietokannasta
+     * mikäli tietojen poisto onnistuu.
+     *
+     * @returns {Promise} -> ({any} void, {any} error)
+     */
+    public deleteUser(user: Enj.API.User): Promise<number> {
+        return this.authBackend.delete(user).then(res => this.userState.setToken(''));
+    }
 }
 
 export default AuthService;

@@ -33,6 +33,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
             { this.state.user && [
                 <SubMenu>
                     <a href="#/tili/muokkaa">Muokkaa tiliä</a>
+                    <a href="#/tili/poista">Poista tili</a>
                 </SubMenu>,
                 <div class="row">
                     <div class="col-3">

@@ -45,4 +45,19 @@ QUnit.module('auth/AuthService', hooks => {
             done();
         });
     });
+    QUnit.test('deleteUser lähettää pyynnön backendiin, ja poistaa tokenin selaintietokannasta', assert => {
+        const deleteCallWatch = sinon.stub(shallowAuthBackend, 'delete').returns(Promise.resolve({ok: true}));
+        const tokenClearWatch = sinon.stub(shallowUserState, 'setToken').returns(Promise.resolve());
+        //
+        const mockTestUser = {id: 'fos'} as any;
+        //
+        const done = assert.async();
+        authService.deleteUser(mockTestUser).then(() => {
+            assert.ok(deleteCallWatch.calledOnce, 'Pitäisi lähettää DELETE-pyyntö backendiin');
+            assert.deepEqual(deleteCallWatch.firstCall.args, [mockTestUser]);
+            assert.ok(tokenClearWatch.calledAfter(deleteCallWatch), 'Pitäisi päivittää token');
+            assert.deepEqual(tokenClearWatch.firstCall.args, [''], 'Pitäisi clearata token');
+            done();
+        });
+    });
 });

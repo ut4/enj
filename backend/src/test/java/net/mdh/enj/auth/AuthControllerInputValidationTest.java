@@ -115,6 +115,63 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
     }
 
     @Test
+    public void POSTRequestPasswordResetHylkääPyynnönJosDataPuuttuuKokonaan() {
+        this.assertRequestFailsOnNullInput("auth/request-password-reset", "AuthController.requestPasswordReset");
+    }
+
+    @Test
+    public void POSTRequestPasswordResetEiSalliNullArvoja() {
+        EmailCredentials nulls = new EmailCredentials();
+        Response response = this.newPostRequest("auth/request-password-reset", nulls);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.requestPasswordReset.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void POSTRequestPasswordResetValidoiInputDatan() {
+        EmailCredentials badData = new EmailCredentials();
+        badData.setEmail("not-valid-email");
+        Response response = this.newPostRequest("auth/request-password-reset", badData);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.requestPasswordReset.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTPasswordEiSalliNullArvoja() {
+        NewPasswordCredentials nulls = new NewPasswordCredentials();
+        Response response = this.newPutRequest("auth/password", nulls);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.updatePassword.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.newPassword", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.passwordResetKey", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.NotNull.message}", errors.get(2).getMessageTemplate());
+    }
+
+    @Test
+    public void PUTPasswordValidoiInputDatan() {
+        NewPasswordCredentials badData = new NewPasswordCredentials();
+        badData.setEmail("fos");
+        badData.setNewPassword("f".toCharArray());
+        badData.setPasswordResetKey("dus");
+        Response response = this.newPutRequest("auth/password", badData);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.updatePassword.arg0.email", errors.get(0).getPath());
+        Assert.assertEquals("{org.hibernate.validator.constraints.Email.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.newPassword", errors.get(1).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("AuthController.updatePassword.arg0.passwordResetKey", errors.get(2).getPath());
+        Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(2).getMessageTemplate());
+    }
+
+    @Test
     public void PUTUpdateCredentialsEiSalliNullArvoja() {
         UpdateCredentials nulls = new UpdateCredentials();
         nulls.setUsername(null);
@@ -152,5 +209,25 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(2).getMessageTemplate());
         Assert.assertEquals("AuthController.updateCredentials.arg0.username", errors.get(3).getPath());
         Assert.assertEquals("{javax.validation.constraints.Size.message}", errors.get(3).getMessageTemplate());
+    }
+
+    @Test
+    public void DELETEValidoiPathParametrin() {
+        Response response = this.newDeleteRequest("auth/no-valid-uuid");
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.deleteAllUserData.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("AuthController.deleteAllUserData.arg0", errors.get(1).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
+    }
+
+    @Test
+    public void DELETEHylkääPyynnönJosKäyttäjäIdEiOleKirjautuneenKäyttäjän() {
+        Response response = this.newDeleteRequest("auth/" + TestData.TEST_USER_ID2);
+        Assert.assertEquals(400, response.getStatus());
+        List<ValidationError> errors = this.getValidationErrors(response);
+        Assert.assertEquals("AuthController.deleteAllUserData.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(0).getMessageTemplate());
     }
 }

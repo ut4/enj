@@ -25,17 +25,15 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
     }
 
     int updateLogin(AuthUser user) {
-        user.setUpdateColumns(new AuthUser.UpdateColumn[]{
+        user.setUpdateColumns(
             AuthUser.UpdateColumn.LAST_LOGIN,
             AuthUser.UpdateColumn.CURRENT_TOKEN
-        });
+        );
         return this.update(user);
     }
 
     int updateToken(AuthUser user) {
-        user.setUpdateColumns(new AuthUser.UpdateColumn[]{
-            AuthUser.UpdateColumn.CURRENT_TOKEN
-        });
+        user.setUpdateColumns(AuthUser.UpdateColumn.CURRENT_TOKEN);
         return this.update(user);
     }
 
@@ -52,6 +50,8 @@ public class AuthUserRepository extends BasicRepository<AuthUser> {
             user.setCurrentToken(rs.getString("userCurrentToken"));
             user.setIsActivated(rs.getInt("userIsActivated"));
             user.setActivationKey(rs.getString("userActivationKey"));
+            user.setPasswordResetKey(rs.getString("userPasswordResetKey"));
+            user.setPasswordResetTime(rs.getObject("userPasswordResetTime", Long.class));
             return user;
         }
     }

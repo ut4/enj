@@ -19,6 +19,7 @@ DROP TABLE   IF EXISTS workout;
 DROP VIEW    IF EXISTS exerciseView;
 DROP TABLE   IF EXISTS exerciseVariant;
 DROP TABLE   IF EXISTS exercise;
+DROP TRIGGER IF EXISTS exerciseDeleteTrg;
 DROP VIEW    IF EXISTS authUserView;
 DROP VIEW    IF EXISTS userView;
 DROP TABLE   IF EXISTS `user`;
@@ -36,6 +37,8 @@ CREATE TABLE `user` (
     currentToken VARCHAR(255) DEFAULT NULL,
     isActivated TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     activationKey VARCHAR(64) DEFAULT NULL,
+    passwordResetKey VARCHAR(64) DEFAULT NULL,
+    passwordResetTime INT UNSIGNED DEFAULT NULL,
     -- Vapaaehtoiset kentät
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) UNSIGNED DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
@@ -64,7 +67,9 @@ CREATE VIEW authUserView AS
         u.lastLogin    AS userLastLogin,
         u.currentToken AS userCurrentToken,
         u.isActivated  AS userIsActivated,
-        u.activationKey AS userActivationKey
+        u.activationKey AS userActivationKey,
+        u.passwordResetKey AS userPasswordResetKey,
+        u.passwordResetTime AS userPasswordResetTime
     FROM `user` AS u;
 
 -- == Exercise ====
@@ -86,6 +91,14 @@ CREATE TABLE exerciseVariant (
     FOREIGN KEY (userId) REFERENCES `user`(id),
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
+
+DELIMITER //
+-- Poistaa kaikki liikkeen liikevariantit poiston yhteydessä
+CREATE TRIGGER exerciseDeleteTrg BEFORE DELETE ON exercise
+FOR EACH ROW BEGIN
+    DELETE FROM exerciseVariant WHERE exerciseId = OLD.id;
+END;//
+DELIMITER ;
 
 CREATE VIEW exerciseView AS
     SELECT

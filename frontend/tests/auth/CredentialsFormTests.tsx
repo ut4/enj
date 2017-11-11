@@ -2,6 +2,7 @@ import QUnit from 'qunitjs';
 import CredentialsForm from 'src/auth/CredentialsForm';
 import itu from 'inferno-test-utils';
 import utils, { validationTestUtils as vtu } from 'tests/utils';
+import { EmailInputMixin } from 'src/auth/ValidatingFormMixins';
 
 QUnit.module('auth/CredentialsForm', hooks => {
     let rendered: any;
@@ -17,7 +18,7 @@ QUnit.module('auth/CredentialsForm', hooks => {
     hooks.beforeEach(() => {
         testCredentials = {username: 'test', email: 'test@email.com', password: 'pass'};
         (CredentialsForm as any).reservedUsernames = {[testReservedUsername]: 1};
-        (CredentialsForm as any).reservedEmails = {[testReservedEmail]: 1};
+        EmailInputMixin.reservedEmails = {[testReservedEmail]: 1};
         rendered = itu.renderIntoDocument(
             <CredentialsForm credentials={ testCredentials } onValidityChange={ () => {} }/>
         );
@@ -31,7 +32,7 @@ QUnit.module('auth/CredentialsForm', hooks => {
     });
     hooks.afterEach(() => {
         (CredentialsForm as any).reservedUsernames = {};
-        (CredentialsForm as any).reservedEmails = {};
+        EmailInputMixin.reservedEmails = {};
     });
     QUnit.test('Validoi inputit ja näyttää virheviestin arvon ollessa virheellinen', assert => {
         const initialErrorMessages = vtu.getRenderedValidationErrors(rendered);

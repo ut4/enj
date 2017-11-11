@@ -1,17 +1,20 @@
 package net.mdh.enj.auth;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.MockHashingProvider;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 /**
- * Testaa AuthControllerin reitit /login, /logout, ja PUT /credentials.
+ * Testaa AuthControllerin reitit /login, /logout, /request-password-reset, PUT
+ * /password, ja PUT /credentials.
  */
 public class TestUserDependentAuthControllerTest extends AuthControllerTestCase {
 
@@ -39,7 +42,8 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         testUser.setCurrentToken(mockCurrentToken);
         utils.update("UPDATE `user` SET " +
             "email = :email, lastLogin = :lastLogin, currentToken = :currentToken," +
-            "username = :username, passwordhash = :passwordHash, isActivated = 1 " +
+            "username = :username, passwordhash = :passwordHash, isActivated = 1, " +
+            "passwordResetKey = NULL, passwordResetTime = NULL" +
             "WHERE id = :id", testUser);
     }
 
@@ -119,7 +123,157 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPäivittääKirjautuneenKäyttäjänTiedotTietokantaan() {
+    public void POSTRequestPasswordResetPäivittääResetointilinkinTietokantaanJaLähettääSenEmailillaKäyttäjälle() {
+        // Setup
+        Mockito.when(mockMailer.sendMail(
+            Mockito.eq(testUser.getEmail()),
+            Mockito.eq(testUser.getUsername()),
+            Mockito.anyString(),
+            Mockito.anyString()
+        )).thenReturn(true);
+        String mockKey = "fake-random-chars";
+        Mockito.when(mockTokenService.generateRandomString(AuthService.PASSWORD_RESET_KEY_LENGTH))
+            .thenReturn(mockKey);
+        // Lähetä pyyntö
+        EmailCredentials postData = new EmailCredentials();
+        postData.setEmail(testUser.getEmail());
+        long unixTimeBeforeRequest = System.currentTimeMillis() / 1000L;
+        Response response = this.newPostRequest("auth/request-password-reset", postData);
+        Assert.assertEquals(200, response.getStatus());
+        // Päivittikö avaimen tietokantaan?
+        AuthUser userAfterRequest = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(mockKey, userAfterRequest.getPasswordResetKey());
+        Assert.assertTrue(userAfterRequest.getPasswordResetTime() >= unixTimeBeforeRequest);
+        // Lähettikö mailin?
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
+            Mockito.eq(testUser.getEmail()),
+            Mockito.eq(testUser.getUsername()),
+            Mockito.anyString(), // subject
+            captor.capture()     // content
+        );
+        String actualEmail = captor.getValue();
+        Assert.assertTrue("Email pitäis alkaa näin",
+            actualEmail.startsWith("Moi " + testUser.getUsername() +
+                ",<br><br>voit luoda uuden salasanan tästä"
+            )
+        );
+        Assert.assertTrue(
+            "Email pitäisi sisältää linkki salasanan palautussivulle",
+            actualEmail.contains(String.format(
+                "%s#/tili/uusi-salasana/%s/%s",
+                appConfig.appPublicFrontendUrl,
+                mockKey,
+                (TextCodec.BASE64URL.encode(postData.getEmail()))
+            ))
+        );
+    }
+
+    @Test
+    public void POSTRequestPasswordResetHylkääPyynnönJosKäyttäjääEiLöydy() {
+        EmailCredentials invalid = new EmailCredentials();
+        invalid.setEmail("not@found.biz");
+        //
+        Response response = this.newPostRequest("auth/request-password-reset", invalid);
+        Assert.assertEquals(400, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_USER_NOT_FOUND));
+    }
+
+    @Test
+    public void POSTRequestPasswordResetEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
+        // Tilanne, jossa emailin lähetys epäonnistuu
+        Mockito.when(mockMailer.sendMail(
+            Mockito.anyString(), // toAddress
+            Mockito.anyString(), // toPersonal
+            Mockito.anyString(), // subject
+            Mockito.anyString()  // content
+        )).thenReturn(false);
+        // Lähetä pyyntö
+        EmailCredentials postData = new EmailCredentials();
+        postData.setEmail(testUser.getEmail());
+        Response response = this.newPostRequest("auth/request-password-reset", postData);
+        // Failasiko?
+        Assert.assertEquals(500, response.getStatus());
+        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_MAIL_FAILURE));
+        // Jättikö avaimen kirjoittamatta tietokantaan?
+        AuthUser userDataAfter = this.getUserFromDb(testUser, true);
+        Assert.assertNull(userDataAfter.getPasswordResetKey());
+        Assert.assertNull(userDataAfter.getPasswordResetTime());
+    }
+
+    @Test
+    public void PUTPasswordKirjoittaaUudenSalasananJaTyhjentääResetointiAvaimenTietokantaan() {
+        String correctResetKey = setPasswordResetKey();
+        //
+        NewPasswordCredentials inputData = new NewPasswordCredentials();
+        inputData.setEmail(testUser.getEmail());
+        inputData.setNewPassword("newpass".toCharArray());
+        inputData.setPasswordResetKey(correctResetKey);
+        // Lähetä PUT /auth/password
+        Response response = this.newPutRequest("auth/password", inputData);
+        Assert.assertEquals(200, response.getStatus());
+        // Päivittikö salasanan & tyhjensikö avaimen?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertNull(testUserAfter.getPasswordResetKey());
+        Assert.assertNull(testUserAfter.getPasswordResetTime());
+        Assert.assertEquals(MockHashingProvider.genMockHash(inputData.getNewPassword()),
+            testUserAfter.getPasswordHash()
+        );
+    }
+
+    @Test
+    public void PUTPasswordEiKirjoitaTietokantaanMitäänJosResetointiAvainEiTäsmää() {
+        //
+        NewPasswordCredentials inputData = new NewPasswordCredentials();
+        inputData.setEmail(testUser.getEmail());
+        inputData.setNewPassword("newpass".toCharArray());
+        inputData.setPasswordResetKey(mockActivationKey.replace("a", "b"));
+        // Lähetä PUT /auth/password
+        Response response = this.newPutRequest("auth/password", inputData);
+        Assert.assertEquals(400, response.getStatus());
+        // Skippasiko tietokantaan kirjoituksen?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
+    }
+
+    @Test
+    public void PUTPasswordEiKirjoitaTietokantaanMitäänJosEmailEiTäsmää() {
+        String correctResetKey = setPasswordResetKey();
+        //
+        NewPasswordCredentials inputData = new NewPasswordCredentials();
+        inputData.setEmail("does@not.match");
+        inputData.setNewPassword("newpass".toCharArray());
+        inputData.setPasswordResetKey(correctResetKey);
+        // Lähetä PUT /auth/password
+        Response response = this.newPutRequest("auth/password", inputData);
+        Assert.assertEquals(400, response.getStatus());
+        // Skippasiko tietokantaan kirjoituksen?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
+        Assert.assertEquals(correctResetKey, testUserAfter.getPasswordResetKey());
+    }
+
+    @Test
+    public void PUTPasswordEiKirjoitaTietokantaanMitäänJosAvainOnLiianVanha() {
+        String correctResetKey = setPasswordResetKey(
+            System.currentTimeMillis() / 1000L - AuthService.PASSWORD_RESET_KEY_EXPIRATION - 10
+        );
+        //
+        NewPasswordCredentials inputData = new NewPasswordCredentials();
+        inputData.setEmail(testUser.getEmail());
+        inputData.setNewPassword("newpass".toCharArray());
+        inputData.setPasswordResetKey(correctResetKey);
+        // Lähetä PUT /auth/password
+        Response response = this.newPutRequest("auth/password", inputData);
+        Assert.assertEquals(400, response.getStatus());
+        // Skippasiko tietokantaan kirjoituksen?
+        AuthUser testUserAfter = this.getUserFromDb(testUser, false);
+        Assert.assertEquals(testUser.getPasswordHash(), testUserAfter.getPasswordHash());
+        Assert.assertEquals(correctResetKey, testUserAfter.getPasswordResetKey());
+    }
+
+    @Test
+    public void PUTCredentialsPäivittääKirjautuneenKäyttäjänTiedotTietokantaan() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         char[] newPassword = "newpass".toCharArray();
         newCredentials.setUserId(testUser.getId());
@@ -140,7 +294,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsEiVaadiUuttaSalasanaa() {
+    public void PUTCredentialsEiVaadiUuttaSalasanaa() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         // note. ei userId:tä eikä newPassword:iä
         newCredentials.setUsername(testUser.getUsername());
@@ -158,7 +312,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiTaiEmailOnJoKäytössä() {
+    public void PUTCredentialsPalauttaaVirhekoodinJosUusiKäyttäjänimiTaiEmailOnJoKäytössä() {
         AuthUser existing = new AuthUser();
         existing.setUsername("taken");
         existing.setEmail("taken@fus.ro");
@@ -194,12 +348,24 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
     }
 
     @Test
-    public void PUTUpdateCredentialsHylkääPyynnönJosCredentialsitEiTäsmää() {
+    public void PUTCredentialsHylkääPyynnönJosCredentialsitEiTäsmää() {
         UpdateCredentials newCredentials = new UpdateCredentials();
         newCredentials.setPassword(inCorrectPassword);
         newCredentials.setUserId(testUser.getId());
         newCredentials.setEmail(testUser.getEmail());
         Response response = this.newPutRequest("auth/credentials", newCredentials);
         Assert.assertEquals(400, response.getStatus());
+    }
+
+    private static String setPasswordResetKey() {
+        return setPasswordResetKey(System.currentTimeMillis() / 1000L - 10);
+    }
+    private static String setPasswordResetKey(long requestesAtUnixTime) {
+        String mockKey = mockActivationKey; // voi käyttää tätä, koska sama pituus
+        testUser.setPasswordResetKey(mockKey);
+        testUser.setPasswordResetTime(requestesAtUnixTime);
+        utils.update("UPDATE `user` SET passwordResetKey = :passwordResetKey," +
+            "passwordResetTime = :passwordResetTime", testUser);
+        return mockKey;
     }
 }

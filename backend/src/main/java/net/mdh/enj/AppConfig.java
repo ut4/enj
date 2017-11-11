@@ -5,7 +5,8 @@ import java.util.Properties;
 
 public class AppConfig {
     private final String appEnv;
-    public final String appPublicUrl;
+    public final String appPublicBackendUrl;
+    public final String appPublicFrontendUrl;
     public final String dbUrl;
     public final String dbUsername;
     public final String dbPassword;
@@ -26,7 +27,8 @@ public class AppConfig {
             throw new RuntimeException("resources/app.properties:n lukeminen epäonnistui");
         }
         this.appEnv              = this.getValue("app.env", props);
-        this.appPublicUrl        = this.getValue("app.publicUrl", props);
+        this.appPublicBackendUrl = this.getValue("app.publicUrl", props);
+        this.appPublicFrontendUrl= this.appPublicBackendUrl.replace("/api", "/app");
         this.dbUrl               = this.getValue("db.url", props);
         this.dbUsername          = this.getValue("db.username", props);
         this.dbPassword          = this.getValue("db.password", props);

@@ -1,22 +1,25 @@
 package net.mdh.enj.auth;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.validation.Valid;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.validation.constraints.Size;
+import net.mdh.enj.api.RequestContext;
+import net.mdh.enj.validation.AuthenticatedUserId;
+import net.mdh.enj.validation.UUID;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
-import net.mdh.enj.api.RequestContext;
-import java.util.List;
+import javax.ws.rs.NotAuthorizedException;
+import javax.validation.constraints.Size;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.PathParam;
+import javax.validation.Valid;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
+import javax.inject.Inject;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.Path;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.GET;
 
 /**
  * Vastaa /api/auth REST-pyynnöistä
@@ -30,11 +33,15 @@ public class AuthController {
 
     private static final String ACTIVATION_EMAIL_TEMPLATE = (
         "Moi %s,<br><br>kiitos rekisteröitymisestä Treenikirjaan, tässä aktivointilinkkisi:" +
-            "<a href=\"%s\">%s</a>. Tervetuloa mukaan!"
+            "<a href=\"%s\">%s</a>. Tervetuloa mukaan!<br><br>Terveisin,<br>treenikirja.com"
     );
-    private static final String REGISTER_SUCCESS_TEMPLATE = (
+    private static final String PASSWORD_RESET_EMAIL_TEMPLATE = (
+        "Moi %s,<br><br>voit luoda uuden salasanan tästä linkistä:" +
+            "<a href=\"%s\">%s</a>.<br><br>Terveisin,<br>treenikirja.com"
+    );
+    private static final String ACTIVATION_SUCCESS_TEMPLATE = (
         "<title>Tili aktivoitu</title>Tilisi on nyt aktivoitu, voit kirjautua treenaamaan " +
-            "osoitteessa <a href=\"%s\">%s</a>"
+            "osoitteessa <a href=\"%s\">%s</a>."
     );
 
     @Inject
@@ -117,10 +124,36 @@ public class AuthController {
         String loginLink = this.authService.activate(base64mail, key);
         return String.format(
             "<!DOCTYPE html><meta charset=\"UTF-8\"><meta name=\"robots\" " +
-                "content=\"noindex, nofollow\">" + REGISTER_SUCCESS_TEMPLATE,
+                "content=\"noindex, nofollow\">" + ACTIVATION_SUCCESS_TEMPLATE,
             loginLink,
             loginLink
         );
+    }
+
+    /**
+     * Tallentaa tietokantaan random-avaimen salasanan palautusta varten, ja
+     * lähettää sen käyttäjälle linkkinä sähköpostiin.
+     */
+    @POST
+    @PermitAll
+    @Path("/request-password-reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
+        this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
+        return new Responses.Ok();
+    }
+
+    /**
+     * Asettaa käyttäjälle uuden salasanan mikäli pyynnön passwordResetKey, ja
+     * email täsmäsi tietokantaan tallennettuihin arvoihin.
+     */
+    @PUT
+    @PermitAll
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok updatePassword(@Valid @NotNull NewPasswordCredentials credentials) {
+        this.authService.resetPassword(credentials);
+        return new Responses.Ok();
     }
 
     /**
@@ -139,10 +172,20 @@ public class AuthController {
         if (user == null) {
             throw new BadRequestException("Invalid credentials");
         }
-        List<String> errorNames = this.authService.updateCredentials(user, newCredentials);
-        if (!errorNames.isEmpty()) {
-            throw new BadRequestException("[\"" + String.join("\",\"", errorNames) + "\"]");
-        }
+        this.authService.updateCredentials(user, newCredentials);
+        return new Responses.Ok();
+    }
+
+    /**
+     * Poistaa käyttäjän, ja kaikki siihen liittyvän datan peruuttamattomasti.
+     *
+     * @return Responses.Ok
+     */
+    @DELETE
+    @Path("/{userId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Responses.Ok deleteAllUserData(@UUID @AuthenticatedUserId @PathParam("userId") String userId) {
+        this.authService.deleteAllUserData(userId);
         return new Responses.Ok();
     }
 }

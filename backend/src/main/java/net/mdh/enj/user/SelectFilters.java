@@ -10,6 +10,7 @@ public class SelectFilters implements SelectQueryFilters {
     private String email;
     private String currentToken;
     private Integer isActivated = 1;
+    private String passwordResetKey;
 
     public String getId() {
         return this.id;
@@ -46,17 +47,28 @@ public class SelectFilters implements SelectQueryFilters {
         this.isActivated = isActivated;
     }
 
+    public String getPasswordResetKey() {
+        return this.passwordResetKey;
+    }
+    public void setPasswordResetKey(String passwordResetKey) {
+        this.passwordResetKey = passwordResetKey;
+    }
+
     @Override
     public boolean hasRules() {
         return this.id != null ||
             this.username != null ||
             this.email != null ||
             this.currentToken != null ||
-            this.isActivated != null;
+            this.isActivated != null ||
+            this.passwordResetKey != null;
     }
 
     @Override
     public String toSql() {
+        if (this.passwordResetKey != null) {
+            return "(userEmail = :email OR userPasswordResetKey = :passwordResetKey) AND userIsActivated = :isActivated";
+        }
         ArrayList<String> out = new ArrayList<>();
         if (this.id != null) {
             out.add("userId = :id");

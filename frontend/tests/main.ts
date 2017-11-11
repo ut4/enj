@@ -1,9 +1,12 @@
 import 'tests/auth/AuthHttpInterceptorsTests';
 import 'tests/auth/AuthServiceTests';
-import 'tests/auth/CredentialsFormTests';
+import 'tests/auth/CredentialsDeleteViewTests';
 import 'tests/auth/CredentialsEditViewTests';
+import 'tests/auth/CredentialsFormTests';
 import 'tests/auth/LoginFormTests';
 import 'tests/auth/LoginViewTests';
+import 'tests/auth/PasswordCreateViewTests';
+import 'tests/auth/RequestPasswordResetViewTests';
 import 'tests/common/DbTests';
 import 'tests/common/HttpTests';
 import 'tests/common/RESTBackendTests';
