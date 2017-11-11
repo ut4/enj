@@ -44,7 +44,7 @@ public class ExerciseController {
      * Lisää uuden treeniliikkeen tietokantaan kirjautuneelle käyttäjälle.
      */
     @POST
-    @Syncable
+    @Syncable(dependent = {"exercise/variant", "exerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Exercise exercise) {
         exercise.setUserId(this.requestContext.getUserId());
@@ -97,7 +97,7 @@ public class ExerciseController {
      */
     @PUT
     @Path("/{exerciseId}")
-    @Syncable
+    @Syncable(dependent = {"exercise/variant", "exerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public Responses.UpdateResponse update(
         @PathParam("exerciseId") @UUID String exerciseId,

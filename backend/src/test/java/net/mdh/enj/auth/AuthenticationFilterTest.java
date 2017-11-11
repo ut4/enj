@@ -45,6 +45,7 @@ public class AuthenticationFilterTest extends JerseyTest {
                     bind(RequestContext.class).to(RequestContext.class).in(RequestScoped.class);
                     bind(AppConfigProvider.getInstance()).to(AppConfig.class);
                     bind(AuthService.class).to(AuthService.class);
+                    bind(Mockito.mock(AccountManager.class)).to(AccountManager.class);
                     bind(mockAuthUserRepository).to(AuthUserRepository.class);
                     bind(spyingTokenService).to(TokenService.class);
                     bind(Mockito.mock(HashingProvider.class)).to(HashingProvider.class);

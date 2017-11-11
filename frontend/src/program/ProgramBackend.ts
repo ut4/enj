@@ -18,7 +18,7 @@ class ProgramBackend extends RESTBackend<Enj.API.Program> {
         return this.programWorkoutBackend.update(Array.isArray(pw) ? pw : [pw]);
     }
     public deleteWorkout(programWorkout: Enj.API.ProgramWorkout) {
-        return this.programWorkoutBackend.delete(programWorkout);
+        return this.programWorkoutBackend.delete(programWorkout, '?programId=' + programWorkout.programId);
     }
     public insertWorkoutExercises(programWorkoutExercises: Array<Enj.API.ProgramWorkoutExercise>) {
         return this.programWorkoutExerciseBackend.insertAll(programWorkoutExercises, '/all');
@@ -27,7 +27,7 @@ class ProgramBackend extends RESTBackend<Enj.API.Program> {
         return this.programWorkoutExerciseBackend.update(Array.isArray(pwe) ? pwe : [pwe]);
     }
     public deleteWorkoutExercise(programWorkoutExercise: Enj.API.ProgramWorkoutExercise) {
-        return this.programWorkoutExerciseBackend.delete(programWorkoutExercise);
+        return this.programWorkoutExerciseBackend.delete(programWorkoutExercise, '?programWorkoutId=' + programWorkoutExercise.programWorkoutId);
     }
 }
 

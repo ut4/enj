@@ -93,7 +93,7 @@ class OperationTreeFactory {
             String id = getIdentity(syncable);
             addOperation(id, syncable, branch);
             //
-            SyncRoute.SubRoute dependent = syncRouteRegister.find(syncable.getRoute()).dependent;
+            SyncRoute.SubRoute dependent = syncRouteRegister.find(syncable.getRoute()).getDependent();
             if (dependent != null && alreadyProcessedParentIds.get(id) == null) {
                 // Tämän itemin id:hen linkittyvät lapset
                 List<SyncQueueItem> children = getChildren(id, dependent, syncable);

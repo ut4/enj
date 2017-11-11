@@ -43,7 +43,7 @@ public class TestUserDependentAuthControllerTest extends AuthControllerTestCase 
         utils.update("UPDATE `user` SET " +
             "email = :email, lastLogin = :lastLogin, currentToken = :currentToken," +
             "username = :username, passwordhash = :passwordHash, isActivated = 1, " +
-            "passwordResetKey = NULL, passwordResetTime = NULL" +
+            "passwordResetKey = NULL, passwordResetTime = NULL " +
             "WHERE id = :id", testUser);
     }
 

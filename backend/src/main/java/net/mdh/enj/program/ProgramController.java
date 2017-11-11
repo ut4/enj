@@ -54,7 +54,7 @@ public class ProgramController {
      * Lisää uuden ohjelman tietokantaan kirjautuneelle käyttäjälle.
      */
     @POST
-    @Syncable
+    @Syncable(dependent = {"program/workout", "programId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Program program) {
         program.setUserId(this.requestContext.getUserId());
@@ -100,7 +100,7 @@ public class ProgramController {
      */
     @PUT
     @Path("/{programId}")
-    @Syncable
+    @Syncable(dependent = {"program/workout", "programId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse update(
         @PathParam("programId") @UUID String programId,
@@ -118,7 +118,7 @@ public class ProgramController {
      */
     @DELETE
     @Path("/{programId}")
-    @Syncable
+    @Syncable(dependent = {"program/workout", "programId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public DeleteResponse delete(@PathParam("programId") @UUID String id) {
         Program program = new Program();
@@ -138,7 +138,7 @@ public class ProgramController {
      */
     @POST
     @Path("/workout/all")
-    @Syncable
+    @Syncable(dependent = {"program/workout/exercise", "programWorkoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public MultiInsertResponse insertAllProgramWorkouts(@Valid @NotNull List<Program.Workout> programWorkouts) {
         // Tarkista, kuuluuko {programWorkouts}in viittaama ohjelma kirjautuneelle käyttäjälle
@@ -157,7 +157,7 @@ public class ProgramController {
      */
     @PUT
     @Path("/workout")
-    @Syncable
+    @Syncable(dependent = {"program/workout/exercise", "programWorkoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllProgramWorkouts(@Valid @NotNull Program.Workout... programWorkouts) {
         return new UpdateResponse(this.alterProgramWorkoutsOrExercises(
@@ -171,7 +171,7 @@ public class ProgramController {
      */
     @DELETE
     @Path("/workout/{programWorkoutId}")
-    @Syncable
+    @Syncable(dependent = {"program/workout/exercise", "programWorkoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public DeleteResponse deleteProgramWorkout(@PathParam("programWorkoutId") @UUID String id) {
         Program.Workout programWorkout = new Program.Workout();

@@ -73,7 +73,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.Workout> {
         return this.workoutExerciseBackend.swapExercises(direction, index, list);
     }
     public deleteExercise(workoutExercise: Enj.API.WorkoutExercise) {
-        return this.workoutExerciseBackend.delete(workoutExercise);
+        return this.workoutExerciseBackend.delete(workoutExercise, '?workoutId=' + workoutExercise.workoutId);
     }
     public insertSet(set: Enj.API.WorkoutExerciseSet) {
         return this.workoutExerciseSetBackend.insert(set);
@@ -82,7 +82,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.Workout> {
         return this.workoutExerciseSetBackend.update(Array.isArray(set) ? set : [set]);
     }
     public deleteSet(set: Enj.API.WorkoutExerciseSet) {
-        return this.workoutExerciseSetBackend.delete(set);
+        return this.workoutExerciseSetBackend.delete(set, '?workoutExerciseId=' + set.workoutExerciseId);
     }
 }
 

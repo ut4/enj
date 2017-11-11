@@ -51,7 +51,7 @@ public class WorkoutController {
      * Lisää treenin tietokantaan mikäli se on validi Workout-bean.
      */
     @POST
-    @Syncable
+    @Syncable(dependent = {"workout/exercise", "workoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insert(@Valid @NotNull Workout workout) {
         int insertCount = this.workoutRepository.insert(workout);
@@ -63,7 +63,7 @@ public class WorkoutController {
      */
     @POST
     @Path("/all")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise", "workoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public MultiInsertResponse insertAll(@Valid @NotNull List<Workout> workouts) {
         int insertCount = this.workoutRepository.insert(workouts);
@@ -83,7 +83,7 @@ public class WorkoutController {
      * Päivittää kaikki treenit {workouts}:n tiedoilla.
      */
     @PUT
-    @Syncable
+    @Syncable(dependent = {"workout/exercise", "workoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateMany(@Valid @NotNull List<Workout> workouts) {
         return new UpdateResponse(this.workoutRepository.updateMany(workouts, "id = :id"));
@@ -94,7 +94,7 @@ public class WorkoutController {
      */
     @DELETE
     @Path("/{workoutId}")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise", "workoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public DeleteResponse delete(@PathParam("workoutId") @UUID String id) {
         return new DeleteResponse(this.workoutRepository.delete(id));
@@ -105,7 +105,7 @@ public class WorkoutController {
      */
     @POST
     @Path("/exercise")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise/set", "workoutExerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public InsertResponse insertWorkoutExercise(@Valid @NotNull Workout.Exercise workoutExercise) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercise);
@@ -117,7 +117,7 @@ public class WorkoutController {
      */
     @POST
     @Path("/exercise/all")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise/set", "workoutExerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public MultiInsertResponse insertAllWorkoutExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
         int insertCount = this.workoutExerciseRepository.insert(workoutExercises);
@@ -129,7 +129,7 @@ public class WorkoutController {
      */
     @PUT
     @Path("/exercise")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise/set", "workoutExerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public UpdateResponse updateAllWorkoutExercises(@Valid @NotNull List<Workout.Exercise> workoutExercises) {
         return new UpdateResponse(this.workoutExerciseRepository.updateMany(workoutExercises, "id = :id"));
@@ -140,7 +140,7 @@ public class WorkoutController {
      */
     @DELETE
     @Path("/exercise/{workoutExerciseId}")
-    @Syncable
+    @Syncable(dependent = {"workout/exercise/set", "workoutExerciseId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public DeleteResponse deleteWorkoutExercise(@PathParam("workoutExerciseId") @UUID String id) {
         return new DeleteResponse(this.workoutExerciseRepository.delete(id));

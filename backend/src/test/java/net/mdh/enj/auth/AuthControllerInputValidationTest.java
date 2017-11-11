@@ -1,7 +1,7 @@
 package net.mdh.enj.auth;
 
-import java.util.List;
 import org.mockito.Mockito;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.resources.TestData;
@@ -12,6 +12,8 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Assert;
 import org.junit.Test;
+import java.util.Comparator;
+import java.util.List;
 
 public class AuthControllerInputValidationTest extends JerseyTestCase {
 
@@ -215,11 +217,12 @@ public class AuthControllerInputValidationTest extends JerseyTestCase {
     public void DELETEValidoiPathParametrin() {
         Response response = this.newDeleteRequest("auth/no-valid-uuid");
         Assert.assertEquals(400, response.getStatus());
-        List<ValidationError> errors = this.getValidationErrors(response);
+        List<ValidationError> errors = response.readEntity(new GenericType<List<ValidationError>>() {});
+        errors.sort(Comparator.comparing(ValidationError::getMessageTemplate));// aakkosjärjestykseen
         Assert.assertEquals("AuthController.deleteAllUserData.arg0", errors.get(0).getPath());
-        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(0).getMessageTemplate());
         Assert.assertEquals("AuthController.deleteAllUserData.arg0", errors.get(1).getPath());
-        Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
     }
 
     @Test

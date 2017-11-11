@@ -6,9 +6,8 @@ import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.inject.Inject;
+import java.util.HashMap;
 
 /**
  * Luo jokaisesta applikaation @Syncable-annotaatiolla annotoidusta REST-reitistä
@@ -41,38 +40,29 @@ public class SyncRouteCollector implements ApplicationEventListener {
     }
 
     private void collectSyncableRoutes(Resource resource, String parentPath) {
-        for (ResourceMethod syncableMethod: this.getSyncableResourceMethods(resource)) {
+        HashMap<ResourceMethod, Syncable> methods = this.getSyncableResourceMethods(resource);
+        for (ResourceMethod syncableMethod: methods.keySet()) {
             SyncRoute syncRoute = new SyncRoute();
             syncRoute.setUrl(parentPath + resource.getPath());
             syncRoute.setMethod(syncableMethod.getHttpMethod());
             syncRoute.setPattern(parentPath + resource.getPathPattern().getRegex());
-            String urlNamespace = syncRoute.getUrlNamespace();
-            if (urlNamespace.replace("/all", "").contains("/")) {
-                String[] parts = urlNamespace.split("/");
-                syncRoute.setParent(String.join("/", Arrays.copyOf(parts, parts.length - 1)));
-                syncRoute.setForeignKey(this.makeForeignKeyFromUrlSegments(parts));
-
+            String[] dependent = methods.get(syncableMethod).dependent();
+            if (dependent.length == 2) {// [0] = url, [1] = foreignKey
+                syncRoute.setDependent(dependent[0], dependent[1]);
             }
             this.routeRegister.add(syncRoute);
         }
     }
 
-    private ArrayList<ResourceMethod> getSyncableResourceMethods(Resource childResource) {
-        ArrayList<ResourceMethod> out = new ArrayList<>();
+    private HashMap<ResourceMethod, Syncable> getSyncableResourceMethods(Resource childResource) {
+        HashMap<ResourceMethod, Syncable> out = new HashMap<>();
         for (ResourceMethod method : childResource.getResourceMethods()) {
-            if (method.getInvocable().getHandlingMethod().getAnnotation(Syncable.class) != null) {
-                out.add(method);
+            Syncable annotation = method.getInvocable().getHandlingMethod().getAnnotation(Syncable.class);
+            if (annotation != null) {
+                out.put(method, annotation);
             }
         }
         return out;
-    }
-
-    private String makeForeignKeyFromUrlSegments(String[] urlSegments) {
-        StringBuilder out = new StringBuilder(urlSegments[0]);
-        for (int i = 1; i < urlSegments.length - 1; i++) {
-            out.append(urlSegments[i].substring(0, 1).toUpperCase()).append(urlSegments[i].substring(1));
-        }
-        return out.toString() + "Id";
     }
 
     @Override

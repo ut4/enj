@@ -10,4 +10,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Syncable {}
+public @interface Syncable {
+    String[] dependent() default {};
+}

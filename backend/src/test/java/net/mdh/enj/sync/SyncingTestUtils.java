@@ -19,44 +19,44 @@ class SyncingTestUtils {
         SyncRoute workoutInsertRoute = new SyncRoute();
         workoutInsertRoute.setUrl(TestData.workoutInsertRoute.getUrl());
         workoutInsertRoute.setMethod(TestData.workoutInsertRoute.getMethod());
-        workoutInsertRoute.dependent = new SyncRoute.SubRoute("workout/exercise", "workoutId");
+        workoutInsertRoute.setDependent("workout/exercise", "workoutId");
         // POST /api/workout/all
         SyncRoute workoutInsertAllRoute = new SyncRoute();
         workoutInsertAllRoute.setUrl(TestData.workoutInsertRoute.getUrl() + "/all");
         workoutInsertAllRoute.setMethod(TestData.workoutInsertRoute.getMethod());
-        workoutInsertAllRoute.dependent = new SyncRoute.SubRoute("workout/exercise", "workoutId");
+        workoutInsertAllRoute.setDependent("workout/exercise", "workoutId");
         // PUT /api/workout
         SyncRoute workoutUpdateRoute = new SyncRoute();
         workoutUpdateRoute.setUrl("workout");
         workoutUpdateRoute.setMethod("PUT");
-        workoutUpdateRoute.dependent = new SyncRoute.SubRoute("workout/exercise", "workoutId");
+        workoutUpdateRoute.setDependent("workout/exercise", "workoutId");
         // DELETE /api/workout/{workoutId}
         SyncRoute workoutDeleteRoute = new SyncRoute();
         workoutDeleteRoute.setUrl(TestData.workoutDeleteRoute.getUrl());
         workoutDeleteRoute.setMethod(TestData.workoutDeleteRoute.getMethod());
         workoutDeleteRoute.setPattern("workout/([^/]+)(/.*)?");
-        workoutDeleteRoute.dependent = new SyncRoute.SubRoute("workout/exercise", "workoutId");
+        workoutDeleteRoute.setDependent("workout/exercise", "workoutId");
         // POST /api/workout/exercise
         SyncRoute workoutExerciseAddRoute = new SyncRoute();
         workoutExerciseAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl());
         workoutExerciseAddRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
-        workoutExerciseAddRoute.dependent = new SyncRoute.SubRoute("workout/exercise/set", "workoutExerciseId");
+        workoutExerciseAddRoute.setDependent("workout/exercise/set", "workoutExerciseId");
         // POST /api/workout/exercise/all
         SyncRoute workoutExerciseAddAllRoute = new SyncRoute();
         workoutExerciseAddAllRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl() + "/all");
         workoutExerciseAddAllRoute.setMethod(TestData.workoutExerciseAddRoute.getMethod());
-        workoutExerciseAddAllRoute.dependent = new SyncRoute.SubRoute("workout/exercise/set", "workoutExerciseId");
+        workoutExerciseAddAllRoute.setDependent("workout/exercise/set", "workoutExerciseId");
         // PUT /api/workout/exercise
         SyncRoute workoutExerciseUpdateRoute = new SyncRoute();
         workoutExerciseUpdateRoute.setUrl("workout/exercise");
         workoutExerciseUpdateRoute.setMethod("PUT");
-        workoutExerciseUpdateRoute.dependent = new SyncRoute.SubRoute("workout/exercise/set", "workoutExerciseId");
+        workoutExerciseUpdateRoute.setDependent("workout/exercise/set", "workoutExerciseId");
         // DELETE /api/workout/exercise/{weId}
         SyncRoute workoutExerciseDeleteRoute = new SyncRoute();
         workoutExerciseDeleteRoute.setUrl("workout/exercise/{workoutExerciseId}");
         workoutExerciseDeleteRoute.setMethod("DELETE");
         workoutExerciseDeleteRoute.setPattern("workout/exercise/([^/]+)(/.*)?");
-        workoutExerciseDeleteRoute.dependent = new SyncRoute.SubRoute("workout/exercise/set", "workoutExerciseId");
+        workoutExerciseDeleteRoute.setDependent("workout/exercise/set", "workoutExerciseId");
         // POST /api/workout/exercise/set
         SyncRoute workoutExerciseSetAddRoute = new SyncRoute();
         workoutExerciseSetAddRoute.setUrl(TestData.workoutExerciseAddRoute.getUrl() + "/set");
@@ -78,13 +78,13 @@ class SyncingTestUtils {
         SyncRoute exerciseAddRoute = new SyncRoute();
         exerciseAddRoute.setUrl("exercise");
         exerciseAddRoute.setMethod("POST");
-        exerciseAddRoute.dependent = new SyncRoute.SubRoute("exercise/variant", "exerciseId");
+        exerciseAddRoute.setDependent("exercise/variant", "exerciseId");
         // PUT /api/exercise/{exsId}
         SyncRoute exerciseUpdateRoute = new SyncRoute();
         exerciseUpdateRoute.setUrl("exercise/{exerciseId}");
         exerciseUpdateRoute.setMethod("PUT");
         exerciseUpdateRoute.setPattern("exercise/([^/]+)(/.*)?");
-        exerciseUpdateRoute.dependent = new SyncRoute.SubRoute("exercise/variant", "exerciseId");
+        exerciseUpdateRoute.setDependent("exercise/variant", "exerciseId");
         // POST /api/exercise/variant
         SyncRoute exerciseVariantAddRoute = new SyncRoute();
         exerciseVariantAddRoute.setUrl("exercise/variant");
@@ -93,23 +93,23 @@ class SyncingTestUtils {
         SyncRoute programAddRoute = new SyncRoute();
         programAddRoute.setUrl("program");
         programAddRoute.setMethod("POST");
-        programAddRoute.dependent = new SyncRoute.SubRoute("program/workout", "programId");
+        programAddRoute.setDependent("program/workout", "programId");
         // DELETE /api/program/{programId}
         SyncRoute programDeleteRoute = new SyncRoute();
         programDeleteRoute.setUrl("program/{programId}");
         programDeleteRoute.setMethod("DELETE");
         programDeleteRoute.setPattern("program/([^/]+)(/.*)?");
-        programDeleteRoute.dependent = new SyncRoute.SubRoute("program/workout", "programId");
+        programDeleteRoute.setDependent("program/workout", "programId");
         // POST /api/program/workout
         SyncRoute programWorkoutAddRoute = new SyncRoute();
         programWorkoutAddRoute.setUrl("program/workout");
         programWorkoutAddRoute.setMethod("POST");
-        programWorkoutAddRoute.dependent = new SyncRoute.SubRoute("program/workout/exercise", "programWorkoutId");
+        programWorkoutAddRoute.setDependent("program/workout/exercise", "programWorkoutId");
         // PUT /api/program/workout/exercise
         SyncRoute programWorkoutExerciseEditRoute = new SyncRoute();
         programWorkoutExerciseEditRoute.setUrl("program/workout/exercise");
         programWorkoutExerciseEditRoute.setMethod("PUT");
-        programWorkoutExerciseEditRoute.dependent = new SyncRoute.SubRoute("program/workout/exercise", "programWorkoutId");
+        programWorkoutExerciseEditRoute.setDependent("program/workout/exercise", "programWorkoutId");
         //
         SyncRouteRegister register = new SyncRouteRegister();
         register.add(workoutInsertRoute);
