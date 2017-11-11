@@ -31,7 +31,7 @@ class OfflineEndView extends Component<any, any> {
             iocFactories.authService().login(this.loginForm.getValues())
         // 2. Päätä offline-tila
                 .then(() =>
-                    iocFactories.offline().disable()
+                    iocFactories.offline().unregister()
                 , loginError => { // kirjautuminen epäonnistui, ohjaa kohdan 4. rejectiin
                     throw new Error(loginError.response.status === 401 ?
                         'Käyttäjätunnus tai salasana ei täsmännyt' :

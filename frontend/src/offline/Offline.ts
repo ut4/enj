@@ -83,6 +83,20 @@ class Offline {
         return this.userState.setIsOffline(false);
     }
     /**
+     * Poistaa serviceWorkerin selaimesta, ja asettaa userStaten offline-tilaksi
+     * false.
+     *
+     * @return {Promise} -> ({number} wasSuccesful, {any} error)
+     */
+    public unregister(): Promise<number> {
+        return this.serviceWorkerContainer.getRegistration()
+            .then(registration => registration.unregister())
+            .then(wasSuccesful => {
+                if (!wasSuccesful) { throw new Error('Serviceworkerin poisto epäonnistui'); }
+                return this.userState.setIsOffline(false);
+            });
+    }
+    /**
      * Komentaa serviceWorkeriä päivittämään cache, jolla url {url}.
      */
     public updateCache(url: string, data: any): Promise<any> {

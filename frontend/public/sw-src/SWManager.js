@@ -73,7 +73,7 @@ function SWManager(mainSWScope) {
             mainSWScope.skipWaiting();
         }
         mainSWScope.isOnline = newValue === true;
-        console.info('Asetettiin isOnline -> ' + (mainSWScope.isOnline ? 'true' : 'false'));
+        mainSWScope.myconsole.info('Asetettiin isOnline -> ' + (mainSWScope.isOnline ? 'true' : 'false'));
     };
     /**
      * @param {boolean} newValue
@@ -81,7 +81,15 @@ function SWManager(mainSWScope) {
      */
     this.setDevMode = newValue => {
         mainSWScope.devMode = newValue === true;
-        console.info('Asetettiin devMode -> ' + (mainSWScope.devMode ? 'true' : 'false'));
+        mainSWScope.myconsole.info('Asetettiin devMode -> ' + (mainSWScope.devMode ? 'true' : 'false'));
+    };
+    /**
+     * @param {boolean} newValue
+     * @return {void}
+     */
+    this.setConsoleOutputEnabled = newValue => {
+        mainSWScope.consoleOutputEnabled = newValue === true;
+        mainSWScope.myconsole.info('Asetettiin consoleOutputEnabled -> ' + (mainSWScope.consoleOutputEnabled ? 'true' : 'false'));
     };
     /**
      * @return {Promise} -> ({string} token, {string|any} error)
@@ -119,7 +127,7 @@ function SWManager(mainSWScope) {
     function setCachedJson(url, newValue) {
         return mainSWScope.caches.open(mainSWScope.CACHE_NAME)
             .then(cache => {
-                console.info(`Ylikirjoitetaan cache ${url}`, newValue);
+                mainSWScope.myconsole.info(`Ylikirjoitetaan cache ${url}`, newValue);
                 return cache.put(
                     makeApiRequest(url),
                     new Response(JSON.stringify(newValue))

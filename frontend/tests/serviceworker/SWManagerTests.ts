@@ -9,6 +9,7 @@ QUnit.module('SWManager', hooks => {
         this.fakeSWScope = utils.fakeSWScope('somecache');
         this.fakeSWScope.APP_DIR_NAME = 'fos';
         this.fakeSWScope.BASE_URL = 'http://a.b:3000';
+        this.fakeSWScope.myconsole = {log:()=>{},error:()=>{},info:()=>{}};
         this.buildFullUrl = url => this.fakeSWScope.BASE_URL + '/' + url;
         this.swManager = new SWManager(this.fakeSWScope);
     });

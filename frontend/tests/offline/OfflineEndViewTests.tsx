@@ -11,7 +11,7 @@ import iocFactories from 'src/ioc';
 QUnit.module('offline/OfflineEndView', hooks => {
     let userStateStub: UserState;
     let userStateStubIocFactoryOverride: sinon.SinonStub;
-    let shallowUserState: Offline;
+    let shallowOffline: Offline;
     let offlineStubIocFactoryOverride: sinon.SinonStub;
     let shallowAuthService: AuthService;
     let authServiceStubIocFactoryOverride: sinon.SinonStub;
@@ -22,8 +22,8 @@ QUnit.module('offline/OfflineEndView', hooks => {
     hooks.beforeEach(() => {
         userStateStub = Object.create(UserState.prototype);
         userStateStubIocFactoryOverride = sinon.stub(iocFactories, 'userState').returns(userStateStub);
-        shallowUserState = Object.create(Offline.prototype);
-        offlineStubIocFactoryOverride = sinon.stub(iocFactories, 'offline').returns(shallowUserState);
+        shallowOffline = Object.create(Offline.prototype);
+        offlineStubIocFactoryOverride = sinon.stub(iocFactories, 'offline').returns(shallowOffline);
         shallowAuthService = Object.create(AuthService.prototype);
         authServiceStubIocFactoryOverride = sinon.stub(iocFactories, 'authService').returns(shallowAuthService);
         shallowSyncBackend = Object.create(SyncBackend.prototype);
@@ -45,9 +45,9 @@ QUnit.module('offline/OfflineEndView', hooks => {
         const confirmButton = getConfirmButton(rendered);
         assert.ok(confirmButton.disabled);
     });
-    QUnit.test('confirm palaa online-tilan', assert => {
+    QUnit.test('confirm poistaa serviceworkerin, ja asettaa käyttäjän takaisin online-tilaan', assert => {
         const loginCallStub = sinon.stub(shallowAuthService, 'login').returns(Promise.resolve(1));
-        const resumeOnlineCallStub = sinon.stub(shallowUserState, 'disable').returns(Promise.resolve(1));
+        const resumeOnlineCallStub = sinon.stub(shallowOffline, 'unregister').returns(Promise.resolve(1));
         const backendSyncCallStub = sinon.stub(shallowSyncBackend, 'syncAll').returns(Promise.resolve(2));
         //
         const confirmSpy = renderViewAndTriggerConfirm();
@@ -66,7 +66,7 @@ QUnit.module('offline/OfflineEndView', hooks => {
         const loginError = new Error('fus');
         (loginError as any).response = {status: 401};
         sinon.stub(shallowAuthService, 'login').returns(Promise.reject(loginError));
-        const resumeOnlineCallSpy = sinon.spy(shallowUserState, 'disable');
+        const resumeOnlineCallSpy = sinon.spy(shallowOffline, 'disable');
         const backendSyncCallSpy = sinon.spy(shallowSyncBackend, 'syncAll');
         const notifySpy = sinon.spy();
         const notifyIocOverride = sinon.stub(iocFactories, 'notify').returns(notifySpy);

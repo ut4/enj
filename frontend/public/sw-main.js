@@ -20,6 +20,14 @@ self.isOnline = false;
 // Jos true, ohittaa kaikkien, paitsi /api -sisältöisten fetch-eventien
 // hijackauksen
 self.devMode = false;
+// Jos true, loggailee konsoliin debug-viestejä
+self.consoleOutputEnabled = false;
+//
+self.myconsole = {
+    log: (...args) => self.consoleOutputEnabled && console.log(...args),
+    error: (...args) => self.consoleOutputEnabled && console.error(...args),
+    info: (...args) => self.consoleOutputEnabled && console.info(...args)
+};
 // Kasa metodeja, jotka pääasiassa mutatoi self:n statea
 const swManager = new SWManager(self);
 
@@ -106,7 +114,7 @@ self.DYNAMIC_CACHE = [{
 self.addEventListener('message', event => {
     switch (event.data.action) {
         case 'updateCache' :
-            console.log('Saatiin cachen päivityspyyntö', event.data);
+            self.myconsole.log('Saatiin cachen päivityspyyntö', event.data);
             swManager.updateCache(prefixWithApiNamespace(event.data.url), event.data.data)
                 .then(() => {
                     event.ports[0].postMessage({ok: true});
@@ -115,7 +123,7 @@ self.addEventListener('message', event => {
                 });
             break;
         case 'pushToCache' :
-            console.log('Saatiin cachen pushpyyntö', event.data);
+            self.myconsole.log('Saatiin cachen pushpyyntö', event.data);
             swManager.updateCache(prefixWithApiNamespace(event.data.url), event.data.data)
                 .then(() => {
                     event.ports[0].postMessage({ok: true});
@@ -124,15 +132,19 @@ self.addEventListener('message', event => {
                 });
             break;
         case 'setIsOnline':
-            console.log('Saatiin isOnline päivityspyyntö', event.data);
+            self.myconsole.log('Saatiin isOnline päivityspyyntö', event.data);
             swManager.setIsOnline(event.data.value);
             break;
         case 'setDevMode':
-            console.log('Saatiin devModen päivityspyyntö', event.data);
+            self.myconsole.log('Saatiin devModen päivityspyyntö', event.data);
             swManager.setDevMode(event.data.value);
             break;
+        case 'setConsoleOutputEnabled':
+            self.myconsole.log('Saatiin consoleOutputEnabled päivityspyyntö', event.data);
+            swManager.setConsoleOutputEnabled(event.data.value);
+            break;
         default :
-            console.error('Tuntematon pyyntö ' + event.data.action, event.data);
+            self.myconsole.error('Tuntematon pyyntö ' + event.data.action, event.data);
             break;
     }
 });
