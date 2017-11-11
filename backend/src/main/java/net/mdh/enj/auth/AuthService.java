@@ -167,7 +167,7 @@ public class AuthService {
         if (this.authUserRepository.update(activated) < 1) {
             throw new IneffectualOperationException("Käyttäjän aktivointi epäonnistui");
         }
-        return String.format("%s#/kirjaudu", appConfig.appPublicFrontendUrl);
+        return String.format("%s/#/kirjaudu", appConfig.appPublicFrontendUrl);
     }
 
     /**

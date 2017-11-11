@@ -1,8 +1,8 @@
 package net.mdh.enj.auth;
 
+import net.mdh.enj.validation.UUID;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.validation.AuthenticatedUserId;
-import net.mdh.enj.validation.UUID;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.NotAuthorizedException;
@@ -117,6 +117,7 @@ public class AuthController {
     @GET
     @PermitAll
     @Path("/activate")
+    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
     public String activate(
         @QueryParam("key") @NotNull @Size(min = AuthService.ACTIVATION_KEY_LENGTH) String key,
         @QueryParam("email") @NotNull @Size(min = 4) String base64mail

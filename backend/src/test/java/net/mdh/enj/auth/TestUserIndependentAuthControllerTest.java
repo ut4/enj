@@ -121,7 +121,7 @@ public class TestUserIndependentAuthControllerTest extends AuthControllerTestCas
         String message = response.readEntity(String.class);
         Assert.assertTrue(message.contains("Tilisi on nyt aktivoitu"));
         Assert.assertTrue(message.contains(String.format(
-            "%s#/kirjaudu",
+            "%s/#/kirjaudu",
             appConfig.appPublicFrontendUrl
         )));
     }
