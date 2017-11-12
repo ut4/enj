@@ -138,7 +138,7 @@ const occurrenceFinder = {
                 if (!o.repeatEvery) {
                     return nthDay === weekDay + nthWeek * 7;
                 }
-                const day = nthWeek * 7 + (weekDay || 7) - nthDay;
+                const day = nthWeek * 7 + weekDay - nthDay;
                 return day > -1 && day % o.repeatEvery === 0;
             })) {
                 return [programWorkout, i];

@@ -45,7 +45,7 @@ class WorkoutBackend extends RESTBackend<Enj.API.Workout> {
      * '?startFrom=<unixTime>&startTo=<unixTime>'
      */
     public makeTimeRangeUrlParams(date?: Date): string {
-        const startOfDay = date || new Date();
+        const startOfDay = date ? new Date(date) : new Date();
         startOfDay.setHours(0);
         startOfDay.setMinutes(0);
         startOfDay.setSeconds(0);

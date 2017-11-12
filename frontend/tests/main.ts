@@ -33,6 +33,7 @@ import 'tests/program/ProgramFormTests';
 import 'tests/program/ProgramPreCreateModalTests';
 import 'tests/program/ProgramViewTests';
 import 'tests/program/ProgramWorkoutModalTests';
+import 'tests/program/ProgramWorkoutOccurrenceManagerTests';
 import 'tests/serviceworker/SWManagerTests';
 import 'tests/stat/StatBackendTests';
 import 'tests/stat/StatHistoryViewTests';

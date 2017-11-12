@@ -19,8 +19,11 @@ QUnit.module('workout/WorkoutBackend', hooks => {
         //
         workoutBackend.getDaysWorkouts();
         const yesterday = new Date();
+        const testMinutes = 23;
         yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setMinutes(testMinutes);
         workoutBackend.getDaysWorkouts(yesterday);
+        assert.equal(yesterday.getMinutes(), testMinutes, 'Ei saisi mutatoida passattua datea');
         //
         assert.ok(httpCallStub.calledTwice);
         const expectedFromUnixTime = getDayStartUnixTime();
