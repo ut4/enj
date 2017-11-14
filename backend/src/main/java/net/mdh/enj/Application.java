@@ -4,6 +4,7 @@ import net.mdh.enj.auth.ResponseFilter;
 import net.mdh.enj.sync.SyncRouteCollector;
 import net.mdh.enj.auth.AuthenticationFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -27,6 +28,7 @@ public class Application {
         final ResourceConfig applicationConfig = new ResourceConfig();
         applicationConfig.packages("net.mdh.enj");
         applicationConfig.register(JacksonFeature.class);
+        applicationConfig.register(MultiPartFeature.class);
         applicationConfig.register(CORSEnabler.class);
         applicationConfig.register(AuthenticationFilter.class);
         applicationConfig.register(ResponseFilter.class);

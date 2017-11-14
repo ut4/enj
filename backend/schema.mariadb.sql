@@ -43,6 +43,7 @@ CREATE TABLE `user` (
     bodyWeight FLOAT UNSIGNED DEFAULT NULL,
     isMale TINYINT(1) UNSIGNED DEFAULT NULL, -- NULL = en halua kertoa, 1 = mies, 0 = nainen
     signature VARCHAR(255) DEFAULT NULL,
+    base64ProfilePic TEXT DEFAULT NULL,
     PRIMARY KEY (id)
 ) DEFAULT CHARSET = utf8mb4;
 
@@ -54,7 +55,8 @@ CREATE VIEW userView AS
         u.isActivated AS userIsActivated,
         u.bodyWeight AS userBodyWeight,
         u.isMale     AS userIsMale,
-        u.signature  AS userSignature
+        u.signature  AS userSignature,
+        u.base64ProfilePic AS userBase64ProfilePic
     FROM `user` AS u;
 
 CREATE VIEW authUserView AS

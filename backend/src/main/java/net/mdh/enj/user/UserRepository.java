@@ -28,6 +28,7 @@ public class UserRepository extends BasicRepository<User> {
             user.setBodyWeight(rs.getObject("userBodyWeight", Double.class));
             user.setIsMale(rs.getObject("userIsMale", Integer.class));
             user.setSignature(rs.getString("userSignature"));
+            user.setBase64ProfilePic(rs.getString("userBase64ProfilePic"));
             return user;
         }
     }
