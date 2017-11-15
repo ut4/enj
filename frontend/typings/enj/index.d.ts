@@ -95,6 +95,7 @@ declare module Enj {
             bodyWeight: number;
             isMale: number;
             signature?: string;
+            base64ProfilePic?: string;
         }
         interface Program {
             id: AAGUID;

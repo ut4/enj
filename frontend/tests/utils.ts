@@ -69,7 +69,10 @@ interface ConcreteValidatingComponent {
 }
 
 const validationTestUtils = {
-    isSubmitButtonClickable(rendered) {
+    isSubmitButtonClickable(rendered): boolean {
+        if (rendered instanceof HTMLButtonElement) {
+            return rendered.disabled === false;
+        }
         return (
             itu.findRenderedDOMElementWithClass(rendered, 'nice-button-primary') as HTMLButtonElement
         ).disabled === false;

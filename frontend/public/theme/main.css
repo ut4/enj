@@ -958,11 +958,10 @@ footer a {
 .week-navigation > button:last-of-type { left: initial; right: -40px; }
 
 /* -- Käyttäjänäkymät ---------- */
-.profile-pic { margin-right: 15px; height: 140px; background-color: #e0e0e0;
-    border-radius: 2px; }
-.profile-pic:before { display: inline-block; height: 100%; vertical-align: middle;
-    content: " "; }
-.profile-pic img { width: 80%; display: inline-block; vertical-align: middle; opacity: 0.1; }
+.profile-pic { position: absolute; height: 130px; width: 134px; background-repeat: no-repeat;
+    background-position: center; background-color: rgba(0,0,0,0.05); background-size: contain }
+.profile-pic + div { padding-left: 150px; }
+.profile-pic.default { background-size: 55% auto; background-color: #e0e0e0; }
 
 /* ==== Media queries ====
 ==============================================================================*/
@@ -979,6 +978,8 @@ footer a {
     #user-menu {
         margin: -20px auto 15px;
     }
+    .profile-pic { position: absolute; height: 116px; width: 110px; }
+    .profile-pic + div { padding-left: 126px; }
 }
 @media (max-width:480px) {
     table.tight {

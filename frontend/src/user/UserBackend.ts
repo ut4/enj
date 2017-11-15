@@ -27,6 +27,13 @@ class UserBackend extends RESTBackend<Enj.API.User> {
     public getAll(url?): Promise<any> {
         throw new Error('Disabled');
     }
+    /**
+     * Lähettää kuvan {fileData} backendiin tallennettavaksi. Palauttaa käyttäjä-
+     * entiteetin, jonka base64ProfilePic-arvona skaalattu kuva-data.
+     */
+    public uploadProfilePic(fileData: FormData): Promise<Enj.API.User> {
+        return this.http.sendFile<Enj.API.User>(this.completeUrl('/profile-pic'), fileData);
+    }
 }
 
 export default UserBackend;

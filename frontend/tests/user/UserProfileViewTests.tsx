@@ -4,7 +4,8 @@ import * as itu from 'inferno-test-utils';
 import utils, { validationTestUtils as vtu } from 'tests/utils';
 import { templates } from 'src/ui/ValidatingComponent';
 import UserBackend from 'src/user/UserBackend';
-import UserProfileView from 'src/user/UserProfileView';
+import UserProfileView, { ProfilePicUpdateModal } from 'src/user/UserProfileView';
+import Modal from 'src/ui/Modal';
 import iocFactories from 'src/ioc';
 
 QUnit.module('user/UserProfileView', hooks => {
@@ -61,7 +62,7 @@ QUnit.module('user/UserProfileView', hooks => {
         const done = assert.async();
         userFetchStub.firstCall.returnValue.then(() => {
             //
-            assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'unknown');
+            assert.equal(getRenderedProfilePic(rendered).style.backgroundImage.split('#')[1], 'unknown")');
             // Täytä allekirjoitus
             const signatureInput = utils.findElementByAttribute<HTMLTextAreaElement>(rendered, 'textarea', 'name', 'signature');
             utils.setInputValue(expectedNewUser.signature, signatureInput);
@@ -79,15 +80,65 @@ QUnit.module('user/UserProfileView', hooks => {
             return updateCallStub.firstCall.returnValue;
         }).then(() => {
             // Päivittikö staten?
-            assert.equal(getRenderedProfilePic(rendered).src.split('#')[1], 'female');
+            assert.equal(getRenderedProfilePic(rendered).style.backgroundImage.split('#')[1], 'female")');
             done();
+        });
+    });
+    QUnit.test('"Vaihda profiilikuva" -linkin kautta voi vaihtaa profiilikuvan', assert => {
+        const userFetchStub = sinon.stub(shallowUserBackend, 'get').returns(Promise.resolve(testUser));
+        const mockBase64Image = 'aabbcc';
+        const picUploadStub = sinon.stub(shallowUserBackend, 'uploadProfilePic').returns(Promise.resolve({
+            base64ProfilePic: mockBase64Image
+        }));
+        //
+        const rendered = itu.renderIntoDocument(<div><Modal/><UserProfileView/></div>);
+        // Odota, että näkymä latautuu
+        const done = assert.async();
+        userFetchStub.firstCall.returnValue.then(() => {
+            // Avaa modal linkistä
+            (itu.findRenderedDOMElementWithClass(rendered, 'secondary-menu-dark') as any).click();
+            utils.findElementByAttribute<HTMLAnchorElement>(rendered, 'a', 'href', '').click();
+            const modalSubmitButton = utils.findButtonByContent(rendered, 'Ok');
+            assert.notOk(vtu.isSubmitButtonClickable(modalSubmitButton), 'Submit-nappi ei pitäisi olla klikattava');
+            const modalInstance = (itu.findRenderedVNodeWithType(rendered, ProfilePicUpdateModal).children as any);
+            // Simuloi liian iso tiedostokoko, ja väärä tietostopääte
+            const fileInputEl = utils.findInputByName(rendered, 'file');
+            modalInstance.handleFileChange({target: {name: fileInputEl.name, files: [
+                {size: 4000001, type: 'hax/aus'}
+            ]}});
+            const validationErrors = vtu.getRenderedValidationErrors(rendered);
+            assert.equal(validationErrors[0].textContent, 'Kuva tulisi olla max. 4mb');
+            assert.equal(validationErrors[1].textContent, 'Kuva tulisi olla tyyppiä: bmp, gif, ico, jpg, png, tiff');
+            // Simuloi validi kuva
+            modalInstance.handleFileChange({target: {name: fileInputEl.name, files: [
+                {size: 2000000, type: 'image/png'}
+            ]}});
+            assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0,
+                'Ei pitäisi renderöidä validaatiovirheitä'
+            );
+            assert.ok(vtu.isSubmitButtonClickable(modalSubmitButton), 'Submit-nappi pitäisi olla klikattava');
+            // Lähetä lomake, assertoi että lähetti dataa
+            const confirmSpy = sinon.spy(modalInstance, 'confirm');
+            modalSubmitButton.click();
+            confirmSpy.firstCall.returnValue.then(() => {
+                const expectedData = new FormData();
+                expectedData.append('file', fileInputEl.files[0]);
+                assert.deepEqual(picUploadStub.firstCall.args, [expectedData],
+                    'Pitäisi lähettää tiedoston backendiin'
+                );
+                assert.equal((itu.findRenderedDOMElementWithClass(rendered, 'profile-pic') as any).getAttribute('style'),
+                    `background-image: url("data:image/png;base64,${mockBase64Image}");`,
+                    'Pitäisi päivittää profiilikuvaksi backendin palauttama base64 data'
+                );
+                done();
+            });
         });
     });
     function selectGender(rendered, gender: string) {
         const genderSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
         utils.setDropdownIndex(gender === 'male' ? 1 : 2, genderSelectEl); // note 0 == tyhjä option...
     }
-    function getRenderedProfilePic(rendered): HTMLImageElement {
-        return itu.findRenderedDOMElementWithTag(rendered, 'img') as HTMLImageElement;
+    function getRenderedProfilePic(rendered): HTMLDivElement {
+        return itu.findRenderedDOMElementWithClass(rendered, 'profile-pic') as HTMLDivElement;
     }
 });

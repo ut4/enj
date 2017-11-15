@@ -78,28 +78,54 @@ class Http {
         return this.sendRequest<T>(url, 'DELETE', data, skipOfflineCheck);
     }
     /**
+     * Lähettää multipart-datan {fileData} osoitteeseen {url}.
+     */
+    public sendFile<T>(url: string, fileData: FormData): Promise<T> {
+        return this.sendRequest<T>(url, 'POST', null, false, () => {
+            return new Promise((resolve, reject) => {
+                const req = new XMLHttpRequest(); req.onreadystatechange = () => {
+                    if (req.readyState !== 4) { return; }
+                    resolve(new Response(req.responseText, {status: req.status, statusText: req.statusText}));
+                };
+                const reqWithAuthToken = this.newRequest(url);
+                req.open('POST', reqWithAuthToken.url);
+                req.setRequestHeader('Authorization', reqWithAuthToken.headers.get('Authorization'));
+                req.send(fileData);
+            });
+        });
+    }
+    /**
      * Lähettää POST|PUT|DELETE -pyynnön backendiin, tai ohjaa sen offline-handerille,
      * jos käyttäjä on offline-tilassa (ja skipOfflineCheck ei ole true).
      */
-    private sendRequest<T>(url: string, method: keyof Enj.httpMethod, data: Object, skipOfflineCheck?: boolean): Promise<T> {
+    private sendRequest<T>(
+        url: string,
+        method: keyof Enj.httpMethod,
+        data: Object,
+        skipOfflineCheck?: boolean,
+        sendFn?: () => Promise<Response>
+    ): Promise<T> {
         Http.pendingRequestCount++;
         return (skipOfflineCheck !== true ? this.userState.isOffline() : Promise.resolve(false))
             .then(isUserOffline =>
                 !isUserOffline
                     // Käyttäjä online: lähetä HTTP-pyyntö normaalisti
-                    ? this.fetchContainer.fetch(this.newRequest(url, {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json'
-                        },
-                        body: method !== 'DELETE' ? JSON.stringify(data) : null
-                    }))
+                    ? !sendFn ? this.defaultSendFn(url, method, data) : sendFn()
                     // Käyttäjä offline: ohjaa pyyntö offlineHttp:lle
                     : this.offlineHttp.handle(url, {method, data})
             )
             .then(response => this.processResponse(response))
             .then(response => this.parseResponseData<T>(response));
+    }
+    private defaultSendFn(url: string, method: string, data: Object): Promise<Response> {
+        return this.fetchContainer.fetch(this.newRequest(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            body: method !== 'DELETE' ? JSON.stringify(data) : null
+        }));
     }
     /**
      * Luo uuden Request-instanssin, ja tarjoaa sen request-interceptorien

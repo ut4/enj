@@ -2,7 +2,6 @@ package net.mdh.enj.user;
 
 import io.jsonwebtoken.impl.TextCodec;
 import net.mdh.enj.api.RequestContext;
-import static net.mdh.enj.api.Responses.InsertResponse;
 import static net.mdh.enj.api.Responses.UpdateResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -81,7 +80,7 @@ public class UserController {
     @POST
     @Path("/profile-pic")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public InsertResponse uploadProfilePic(@NotNull @FormDataParam("file") FormDataBodyPart body) {
+    public User uploadProfilePic(@NotNull @FormDataParam("file") FormDataBodyPart body) {
         String extension = this.VALID_MIMES.get(body.getMediaType().toString());
         // 1. Validoi MIME
         if (extension == null) {
@@ -105,14 +104,14 @@ public class UserController {
         user.setId(this.requestContext.getUserId());
         this.userRepository.update(user, "id = :id");
         // 4. Profit
-        return new InsertResponse(1, "-");
+        return user;
     }
 
     private BufferedImage makeScaledImage(BufferedImage uploaded) {
         int width = uploaded.getWidth();
         int height = uploaded.getHeight();
         int PROFILE_PIC_WIDTH = 134;
-        int PROFILE_PIC_HEIGHT = 140;
+        int PROFILE_PIC_HEIGHT = 130;
         double scale = Math.min((double)PROFILE_PIC_WIDTH/width, (double)PROFILE_PIC_HEIGHT/height);
         return this.getScaledInstance(uploaded, (int)(width*scale), (int)(height*scale));
     }

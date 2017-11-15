@@ -34,7 +34,7 @@ class WorkoutExerciseSetForm extends ValidatingComponent<Props, {weight: any, re
         return <div>
             <label class="input-set">
                 <span>Paino</span>
-                <input type="number" name="weight" step="0.25" value={ this.state.weight } onInput={ e => this.receiveInputValue(e) }/>
+                <input type="number" name="weight" step="any" value={ this.state.weight } onInput={ e => this.receiveInputValue(e) }/>
                 { validationMessage(this.evaluators.weight[0], templates => templates.number('Paino')) }
             </label>
             <label class="input-set">
