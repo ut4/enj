@@ -1,12 +1,16 @@
 declare var Inferno: any;
 declare var Pikaday: any;
 declare var Chartist: any;
+declare var Awesomplete: any;
 
 declare module "pikaday" {
     export default Pikaday;
 }
 declare module "chartist" {
     export default Chartist;
+}
+declare module "awesomplete" {
+    export default Awesomplete;
 }
 declare module "history" {
     var createHashHistory: Function;

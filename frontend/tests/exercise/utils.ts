@@ -2,10 +2,10 @@ import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
 
 const exerciseTestUtils = {
-    selectExercise(rendered, nth) {
-        const exerciseSelectEl = this.getExerciseSelect(rendered);
-        exerciseSelectEl.options[nth].selected = true; // note 0 == tyhjä option...
-        utils.triggerEvent('change', exerciseSelectEl);
+    selectExercise(rendered, exercise: Enj.API.Exercise) {
+        const exerciseNameInput = this.getExerciseAutocomplete(rendered);
+        utils.setInputValue(exercise.name, exerciseNameInput);
+        utils.triggerEvent('awesomplete-selectcomplete', exerciseNameInput);
     },
     getSomeDropdownExercises(): Array<Enj.API.Exercise> {
          return [
@@ -13,14 +13,14 @@ const exerciseTestUtils = {
              {id: 'someuuid2', name: 'byr', variants: [], userId: 'u'}
          ];
     },
-    getSelectedExerciseIndex(rendered): number {
-        return this.getExerciseSelect(rendered).selectedIndex;
+    getSelectedExerciseName(rendered): string {
+        return this.getExerciseAutocomplete(rendered).value;
     },
-    getExerciseSelect(rendered): HTMLSelectElement {
-        return itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
+    getExerciseAutocomplete(rendered): HTMLInputElement {
+        return utils.findInputByName(rendered, 'exerciseAutocomplete');
     },
     getContentInput(rendered): HTMLInputElement {
-        return itu.findRenderedDOMElementWithTag(rendered, 'input') as HTMLInputElement;
+        return utils.findInputByName(rendered, 'content');
     }
 };
 

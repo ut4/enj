@@ -1,6 +1,6 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
-import * as infernoUtils from 'inferno-test-utils';
+import * as itu from 'inferno-test-utils';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
 import utils from 'tests/utils';
 
@@ -15,13 +15,14 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     QUnit.test('informoi valitun liikkeen (tai tyhjennyksen) onSelect-callbackille', assert => {
         const onSelectSpy = sinon.spy();
         //
-        const rendered = infernoUtils.renderIntoDocument(
+        const rendered = itu.renderIntoDocument(
             <ExerciseSelector exerciseList={ testExerciseList } onSelect={ onSelectSpy }/>
         );
-        const exerciseSelectInput = getSelectInput(rendered);
+        const exerciseNameInput = getAutocompleteInput(rendered);
         // Simuloi liikeen valinta, ja tyhjennys
-        utils.setDropdownIndex(1, exerciseSelectInput);
-        utils.setDropdownIndex(0, exerciseSelectInput);
+        utils.setInputValue(testExerciseList[0].name, exerciseNameInput);
+        utils.triggerEvent('awesomplete-selectcomplete', exerciseNameInput);
+        utils.setInputValue('', exerciseNameInput);
         // Assertoi, että informoi valinnan, ja tyhjennyksen onSelect-callbackille
         assert.ok(onSelectSpy.calledTwice, 'Olisi pitänyt kutsua onSelect kaksi kertaa');
         assert.deepEqual(onSelectSpy.firstCall.args, [
@@ -36,15 +37,16 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     QUnit.test('informoi valitun liikevariantin (tai tyhjennyksen) onSelect-callbackille', assert => {
         const onSelectSpy = sinon.spy();
         //
-        const rendered = infernoUtils.renderIntoDocument(
+        const rendered = itu.renderIntoDocument(
             <ExerciseSelector exerciseList={ testExerciseList } onSelect={ onSelectSpy }/>
         );
         // Valitse ensin liike, jolla on variantt(eja)i
-        const exerciseSelectInput = getSelectInput(rendered);
-        utils.setDropdownIndex(1, exerciseSelectInput);
+        const exerciseNameInput = getAutocompleteInput(rendered);
+        utils.setInputValue(testExerciseList[0].name, exerciseNameInput);
+        utils.triggerEvent('awesomplete-selectcomplete', exerciseNameInput);
         onSelectSpy.reset();
         // Simuloi variantin valinta ja tyhjennys
-        const variantSelectInput = getSelectInput(rendered, 1);
+        const variantSelectInput = getVariantSelectInput(rendered);
         utils.setDropdownIndex(1, variantSelectInput); // valinta
         utils.setDropdownIndex(0, variantSelectInput); // tyhjennys
         // Assertoi, että informoi variantin valinnan, ja tyhjennyksen onSelect-callbackille
@@ -61,17 +63,19 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     QUnit.test('resetoi variantin, jos liike vaihtuu', assert => {
         const onSelectSpy = sinon.spy();
         //
-        const rendered = infernoUtils.renderIntoDocument(
+        const rendered = itu.renderIntoDocument(
             <ExerciseSelector exerciseList={ testExerciseList } onSelect={ onSelectSpy }/>
         );
         // Valitse ensin liike, ja sen yksi variantti
-        const exerciseSelectInput = getSelectInput(rendered);
-        utils.setDropdownIndex(1, exerciseSelectInput);
-        const variantSelectInput = getSelectInput(rendered, 1);
+        const exerciseNameInput = getAutocompleteInput(rendered);
+        utils.setInputValue(testExerciseList[0].name, exerciseNameInput);
+        utils.triggerEvent('awesomplete-selectcomplete', exerciseNameInput);
+        const variantSelectInput = getVariantSelectInput(rendered, 1);
         utils.setDropdownIndex(1, variantSelectInput); // valinta
         onSelectSpy.reset();
         // Valitse sitten toinen liike
-        utils.setDropdownIndex(2, exerciseSelectInput);
+        utils.setInputValue(testExerciseList[1].name, exerciseNameInput);
+        utils.triggerEvent('awesomplete-selectcomplete', exerciseNameInput);
         // Resetoiko edellisestä liikkeestä valitun variantin?
         assert.deepEqual(onSelectSpy.firstCall.args, [
             testExerciseList[1], // selectedExercise
@@ -80,41 +84,42 @@ QUnit.module('exercise/ExerciseSelector', hooks => {
     });
     QUnit.test('asettaa initial-treeniliikkeen valituksi dropdowniin', assert => {
         //
-        const rendered = infernoUtils.renderIntoDocument(
+        const rendered = itu.renderIntoDocument(
             <ExerciseSelector
                 exerciseList={ testExerciseList }
                 initialExerciseId={ testExerciseList[1].id }
                 onSelect={ () => null }/>
         );
-        const exerciseSelectInput = getSelectInput(rendered);
+        const exerciseNameInput = getAutocompleteInput(rendered);
         assert.equal(
-            exerciseSelectInput.selectedIndex,
-            2 // 0 == - (tyhjä option), 1 == testExerciseList[0], 2 == testExerciseList[1]
+            exerciseNameInput.value,
+            testExerciseList[1].name
         );
     });
     QUnit.test('asettaa initial-treeniliikkeen & ja variantin valituksi dropdowniin', assert => {
         //
-        const rendered = infernoUtils.renderIntoDocument(
+        const rendered = itu.renderIntoDocument(
             <ExerciseSelector
                 exerciseList={ testExerciseList }
                 initialExerciseId={ testExerciseList[0].id }
                 initialExerciseVariantId={ testExerciseList[0].variants[0].id }
                 onSelect={ () => null }/>
         );
-        const exerciseSelectInput = getSelectInput(rendered);
+        const exerciseNameInput = getAutocompleteInput(rendered);
         assert.equal(
-            exerciseSelectInput.selectedIndex,
-            1 // 0 == - (tyhjä option), 1 == testExerciseList[0], 2 == testExerciseList[1]
+            exerciseNameInput.value,
+            testExerciseList[0].name
         );
-        const exerciseVariantSelectInput = getSelectInput(rendered, 1);
+        const exerciseVariantSelectInput = getVariantSelectInput(rendered, 1);
         assert.equal(
             exerciseVariantSelectInput.selectedIndex,
             1 // 0 == - (tyhjä option), 1 == testExerciseList[0].variants[0]
         );
     });
-    function getSelectInput(rendered, index?: number): HTMLSelectElement {
-        return (infernoUtils.scryRenderedDOMElementsWithTag(
-            rendered, 'select'
-        )[index || 0]) as HTMLSelectElement;
+    function getAutocompleteInput(rendered, index?: number): HTMLInputElement {
+        return itu.findRenderedDOMElementWithTag(rendered, 'input') as HTMLInputElement;
+    }
+    function getVariantSelectInput(rendered, index?: number): HTMLSelectElement {
+        return itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
     }
 });

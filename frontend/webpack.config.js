@@ -18,6 +18,7 @@ module.exports = {
         dexie: 'Dexie',
         pikaday: 'Pikaday',
         chartist: 'Chartist',
+        awesomplete: 'Awesomplete',
         sw: 'SWManager',
         // -- Testiriippuvuudet -----------------
         'inferno-test-utils': 'Inferno.TestUtils',

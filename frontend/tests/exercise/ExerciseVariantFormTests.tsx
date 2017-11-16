@@ -40,7 +40,7 @@ QUnit.module('exercise/ExerciseVariantForm', hooks => {
             assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');
             assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
             // Valitse liike
-            exerciseTestUtils.selectExercise(rendered, 1);
+            exerciseTestUtils.selectExercise(rendered, testDropdownExercises[0]);
             assert.ok(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi pitäisi olla taas klikattava');
             done();
         });
@@ -53,7 +53,7 @@ QUnit.module('exercise/ExerciseVariantForm', hooks => {
         exerciseListFetch.firstCall.returnValue.then(() => {
             const variantContentInput = exerciseTestUtils.getContentInput(rendered);
             assert.equal(variantContentInput.value, testExerciseVariant.content);
-            assert.equal(exerciseTestUtils.getSelectedExerciseIndex(rendered), 1);
+            assert.equal(exerciseTestUtils.getSelectedExerciseName(rendered), testDropdownExercises[0].name);
             done();
         });
     });

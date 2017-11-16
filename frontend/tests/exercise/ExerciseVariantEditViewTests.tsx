@@ -39,7 +39,7 @@ QUnit.module('exercise/ExerciseVariantEditView', hooks => {
             const variantContentInput = exerciseTestUtils.getContentInput(rendered);
             const newVariantContent = 'bar';
             utils.setInputValue(newVariantContent, variantContentInput);
-            exerciseTestUtils.selectExercise(rendered, 1);
+            exerciseTestUtils.selectExercise(rendered, testDropdownExercises[0]);
             //
             const submitButton = utils.findButtonByContent(rendered, 'Tallenna');
             submitButton.click();

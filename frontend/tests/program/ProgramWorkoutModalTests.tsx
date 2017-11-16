@@ -108,8 +108,7 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
         utils.findButtonByContent(rendered, 'Lisää liike').click();
         const done = assert.async();
         exerciseFetchStub.firstCall.returnValue.then(() => {
-            const exerciseSelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'exercise');
-            utils.setDropdownIndex(1, exerciseSelectInputEl);
+            etu.selectExercise(rendered, etu.getSomeDropdownExercises()[0]);
             utils.findButtonByContent(rendered, 'Lisää').click();
         // Hyväksy ohjelmatreenilomake
             const confirmSpy = sinon.spy(ptu.getRenderedProgramWorkoutModal(rendered), 'confirm');

@@ -2,6 +2,7 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
+import etu from 'tests/exercise/utils';
 import StatHistoryView from 'src/stat/StatHistoryView';
 import StatBackend from 'src/stat/StatBackend';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
@@ -88,8 +89,9 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const params = {exerciseId: testDropdownExercises[1].id};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
             assert.deepEqual(progressFetch.firstCall.args[0], params.exerciseId); // 0=exerciseId, 1=formula, 2=before
-            const exerciseSelectDropdown = getRenderedDropdowns(rendered)[0];
-            assert.equal(exerciseSelectDropdown.selectedIndex, 1 + 1,// 0 = -
+            assert.equal(
+                etu.getSelectedExerciseName(rendered),
+                testDropdownExercises[1].name,
                 'Pitäisi asettaa exercise-dropdownin selected-arvo'
             );
             done();
@@ -100,7 +102,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const params = {formula: 'wathan'};
         renderView([testProgressSets[0]], params).then(({rendered, progressFetch}) => {
             assert.deepEqual(progressFetch.firstCall.args[1], params.formula); // 0=exerciseId, 1=formula, 2=before
-            const formulaSelectDropdown = getRenderedDropdowns(rendered)[1];
+            const formulaSelectDropdown = getFormulaDropdown(rendered);
             assert.equal(formulaSelectDropdown.value, params.formula,
                 'Pitäisi asettaa formula-dropdownin selected-arvo'
             );
@@ -128,10 +130,9 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const done = assert.async();
         renderView([testProgressSets[0]]).then(({rendered, progressFetch, historyView}) => {
             // Valitse jokin liike listasta
-            const exerciseSelectDropdown = getRenderedDropdowns(rendered)[0];
-            exerciseSelectDropdown.value = testDropdownExercises[1].id;
-            utils.triggerEvent('change', exerciseSelectDropdown);
-            const selectedExerciseId = exerciseSelectDropdown.value;
+            const selection = testDropdownExercises[1];
+            etu.selectExercise(rendered, selection);
+            const selectedExerciseId = selection.id;
             // Ohjautuiko?
             assert.ok(redirectSpy.calledOnce, 'Pitäisi päivittää url uudella exerciseId:llä');
             assert.deepEqual(redirectSpy.firstCall.args,
@@ -146,7 +147,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const done = assert.async();
         renderView([testProgressSets[0]]).then(({rendered, progressFetch, historyView}) => {
             // Valitse toinen laskukaava
-            const formulaSelectDropdown = getRenderedDropdowns(rendered)[1];
+            const formulaSelectDropdown = getFormulaDropdown(rendered);
             formulaSelectDropdown.value = 'wathan';
             utils.triggerEvent('change', formulaSelectDropdown);
             const selectedFormula = formulaSelectDropdown.value;
@@ -265,8 +266,8 @@ QUnit.module('stat/StatHistoryView', hooks => {
         }
         return chart;
     }
-    function getRenderedDropdowns(rendered): Array<HTMLSelectElement> {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'select') as Array<HTMLSelectElement>;
+    function getFormulaDropdown(rendered): HTMLSelectElement {
+        return itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
     }
     function getExpectedLabelContent(unixTime: number) {
         const d = new Date(unixTime * 1000);

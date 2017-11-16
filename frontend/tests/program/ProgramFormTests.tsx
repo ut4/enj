@@ -61,7 +61,8 @@ QUnit.module('program/ProgramForm', hooks => {
         assert.notOk(vtu.isSubmitButtonClickable(rendered), 'Submit-nappi ei pitäisi olla klikattava');
     });
     QUnit.test('"Lisää treeni"-painikkeesta voi lisätä uuden treenin ohjelmaan', assert => {
-        const exerciseDropdownFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(etu.getSomeDropdownExercises()));
+        const someDropdownExercises = etu.getSomeDropdownExercises();
+        const exerciseDropdownFetch = sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(someDropdownExercises));
         const newProgram = ptu.getSomeTestPrograms()[0];
         newProgram.id = null;
         const programWorkoutLengthBefore = newProgram.workouts.length;
@@ -87,8 +88,7 @@ QUnit.module('program/ProgramForm', hooks => {
         utils.findButtonByContent(rendered, 'Lisää liike').click();
         const done = assert.async();
         exerciseDropdownFetch.firstCall.returnValue.then(() => {
-            const exerciseSelectInputEl = utils.findElementByAttribute<HTMLSelectElement>(rendered, 'select', 'name', 'exercise');
-            utils.setDropdownIndex(1, exerciseSelectInputEl);
+            etu.selectExercise(rendered, someDropdownExercises[1]);
             utils.findButtonByContent(rendered, 'Lisää').click();
             // Hyväksy ohjelmatreenilomake
             const submitButton = utils.findButtonByContent(rendered, 'Ok');
@@ -105,6 +105,10 @@ QUnit.module('program/ProgramForm', hooks => {
                     {weekDay: 1, firstWeek: 0, repeatEvery: 7}, // oletuksena valittu ma
                     {weekDay: 3, firstWeek: 0, repeatEvery: null}  // yllä valittu ke
                 ]
+            );
+            assert.equal(
+                newProgram.workouts[programWorkoutLengthAfter - 1].exercises[0].exerciseId,
+                someDropdownExercises[1].id
             );
             done();
         });

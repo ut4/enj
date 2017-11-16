@@ -689,6 +689,25 @@ table.pika-time { margin: 0 auto; width: auto; }
 .pika-time td { padding: 0 1px 0; font-weight: bold; line-height: 25px; }
 .pika-time select { padding: 2px; margin-bottom: 0; }
 
+/* Awesomplete */
+.awesomplete { width: 100%; }
+div.awesomplete > ul {
+    border-radius: 0 0 2px 2px;
+    transition: none;
+    top: -6px;
+    max-height: 250px;
+    overflow-y: auto;
+    border-color: rgba(0,0,0,0.2);
+    padding: 2px;
+    position: relative;
+}
+@supports (transform: scale(0)) {
+    div.awesomplete > ul[hidden],
+    div.awesomplete > ul:empty {
+        position: absolute;
+    }
+}
+
 /* ==== App ====
 ==============================================================================*/
 header {

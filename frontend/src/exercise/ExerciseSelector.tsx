@@ -1,4 +1,5 @@
 import Component from 'inferno-component';
+import Awesomplete from 'awesomplete';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -19,12 +20,17 @@ interface State {
  * Liikkeen (/api/exercise) alasvetovalikkovalintawidgetti.
  */
 class ExerciseSelector extends Component<Props, State> {
+    private inputEl: HTMLInputElement;
+    private awesomplete: any;
     public constructor(props, context) {
         super(props, context);
         this.state = this.makeState(this.props.exerciseList || []);
         if (!this.props.exerciseList) {
             iocFactories.exerciseBackend().getAll().then(
-                exercises => this.setState(this.makeState(exercises)),
+                exercises => {
+                    this.setState(this.makeState(exercises));
+                    this.makeAutocomplete(exercises);
+                },
                 err => iocFactories.notify()('Liikkeiden haku epäonnistui', 'error')
             );
         }
@@ -40,6 +46,11 @@ class ExerciseSelector extends Component<Props, State> {
         to.exerciseVariantContent = selectedVariant.content || null;
         return to;
     }
+    public componentDidMount() {
+        if (this.state.exercises.length && !this.awesomplete) {
+            this.makeAutocomplete(this.state.exercises);
+        }
+    }
     public componentWillReceiveProps(props) {
         if (this.state.selectedExercise && this.state.selectedExercise.id !== props.initialExerciseId) {
             this.setState({selectedExercise: this.state.exercises.find(exs => exs.id === props.initialExerciseId)});
@@ -49,12 +60,7 @@ class ExerciseSelector extends Component<Props, State> {
         return <div>
             <label class="input-set">
                 <span>{ this.props.label || 'Liikkeen nimi' }</span>
-                <select name="exercise" onChange={ this.receiveExerciseSelection.bind(this) } value={ this.getIndexOfSelectedExercise() }>
-                    <option value=""> - </option>
-                    { this.state.exercises.map((exercise, i) =>
-                        <option value={ i }>{ exercise.name }</option>
-                    ) }
-                </select>
+                <input name="exerciseAutocomplete" ref={ el => { this.inputEl = el; } } value={ this.state.selectedExercise ? this.state.selectedExercise.name : '' } onClick={ () => this.handleAutocompleteFocus() }/>
             </label>
             { (this.state.selectedExercise &&
                 this.props.noVariant !== true &&
@@ -72,7 +78,16 @@ class ExerciseSelector extends Component<Props, State> {
             }
         </div>;
     }
-    private makeState(exercises) {
+    private handleAutocompleteFocus() {
+        if (!this.awesomplete.ul.childNodes.length) {
+            this.awesomplete.evaluate();
+        } else if (this.awesomplete.ul.hasAttribute('hidden')) {
+            this.awesomplete.open();
+        } else {
+            this.awesomplete.close();
+        }
+    }
+    private makeState(exercises: Array<Enj.API.Exercise>) {
         const selectedExercise = this.props.initialExerciseId
             ? exercises.find(e => e.id === this.props.initialExerciseId)
             : null;
@@ -84,6 +99,24 @@ class ExerciseSelector extends Component<Props, State> {
                 : null
         };
     }
+    private makeAutocomplete(exercises: Array<Enj.API.Exercise>) {
+        const list = exercises.map(e => e.name);
+        list.sort((a, b) => a.localeCompare(b));
+        this.awesomplete = new Awesomplete(this.inputEl, {
+            minChars: 0,
+            maxItems: 50,
+            sort: false,
+            list
+        });
+        Awesomplete.$.bind(this.inputEl, {
+            'awesomplete-selectcomplete': e => {
+                this.receiveExerciseSelection(e.target.value);
+            },
+            'input': e => {
+                if (!e.target.value.length) { this.receiveExerciseSelection(''); }
+            }
+        });
+    }
     /**
      * Liikelista-alasvetovalikon onChange-handleri; päivittää {state.selectedExercise}n
      * arvoksi valitun liikkeen (tai null jos valinta poistettiin), sekä informoi
@@ -91,12 +124,12 @@ class ExerciseSelector extends Component<Props, State> {
      *
      * e.target.value === valitun liikkeen indeksi liikelistalla, tai ''
      */
-    private receiveExerciseSelection(e) {
-        if (e.target.value === '') {
+    private receiveExerciseSelection(name) {
+        if (name === '') {
             this.clearSelection();
             return;
         }
-        const selectedExercise = this.state.exercises[e.target.value];
+        const selectedExercise = this.state.exercises.find(e => e.name === name);
         const selectedVariant = null;
         this.setState({selectedExercise, selectedVariant});
         this.props.onSelect(selectedExercise, selectedVariant);

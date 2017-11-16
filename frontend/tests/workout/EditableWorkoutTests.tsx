@@ -1,6 +1,7 @@
 import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
+import etu from 'tests/exercise/utils';
 import Modal from 'src/ui/Modal';
 import EditableWorkout from 'src/workout/EditableWorkout';
 import EditableWorkoutExercise from 'src/workout/EditableWorkoutExercise';
@@ -135,8 +136,7 @@ QUnit.module('workout/EditableWorkout', hooks => {
         exerciseListFetch.firstCall.returnValue
             .then(() => {
         // Valitse liike listasta
-                const exerciseSelectEl = itu.findRenderedDOMElementWithTag(rendered, 'select') as HTMLSelectElement;
-                utils.setDropdownIndex(1, exerciseSelectEl);
+                etu.selectExercise(rendered, testExercises[0] as any);
         // Hyväksy modal
                 const confirmSpy = sinon.spy(workoutTestUtils.getWorkoutExerciseModal(rendered), 'confirm');
                 const submitButton = utils.findButtonByContent(rendered, 'Ok');

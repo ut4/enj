@@ -98,7 +98,6 @@ const VALID_MIMES = Object.freeze({
     'image/bmp': 'bmp',
     'image/gif': 'gif',
     'image/ico': 'ico',
-    'image/x-icon': 'ico',
     'image/jpeg': 'jpg',
     'image/png': 'png',
     'image/tif': 'tiff'
