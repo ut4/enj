@@ -866,6 +866,8 @@ header nav a {
     padding: 15px 20px;
     clear: both;
     border: 1px solid rgba(44, 82, 90, 0.12);
+    position: relative;
+    z-index: 1;
 }
 .sub-menu.open > nav {
     display: block;
@@ -1019,14 +1021,15 @@ footer a {
     table.responsive th {
         display: none;
     }
-    table.responsive td {
+    table.responsive td,
+    table.responsive tbody td {
         display: block;
         padding: 0 15px 0 86px;
         position: relative;
         text-align: right;
         width: auto;
     }
-    table.responsive tbody tr:first-child td:first-child {
+    table.responsive:not(.dark-list) tbody tr:first-child td:first-child {
         padding-top: 0;
     }
     table.responsive td:first-child {
@@ -1034,8 +1037,7 @@ footer a {
     }
     table.responsive td:last-of-type,
     table.responsive.crud-table td:last-of-type {
-        padding-bottom: 10px;
-        margin-bottom: 5px;
+        padding: 5px 7px 9px;
         width: auto;
     }
     table.responsive td:before {

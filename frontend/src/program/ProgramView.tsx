@@ -28,7 +28,7 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
         return <div class="program-view">
             <h2>Treeniohjelmat</h2>
             <SubMenu>
-                <a href="" onClick={ e => this.openPreCreateModal(e) }>Luo uusi ohjelma</a>
+                <a href="" onClick={ e => this.openPreCreateModal(e) } autoclose>Luo uusi ohjelma</a>
             </SubMenu>
             { this.state.programs && (
                 this.state.programs.length > 0 ?

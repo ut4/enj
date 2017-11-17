@@ -11,7 +11,7 @@ class SubMenu extends MainMenu {
         </div>;
     }
     private receiveMenuClick(e) {
-        if (e.target.getAttribute('data-autoclose')) {
+        if (e.target.getAttribute('autoclose')) {
             this.toggleIsMenuOpen();
         }
     }
