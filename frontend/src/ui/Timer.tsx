@@ -1,4 +1,5 @@
 import Component from 'inferno-component';
+import { dateUtils } from 'src/common/utils';
 
 interface time {
     hours: string;
@@ -40,9 +41,9 @@ class Timer extends Component<{start: number, end: number}, {time: time, interva
         const minutes = Math.floor((diff % 3600) / 60);
         const seconds = Math.floor(diff % 60);
         return {
-            hours: hours > 9 ? hours.toString() : '0' + hours,
-            minutes: minutes > 9 ? minutes.toString() : '0' + minutes,
-            seconds: seconds > 9 ? seconds.toString() : '0' + seconds
+            hours: dateUtils.getTwoDigitNumber(hours),
+            minutes: dateUtils.getTwoDigitNumber(minutes),
+            seconds: dateUtils.getTwoDigitNumber(seconds)
         };
     }
 }

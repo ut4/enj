@@ -93,7 +93,7 @@ class Offline {
             .then(registration => registration.unregister())
             .then(wasSuccesful => {
                 if (!wasSuccesful) { throw new Error('Serviceworkerin poisto epäonnistui'); }
-                return this.userState.setIsOffline(false);
+                return this.disable();
             });
     }
     /**

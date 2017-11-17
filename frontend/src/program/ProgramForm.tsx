@@ -44,7 +44,7 @@ class ProgramForm extends ValidatingComponent<
                 <textarea name="description" value={ this.state.program.description } onInput={ e => this.receiveInputValue(e) }></textarea>
                 { validationMessage(this.evaluators.description[0], templates => templates.maxLength('Kuvaus', 128)) }
             </label>
-            <label class="input-set">
+            <span class="input-set">
                 <span>Alkaa</span>
                 <Datepicker
                     inputName="start"
@@ -53,8 +53,8 @@ class ProgramForm extends ValidatingComponent<
                     maxDate={ new Date((this.state.program.end + 86400) * 1000) }
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
-            </label>
-            <label class="input-set">
+            </span>
+            <span class="input-set">
                 <span>Loppuu</span>
                 <Datepicker
                     inputName="end"
@@ -63,7 +63,7 @@ class ProgramForm extends ValidatingComponent<
                     minDate={ new Date((this.state.program.start + 86400) * 1000) }
                     showInput={ true }
                     displayFormatFn={ datepickerFormatter }/>
-            </label>
+            </span>
             <ProgramWorkoutsManager program={ this.state.program } list={ this.state.program.workouts } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => { this.receiveProgramWorkouts(programWorkouts); this.receiveInputValue({target: {value: programWorkouts, name: 'workouts'}}); } }/>
             { validationMessage(this.evaluators.workouts[0], () => 'Ainakin yksi treeni vaaditaan') }
             <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>

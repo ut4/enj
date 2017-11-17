@@ -76,7 +76,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         return <div class={ 'workout-view' + (!this.state.isToday ? ' not-current' : '') }>
             <h2>{ (!this.state.programs.length ? 'Treeni ' : 'Ohjelmassa ') + (this.state.isToday ? 'tänään' : toFinDate(this.selectedDate)) }
                 <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ () => this.datePicker.open() }></button>
-                <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ this.state.isToday ? undefined : this.selectedDate } ref={ instance => { this.datePicker = instance; } }/>
+                <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ this.state.isToday ? undefined : this.selectedDate } autoClose={ true } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             { this.state.workouts.length
                 ? this.state.workouts.map(workout =>

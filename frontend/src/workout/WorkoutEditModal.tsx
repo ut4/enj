@@ -25,7 +25,7 @@ class WorkoutEditModal extends ValidatingComponent<
     public render() {
         return <div>
             <h3>Muokkaa treenin tietoja</h3>
-            <label class="input-set">
+            <span class="input-set">
                 <span>Aloitus</span>
                 <Datepicker
                     inputName="start"
@@ -35,8 +35,8 @@ class WorkoutEditModal extends ValidatingComponent<
                     showInput={ true }
                     showTime={ true }
                     displayFormatFn={ datepickerFormatter }/>
-            </label>
-            { this.state.workout.end > 0 && <label class="input-set">
+            </span>
+            { this.state.workout.end > 0 && <span class="input-set">
                 <span>Lopetus</span>
                 <Datepicker
                     inputName="end"
@@ -46,7 +46,7 @@ class WorkoutEditModal extends ValidatingComponent<
                     showInput={ true }
                     showTime={ true }
                     displayFormatFn={ datepickerFormatter }/>
-            </label> }
+            </span> }
             <label class="input-set">
                 <span>Muistiinpanot</span>
                 <textarea name="notes" value={ this.state.workout.notes } onInput={ e => this.receiveInputValue(e) }></textarea>

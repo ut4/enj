@@ -46,7 +46,8 @@ QUnit.module('workout/WorkoutEditModal', hooks => {
     });
     function getExpectedDateInputValue(unixTime: number): string {
         const date = new Date(unixTime * 1000);
-        return `${date.getDate()}.${date.getMonth()+1} ${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
+        const toTwoDigit = num => num > 9 ? num : '0' + num;
+        return `${date.getDate()}.${date.getMonth()+1} ${date.getFullYear()}, ${toTwoDigit(date.getHours())}:${toTwoDigit(date.getMinutes())}`;
     }
     function assertFormIsValid(assert, rendered) {
         assert.equal(vtu.getRenderedValidationErrors(rendered).length, 0, 'Ei pitäisi renderöidä virheviestejä');

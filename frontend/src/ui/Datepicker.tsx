@@ -9,12 +9,17 @@ interface Props {
     maxDate?: Date;
     showInput?: boolean;
     showTime?: boolean;
+    autoClose?: boolean;
 }
 
-class Datepicker extends Component<Props, any> {
+class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsVisible: boolean}> {
     private field: HTMLInputElement;
     private container: HTMLSpanElement;
     private pikaday: any;
+    public constructor(props, context) {
+        super(props, context);
+        this.state = {showTimeToggle: undefined, dateTableIsVisible: true};
+    }
     public componentDidMount() {
         this.pikaday = new Pikaday(this.makeSettings());
     }
@@ -25,12 +30,14 @@ class Datepicker extends Component<Props, any> {
         this.pikaday.show();
     }
     public render() {
-        return <div class="datepicker">
-            <input
-                type={ !this.props.showInput ? 'hidden' : 'text' }
-                name={ this.props.inputName }
-                ref={ el => { this.field = el; } }/>
+        return <div class={ 'datepicker' + (this.state.dateTableIsVisible ? '' : ' time-only')}>
+            <input type={ !this.props.showInput ? 'hidden' : 'text' } name={ this.props.inputName } ref={ el => { this.field = el; } }/>
             <div ref={ el => { this.container = el; } }></div>
+            { this.state.showTimeToggle && <div class="time-only-toggle-container">
+                <button class="text-button time-only-toggle" onClick={ e => this.toggleDateTableVisibility(e) }>
+                    { this.state.dateTableIsVisible ? 'Piilota pvm [-]' : 'Näytä pvm [+]'}
+                </button>
+            </div> }
         </div>;
     }
     private makeSettings(): Object {
@@ -40,9 +47,16 @@ class Datepicker extends Component<Props, any> {
             container: this.container,
             showWeekNumber: true,
             showTime: this.props.showTime === true,
-            use24hour: true,
+            autoClose: this.props.autoClose === true,
             firstDay: 1
         } as any;
+        if (settings.showTime) {
+            this.setState({dateTableIsVisible: false});
+            settings.use24hour = true;
+            settings.timeLabel = 'Aika';
+            settings.onOpen = () => { this.setState({showTimeToggle: true}); };
+            settings.onClose = () => { this.setState({showTimeToggle: false}); };
+        }
         if (this.props.displayFormatFn) {
             settings.toString = this.props.displayFormatFn;
         }
@@ -60,7 +74,6 @@ class Datepicker extends Component<Props, any> {
     }
     private onSelect(date: Date) {
         this.props.onSelect(date);
-        setTimeout(() => this.pikaday.hide(), 0);
     }
     private updateBounds(props) {
         if (props.minDate) {
@@ -69,6 +82,10 @@ class Datepicker extends Component<Props, any> {
         if (props.maxDate) {
             this.pikaday.setMaxDate(props.maxDate);
         }
+    }
+    private toggleDateTableVisibility(e) {
+        e.stopPropagation();
+        this.setState({dateTableIsVisible: !this.state.dateTableIsVisible});
     }
 }
 

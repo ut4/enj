@@ -47,7 +47,10 @@ const dateUtils = {
         );
     },
     getLocaleTimeString(date: Date) {
-        return date.getHours() + ':' + date.getMinutes();
+        return this.getTwoDigitNumber(date.getHours()) + ':' + this.getTwoDigitNumber(date.getMinutes());
+    },
+    getTwoDigitNumber(num: number): string {
+        return num > 9 ? num.toString() : '0' + num;
     },
     getShortWeekDay(weekDay: number): string {
         const shortWeekDays = {
