@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,6 +36,30 @@ public class ProgramControllerProgramHandlersTest extends ProgramControllerTestC
         program.setUserId(TestData.TEST_USER_ID);
         program.setWorkouts(null);
         Assert.assertEquals(program.toString(), actualProgram.toString());
+    }
+
+    @Test
+    public void POSTAllInsertoiUudetOhjelmatTietokantaanKirjautuneelleKäyttäjälle() {
+        Program program = makeNewProgramEntity("My program");
+        Program program2 = makeNewProgramEntity("Ny program");
+        //
+        Response response = this.newPostRequest("program/all", Arrays.asList(program, program2));
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        // Insertoiko ohjelman?
+        List actualPrograms = utils.selectAllWhere(
+            "SELECT * FROM program WHERE id IN (:id, :id2) ORDER BY `name`",
+            new MapSqlParameterSource("id", responseBody.insertIds.get(0)).addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.ProgramMapper()
+        );
+        program.setId(responseBody.insertIds.get(0));
+        program.setUserId(TestData.TEST_USER_ID);
+        program.setWorkouts(null);
+        program2.setId(responseBody.insertIds.get(1));
+        program2.setUserId(TestData.TEST_USER_ID);
+        program2.setWorkouts(null);
+        Assert.assertEquals(program.toString(), actualPrograms.get(0).toString());
+        Assert.assertEquals(program2.toString(), actualPrograms.get(1).toString());
     }
 
     @Test

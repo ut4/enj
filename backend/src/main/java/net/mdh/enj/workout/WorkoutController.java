@@ -85,7 +85,7 @@ public class WorkoutController {
     @PUT
     @Syncable(dependent = {"workout/exercise", "workoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
-    public UpdateResponse updateMany(@Valid @NotNull List<Workout> workouts) {
+    public UpdateResponse updateAll(@Valid @NotNull List<Workout> workouts) {
         return new UpdateResponse(this.workoutRepository.updateMany(workouts, "id = :id"));
     }
 
@@ -177,7 +177,7 @@ public class WorkoutController {
     @Path("/exercise/set")
     @Syncable
     @Consumes(MediaType.APPLICATION_JSON)
-    public UpdateResponse updateAllWorkoutExercisesets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
+    public UpdateResponse updateAllWorkoutExerciseSets(@Valid @NotNull List<Workout.Exercise.Set> workoutExerciseSets) {
         return new UpdateResponse(this.workoutExerciseSetRepository.updateMany(workoutExerciseSets, "id = :id"));
     }
 

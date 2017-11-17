@@ -32,8 +32,8 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
         return <div class="user-profile-view">
             <h2>Profiili</h2>
             { this.state.user && [
-                <SubMenu closeOnClick={ true }>
-                    <a href="" onClick={ e => this.openProfilePicUpdateModal(e) }>Vaihda profiilikuva</a>
+                <SubMenu>
+                    <a href="" onClick={ e => this.openProfilePicUpdateModal(e) } data-autoclose>Vaihda profiilikuva</a>
                     <a href="#/tili/muokkaa">Muokkaa tiliä</a>
                     <a href="#/tili/poista">Poista tili</a>
                 </SubMenu>,

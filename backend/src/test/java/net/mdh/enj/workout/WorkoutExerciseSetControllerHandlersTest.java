@@ -117,9 +117,9 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("WorkoutController.updateAllWorkoutExercisesets.arg0[1].reps", errors.get(0).getPath());
+        Assert.assertEquals("WorkoutController.updateAllWorkoutExerciseSets.arg0[1].reps", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("WorkoutController.updateAllWorkoutExercisesets.arg0[1].workoutExerciseId", errors.get(1).getPath());
+        Assert.assertEquals("WorkoutController.updateAllWorkoutExerciseSets.arg0[1].workoutExerciseId", errors.get(1).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(1).getMessageTemplate());
     }
 

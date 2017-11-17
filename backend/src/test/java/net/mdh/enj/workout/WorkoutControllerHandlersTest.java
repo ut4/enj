@@ -194,9 +194,9 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
         // Testaa että sisältää validaatiovirheet
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals(2, errors.size());
-        Assert.assertEquals("WorkoutController.updateMany.arg0[1].start", errors.get(0).getPath());
+        Assert.assertEquals("WorkoutController.updateAll.arg0[1].start", errors.get(0).getPath());
         Assert.assertEquals("{javax.validation.constraints.Min.message}", errors.get(0).getMessageTemplate());
-        Assert.assertEquals("WorkoutController.updateMany.arg0[1].userId", errors.get(1).getPath());
+        Assert.assertEquals("WorkoutController.updateAll.arg0[1].userId", errors.get(1).getPath());
         Assert.assertEquals("{net.mdh.enj.validation.AuthenticatedUserId.message}", errors.get(1).getMessageTemplate());
     }
 

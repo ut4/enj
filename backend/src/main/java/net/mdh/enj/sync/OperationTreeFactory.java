@@ -82,10 +82,7 @@ class OperationTreeFactory {
     }
     /**
      */
-    private void populateBranch(
-        List<SyncQueueItem> syncables,
-        Map<String, OperationTreeNode> branch
-    ) {
+    private void populateBranch(List<SyncQueueItem> syncables, Map<String, OperationTreeNode> branch) {
         for (SyncQueueItem syncable: syncables) {
             //
             if (syncable == null) { continue; }

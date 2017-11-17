@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import net.mdh.enj.api.Responses;
 import net.mdh.enj.sync.Syncable;
 import static net.mdh.enj.api.Responses.InsertResponse;
+import static net.mdh.enj.api.Responses.MultiInsertResponse;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.validation.UUID;
 import javax.inject.Inject;
@@ -50,6 +51,15 @@ public class ExerciseController {
         exercise.setUserId(this.requestContext.getUserId());
         int insertCount = this.exerciseRepository.insert(exercise);
         return new InsertResponse(insertCount, exercise.getId());
+    }
+    @POST
+    @Path("/all")
+    @Syncable(dependent = {"exercise/variant", "exerciseId"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAll(@Valid @NotNull List<Exercise> exercises) {
+        for (Exercise exercise: exercises) exercise.setUserId(this.requestContext.getUserId());
+        int insertCount = this.exerciseRepository.insert(exercises);
+        return new MultiInsertResponse(insertCount, exercises);
     }
 
     /**
@@ -121,6 +131,15 @@ public class ExerciseController {
         exerciseVariant.setUserId(this.requestContext.getUserId());
         int insertCount = this.exerciseVariantRepository.insert(exerciseVariant);
         return new InsertResponse(insertCount, exerciseVariant.getId());
+    }
+    @POST
+    @Path("/variant/all")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAllVariants(@Valid @NotNull List<Exercise.Variant> exerciseVariants) {
+        for (Exercise.Variant exerciseVariant: exerciseVariants) exerciseVariant.setUserId(this.requestContext.getUserId());
+        int insertCount = this.exerciseVariantRepository.insert(exerciseVariants);
+        return new MultiInsertResponse(insertCount, exerciseVariants);
     }
 
     /**

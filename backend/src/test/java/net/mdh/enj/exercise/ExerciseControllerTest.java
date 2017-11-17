@@ -14,6 +14,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.Comparator;
@@ -87,6 +88,31 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         exercise.setUserId(TestData.TEST_USER_ID);
         Assert.assertEquals(exercise.toString(), actualExercise.toString());
         utils.delete("exercise", exercise.getId());
+    }
+
+    @Test
+    public void POSTExerciseAllInsertoiUudetLiikkeetTietokantaanKirjautuneelleKäyttäjälle() {
+        Exercise exercise = new Exercise();
+        exercise.setName("test");
+        Exercise exercise2 = new Exercise();
+        exercise2.setName("foss");
+        //
+        Response response = this.newPostRequest("exercise/all", Arrays.asList(exercise, exercise2));
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        //
+        List actualExercises = utils.selectAllWhere(
+            "SELECT * FROM exercise WHERE id IN (:id, :id2) ORDER BY `name` DESC",
+            new MapSqlParameterSource("id", responseBody.insertIds.get(0)).addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.ExerciseMapper()
+        );
+        exercise.setId(responseBody.insertIds.get(0));
+        exercise.setUserId(TestData.TEST_USER_ID);
+        exercise2.setId(responseBody.insertIds.get(1));
+        exercise2.setUserId(TestData.TEST_USER_ID);
+        Assert.assertEquals(exercise.toString(), actualExercises.get(0).toString());
+        Assert.assertEquals(exercise2.toString(), actualExercises.get(1).toString());
+        utils.delete("exercise", exercise.getId(), exercise2.getId());
     }
 
     @Test
@@ -262,6 +288,33 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         variant.setUserId(TestData.TEST_USER_ID);
         Assert.assertEquals(variant.toString(), actualVariant.toString());
         utils.delete("exerciseVariant", variant.getId());
+    }
+
+    @Test
+    public void POSTExerciseVariantAllInsertoiUudetVariantitTietokantaanKirjautuneelleKäyttäjälle() {
+        Exercise.Variant variant = new Exercise.Variant();
+        variant.setContent("fus");
+        variant.setExerciseId(testExercise.getId());
+        Exercise.Variant variant2 = new Exercise.Variant();
+        variant2.setContent("ro");
+        variant2.setExerciseId(testExercise.getId());
+        //
+        Response response = this.newPostRequest("exercise/variant/all", Arrays.asList(variant, variant2));
+        Assert.assertEquals(200, response.getStatus());
+        Responses.MultiInsertResponse responseBody = response.readEntity(new GenericType<Responses.MultiInsertResponse>() {});
+        //
+        List actualVariants = utils.selectAllWhere(
+            "SELECT * FROM exerciseVariant WHERE id IN (:id, :id2) ORDER BY content",
+            new MapSqlParameterSource("id", responseBody.insertIds.get(0)).addValue("id2", responseBody.insertIds.get(1)),
+            new SimpleMappers.ExerciseVariantMapper()
+        );
+        variant.setId(responseBody.insertIds.get(0));
+        variant.setUserId(TestData.TEST_USER_ID);
+        variant2.setId(responseBody.insertIds.get(1));
+        variant2.setUserId(TestData.TEST_USER_ID);
+        Assert.assertEquals(variant.toString(), actualVariants.get(0).toString());
+        Assert.assertEquals(variant2.toString(), actualVariants.get(1).toString());
+        utils.delete("exerciseVariant", variant.getId(), variant2.getId());
     }
 
     @Test

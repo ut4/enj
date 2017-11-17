@@ -27,8 +27,36 @@ public class ProgramControllerProgramWorkoutExerciseHandlersTest extends Program
     }
 
     @Test
-    public void POSTWorkoutExerciseAllInsertoiKirjautuneenKäyttäjänOhjelmatreeniliikkeetTietokantaan() {
+    public void POSTWorkoutExerciseInsertoiKirjautuneenKäyttäjänOhjelmatreeniliikkeenTietokantaan() {
         Program program = makeNewProgramEntity("ProgramWorkoutExercisePOSTTestProgram");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity("ProgramWorkoutExercisePOSTTestProgramWorkout", program.getId());
+        utils.insertProgramWorkout(programWorkout);
+        // Luo insertoitava ohjelmatreeniliike
+        Program.Workout.Exercise programWorkoutExercise = makeNewProgramWorkoutExerciseEntity(programWorkout.getId(), testExercise);
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("program/workout/exercise", programWorkoutExercise);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
+        Assert.assertEquals("InsertResponse.insertCount pitäisi olla 1", (Integer)1, responseBody.insertCount);
+        // Insertoiko ohjelmatreeniliikkeen?
+        Program.Workout.Exercise actualProgramWorkoutExercise = (Program.Workout.Exercise) utils.selectOneWhere(
+            "SELECT * FROM programWorkoutExercise WHERE id = :id",
+            new MapSqlParameterSource("id", responseBody.insertId),
+            new SimpleMappers.ProgramWorkoutExerciseMapper()
+        );
+        programWorkoutExercise.setId(responseBody.insertId);
+        programWorkoutExercise.setExerciseName(null);
+        Assert.assertEquals(
+            programWorkoutExercise.toString(),
+            actualProgramWorkoutExercise.toString()
+        );
+    }
+
+    @Test
+    public void POSTWorkoutExerciseAllInsertoiKirjautuneenKäyttäjänOhjelmatreeniliikkeetTietokantaan() {
+        Program program = makeNewProgramEntity("ProgramWorkoutExercisePOSTTestProgram2");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
         Program.Workout programWorkout = makeNewProgramWorkoutEntity("ProgramWorkoutExercisePOSTTestProgramWorkout", program.getId());

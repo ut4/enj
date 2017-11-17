@@ -21,6 +21,7 @@ import net.mdh.enj.sync.Syncable;
 import net.mdh.enj.validation.UUID;
 import javax.validation.Valid;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.function.Supplier;
 import java.util.Arrays;
 import java.util.List;
@@ -60,6 +61,15 @@ public class ProgramController {
         program.setUserId(this.requestContext.getUserId());
         int insertCount = this.programRepository.insert(program);
         return new InsertResponse(insertCount, program.getId());
+    }
+    @POST
+    @Path("/all")
+    @Syncable(dependent = {"program/workout", "programId"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public MultiInsertResponse insertAll(@Valid @NotNull List<Program> programs) {
+        for (Program program: programs) program.setUserId(this.requestContext.getUserId());
+        int insertCount = this.programRepository.insert(programs);
+        return new MultiInsertResponse(insertCount, programs);
     }
 
     /**
@@ -132,16 +142,30 @@ public class ProgramController {
     }
 
     /**
-     * Lisää kirjautuneen käyttäjän ohjelmatreenit {programWorkouts} tietokantaan.
+     * Lisää kirjautuneen käyttäjän ohjelmatreenin {programWorkout} tietokantaan.
      *
      * @throws BadRequestException Jos lisättävän ohjelmatreenin viittaama ohjelma ei kuulunut kirjautuneelle käyttäjälle
      */
+    @POST
+    @Path("/workout")
+    @Syncable(dependent = {"program/workout/exercise", "programWorkoutId"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public InsertResponse insertProgramWorkout(@Valid @NotNull Program.Workout programWorkout) {
+        // Tarkista, kuuluuko {programWorkout}in viittaama ohjelma kirjautuneelle käyttäjälle
+        if (!this.programWorkoutRepository.belongsToUser(
+            Collections.singletonList(programWorkout),
+            this.requestContext.getUserId()
+        )) {
+            throw new BadRequestException();
+        }
+        int insertCount = this.programWorkoutRepository.insert(programWorkout);
+        return new InsertResponse(insertCount, programWorkout.getId());
+    }
     @POST
     @Path("/workout/all")
     @Syncable(dependent = {"program/workout/exercise", "programWorkoutId"})
     @Consumes(MediaType.APPLICATION_JSON)
     public MultiInsertResponse insertAllProgramWorkouts(@Valid @NotNull List<Program.Workout> programWorkouts) {
-        // Tarkista, kuuluuko {programWorkouts}in viittaama ohjelma kirjautuneelle käyttäjälle
         if (!this.programWorkoutRepository.belongsToUser(
             programWorkouts,
             this.requestContext.getUserId()
@@ -183,8 +207,26 @@ public class ProgramController {
     }
 
     /**
-     * Lisää kirjautuneen käyttäjän ohjelmatreeniliikkeet {programWorkoutExercises} tietokantaan.
+     * Lisää kirjautuneen käyttäjän ohjelmatreeniliikkeen {programWorkoutExercise} tietokantaan.
      */
+    @POST
+    @Path("/workout/exercise")
+    @Syncable
+    @Consumes(MediaType.APPLICATION_JSON)
+    public InsertResponse insertProgramWorkoutExercise(
+        @Valid @NotNull Program.Workout.Exercise programWorkoutExercise
+    ) {
+        // Tarkista, kuuluuko {programWorkoutExercise}n viittaamat ohjelmatreenit
+        // kirjautuneelle käyttäjälle
+        if (!this.programWorkoutExerciseRepository.belongsToUser(
+            Collections.singletonList(programWorkoutExercise),
+            this.requestContext.getUserId()
+        )) {
+            throw new BadRequestException();
+        }
+        int insertCount = this.programWorkoutExerciseRepository.insert(programWorkoutExercise);
+        return new InsertResponse(insertCount, programWorkoutExercise.getId());
+    }
     @POST
     @Path("/workout/exercise/all")
     @Syncable
@@ -192,8 +234,6 @@ public class ProgramController {
     public MultiInsertResponse insertAllProgramWorkoutExercises(
         @Valid @NotNull List<Program.Workout.Exercise> programWorkoutExercises
     ) {
-        // Tarkista, kuuluuko {programWorkoutExercises}n viittaamat ohjelmatreenit
-        // kirjautuneelle käyttäjälle
         if (!this.programWorkoutExerciseRepository.belongsToUser(
             programWorkoutExercises,
             this.requestContext.getUserId()

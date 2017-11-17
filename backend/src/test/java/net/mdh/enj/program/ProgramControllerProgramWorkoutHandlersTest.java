@@ -15,9 +15,35 @@ import org.junit.Test;
 public class ProgramControllerProgramWorkoutHandlersTest extends ProgramControllerTestCase {
 
     @Test
-    public void POSTWorkoutAllInsertoiKirjautuneenKäyttäjänOhjelmatreenitTietokantaan() {
+    public void POSTWorkoutInsertoiKirjautuneenKäyttäjänOhjelmatreeninTietokantaan() {
         // Insertoi ohjelma, johon testattavat treenit lisätään
         Program program = makeNewProgramEntity("My cool prog");
+        program.setUserId(TestData.TEST_USER_ID);
+        utils.insertProgram(program);
+        // Luo insertoitava ohjelmatreeni
+        Program.Workout programWorkout = makeNewProgramWorkoutEntity("My cool prog workout", program.getId());
+        // Lähetä pyyntö
+        Response response = this.newPostRequest("program/workout", programWorkout);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.InsertResponse responseBody = response.readEntity(new GenericType<Responses.InsertResponse>() {});
+        Assert.assertEquals("InsertResponse.insertCount pitäisi olla 1", (Integer)1, responseBody.insertCount);
+        // Insertoiko ohjelmatreenin?
+        Program.Workout actualProgramWorkout = (Program.Workout) utils.selectOneWhere(
+            "SELECT * FROM programWorkout WHERE id = :id",
+            new MapSqlParameterSource("id", responseBody.insertId),
+            new SimpleMappers.ProgramWorkoutMapper()
+        );
+        programWorkout.setId(responseBody.insertId);
+        Assert.assertEquals(
+            programWorkout.toString(),
+            actualProgramWorkout.toString()
+        );
+    }
+
+    @Test
+    public void POSTWorkoutAllInsertoiKirjautuneenKäyttäjänOhjelmatreenitTietokantaan() {
+        // Insertoi ohjelma, johon testattavat treenit lisätään
+        Program program = makeNewProgramEntity("My cool prog2");
         program.setUserId(TestData.TEST_USER_ID);
         utils.insertProgram(program);
         // Luo insertoitavat ohjelmatreenit
