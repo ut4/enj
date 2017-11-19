@@ -94,6 +94,9 @@ class Offline {
             .then(wasSuccesful => {
                 if (!wasSuccesful) { throw new Error('Serviceworkerin poisto epäonnistui'); }
                 return this.disable();
+            }).then(wasSuccesful => {
+                this.controllingServiceWorker = undefined;
+                return wasSuccesful;
             });
     }
     /**
