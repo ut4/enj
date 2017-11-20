@@ -1,8 +1,4 @@
-import Component from 'inferno-component';
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import { WorkoutExerciseSet } from 'src/workout/WorkoutBackend';
-import FormButtons from 'src/ui/FormButtons';
-import iocFactories from 'src/ioc';
 
 interface Props {
     workoutExerciseSet: Enj.API.WorkoutExerciseSet;
