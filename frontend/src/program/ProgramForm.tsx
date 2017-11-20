@@ -1,5 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import ProgramWorkoutsManager from 'src/program/ProgramWorkoutsManager';
 import Datepicker from 'src/ui/Datepicker';
 import { dateUtils } from 'src/common/utils';
@@ -34,39 +34,40 @@ class ProgramForm extends ValidatingComponent<
     }
     public render() {
         return <div>
-            <label class="input-set">
-                <span>Nimi</span>
-                <input name="name" value={ this.state.program.name } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
-            </label>
-            <label class="input-set">
-                <span>Kuvaus <span class="text-small">(vapaaehtoinen)</span></span>
-                <textarea name="description" value={ this.state.program.description } onInput={ e => this.receiveInputValue(e) }></textarea>
-                { validationMessage(this.evaluators.description[0], templates => templates.maxLength('Kuvaus', 128)) }
-            </label>
-            <span class="input-set">
-                <span>Alkaa</span>
-                <Datepicker
-                    inputName="start"
-                    onSelect={ date => this.receiveDateSelection(date, 'start') }
-                    defaultDate={ new Date(this.state.program.start * 1000) }
-                    maxDate={ new Date((this.state.program.end + 86400) * 1000) }
-                    showInput={ true }
-                    displayFormatFn={ datepickerFormatter }/>
-            </span>
-            <span class="input-set">
-                <span>Loppuu</span>
-                <Datepicker
-                    inputName="end"
-                    onSelect={ date => this.receiveDateSelection(date, 'end') }
-                    defaultDate={ new Date(this.state.program.end * 1000) }
-                    minDate={ new Date((this.state.program.start + 86400) * 1000) }
-                    showInput={ true }
-                    displayFormatFn={ datepickerFormatter }/>
-            </span>
-            <ProgramWorkoutsManager program={ this.state.program } list={ this.state.program.workouts } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => { this.receiveProgramWorkouts(programWorkouts); this.receiveInputValue({target: {value: programWorkouts, name: 'workouts'}}); } }/>
-            { validationMessage(this.evaluators.workouts[0], () => 'Ainakin yksi treeni vaaditaan') }
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }>
+                <label class="input-set">
+                    <span>Nimi</span>
+                    <input name="name" value={ this.state.program.name } onInput={ e => this.receiveInputValue(e) }/>
+                    { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
+                </label>
+                <label class="input-set">
+                    <span>Kuvaus <span class="text-small">(vapaaehtoinen)</span></span>
+                    <textarea name="description" value={ this.state.program.description } onInput={ e => this.receiveInputValue(e) }></textarea>
+                    { validationMessage(this.evaluators.description[0], templates => templates.maxLength('Kuvaus', 128)) }
+                </label>
+                <span class="input-set">
+                    <span>Alkaa</span>
+                    <Datepicker
+                        inputName="start"
+                        onSelect={ date => this.receiveDateSelection(date, 'start') }
+                        defaultDate={ new Date(this.state.program.start * 1000) }
+                        maxDate={ new Date((this.state.program.end + 86400) * 1000) }
+                        showInput={ true }
+                        displayFormatFn={ datepickerFormatter }/>
+                </span>
+                <span class="input-set">
+                    <span>Loppuu</span>
+                    <Datepicker
+                        inputName="end"
+                        onSelect={ date => this.receiveDateSelection(date, 'end') }
+                        defaultDate={ new Date(this.state.program.end * 1000) }
+                        minDate={ new Date((this.state.program.start + 86400) * 1000) }
+                        showInput={ true }
+                        displayFormatFn={ datepickerFormatter }/>
+                </span>
+                <ProgramWorkoutsManager program={ this.state.program } list={ this.state.program.workouts } ref={ cmp => { this.programWorkoutsManager = cmp; } } onChange={ programWorkouts => { this.receiveProgramWorkouts(programWorkouts); this.receiveInputValue({target: {value: programWorkouts, name: 'workouts'}}); } }/>
+                { validationMessage(this.evaluators.workouts[0], () => 'Ainakin yksi treeni vaaditaan') }
+            </Form>
         </div>;
     }
     private confirm(): Promise<any> {

@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import BasicUserInputs from 'src/user/BasicUserInputs';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -23,12 +23,13 @@ class SettingsForm extends Component<Props, any> {
     }
     public render() {
         return <div class="inline-form">
-            <BasicUserInputs user={ this.props.user } ref={ cmp => { this.userInputs = cmp; } }/>
-            { this.props.user && <div class="input-set">
-                <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
-                <label for="saveValuesCb">Tallenna asetukset</label>
-            </div> }
-            <FormButtons onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } confirmButtonShouldBeDisabled={ () => this.userInputs.state.validity === false }/>
+            <BasicUserInputs user={ this.props.user || {} } ref={ cmp => { this.userInputs = cmp; } }/>
+            { this.props.user && <Form onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } confirmButtonShouldBeDisabled={ () => this.userInputs.state.validity === false }>
+                <div class="input-set">
+                    <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
+                    <label for="saveValuesCb">Tallenna asetukset</label>
+                </div>
+            </Form> }
         </div>;
     }
     private confirm() {

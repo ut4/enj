@@ -1,5 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -32,17 +32,18 @@ class ExerciseForm extends ValidatingComponent<Props, State> {
     }
     public render() {
         return <div>
-            <label class="input-set">
-                <span>Nimi</span>
-                { this.isInsert || this.state.exercise.userId // userId = oma, !userId = globaali
-                    ? [
-                        <input name="name" value={ this.state.name } onInput={ e => this.receiveInputValue(e) }/>,
-                        validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64))
-                    ]
-                    : <input name="name" value={ this.state.name } disabled="disabled"/>
-                }
-            </label>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }>
+                <label class="input-set">
+                    <span>Nimi</span>
+                    { this.isInsert || this.state.exercise.userId // userId = oma, !userId = globaali
+                        ? [
+                            <input name="name" value={ this.state.name } onInput={ e => this.receiveInputValue(e) }/>,
+                            validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64))
+                        ]
+                        : <input name="name" value={ this.state.name } disabled="disabled"/>
+                    }
+                </label>
+            </Form>
         </div>;
     }
     private confirm() {

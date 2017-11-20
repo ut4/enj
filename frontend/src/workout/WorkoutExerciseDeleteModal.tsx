@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 class WorkoutExerciseDeleteModal extends Component<{workoutExercise: Enj.API.WorkoutExercise}, any> {
@@ -15,7 +15,7 @@ class WorkoutExerciseDeleteModal extends Component<{workoutExercise: Enj.API.Wor
     public render() {
         return <div>
             <h3>Poista liike "{ this.props.workoutExercise.exerciseName }" päivän treenistä?</h3>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
 }

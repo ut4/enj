@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import LoginForm from 'src/auth/LoginForm';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -16,8 +16,9 @@ class OfflineEndView extends Component<any, any> {
             <h2>Palauta online-tila</h2>
             <div>Palaa online-tilaan, ja synkronisoi offline-tilan aikana tehdyt muutokset?</div>
             <div class="info-box">Muodostathan internet-yhteyden ennen lomakkeen lähettämistä.</div>
-            <LoginForm onValidityChange={ newValidity => this.setState({goodToGo: newValidity}) } ref={ cmp => { this.loginForm = cmp; } }/>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }>
+                <LoginForm onValidityChange={ newValidity => this.setState({goodToGo: newValidity}) } ref={ cmp => { this.loginForm = cmp; } }/>
+            </Form>
         </div>;
     }
     /**

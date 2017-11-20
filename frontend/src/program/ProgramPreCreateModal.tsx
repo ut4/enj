@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -19,28 +19,29 @@ class ProgramPreCreateModal extends Component<
     public componentWillMount() {
         iocFactories.programBackend().getAll('/templates').then(
             programTemplates => this.setState({programTemplates}),
-            () => iocFactories.notify()('Ohjelmatempaattien haku epäonnistui', 'notice')
+            () => iocFactories.notify()('Ohjelmatemplaattien haku epäonnistui', 'notice')
         );
     }
     public render() {
         return <div>
             <h3>Valitse ohjelmapohja</h3>
-            { this.state.programTemplates.length > 0 && <div class="input-set">
-                <select onChange={ e => this.receiveTemplateSelection(e) }>
-                    { [this.noTemplate].concat(this.state.programTemplates).map((t, i) =>
-                        <option value={ i } checked={ this.state.selectedTemplate.id === t.id }>{ t.name }</option>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                { this.state.programTemplates.length > 0 && <div class="input-set">
+                    <select onChange={ e => this.receiveTemplateSelection(e) }>
+                        { [this.noTemplate].concat(this.state.programTemplates).map((t, i) =>
+                            <option value={ i } checked={ this.state.selectedTemplate.id === t.id }>{ t.name }</option>
+                        ) }
+                    </select>
+                </div> }
+                { this.state.selectedTemplate.id !== '' && <div class="end"><div class="box light airy">
+                    <h4>{ this.state.selectedTemplate.name }</h4>
+                    <div>{ this.state.selectedTemplate.description }</div>
+                    <h4>Sisältö</h4>
+                    { this.state.selectedTemplate.workouts.map(programWorkout =>
+                        <div>{ programWorkout.name }: { programWorkout.exercises.map(pwe => pwe.exerciseName).join(', ') }</div>
                     ) }
-                </select>
-            </div> }
-            { this.state.selectedTemplate.id !== '' && <div class="end"><div class="box light airy">
-                <h4>{ this.state.selectedTemplate.name }</h4>
-                <div>{ this.state.selectedTemplate.description }</div>
-                <h4>Sisältö</h4>
-                { this.state.selectedTemplate.workouts.map(programWorkout =>
-                    <div>{ programWorkout.name }: { programWorkout.exercises.map(pwe => pwe.exerciseName).join(', ') }</div>
-                ) }
-            </div></div> }
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+                </div></div> }
+            </Form>
         </div>;
     }
     private receiveTemplateSelection(e) {

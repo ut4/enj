@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import LoginForm from 'src/auth/LoginForm';
 import ioc from 'src/ioc';
 
@@ -16,8 +16,9 @@ class LoginView extends Component<any, any> {
     public render() {
         return <div>
             <h2>Kirjautuminen</h2>
-            <LoginForm onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.loginForm = instance; } }/>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }>
+                <LoginForm onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.loginForm = instance; } }/>
+            </Form>
         </div>;
     }
     private confirm() {

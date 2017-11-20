@@ -50,8 +50,8 @@ class EditableWorkoutExerciseSetList extends Component<{workoutExerciseSets: Arr
             <tbody>{ this.state.sets.map((set, i) =>
                 <tr>
                     <td colspan="2"><WorkoutExerciseSetForm workoutExerciseSet={ set }/></td>
-                    { setCount > 1 && <td><button class="icon-button arrow-dark down" onClick={ () => this.swapSets( (i + 1) < setCount ? 'down' : 'up', i) } title="Siirrä alas/ylös"></button></td> }
-                    <td><button class="icon-button delete-dark" onClick={ () => this.removeSet(i) } title="Poista"></button></td>
+                    { setCount > 1 && <td><button class="icon-button arrow-dark down" onClick={ () => this.swapSets( (i + 1) < setCount ? 'down' : 'up', i) } title="Siirrä alas/ylös" type="button"></button></td> }
+                    <td><button class="icon-button delete-dark" onClick={ () => this.removeSet(i) } title="Poista" type="button"></button></td>
                 </tr>
             ) }</tbody>
         </table>;

@@ -1,6 +1,6 @@
 import ValidatingComponent from 'src/ui/ValidatingComponent';
 import { EmailInputMixin } from 'src/auth/ValidatingFormMixins';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface RequestPasswordResetData {
@@ -21,9 +21,10 @@ class RequestPasswordResetView extends ValidatingComponent<any, {email: string;}
     public render() {
         return <div>
             <h2>Salasanan palautus</h2>
-            <div class="info-box">Täytä sähköpostiosoitteesi alla olevaan kenttään, niin lähetämme siihen linkin jolla voit luoda uuden salasanan.</div>
-            { this.getEmailInputEl() }
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }>
+                <div class="info-box">Täytä sähköpostiosoitteesi alla olevaan kenttään, niin lähetämme siihen linkin jolla voit luoda uuden salasanan.</div>
+                { this.getEmailInputEl() }
+            </Form>
         </div>;
     }
     private confirm() {

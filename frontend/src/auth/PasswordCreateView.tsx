@@ -1,6 +1,6 @@
 import ValidatingComponent from 'src/ui/ValidatingComponent';
 import { PasswordInputsMixin } from 'src/auth/ValidatingFormMixins';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface NewPasswordCredentials {
@@ -41,8 +41,9 @@ class PasswordCreateView extends ValidatingComponent<
         }
         return <div>
             <h2>Luo uusi salasana</h2>
-            { this.getPasswordInputEls() }
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }>
+                { this.getPasswordInputEls() }
+            </Form>
         </div>;
     }
     private confirm() {

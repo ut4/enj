@@ -1,5 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
 import iocFactories from 'src/ioc';
 
@@ -32,17 +32,18 @@ class ExerciseVariantForm extends ValidatingComponent<Props, State> {
     }
     public render() {
         return <div>
-            <label class="input-set">
-                <span>Nimi</span>
-                <input name="content" value={ this.state.content } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.content[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
-            </label>
-            <ExerciseSelector
-                onSelect={ exs => this.onExerciseSelect(exs || {}) }
-                initialExerciseId={ this.props.exerciseVariant.exerciseId }
-                noVariant={ true }
-                label="Liike"/>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false || !this.state.exerciseId } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false || !this.state.exerciseId } confirmButtonText={ this.isInsert ? 'Ok' : 'Tallenna' } closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }>
+                <label class="input-set">
+                    <span>Nimi</span>
+                    <input name="content" value={ this.state.content } onInput={ e => this.receiveInputValue(e) }/>
+                    { validationMessage(this.evaluators.content[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
+                </label>
+                <ExerciseSelector
+                    onSelect={ exs => this.onExerciseSelect(exs || {}) }
+                    initialExerciseId={ this.props.exerciseVariant.exerciseId }
+                    noVariant={ true }
+                    label="Liike"/>
+            </Form>
         </div>;
     }
     private confirm() {

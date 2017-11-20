@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import CredentialsForm from 'src/auth/CredentialsForm';
 import iocFactories from 'src/ioc';
 
@@ -28,9 +28,10 @@ class CredentialsEditView extends Component<any, {credentials: Enj.API.Credentia
         return <div>
             <h2>Muokkaa tiliä</h2>
             { this.state.credentials &&
-                <CredentialsForm credentials={ this.state.credentials } onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.credentialsForm = instance; } }/>
+                <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }>
+                    <CredentialsForm credentials={ this.state.credentials } onValidityChange={ newValidity => this.setValidity(newValidity) } ref={ instance => { this.credentialsForm = instance; } }/>
+                </Form>
             }
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.goodToGo === false } isModal={ false }/>
         </div>;
     }
     private confirm() {

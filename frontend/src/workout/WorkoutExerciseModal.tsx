@@ -2,7 +2,7 @@ import Component from 'inferno-component';
 import { WorkoutExercise } from 'src/workout/WorkoutBackend';
 import EditableWorkoutExerciseSetList from 'src/workout/EditableWorkoutExerciseSetList';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -31,16 +31,17 @@ class WorkoutExerciseModal extends Component<Props, {workoutExercise: WorkoutExe
     public render() {
         return <div class="workout-exercise-modal">
             <h3>{ this.isInsert ? 'Lisää liike treeniin' : 'Muokkaa treeniliikettä' }</h3>
-            <ExerciseSelector
-                initialExerciseId={ this.state.workoutExercise.exerciseId }
-                initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
-                onSelect={ (exs, variant) => this.setState({
-                    workoutExercise: ExerciseSelector.assign(this.state.workoutExercise, exs || {}, variant || {})
-                }) }/>
-            { this.state.workoutExercise.sets.length > 0 &&
-                <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
-            }
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.workoutExercise.exerciseId } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.workoutExercise.exerciseId } closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                <ExerciseSelector
+                    initialExerciseId={ this.state.workoutExercise.exerciseId }
+                    initialExerciseVariantId={ this.state.workoutExercise.exerciseVariantId }
+                    onSelect={ (exs, variant) => this.setState({
+                        workoutExercise: ExerciseSelector.assign(this.state.workoutExercise, exs || {}, variant || {})
+                    }) }/>
+                { this.state.workoutExercise.sets.length > 0 &&
+                    <EditableWorkoutExerciseSetList workoutExerciseSets={ this.state.workoutExercise.sets } onChange={ () => { const workoutExercise = this.state.workoutExercise; this.setState({workoutExercise}); } } ref={ setList => { this.workoutExerciseSetList = setList; } }/>
+                }
+            </Form>
         </div>;
     }
     /**

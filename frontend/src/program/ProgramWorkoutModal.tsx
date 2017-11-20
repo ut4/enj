@@ -1,5 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import OccurrencesManager from 'src/program/ProgramWorkoutOccurrencesManager';
 import ExercisesManager from 'src/program/ProgramWorkoutExercisesManager';
 import iocFactories from 'src/ioc';
@@ -38,22 +38,23 @@ class ProgramWorkoutModal extends ValidatingComponent<Props, {programWorkout: En
     public render() {
         return <div class="program-workout-modal">
             <h3>{ this.isInsert ? 'Lisää ohjelmatreeni' : 'Muokkaa ohjelmatreeniä' }</h3>
-            <label class="input-set">
-                <span>Nimi</span>
-                <input name="name" value={ this.state.programWorkout.name } placeholder="esim. Jalat, Työntävät ..." onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
-            </label>
-            <div class="input-set">
-                <span>Treenipäivät</span>
-                <OccurrencesManager list={ this.state.programWorkout.occurrences } onChange={ occurrences => this.receiveInputValue({target: {value: occurrences, name: 'occurrences'}}) } ref={ cmp => { this.occurrencesManager = cmp; }} programWeekCount={ this.props.programWeekCount }/>
-                { validationMessage(this.evaluators.occurrences[0], () => 'Ainakin yksi päivä vaaditaan') }
-            </div>
-            <div class="input-set">
-                <span>Liikkeet</span>
-                <ExercisesManager list={ this.state.programWorkout.exercises } programWorkoutId={ this.state.programWorkout.id } onChange={ exercises => this.receiveInputValue({target: {value: exercises, name: 'exercises'}}) } ref={ cmp => { this.exercisesManager = cmp; }}/>
-                { validationMessage(this.evaluators.exercises[0], () => 'Ainakin yksi liike vaaditaan') }
-            </div>
-            <FormButtons onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } onCancel={ () => this.cancel() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                <label class="input-set">
+                    <span>Nimi</span>
+                    <input name="name" value={ this.state.programWorkout.name } placeholder="esim. Jalat, Työntävät ..." onInput={ e => this.receiveInputValue(e) }/>
+                    { validationMessage(this.evaluators.name[0], templates => templates.lengthBetween('Nimi', 2, 64)) }
+                </label>
+                <div class="input-set">
+                    <span>Treenipäivät</span>
+                    <OccurrencesManager list={ this.state.programWorkout.occurrences } onChange={ occurrences => this.receiveInputValue({target: {value: occurrences, name: 'occurrences'}}) } ref={ cmp => { this.occurrencesManager = cmp; }} programWeekCount={ this.props.programWeekCount }/>
+                    { validationMessage(this.evaluators.occurrences[0], () => 'Ainakin yksi päivä vaaditaan') }
+                </div>
+                <div class="input-set">
+                    <span>Liikkeet</span>
+                    <ExercisesManager list={ this.state.programWorkout.exercises } programWorkoutId={ this.state.programWorkout.id } onChange={ exercises => this.receiveInputValue({target: {value: exercises, name: 'exercises'}}) } ref={ cmp => { this.exercisesManager = cmp; }}/>
+                    { validationMessage(this.evaluators.exercises[0], () => 'Ainakin yksi liike vaaditaan') }
+                </div>
+            </Form>
         </div>;
     }
     private confirm(): Promise<any> {

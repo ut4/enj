@@ -34,7 +34,7 @@ class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsV
             <input type={ !this.props.showInput ? 'hidden' : 'text' } name={ this.props.inputName } ref={ el => { this.field = el; } }/>
             <div ref={ el => { this.container = el; } }></div>
             { this.state.showTimeToggle && <div class="time-only-toggle-container">
-                <button class="text-button time-only-toggle" onClick={ e => this.toggleDateTableVisibility(e) }>
+                <button class="text-button time-only-toggle" onClick={ e => this.toggleDateTableVisibility(e) } type="button">
                     { this.state.dateTableIsVisible ? 'Piilota pvm [-]' : 'Näytä pvm [+]'}
                 </button>
             </div> }

@@ -1,7 +1,7 @@
 import Component from 'inferno-component';
 import WorkoutBackend from 'src/workout/WorkoutBackend';
 import { notify } from 'src/ui/Notifier';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 class WorkoutEndModal extends Component<{workout: Enj.API.Workout; afterEnd: Function}, any> {
@@ -17,7 +17,7 @@ class WorkoutEndModal extends Component<{workout: Enj.API.Workout; afterEnd: Fun
     public render() {
         return <div>
             <h3>{ this.hasValidSets ? 'Merkkaa treeni tehdyksi' : 'Poista tyhjä treeni' }?</h3>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
         </div>;
     }
     /**

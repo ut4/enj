@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import CrudList from 'src/ui/CrudList';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import { dateUtils } from 'src/common/utils';
 
 interface Props {
@@ -68,31 +68,32 @@ class OccurrenceModal extends Component<
     public render() {
         return <div>
             <h3>{ this.isInsert ? 'Lisää treenipäivä' : 'Muokkaa treenipäivää' }</h3>
-            <label class="input-set">
-                <span>Viikonpäivä</span>
-                <select name="weekDay" onChange={ e => this.receiveSelection(e.target.value, 'weekDay') }>
-                    { [1, 2, 3, 4, 5, 6, 0].map(weekDay =>
-                        <option value={ weekDay } selected={ this.state.occurrence.weekDay === weekDay }>{ dateUtils.getLongWeekDay(weekDay) }</option>
-                    ) }
-                </select>
-            </label>
-            <label class="input-set">
-                <span>Toistuvuus</span>
-                <select name="repeatEvery" onChange={ e => this.receiveSelection(e.target.value, 'repeatEvery') }>
-                    { ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(repeatEvery => {
-                        return <option value={ repeatEvery } selected={ this.state.occurrence.repeatEvery === repeatEvery }>{ getRepeativityAsText(repeatEvery) }</option>;
-                    } ) }
-                </select>
-            </label>
-            <label class="input-set">
-                <span>Alkaen viikosta</span>
-                <select name="firstWeek" onChange={ e => this.receiveSelection(e.target.value, 'firstWeek') }>
-                    { this.getWeekNumbers().map(nthWeek =>
-                        <option value={ nthWeek } selected={ this.state.occurrence.firstWeek === nthWeek }>{ nthWeek + 1 }</option>
-                    ) }
-                </select>
-            </label>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }>
+                <label class="input-set">
+                    <span>Viikonpäivä</span>
+                    <select name="weekDay" onChange={ e => this.receiveSelection(e.target.value, 'weekDay') }>
+                        { [1, 2, 3, 4, 5, 6, 0].map(weekDay =>
+                            <option value={ weekDay } selected={ this.state.occurrence.weekDay === weekDay }>{ dateUtils.getLongWeekDay(weekDay) }</option>
+                        ) }
+                    </select>
+                </label>
+                <label class="input-set">
+                    <span>Toistuvuus</span>
+                    <select name="repeatEvery" onChange={ e => this.receiveSelection(e.target.value, 'repeatEvery') }>
+                        { ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(repeatEvery => {
+                            return <option value={ repeatEvery } selected={ this.state.occurrence.repeatEvery === repeatEvery }>{ getRepeativityAsText(repeatEvery) }</option>;
+                        } ) }
+                    </select>
+                </label>
+                <label class="input-set">
+                    <span>Alkaen viikosta</span>
+                    <select name="firstWeek" onChange={ e => this.receiveSelection(e.target.value, 'firstWeek') }>
+                        { this.getWeekNumbers().map(nthWeek =>
+                            <option value={ nthWeek } selected={ this.state.occurrence.firstWeek === nthWeek }>{ nthWeek + 1 }</option>
+                        ) }
+                    </select>
+                </label>
+            </Form>
         </div>;
     }
     private getWeekNumbers(): Array<number> {

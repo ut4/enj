@@ -24,29 +24,18 @@ interface Props {
     cancelButtonText?: string;
 }
 
-/**
- * Lomakkeiden submit&cancel-painikkeiden oletustoiminnallisuus.
- */
-class FormButtons extends Component<Props, any> {
+class Form<P, S> extends Component<P & Props, S> {
     public render() {
-        return <div class="form-buttons">
-            <button class="nice-button nice-button-primary" type="button" onClick={ e => this.confirm(e) } disabled={ this.confirmButtonShouldBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
-            <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
-        </div>;
-    }
-    public confirmButtonShouldBeDisabled(): boolean {
-        return typeof this.props.confirmButtonShouldBeDisabled === 'function'
-            ? this.props.confirmButtonShouldBeDisabled()
-            : false;
-    }
-    private close() {
-        if (this.props.close) {
-            this.props.close();
-            return;
-        }
-        this.props.isModal !== false ? Modal.close() : iocFactories.history().goBack();
+        return <form onSubmit={ e => this.confirm(e) }>
+            { this.props.children }
+            <div class="form-buttons">
+                <button class="nice-button nice-button-primary" type="submit" disabled={ this.confirmButtonShouldBeDisabled() }>{ this.props.confirmButtonText || 'Ok' }</button>
+                <button class="text-button" type="button" onClick={ e => this.cancel(e) }>{ this.props.cancelButtonText || 'Peruuta' }</button>
+            </div>
+        </form>;
     }
     private confirm(e) {
+        e.preventDefault();
         if (this.props.closeBehaviour === CloseBehaviour.WHEN_RESOLVED) {
             this.props.onConfirm(e).then(() => this.close());
             return;
@@ -63,7 +52,19 @@ class FormButtons extends Component<Props, any> {
         this.props.onCancel && this.props.onCancel(e);
         this.close();
     }
+    public confirmButtonShouldBeDisabled(): boolean {
+        return typeof this.props.confirmButtonShouldBeDisabled === 'function'
+            ? this.props.confirmButtonShouldBeDisabled()
+            : false;
+    }
+    private close() {
+        if (this.props.close) {
+            this.props.close();
+            return;
+        }
+        this.props.isModal !== false ? Modal.close() : iocFactories.history().goBack();
+    }
 }
 
-export default FormButtons;
+export default Form;
 export { CloseBehaviour };

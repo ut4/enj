@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import { ChangeDetectingCrudList } from 'src/ui/CrudList';
 import { arrayUtils } from 'src/common/utils';
 import ExerciseSelector from 'src/exercise/ExerciseSelector';
@@ -62,14 +62,15 @@ class ProgramWorkoutExerciseModal extends Component<
     public render() {
         return <div>
             <h3>{ this.isInsert ? 'Lisää ohjelmatreeniliike' : 'Muokkaa ohjelmatreeniliikettä' }</h3>
-            <ExerciseSelector
-                initialExerciseId={ this.state.programWorkoutExercise.exerciseId }
-                initialExerciseVariantId={ this.state.programWorkoutExercise.exerciseVariantId }
-                onSelect={ (exs, variant) => this.setState({
-                    programWorkoutExercise: ExerciseSelector.assign(this.state.programWorkoutExercise, exs || {}, variant || {})
-                }) }
-                noVariant={ false }/>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonShouldBeDisabled={ () => !this.state.programWorkoutExercise.exerciseId } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }/>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE } confirmButtonShouldBeDisabled={ () => !this.state.programWorkoutExercise.exerciseId } confirmButtonText={ this.isInsert ? 'Lisää' : 'Tallenna' }>
+                <ExerciseSelector
+                    initialExerciseId={ this.state.programWorkoutExercise.exerciseId }
+                    initialExerciseVariantId={ this.state.programWorkoutExercise.exerciseVariantId }
+                    onSelect={ (exs, variant) => this.setState({
+                        programWorkoutExercise: ExerciseSelector.assign(this.state.programWorkoutExercise, exs || {}, variant || {})
+                    }) }
+                    noVariant={ false }/>
+            </Form>
         </div>;
     }
     private confirm() {

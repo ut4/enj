@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import WorkoutExerciseSetForm from 'src/workout/WorkoutExerciseSetForm';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 interface Props {
@@ -17,8 +17,9 @@ class WorkoutExerciseSetCreateModal extends Component<Props, any> {
     public render() {
         return <div>
             <h3>Lisää sarja</h3>
-            <WorkoutExerciseSetForm workoutExerciseSet={ this.props.workoutExerciseSet } ref={ instance => { this.workoutExerciseSetForm = instance; } } onValidityChange={ validity => this.setState({validity}) }/>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                <WorkoutExerciseSetForm workoutExerciseSet={ this.props.workoutExerciseSet } ref={ instance => { this.workoutExerciseSetForm = instance; } } onValidityChange={ validity => this.setState({validity}) }/>
+            </Form>
         </div>;
     }
     /**

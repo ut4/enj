@@ -1,5 +1,5 @@
 import ValidatingComponent, { validationMessage } from 'src/ui/ValidatingComponent';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import { dateUtils } from 'src/common/utils';
 import Datepicker from 'src/ui/Datepicker';
 import iocFactories from 'src/ioc';
@@ -25,34 +25,35 @@ class WorkoutEditModal extends ValidatingComponent<
     public render() {
         return <div>
             <h3>Muokkaa treenin tietoja</h3>
-            <span class="input-set">
-                <span>Aloitus</span>
-                <Datepicker
-                    inputName="start"
-                    onSelect={ date => this.receiveDateSelection(date, 'start') }
-                    defaultDate={ new Date(this.state.workout.start * 1000) }
-                    maxDate={ this.state.workout.end ? new Date((this.state.workout.end + 1) * 1000) : null }
-                    showInput={ true }
-                    showTime={ true }
-                    displayFormatFn={ datepickerFormatter }/>
-            </span>
-            { this.state.workout.end > 0 && <span class="input-set">
-                <span>Lopetus</span>
-                <Datepicker
-                    inputName="end"
-                    onSelect={ date => this.receiveDateSelection(date, 'end') }
-                    defaultDate={ new Date(this.state.workout.end * 1000) }
-                    minDate={ new Date((this.state.workout.start + 1) * 1000) }
-                    showInput={ true }
-                    showTime={ true }
-                    displayFormatFn={ datepickerFormatter }/>
-            </span> }
-            <label class="input-set">
-                <span>Muistiinpanot</span>
-                <textarea name="notes" value={ this.state.workout.notes } onInput={ e => this.receiveInputValue(e) }></textarea>
-                { validationMessage(this.evaluators.notes[0], templates => templates.maxLength('Muistiinpanot', 1000)) }
-            </label>
-            <FormButtons onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ true } confirmButtonText="Tallenna" closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ true } confirmButtonText="Tallenna" closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                <span class="input-set">
+                    <span>Aloitus</span>
+                    <Datepicker
+                        inputName="start"
+                        onSelect={ date => this.receiveDateSelection(date, 'start') }
+                        defaultDate={ new Date(this.state.workout.start * 1000) }
+                        maxDate={ this.state.workout.end ? new Date((this.state.workout.end + 1) * 1000) : null }
+                        showInput={ true }
+                        showTime={ true }
+                        displayFormatFn={ datepickerFormatter }/>
+                </span>
+                { this.state.workout.end > 0 && <span class="input-set">
+                    <span>Lopetus</span>
+                    <Datepicker
+                        inputName="end"
+                        onSelect={ date => this.receiveDateSelection(date, 'end') }
+                        defaultDate={ new Date(this.state.workout.end * 1000) }
+                        minDate={ new Date((this.state.workout.start + 1) * 1000) }
+                        showInput={ true }
+                        showTime={ true }
+                        displayFormatFn={ datepickerFormatter }/>
+                </span> }
+                <label class="input-set">
+                    <span>Muistiinpanot</span>
+                    <textarea name="notes" value={ this.state.workout.notes } onInput={ e => this.receiveInputValue(e) }></textarea>
+                    { validationMessage(this.evaluators.notes[0], templates => templates.maxLength('Muistiinpanot', 1000)) }
+                </label>
+            </Form>
         </div>;
     }
     /**

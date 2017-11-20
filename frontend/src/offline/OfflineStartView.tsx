@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import { domUtils } from 'src/common/utils';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -20,7 +20,7 @@ class OfflineStartView extends Component<any, any> {
                     <div>Aloita offline-tila, joka mahdollistaa ohjelman käytön ilman internet-yhteyttä?</div>
                     <div class="info-box">Offline-tilan aikana tehdyt muutokset kirjataan käyttämääsi selaimeen, ja synronoidaan tilan päätyttyä. Jos tyhjennät selaimen väliaikaistiedostot ennen online-tilaan palaamista, tiedot häviävät.</div>
                 </div>
-                <FormButtons onConfirm={ () => this.confirm() } confirmButtonText="Aloita offline-tila" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
+                <Form onConfirm={ () => this.confirm() } confirmButtonText="Aloita offline-tila" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }/>
             </div>
             : <div>
                 <h2>Hrmh..</h2>

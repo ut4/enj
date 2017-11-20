@@ -1,6 +1,5 @@
 import Component from 'inferno-component';
-import ProgramBackend from 'src/program/ProgramBackend';
-import FormButtons, { CloseBehaviour } from 'src/ui/FormButtons';
+import Form, { CloseBehaviour } from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -10,8 +9,9 @@ class ProgramDeleteModal extends Component<{program: Enj.API.Program; afterDelet
     public render() {
         return <div>
             <h3>Poista ohjelma?</h3>
-            <p>Toiminto poistaa ohjelman <i>{ this.props.program.name }</i> ja sen ohjelmatreenit.</p>
-            <FormButtons onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }/>
+            <Form onConfirm={ () => this.confirm() } closeBehaviour={ CloseBehaviour.IMMEDIATE }>
+                <p>Toiminto poistaa ohjelman <i>{ this.props.program.name }</i> ja sen ohjelmatreenit.</p>
+            </Form>
         </div>;
     }
     /**

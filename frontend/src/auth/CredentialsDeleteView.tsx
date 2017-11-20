@@ -1,5 +1,5 @@
 import Component from 'inferno-component';
-import FormButtons from 'src/ui/FormButtons';
+import Form from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -19,14 +19,15 @@ class CredentialsDeleteView extends Component<any, {user: Enj.API.User; hasCheck
     public render() {
         return <div>
             <h2>Poista tili</h2>
-            { this.state.user && [
-                <div class="info-box alert">Poista tilisi ja kaikki siihen liittyvä tieto lopullisesti? Tätä toimintoa ei voi perua.</div>,
-                <div class="input-set">
-                    <input type="checkbox" name="confirmation" id="confirmationCb" onChange={ e => this.setState({hasCheckedConfirmation: e.target.checked}) }/>
-                    <label for="confirmationCb">Luin ja ymmärsin yllä olevan tekstin.</label>
-                </div>
-            ] }
-            <FormButtons confirmButtonText="Poista tili" confirmButtonShouldBeDisabled={ () => !this.state.hasCheckedConfirmation } onConfirm={ () => this.confirm() } isModal={ false }/>
+            <Form confirmButtonText="Poista tili" confirmButtonShouldBeDisabled={ () => !this.state.hasCheckedConfirmation } onConfirm={ () => this.confirm() } isModal={ false }>
+                { this.state.user && [
+                    <div class="info-box alert">Poista tilisi ja kaikki siihen liittyvä tieto lopullisesti? Tätä toimintoa ei voi perua.</div>,
+                    <div class="input-set">
+                        <input type="checkbox" name="confirmation" id="confirmationCb" onChange={ e => this.setState({hasCheckedConfirmation: e.target.checked}) }/>
+                        <label for="confirmationCb">Luin ja ymmärsin yllä olevan tekstin.</label>
+                    </div>
+                ] }
+            </Form>
         </div>;
     }
     private confirm() {

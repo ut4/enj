@@ -29,14 +29,14 @@ abstract class CrudList<T> extends Component<
                         const cells = this.getListItemContent(item, index);
                         fieldCount = cells.length + 1;
                         return <tr>{ cells.concat([<td>
-                            <button class="icon-button edit-dark" onClick={ () => this.openEditModal(item, index) } title={ this.editButtonText }></button>
-                            <button class="icon-button delete-dark" onClick={ () => this.deleteItem(index) } title={ this.deleteButtonText }></button>
+                            <button class="icon-button edit-dark" onClick={ () => this.openEditModal(item, index) } type="button" title={ this.editButtonText }></button>
+                            <button class="icon-button delete-dark" onClick={ () => this.deleteItem(index) } type="button" title={ this.deleteButtonText }></button>
                         </td>]) }</tr>;
                     })
                     : <tr><td colspan={ fieldCount }>-</td></tr>
                 }</tbody>
                 <tfoot><tr>
-                    <td colspan={ fieldCount }><button class="nice-button" onClick={ () => this.openAddModal() }>{ this.confirmButtonText }</button></td>
+                    <td colspan={ fieldCount }><button class="nice-button" onClick={ () => this.openAddModal() } type="button">{ this.confirmButtonText }</button></td>
                 </tr></tfoot>
             </table>
         </div>;

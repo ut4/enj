@@ -21,7 +21,7 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
                     { this.getDayContent(weekDay) }
                 </li>
             ) }</ul>
-            <button class="nice-button" onClick={ () => this.openAddModal() }>Lisää treeni</button>
+            <button class="nice-button" onClick={ () => this.openAddModal() } type="button">Lisää treeni</button>
         </div>;
     }
     protected clone(programWorkout: Enj.API.ProgramWorkout): Enj.API.ProgramWorkout {
@@ -75,8 +75,8 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
                     }</div>
                 ) }</div>,
                 <div class="action-buttons">
-                    <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa"></button>
-                    <button class="icon-button delete" onClick={ () => this.deleteItem(index) } title="Poista"></button>
+                    <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa" type="button"></button>
+                    <button class="icon-button delete" onClick={ () => this.deleteItem(index) } title="Poista" type="button"></button>
                 </div>
             ];
         }
@@ -110,13 +110,13 @@ class WeekNavigator extends Component<
     public render() {
         const isLastWeek = this.state.nthWeek + 1 === this.weekCount;
         return <div class="week-navigation">
-            <button class="text-button heavy" title="Edellinen viikko" onClick={ () => this.navigate('-') } disabled={ this.state.nthWeek === 0 }>&lt;</button>
+            <button class="text-button heavy" title="Edellinen viikko" onClick={ () => this.navigate('-') } type="button" disabled={ this.state.nthWeek === 0 }>&lt;</button>
             <div title="Ajanjakso">
                 <div class="heading">Viikko { this.state.nthWeek + 1 + '/' + this.weekCount }</div>{
                     dateUtils.getLocaleDateString(this.state.start) + ' - ' +
                     dateUtils.getLocaleDateString(this.state.end)
                 }</div>
-            <button class="text-button heavy" title="Seuraava viikko" onClick={ () => this.navigate('+') } disabled={ isLastWeek }>&gt;</button>
+            <button class="text-button heavy" title="Seuraava viikko" onClick={ () => this.navigate('+') } type="button" disabled={ isLastWeek }>&gt;</button>
         </div>;
     }
     private makeState(props) {
