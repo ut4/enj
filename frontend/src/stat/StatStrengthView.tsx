@@ -225,7 +225,7 @@ class StrengthLevelTable extends Component<
             ? formulae.getStrengthLevelTable(this.state.lift, this.state.settingsIsMale)
             : null;
         return <div>
-            <button title="Näytä taulukko" class={ 'icon-button arrow arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () => this.setState({tableIsVisible: !this.state.tableIsVisible}) }></button>
+            <button title="Näytä taulukko" class={ 'icon-button arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () => this.setState({tableIsVisible: !this.state.tableIsVisible}) }></button>
             { this.state.tableIsVisible && <div>
                 <div class="end">
                     <select onChange={ e => this.setState({lift: e.target.value}) }>

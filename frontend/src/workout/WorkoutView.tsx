@@ -10,6 +10,7 @@ import iocFactories from 'src/ioc';
 interface State {
     workouts: Array<Enj.API.Workout>;
     programs: Array<Enj.API.Program>;
+    selectedDate: Date;
     isToday: boolean;
 }
 
@@ -21,14 +22,14 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     private workoutBackend: WorkoutBackend;
     private programBackend: ProgramBackend;
     private datePicker: Datepicker;
-    private selectedDate: Date;
     private dateNow: Date;
     public constructor(props, context) {
         super(props, context);
-        this.state = {workouts: null, programs: [], isToday: null};
+        this.state = {workouts: null, programs: [], selectedDate: null, isToday: null};
         this.workoutBackend = iocFactories.workoutBackend();
         this.programBackend = iocFactories.programBackend();
         this.dateNow = new Date();
+        this.dateNow.setHours(12);
     }
     /**
      * Hakee urlin daten {prop.params.date} treenit backendistä ja asettaa ne stateen.
@@ -43,9 +44,9 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     public componentWillReceiveProps(props) {
         const newState: State = this.state;
         newState.isToday = props.params.date === 'tanaan';
-        this.selectedDate = newState.isToday ? this.dateNow : new Date(props.params.date);
+        newState.selectedDate = newState.isToday ? this.dateNow : new Date(props.params.date);
         // Hae ensin päivän treeniä...
-        return this.workoutBackend.getDaysWorkouts(this.selectedDate).then(
+        return this.workoutBackend.getDaysWorkouts(newState.selectedDate).then(
             workouts => {
                 newState.workouts = workouts;
                 this.setState(newState);
@@ -59,8 +60,8 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             }
         // ...jos ei löytynyt (ja params.date on tänään), hae ohjelmaa
         ).then((noWorkoutsFound: boolean) => {
-            if (noWorkoutsFound && this.selectedDate >= this.dateNow) {
-                this.programBackend.getAll('/mine?when=' + Math.floor(this.selectedDate.getTime() / 1000)).then(
+            if (noWorkoutsFound && newState.selectedDate >= this.dateNow) {
+                this.programBackend.getAll('/mine?when=' + Math.floor(newState.selectedDate.getTime() / 1000)).then(
                     programs => programs.length && this.setState({programs}),
                     () => iocFactories.notify()('Ohjelman haku epäonnistui', 'error')
                 );
@@ -74,27 +75,38 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             return;
         }
         return <div class={ 'workout-view' + (!this.state.isToday ? ' not-current' : '') }>
-            <h2>{ (!this.state.programs.length ? 'Treeni ' : 'Ohjelmassa ') + (this.state.isToday ? 'tänään' : toFinDate(this.selectedDate)) }
-                <button title="Valitse päivä" class="icon-button arrow-dark arrow down" onClick={ () => this.datePicker.open() }></button>
-                <Datepicker onSelect={ date => this.receiveDateSelection(date) } defaultDate={ this.state.isToday ? undefined : this.selectedDate } autoClose={ true } ref={ instance => { this.datePicker = instance; } }/>
+            <h2>
+                { !this.state.programs.length ? 'Treeni ' : 'Ohjelmassa ' }
+                <span>{ this.state.isToday ? 'tänään' : toFinDate(this.state.selectedDate) }</span>
+                <button title="Valitse päivä" class="icon-button arrow-dark down" onClick={ () => this.datePicker.open() }></button>
+                <Datepicker onSelect={ date => this.redirectToDate(date) } defaultDate={ this.state.isToday ? undefined : this.state.selectedDate } autoClose={ true } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             { this.state.workouts.length
                 ? this.state.workouts.map(workout =>
                     <EditableWorkout workout={ workout } onDelete={ () => this.componentWillReceiveProps(this.props) }/>
                 )
-                : this.state.programs.length ? this.getProgramWorkoutsList() : <p>Ei treenejä</p>
+                : this.getNoWorkoutContent()
             }
-            <button class="nice-button" onClick={ () => this.startWorkout() }>Aloita uusi</button>
+            <button class="nice-button" onClick={ () => this.navigate('-') } title="Edellinen päivä">&lt; Edellinen</button>
+            <button class="nice-button" onClick={ () => this.navigate('+') } title="Seuraava päivä">Seuraava &gt;</button>
         </div>;
     }
     /**
      * Ohjaa valittuun päivämäärään (treeni/2017-09-09 tai treeni/tänään)
      */
-    private receiveDateSelection(date: Date) {
+    private redirectToDate(date: Date) {
         date.setHours(12);
         iocFactories.history().push('/treeni/' + (
             !isToday(date) ? date.toISOString().split('T')[0] : 'tanaan'
         ));
+    }
+    /**
+     * Ohjaa edelliseen, tai seuraavaan päivään.
+     */
+    private navigate(direction: '-' | '+') {
+        const newDate = new Date(this.state.selectedDate);
+        newDate.setDate(newDate.getDate() + (direction === '+' ? 1 : -1));
+        this.datePicker.pikaday.setDate(newDate);
     }
     /**
      * Luo kirjautuneelle käyttäjälle uuden tyhjän treenin kuluvalle päivälle.
@@ -122,7 +134,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             }
         }).then(() => {
             this.state.workouts.unshift(newWorkout);
-            this.setState({workouts: this.state.workouts});
+            this.setState({workouts: this.state.workouts, programs: []});
         }, err => {
             (err.response || {}).status !== 401 && iocFactories.notify()('Treenin aloitus epäonnistui', 'error');
         });
@@ -131,12 +143,20 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
      * Etsii kuluvan päivän ohjelmatreenit ohjelmasta, ja palauttaa ne listaan
      * renderöitynä.
      */
-    private getProgramWorkoutsList(): HTMLElement {
+    private getNoWorkoutContent(): HTMLElement {
+        const startEmptyWorkoutButton = !this.state.isToday
+            ? null
+            : <button class="nice-button large" onClick={ () => this.startWorkout() }>Aloita extempore-treeni</button>;
+        // Ei treeniä eikä ohjelmaa
+        if (!this.state.programs.length) {
+            return <p>Ei treenejä.{ startEmptyWorkoutButton }</p>;
+        }
+        // Ei treeniä, mutta treeniohjelma
         const programWorkouts: Array<Enj.API.ProgramWorkout> = [];
         this.state.programs.forEach(p => {
             const todaysProgramWorkout = occurrenceFinder.findWorkoutForDate(
                 p.workouts,
-                this.selectedDate,
+                this.state.selectedDate,
                 new Date(p.start * 1000)
             )[0];
             todaysProgramWorkout && programWorkouts.push(todaysProgramWorkout);
@@ -151,7 +171,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                 ) }</div>
                 <button class="nice-button large" onClick={ () => this.startWorkout(programWorkout.exercises) }>Aloita</button>
             </li>) }</ul>
-        : <p>Ei ohjelmatreeniä tälle päivälle.</p>;
+        : <p>Ei ohjelmatreeniä tälle päivälle.{ startEmptyWorkoutButton }</p>;
     }
 }
 

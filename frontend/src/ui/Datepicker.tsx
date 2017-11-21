@@ -13,9 +13,9 @@ interface Props {
 }
 
 class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsVisible: boolean}> {
+    public pikaday: any;
     private field: HTMLInputElement;
     private container: HTMLSpanElement;
-    private pikaday: any;
     public constructor(props, context) {
         super(props, context);
         this.state = {showTimeToggle: undefined, dateTableIsVisible: true};

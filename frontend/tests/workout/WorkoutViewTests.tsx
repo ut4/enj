@@ -176,7 +176,7 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('Datepickerin valinta ohjaa valitun päivän treeniin', assert => {
+    QUnit.test('"Edellinen päivä"-painike ohjaa edelliseen päivään', assert => {
         const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
             .returns(Promise.resolve([someTestWorkouts[1]]));
         const redirectSpy = sinon.spy(fakeHistory, 'push');
@@ -185,16 +185,12 @@ QUnit.module('workout/WorkoutView', hooks => {
         // Odota, että initial-treeni latautuu
         const done = assert.async();
         currentWorkoutsFetch.firstCall.returnValue.then(() => {
-            // Avaa datepicker
-            const datePickerOpenButton = utils.findButtonByAttribute(rendered, 'title', 'Valitse päivä');
-            datePickerOpenButton.click();
-            // Simuloi datepickerin klikkaus (datePicker.props.onSelect(...))
+            // Klikkaa nappia
+            utils.findButtonByContent(rendered, '< Edellinen').click();
+            // Ohjautuiko?
             const expectedDate = new Date();
-            expectedDate.setDate(new Date().getDate() !== 1 ? expectedDate.getDate() - 1 : expectedDate.getDate() + 1);
-            const datePicker = itu.findRenderedVNodeWithType(rendered, Datepicker).children;
-            (datePicker as any).props.onSelect(expectedDate);
-            //
-            assert.ok(redirectSpy.calledOnce, 'Pitäisi ohjata valitun päivän treeneihin');
+            expectedDate.setDate(new Date().getDate() - 1);
+            assert.ok(redirectSpy.calledOnce, 'Pitäisi ohjata edelliseen päivään');
             assert.deepEqual(redirectSpy.firstCall.args,
                 ['/treeni/' + expectedDate.toISOString().split('T')[0]],
                 'Pitäisi ohjautua tänne'
@@ -202,11 +198,35 @@ QUnit.module('workout/WorkoutView', hooks => {
             done();
         });
     });
-    QUnit.test('"Aloita uusi"-painike luo uuden tyhjän treenin, ja lisää sen listan alkuun', assert => {
-        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([someTestWorkouts[0]]));
+    QUnit.test('"Seuraava päivä"-painike ohjaa seuraavaan päivään', assert => {
+        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([someTestWorkouts[1]]));
+        const redirectSpy = sinon.spy(fakeHistory, 'push');
+        //
+        const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: '2017-11-23'} }/>);
+        // Odota, että initial-treeni latautuu
+        const done = assert.async();
+        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+            // Klikkaa nappia
+            utils.findButtonByContent(rendered, 'Seuraava >').click();
+            // Ohjautuiko?
+            const expectedDate = new Date(2017, 10, 24, 12);
+            assert.ok(redirectSpy.calledOnce, 'Pitäisi ohjata seuraavaan päivään');
+            assert.deepEqual(redirectSpy.firstCall.args,
+                ['/treeni/' + expectedDate.toISOString().split('T')[0]],
+                'Pitäisi ohjautua tänne'
+            );
+            done();
+        });
+    });
+    QUnit.test('"Aloita extempore-treeni"-painike luo uuden tyhjän treenin, ja lisää sen näkymään', assert => {
+        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
+            .returns(Promise.resolve([]));
+        const currentProgramsFetchStub = sinon.stub(shallowProgramBackend, 'getAll')
+            .returns(Promise.resolve([]));
         const workoutFromService = new Workout();
         workoutFromService.userId = someUserId;
-        const newWorkoutStub = sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
+        sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
         const workoutInsertStub = sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve(1));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
@@ -217,8 +237,8 @@ QUnit.module('workout/WorkoutView', hooks => {
             const workoutsBefore = getRenderedWorkoutItems(rendered);
             const workoutCountBefore = workoutsBefore.length;
             //
-            const addWorkoutButton = utils.findButtonByContent(rendered, 'Aloita uusi');
-            const expectedWorkout = getExpectedNewWorkout(); // luodaan jos tässä, että start-unixTime tulee oikein
+            const addWorkoutButton = utils.findButtonByContent(rendered, 'Aloita extempore-treeni');
+            const expectedWorkout = getExpectedNewWorkout(); // luodaan jo tässä, että start-unixTime tulee oikein
             addWorkoutButton.click();
             //
             startWorkoutHook.firstCall.returnValue.then(() => {
@@ -226,8 +246,7 @@ QUnit.module('workout/WorkoutView', hooks => {
                 assert.deepEqual(workoutInsertStub.firstCall.args, [workoutFromService]);
                 const renderedWorkoutsAfter = getRenderedWorkoutItems(rendered);
                 assert.equal(renderedWorkoutsAfter.length, workoutCountBefore + 1, 'Pitäisi renderöidä uusi treeni');
-                assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listan alkuun');
-                assert.deepEqual(renderedWorkoutsAfter[1].props.workout, someTestWorkouts[0], '1. initial treeni pitäisi olla nyt listan 2.');
+                assert.deepEqual(renderedWorkoutsAfter[0].props.workout, expectedWorkout, 'Pitäisi lisätä treeni listaan');
                 done();
             });
         });

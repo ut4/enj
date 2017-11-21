@@ -249,7 +249,7 @@ ul {
     box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset;
 }
 .dark-list .nice-button:hover:enabled {
-    background-color: rgba(255,255,255,0.20);
+    background-color: rgba(255,255,255,0.2);
     border-color: rgba(255,255,255,0.2) rgba(0,0,0,0.1) rgba(0,0,0,0.2) rgba(255,255,255,0.1);
 }
 .icon-button {
@@ -289,13 +289,16 @@ ul {
 .icon-button.arrow-dark {
     background-image: url("icon-sprite.svg#arrow-dark");
 }
-.icon-button.arrow.up {
+.icon-button.arrow.up,
+.icon-button.arrow-dark.up {
     transform: rotate(180deg);
 }
-.icon-button.arrow.right {
+.icon-button.arrow.right,
+.icon-button.arrow-dark.right {
     transform: rotate(-90deg);
 }
-.icon-button.arrow.left {
+.icon-button.arrow.left,
+.icon-button.arrow-dark.left {
     transform: rotate(90deg);
 }
 .icon-button.statistics {
@@ -772,7 +775,7 @@ header nav a {
     display: inline-block;
     height: 18px;
     min-width: 30px;
-    padding: 37px 26px 10px;
+    padding: 37px 26px 5px;
     position: relative;
     text-decoration: none;
     vertical-align: bottom;
@@ -826,8 +829,8 @@ header nav a {
 }
 
 #user-menu {
-    margin: 6px auto;
-    padding: 4px;
+    margin: 6px auto 0;
+    padding: 4px 4px 0;
     max-width: 420px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     display: none;
@@ -842,7 +845,7 @@ header nav a {
     margin-right: 15px;
 }
 #user-menu a {
-    padding: 6px 0 4px;
+    padding: 6px 0 8px;
 }
 .tab-menu {
     margin-bottom: 30px;
@@ -901,7 +904,7 @@ footer a {
 }
 #view {
     background-color: #FFFFFF;
-    margin: -25px auto 0;
+    margin: -20px auto 0;
     max-width: 600px;
     padding: 20px;
     text-align: center;
@@ -923,18 +926,21 @@ footer a {
     background-position: center 25px; }
 
 /* -- Treeninäkymät ---------- */
+.workout-view.not-current h2 > span { font-family: "Fira sans light"; letter-spacing: -1px;
+    font-size: 21px; }
 .workout-view h2 .arrow-dark { padding: 14px 16px; margin: 0 -5px -7px 2px; top: -3px; position: relative; }
 .workout-view .datepicker { position: absolute; width: 100%; z-index: 1; left: 0;}
 .workout-view .datepicker > div { max-width: 330px; margin: 5px auto 0; }
 
-
-.workout-view > div { margin-top: -10px; }
+.workout-view > p { margin: -10px 0 15px; }
 .workout-timer { float: left; margin-bottom: 10px; white-space: nowrap; }
 .workout-timer + div { float: right; margin-top: -7px; }
 .workout-timer + div > .edit-dark { margin-right: 5px; }
 .editable-workout > ul:first-of-type { clear: both;}
 .editable-workout li .icon-button.add, .workout-view button.large { margin-top: 10px; }
-.workout-view.not-current > .nice-button,                                /* Treenin aloituspainike */
+.workout-view p > .nice-button.large { display: block; margin: 15px auto; }
+.workout-view > .nice-button:first-of-type { margin-right: 4px; }
+.workout-view.not-current > .nice-button:not([title]),                   /* Treenin aloituspainike */
 .workout-view.not-current .editable-workout > .nice-button:last-of-type, /* Liikeen lisäyspainike */
 .workout-view.not-current .dark-list > li > button { display: none; }    /* Sarjan lisäyspainike */
 
@@ -1068,8 +1074,8 @@ footer a {
         padding: 0 5px;
     }
     #view h2 {
-        margin-right: 8px;
-        margin-left: 8px;
+        margin-right: 4px;
+        margin-left: 4px;
     }
     .home-view { margin: 0 14px; }
 }
