@@ -1,5 +1,6 @@
 import Component from 'inferno-component';
 import Modal from 'src/ui/Modal';
+import { arrayUtils } from 'src/common/utils';
 
 /**
  * Geneerinen muokattava lista, implementoi perustoiminnot kuten lisäys/muokkaus-
@@ -13,6 +14,7 @@ abstract class CrudList<T> extends Component<
     protected editButtonText = 'Muokkaa';
     protected deleteButtonText = 'Poista';
     protected confirmButtonText = 'Lisää uusi';
+    protected orderPropertyName = null;
     protected abstract ModalClass: new (...args: any[]) => Component<any, any & {afterInsert?: Function; afterUpdate?: Function}>;
     protected abstract modalPropName: string;
     public constructor(props, context) {
@@ -22,13 +24,17 @@ abstract class CrudList<T> extends Component<
     }
     public render() {
         let fieldCount = 1;
+        const itemCount = this.state.list.length;
         return <div>
             <table class="crud-table striped dark-list responsive">
-                <tbody>{ this.state.list.length
+                <tbody>{ itemCount
                     ? this.state.list.map((item, index) => {
                         const cells = this.getListItemContent(item, index);
                         fieldCount = cells.length + 1;
                         return <tr>{ cells.concat([<td>
+                            { (this.orderPropertyName !== null && itemCount > 1) &&
+                                <button type="button" title="Siirrä alas/ylös" onClick={ () => this.swapItem((index + 1) < itemCount ? 'down' : 'up', index) } class="icon-button arrow-dark"></button>
+                            }
                             <button class="icon-button edit-dark" onClick={ () => this.openEditModal(item, index) } type="button" title={ this.editButtonText }></button>
                             <button class="icon-button delete-dark" onClick={ () => this.deleteItem(index) } type="button" title={ this.deleteButtonText }></button>
                         </td>]) }</tr>;
@@ -94,6 +100,19 @@ abstract class CrudList<T> extends Component<
                 }
             }) }/>
         );
+    }
+    /**
+     * Swappaa listan kaksi itemiä kohdasta {index} suuntaan {direction}.
+     */
+    protected swapItem(direction: keyof Enj.direction, index: number) {
+        const list = this.state.list;
+        const item = list[index];
+        if (arrayUtils.swap(list, direction, index)) {
+            const swappedOrdinal = list[index][this.orderPropertyName];
+            list[index][this.orderPropertyName] = item[this.orderPropertyName];
+            item[this.orderPropertyName] = swappedOrdinal;
+            this.applyState(list);
+        }
     }
     /**
      * Poistaa <T>:n listalta kohdasta {index}.

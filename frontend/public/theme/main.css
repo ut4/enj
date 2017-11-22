@@ -453,9 +453,10 @@ table.dark-list tfoot td {
 .striped:not(.dark-list) tbody tr:only-child td:first-child {
     padding-left: 0;
 }
-table.crud-table th:last-of-type,
-table.crud-table td:last-of-type {
+table.crud-table th:last-of-type:not(:only-of-type),
+table.crud-table td:last-of-type:not(:only-of-type) {
     width: 114px;
+    text-align: right;
 }
 table.crud-table th:only-child,
 table.crud-table td:only-child {
@@ -552,9 +553,6 @@ input[type="checkbox"]:checked:disabled + label:after {
 }
 .input-set .datepicker .pika-single:not(.is-hidden) {
     display: inline-block;
-}
-.input-set .crud-table th:last-of-type, .input-set .crud-table td:last-of-type {
-    width: 64px;
 }
 .form-buttons {
     text-align: left;
@@ -945,7 +943,8 @@ footer a {
 .workout-view.not-current .dark-list > li > button { display: none; }    /* Sarjan lisäyspainike */
 
 .workout-exercise-modal table { width: auto }
-.workout-exercise-modal table tr:last-of-type .arrow-dark {
+.workout-exercise-modal table tr:last-of-type .arrow-dark,
+.input-set .crud-table tr:last-of-type .arrow-dark {
     transform: rotate(180deg);
 }
 
@@ -997,7 +996,8 @@ footer a {
 
 /* -- Käyttäjänäkymät ---------- */
 .profile-pic { position: absolute; height: 130px; width: 134px; background-repeat: no-repeat;
-    background-position: center; background-color: rgba(0,0,0,0.05); background-size: contain }
+    background-position: center; background-color: rgba(0,0,0,0.05); background-size: contain;
+    border-radius: 2px;}
 .profile-pic + div { padding-left: 150px; }
 .profile-pic.default { background-size: 55% auto; background-color: #e0e0e0; }
 

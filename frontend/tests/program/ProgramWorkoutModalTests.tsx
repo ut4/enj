@@ -93,7 +93,48 @@ QUnit.module('program/ProgramWorkoutModal', hooks => {
             ]
         })]);
     });
-    QUnit.test('Lähettää liikkeitä backendiin', assert => {
+    QUnit.test('Create-modessa ei lähetä liikkeitä backendiin', assert => {
+        const exerciseFetchStub = sinon.stub(shallowExerciseBackend, 'getAll')
+            .returns(Promise.resolve(etu.getSomeDropdownExercises()));
+        const pweInsertStub = sinon.spy(shallowProgramBackend, 'insertWorkoutExercises');
+        const mockNewPW = {
+            name: 'Workout #1',
+            exercises: [],
+            occurrences: [{weekDay: 1, repeatEvery: 7, firstWeek: 0}]
+        };
+        const afterInsertSpy = sinon.spy();
+        const rendered = itu.renderIntoDocument(<div><Modal/>
+            <ProgramWorkoutModal programWorkout={ mockNewPW } afterInsert={ afterInsertSpy }/>
+        </div>);
+        const [nameInputEl] = utils.getInputs(rendered);
+        utils.setInputValue(mockNewPW.name, nameInputEl);
+        // Lisää kaksi liikettä
+        const done = assert.async();
+        addExercise(0).then(() => addExercise(1)).then(() => {
+            // Swappaa liikkeet keskenään
+            utils.findButtonByAttribute(rendered, 'title', 'Siirrä alas/ylös').click();
+            // Hyväksy ProgramWorkoutModal
+            utils.findButtonByContent(rendered, 'Ok').click();
+            //
+            assert.deepEqual(afterInsertSpy.firstCall.args, [
+                Object.assign(mockNewPW, {
+                    exercises: [etu.getSomeDropdownExercises()[1], etu.getSomeDropdownExercises()[0]]}
+                )
+            ]);
+            assert.ok(pweInsertStub.notCalled);
+            done();
+        });
+        function addExercise(nth: number) {
+            // Avaa ProgramWorkoutExerciseModal
+            utils.findButtonByContent(rendered, 'Lisää liike').click();
+            // Odota että combobox latautuu, ja valitse sieltä liike
+            return exerciseFetchStub.getCall(nth).returnValue.then(() => {
+                etu.selectExercise(rendered, etu.getSomeDropdownExercises()[nth]);
+                utils.findButtonByContent(rendered, 'Lisää').click();
+            });
+        }
+    });
+    QUnit.test('Update-modessa lähettää mutatoituneet liikkeet backendiin', assert => {
         const exerciseFetchStub = sinon.stub(shallowExerciseBackend, 'getAll')
             .returns(Promise.resolve(etu.getSomeDropdownExercises()));
         const pweInsertStub = sinon.stub(shallowProgramBackend, 'insertWorkoutExercises')

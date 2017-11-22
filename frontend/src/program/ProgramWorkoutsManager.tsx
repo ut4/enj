@@ -10,17 +10,33 @@ import Modal from 'src/ui/Modal';
  * päivityksesta ja poistoista.
  */
 class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWorkout> {
+    public state: {list: Array<Enj.API.ProgramWorkout>; nthWeek: number};
     protected ModalClass = ProgramWorkoutModal;
     protected modalPropName = 'programWorkout';
     private weekNavigator: WeekNavigator;
+    public componentWillMount() {
+        this.state.nthWeek = 0;
+    }
     public render() {
         return <div class="input-set program-workouts-manager">
-            <WeekNavigator program={ this.props.program } ref={ cmp => { this.weekNavigator = cmp; } } onNavigate={ () => this.state.list.length && this.forceUpdate() }/>
-            <ul class="dark-list">{ [1, 2, 3, 4, 5, 6, 0].map(weekDay =>
-                <li data-dayname={ dateUtils.getShortWeekDay(weekDay) }>
-                    { this.getDayContent(weekDay) }
-                </li>
-            ) }</ul>
+            <WeekNavigator program={ this.props.program } ref={ cmp => { this.weekNavigator = cmp; } } onNavigate={ ({nthWeek}) => this.setState({nthWeek}) }/>
+            <ul class="dark-list">{ [1, 2, 3, 4, 5, 6, 0].map(weekDay => {
+                const [programWorkout, index] = occurrenceFinder.findWorkout(this.state.list, weekDay, this.state.nthWeek);
+                return <li data-dayname={ dateUtils.getShortWeekDay(weekDay) }>
+                    { programWorkout ? [
+                        <div class="heading">{ programWorkout.name }</div>,
+                        <div class="content">{ programWorkout.exercises.map(pwe =>
+                            <div>{ pwe.exerciseName }{ pwe.exerciseVariantId &&
+                                <span class="text-small">({ pwe.exerciseVariantContent })</span>
+                            }</div>
+                        ) }</div>,
+                        <div class="action-buttons">
+                            <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa" type="button"></button>
+                            <button class="icon-button delete" onClick={ () => this.deleteItem(index) } title="Poista" type="button"></button>
+                        </div>
+                    ]: '-' }
+                </li>;
+            }) }</ul>
             <button class="nice-button" onClick={ () => this.openAddModal() } type="button">Lisää treeni</button>
         </div>;
     }
@@ -59,28 +75,6 @@ class ProgramWorkoutsManager extends ChangeDetectingCrudList<Enj.API.ProgramWork
     protected getListItemContent() {
         // Ei käytössä
         return null;
-    }
-    private getDayContent(weekDay: number): any {
-        const [programWorkout, index] = occurrenceFinder.findWorkout(
-            this.state.list,
-            weekDay,
-            this.weekNavigator ? this.weekNavigator.getNthWeek() : 0
-        );
-        if (programWorkout) {
-            return [
-                <div class="heading">{ programWorkout.name }</div>,
-                <div class="content">{ programWorkout.exercises.map(pwe =>
-                    <div>{ pwe.exerciseName }{ pwe.exerciseVariantId &&
-                        <span class="text-small">({ pwe.exerciseVariantContent })</span>
-                    }</div>
-                ) }</div>,
-                <div class="action-buttons">
-                    <button class="icon-button edit" onClick={ () => this.openEditModal(programWorkout, index) } title="Muokkaa" type="button"></button>
-                    <button class="icon-button delete" onClick={ () => this.deleteItem(index) } title="Poista" type="button"></button>
-                </div>
-            ];
-        }
-        return '-';
     }
 }
 
