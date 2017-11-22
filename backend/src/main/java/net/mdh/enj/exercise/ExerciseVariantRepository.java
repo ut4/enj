@@ -16,4 +16,8 @@ public class ExerciseVariantRepository extends BasicRepository<Exercise.Variant>
     int update(Exercise.Variant exerciseVariant) {
         return super.update(exerciseVariant, "id = :id AND userId = :userId");
     }
+
+    int delete(Exercise.Variant exerciseVariant) {
+        return super.delete(exerciseVariant, "id = :id AND userId = :userId");
+    }
 }

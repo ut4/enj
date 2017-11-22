@@ -17,9 +17,10 @@ DROP TABLE   IF EXISTS workoutExerciseSet;
 DROP TABLE   IF EXISTS workoutExercise;
 DROP TABLE   IF EXISTS workout;
 DROP VIEW    IF EXISTS exerciseView;
+DROP TRIGGER IF EXISTS exerciseVariantDeleteTrg;
+DROP TRIGGER IF EXISTS exerciseDeleteTrg;
 DROP TABLE   IF EXISTS exerciseVariant;
 DROP TABLE   IF EXISTS exercise;
-DROP TRIGGER IF EXISTS exerciseDeleteTrg;
 DROP VIEW    IF EXISTS authUserView;
 DROP VIEW    IF EXISTS userView;
 DROP TABLE   IF EXISTS `user`;
@@ -99,6 +100,13 @@ DELIMITER //
 CREATE TRIGGER exerciseDeleteTrg BEFORE DELETE ON exercise
 FOR EACH ROW BEGIN
     DELETE FROM exerciseVariant WHERE exerciseId = OLD.id;
+END;//
+
+-- NULLaa viittaukset poistettavaan varianttiin ohjelmatreeniliikkeistä ja treeniliikkeistä
+CREATE TRIGGER exerciseVariantDeleteTrg BEFORE DELETE ON exerciseVariant
+FOR EACH ROW BEGIN
+    UPDATE programWorkoutExercise SET exerciseVariantId = NULL WHERE exerciseVariantId = OLD.id;
+    UPDATE workoutExercise SET exerciseVariantId = NULL WHERE exerciseVariantId = OLD.id;
 END;//
 DELIMITER ;
 
