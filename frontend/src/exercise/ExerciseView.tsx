@@ -1,6 +1,7 @@
 import Component from 'inferno-component';
 import SubMenu from 'src/ui/SubMenu';
 import Modal from 'src/ui/Modal';
+import ExerciseDeleteModal from 'src/exercise/ExerciseDeleteModal';
 import ExerciseVariantDeleteModal from 'src/exercise/ExerciseVariantDeleteModal';
 import iocFactories from 'src/ioc';
 
@@ -40,7 +41,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
                         { exercise.userId
                             ? <td class="minor-group">
                                 <a href={ '#/liikkeet/muokkaa/' + exercise.id }>Muokkaa</a>
-                                <a href={ '#/liikkeet/poista/' + exercise.id }>Poista</a>
+                                <a href="" onClick={ e => this.openExerciseDeleteModal(exercise, i, e) }>Poista</a>
                             </td>
                             : <td>&nbsp;</td>
                         }
@@ -59,6 +60,16 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
                 </span>
             </li>
         ) }</ul>;
+    }
+    private openExerciseDeleteModal(exercise: Enj.API.Exercise, exerciseIndex: number, e: Event) {
+        e.preventDefault();
+        Modal.open(() =>
+            <ExerciseDeleteModal exercise={ exercise } afterDelete={ () => {
+                const exercises = this.state.exercises;
+                exercises.splice(exerciseIndex, 1);
+                this.setState({exercises});
+            } }/>
+        );
     }
     private openVariantDeleteModal(variant: Enj.API.ExerciseVariant, exerciseIndex: number, e: Event) {
         e.preventDefault();

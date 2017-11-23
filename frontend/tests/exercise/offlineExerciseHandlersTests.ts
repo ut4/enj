@@ -61,6 +61,26 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
             done();
         });
     });
+    QUnit.test('delete poistaa liikkeen liikecachesta, ja palauttaa deleteResponse:n', assert => {
+        const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        const testExercise = mockCachedExercises[0];
+        // Poista cachen ensimmäinen liike
+        const done = assert.async();
+        exerciseHandlerRegister.delete(testExercise.id).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'exercise',
+                [
+                    // Tämä olisi pitänyt lähteä liikenteeseen
+                    mockCachedExercises[1]
+                ]
+            ], 'Pitäisi poistaa ensimmäinen liike');
+            assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteResponse');
+            done();
+        });
+    });
     QUnit.test('insertVariant lisää variantin liikecacheen, ja palauttaa insertResponse:n', assert => {
         const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
         sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));

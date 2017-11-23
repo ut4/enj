@@ -161,6 +161,24 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
+    public void PUTPäivittääLiikkeenJaPalauttaaUpdateResponsen() {
+        // Luo ensin liike
+        Exercise exercise = insertTestExercise("fus", TestData.TEST_USER_ID);
+        // Päivitä sen tietoja
+        exercise.setName("jht");
+        // Suorita PUT-pyyntö päivitetyillä tiedoilla
+        Response response = this.newPutRequest("exercise/" + exercise.getId(), exercise);
+        Assert.assertEquals(200, response.getStatus());
+        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
+        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 1", (Integer)1, responseBody.updateCount);
+        // Päivittikö liikkeen tietokantaan?
+        Exercise updated = selectExercise(exercise.getId());
+        Assert.assertEquals(exercise.getName(), updated.getName());
+        Assert.assertEquals(exercise.getUserId(), updated.getUserId());
+        utils.delete("exercise", exercise.getId());
+    }
+
+    @Test
     public void PUTEiPäivitäMitäänJosLiikeEiKuuluKirjautuneelleKäyttäjälle() {
         // Luo ensin globaali, ja toiselle käyttäjälle kuuluva liike
         String originalName = "fyr";
@@ -191,20 +209,29 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     }
 
     @Test
-    public void PUTPäivittääLiikkeenJaPalauttaaUpdateResponsen() {
-        // Luo ensin liike
-        Exercise exercise = insertTestExercise("fus", TestData.TEST_USER_ID);
-        // Päivitä sen tietoja
-        exercise.setName("jht");
-        // Suorita PUT-pyyntö päivitetyillä tiedoilla
-        Response response = this.newPutRequest("exercise/" + exercise.getId(), exercise);
+    public void DELETEPoistaaLiikkeenTietokannasta() {
+        // Luo ensin poistettava liike
+        Exercise exercise = insertTestExercise("ExerciseDELETETestExercise#1", TestData.TEST_USER_ID);
+        // Suorita pyyntö
+        Response response = this.newDeleteRequest("exercise/" + exercise.getId());
         Assert.assertEquals(200, response.getStatus());
-        Responses.UpdateResponse responseBody = response.readEntity(new GenericType<Responses.UpdateResponse>() {});
-        Assert.assertEquals("UpdateResponse.updateCount pitäisi olla 1", (Integer)1, responseBody.updateCount);
-        // Päivittikö liikkeen tietokantaan?
-        Exercise updated = selectExercise(exercise.getId());
-        Assert.assertEquals(exercise.getName(), updated.getName());
-        Assert.assertEquals(exercise.getUserId(), updated.getUserId());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 1", (Integer)1, responseBody.deleteCount);
+        // Poistuiko tietokannasta?
+        Assert.assertNull(selectExercise(exercise.getId()));
+    }
+
+    @Test
+    public void DELETEEiPoistaLiikettäJosSeKuuluuToiselleKäyttäjälle() {
+        // Luo käyttäjälle #2 kuuluva liike
+        Exercise exercise = insertTestExercise("ExerciseDELETETestExercise#2", TestData.TEST_USER_ID2);
+        // Suorita pyyntö
+        Response response = this.newDeleteRequest("exercise/" + exercise.getId());
+        Assert.assertEquals(200, response.getStatus());
+        Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
+        Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 0", (Integer)0, responseBody.deleteCount);
+        // Jättikö poistamatta tietokannasta?
+        Assert.assertNotNull(selectExercise(exercise.getId()));
         utils.delete("exercise", exercise.getId());
     }
 
@@ -255,7 +282,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
 
     @Test
     public void PUTPäivittääLiikeVariantinJaPalauttaaUpdateResponsen() {
-        // Luo ensin liikevariantti
+        // Luo ensin poistettava liikevariantti
         Exercise.Variant variant = insertTestVariant("fus", testExercise.getId(), TestData.TEST_USER_ID);
         // Päivitä sen tietoja
         variant.setContent("updated");
@@ -275,7 +302,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void DELETEVariantPoistaaVariantinTietokannasta() {
         // Luo ensin liikevariantti
-        Exercise.Variant variant = insertTestVariant("deleteTestVariant#1", testExercise.getId(), TestData.TEST_USER_ID);
+        Exercise.Variant variant = insertTestVariant("ExerciseVariantDELETETestVariant#1", testExercise.getId(), TestData.TEST_USER_ID);
         // Suorita pyyntö
         Response response = this.newDeleteRequest("exercise/variant/" + variant.getId());
         Assert.assertEquals(200, response.getStatus());
@@ -288,14 +315,14 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
     @Test
     public void DELETEVariantEiPoistaVarianttiaJosSeKuuluuToiselleKäyttäjälle() {
         // Luo käyttäjälle #2 kuuluva liikevariantti
-        Exercise.Variant variant = insertTestVariant("deleteTestVariant#2", testExercise.getId(), TestData.TEST_USER_ID2);
+        Exercise.Variant variant = insertTestVariant("ExerciseVariantDELETETestVariant#2", testExercise.getId(), TestData.TEST_USER_ID2);
         // Suorita pyyntö
         Response response = this.newDeleteRequest("exercise/variant/" + variant.getId());
         Assert.assertEquals(200, response.getStatus());
         Responses.DeleteResponse responseBody = response.readEntity(new GenericType<Responses.DeleteResponse>() {});
         Assert.assertEquals("DeleteResponse.deleteCount pitäisi olla 0", (Integer)0, responseBody.deleteCount);
         // Jättikö poistamatta tietokannasta?
-        Assert.assertNotNull(selectExerciseVariant(variant.getId()).getId());
+        Assert.assertNotNull(selectExerciseVariant(variant.getId()));
         utils.delete("exerciseVariant", variant.getId());
     }
 

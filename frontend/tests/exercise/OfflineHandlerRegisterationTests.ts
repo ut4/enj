@@ -55,6 +55,21 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('exerciseBackend.delete kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const httpDeleteCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'delete').returns(Promise.resolve('{"deleteCount": 9}'));
+        const testExercise = {id: 'uid'} as any;
+        //
+        const done = assert.async();
+        exerciseBackend.delete(testExercise).then(deleteCount => {
+            //
+            assert.ok(httpDeleteCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testExercise.id]);
+            assert.equal(deleteCount, 9, 'Pitäisi palauttaa offline-handlerin deleteCount');
+            done();
+        });
+    });
     QUnit.test('exerciseBackend.insertVariant kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
         const postCallSpy = sinon.spy(fetchContainer.fetch);
         const handlerCallStub = sinon.stub(handlerRegister, 'insertVariant').returns(Promise.resolve('{"insertCount": 11}'));
@@ -86,14 +101,14 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
         });
     });
     QUnit.test('exerciseBackend.deleteVariant kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
-        const deleteCallSpy = sinon.spy(fetchContainer.fetch);
+        const httpDeleteCallSpy = sinon.spy(fetchContainer.fetch);
         const handlerCallStub = sinon.stub(handlerRegister, 'deleteVariant').returns(Promise.resolve('{"deleteCount": 98}'));
         const testVariant = {id: 'uid', content: 'fuy', exerciseId: 'ei', userId: 'u'};
         //
         const done = assert.async();
         exerciseBackend.deleteVariant(testVariant).then(deleteCount => {
             //
-            assert.ok(deleteCallSpy.notCalled);
+            assert.ok(httpDeleteCallSpy.notCalled);
             assert.ok(handlerCallStub.calledOnce);
             assert.deepEqual(handlerCallStub.firstCall.args, [testVariant.id]);
             assert.equal(deleteCount, 98, 'Pitäisi palauttaa offline-handlerin deleteCount');

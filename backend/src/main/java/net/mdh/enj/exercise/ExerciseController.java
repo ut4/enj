@@ -32,6 +32,8 @@ public class ExerciseController {
     private final ExerciseVariantRepository exerciseVariantRepository;
     private final RequestContext requestContext;
 
+    private static final String DEFAULT_WHERE = "id = :id AND userId = :userId";
+
     @Inject
     public ExerciseController(
         ExerciseRepository exerciseRepository,
@@ -117,9 +119,23 @@ public class ExerciseController {
     ) {
         exercise.setId(exerciseId);
         exercise.setUserId(this.requestContext.getUserId());
-        return new Responses.UpdateResponse(
-            this.exerciseRepository.update(exercise, "id = :id AND userId = :userId")
-        );
+        return new Responses.UpdateResponse(this.exerciseRepository.update(exercise, DEFAULT_WHERE));
+    }
+
+    /**
+     * Poistaa kirjautuneen käyttäjän liikkeen id:llä {exerciseId}. Jos poistettava
+     * liike löytyy jostain ohjelmatreenistä tai siltä löytyy ennätyssarjoja, heittää
+     * tietokantavirheen.
+     */
+    @DELETE
+    @Path("/{exerciseId}")
+    @Syncable(dependent = {"exercise/variant", "exerciseId"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public DeleteResponse delete(@PathParam("exerciseId") @UUID String id) {
+        Exercise exercise = new Exercise();
+        exercise.setId(id);
+        exercise.setUserId(requestContext.getUserId());
+        return new DeleteResponse(this.exerciseRepository.delete(exercise, DEFAULT_WHERE));
     }
 
     /**
@@ -157,7 +173,7 @@ public class ExerciseController {
     ) {
         exerciseVariant.setId(exerciseVariantId);
         exerciseVariant.setUserId(this.requestContext.getUserId());
-        return new Responses.UpdateResponse(this.exerciseVariantRepository.update(exerciseVariant));
+        return new Responses.UpdateResponse(this.exerciseVariantRepository.update(exerciseVariant, DEFAULT_WHERE));
     }
 
     /**
@@ -171,6 +187,6 @@ public class ExerciseController {
         Exercise.Variant exerciseVariant = new Exercise.Variant();
         exerciseVariant.setId(id);
         exerciseVariant.setUserId(requestContext.getUserId());
-        return new DeleteResponse(this.exerciseVariantRepository.delete(exerciseVariant));
+        return new DeleteResponse(this.exerciseVariantRepository.delete(exerciseVariant, DEFAULT_WHERE));
     }
 }

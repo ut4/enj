@@ -7,7 +7,6 @@ import ProgramEditView           from 'src/program/ProgramEditView';
 import ExerciseView              from 'src/exercise/ExerciseView';
 import ExerciseCreateView        from 'src/exercise/ExerciseCreateView';
 import ExerciseEditView          from 'src/exercise/ExerciseEditView';
-import ExerciseDeleteView        from 'src/exercise/ExerciseDeleteView';
 import ExerciseVariantCreateView from 'src/exercise/ExerciseVariantCreateView';
 import ExerciseVariantEditView   from 'src/exercise/ExerciseVariantEditView';
 import StatView                  from 'src/stat/StatView';
@@ -35,7 +34,6 @@ export {
     ExerciseView,
     ExerciseCreateView,
     ExerciseEditView,
-    ExerciseDeleteView,
     ExerciseVariantCreateView,
     ExerciseVariantEditView,
 

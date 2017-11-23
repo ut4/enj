@@ -60,16 +60,38 @@ QUnit.module('exercise/ExerciseView', hooks => {
             assert.ok(emptyMessageRegExp.test(rootElem.innerHTML));
         });
     });
-    QUnit.test('"Poista variantti"-painikkeen modalin hyväksyminen poistaa variantin ja renderöi sen näkymästä', assert => {
+    QUnit.test('"Poista"(liike)-linkistä avautuvan modalin hyväksyminen poistaa liikkeen ja renderöi sen näkymästä', assert => {
+        const exerciseDeleteStub = sinon.stub(shallowExerciseBackend, 'delete')
+            .returns(Promise.resolve(1));
+        const exercisesBefore = someTestExercises.slice(0);
+        renderView(assert, someTestExercises, rendered => {
+            let renderedExercises = getRenderedExerciseItems(rendered);
+            const renderedItemCountBefore = renderedExercises.length;
+            // Avaa & hyväksy liikkeen poistomodal
+            const exerciseDeleteLink = renderedExercises[0].querySelector('a:last-of-type') as HTMLAnchorElement;
+            exerciseDeleteLink.click();
+            utils.findButtonByContent(rendered, 'Ok').click();
+            // Lähettikö liikkeen backendiin poistettavaksi?
+            assert.ok(exerciseDeleteStub.calledOnce);
+            const expectedExercise = someTestExercises[0];
+            assert.deepEqual(exerciseDeleteStub.firstCall.args, [expectedExercise]);
+            return exerciseDeleteStub.firstCall.returnValue.then(() => {
+                // Renderöikö poistetun liikkeen näkymästä?
+                renderedExercises = getRenderedExerciseItems(rendered);
+                assert.equal(renderedExercises.length, renderedItemCountBefore - 1);
+                assert.equal(renderedExercises[0].textContent, getExpectedTrContent(exercisesBefore[1]));
+            });
+        });
+    });
+    QUnit.test('"Poista"(variantti)-linkistä avautuvan modalin hyväksyminen poistaa variantin ja renderöi sen näkymästä', assert => {
         const exerciseVariantDeleteStub = sinon.stub(shallowExerciseBackend, 'deleteVariant')
             .returns(Promise.resolve(1));
         const variantsBefore = someTestExercises[1].variants.slice(0);
         renderView(assert, someTestExercises, rendered => {
-            // Toisen treenin variantit
-            const renderedItems = getRenderedExerciseItems(rendered)[1].querySelector('ul').children;
-            const renderedItemCountBefore = renderedItems.length;
+            const renderedVariants = getRenderedExerciseItems(rendered)[1].querySelector('ul').children;
+            const renderedItemCountBefore = renderedVariants.length;
             // Avaa & hyväksy variantin poistomodal
-            const variantDeleteLink = renderedItems[0].querySelector('a:last-of-type') as HTMLAnchorElement;
+            const variantDeleteLink = renderedVariants[0].querySelector('a:last-of-type') as HTMLAnchorElement;
             variantDeleteLink.click();
             utils.findButtonByContent(rendered, 'Ok').click();
             // Lähettikö variantin backendiin poistettavaksi?
@@ -77,9 +99,9 @@ QUnit.module('exercise/ExerciseView', hooks => {
             const expectedExerciseVariant = someTestExercises[1].variants[0];
             assert.deepEqual(exerciseVariantDeleteStub.firstCall.args, [expectedExerciseVariant]);
             return exerciseVariantDeleteStub.firstCall.returnValue.then(() => {
-                // Renderöikö poistetun ohjelman näkymästä?
-                assert.equal(renderedItems.length, renderedItemCountBefore - 1);
-                assert.equal(renderedItems[0].textContent, joinVariants([variantsBefore[1]]));
+                // Renderöikö poistetun variantin näkymästä?
+                assert.equal(renderedVariants.length, renderedItemCountBefore - 1);
+                assert.equal(renderedVariants[0].textContent, joinVariants([variantsBefore[1]]));
             });
         });
     });

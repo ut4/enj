@@ -62,6 +62,18 @@ public class ExerciseControllerInputValidationTest extends JerseyTestCase {
     }
 
     @Test
+    public void DELETEValidoiUrlin() {
+        //
+        Response response = this.newDeleteRequest("exercise/notvaliduuid");
+        Assert.assertEquals(400, response.getStatus());
+        //
+        List<ValidationError> errors = super.getValidationErrors(response);
+        Assert.assertEquals(1, errors.size());
+        Assert.assertEquals("ExerciseController.delete.arg0", errors.get(0).getPath());
+        Assert.assertEquals("{net.mdh.enj.validation.UUID.message}", errors.get(0).getMessageTemplate());
+    }
+
+    @Test
     public void POSTExerciseVariantHylkääNullInputin() {
         this.assertRequestFailsOnNullInput("exercise/variant", "ExerciseController.insertVariant");
     }
