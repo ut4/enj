@@ -8,13 +8,16 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.core.MultivaluedMap;
 import net.mdh.enj.HttpClient;
 import net.mdh.enj.Application;
 import net.mdh.enj.JsonMapperProvider;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import javax.validation.constraints.NotNull;
@@ -117,12 +120,25 @@ public class SyncController {
      */
     private Response callSyncableResource(SyncQueueItem syncableItem) throws JsonProcessingException {
         Route route = syncableItem.getRoute();
-        return this.appHttpClient.target(route.getUrl())
+        WebTarget target;
+        // Ei url-parametrejä -> käytä urlia sellaisenaan
+        if (!route.getMethod().equals(HttpMethod.DELETE) || !route.getUrl().contains("?")) {
+            target = this.appHttpClient.target(route.getUrl());
+        // Url-parametri|ejä -> arvot tulee asettaa erikseen
+        } else {
+            String[] urlAndParameters = route.getUrl().split("\\?");
+            target = this.appHttpClient.target(urlAndParameters[0]);
+            MultivaluedMap<String, String> params = UriComponent.decodeQuery(urlAndParameters[1], true);
+            for (String paramName: params.keySet()) {
+                target = target.queryParam(paramName, params.get(paramName).get(0));
+            }
+        }
+        return target
             .request(MediaType.APPLICATION_JSON)
             .header(AuthenticationFilter.AUTH_HEADER_NAME, requestContext.getAuthHeader())
             .method(
                 route.getMethod(),
-                !route.getMethod().equals("DELETE")
+                !route.getMethod().equals(HttpMethod.DELETE)
                     ? Entity.json(JsonMapperProvider.getInstance().writeValueAsString(syncableItem.getData()))
                     : null
             );

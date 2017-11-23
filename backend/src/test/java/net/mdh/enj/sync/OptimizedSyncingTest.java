@@ -4,6 +4,7 @@ import net.mdh.enj.HttpClient;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
@@ -74,5 +75,20 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
             Arrays.toString(new int[]{1, 2, 3}),
             Arrays.toString(response.readEntity(int[].class))
         );
+    }
+
+    @Test
+    public void syncAllParsiiQueryParametrit() {
+        String expectedPath = "workout/exercise/" + TestData.TEST_WORKOUT_EXERCISE_ID;
+        Mockito.when(this.syncExecutionSpy.target(expectedPath))
+            .thenReturn(OptimizedSyncingTest.this.target(expectedPath));
+        //
+        Response response = this.newPostRequest("sync", ("[" +
+            "{\"id\":1,\"route\":{\"url\":\"workout/exercise/%1?workoutId=%2\",\"method\":\"DELETE\"},\"data\":null}" +
+        "]").replace("%1", TestData.TEST_WORKOUT_EXERCISE_ID).replace("%2", TestData.TEST_WORKOUT_ID));
+        //
+        Assert.assertEquals(200, response.getStatus());
+        //
+        Mockito.verify(this.syncExecutionSpy, Mockito.times(1)).target(expectedPath);
     }
 }
