@@ -108,4 +108,26 @@ QUnit.module('exercise/offlineExerciseHandlers', hooks => {
             done();
         });
     });
+    QUnit.test('deleteVariant poistaa variantin liikecachesta, ja palauttaa deleteResponse:n', assert => {
+        const cachedExercisesCopy = JSON.parse(JSON.stringify(mockCachedExercises));
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(cachedExercisesCopy));
+        const cacheUpdate = sinon.stub(shallowOffline, 'updateCache').returns(Promise.resolve());
+        const testVariant = mockCachedExercises[1].variants[1];
+        // Poista cachen jälkimmäisen liikkeen jälkimmäinen variantti
+        const done = assert.async();
+        exerciseHandlerRegister.deleteVariant(testVariant.id).then(result => {
+            assert.ok(cacheUpdate.called, 'Pitäisi päivittää cache');
+            assert.deepEqual(cacheUpdate.firstCall.args, [
+                'exercise',
+                [mockCachedExercises[0], Object.assign(mockCachedExercises[1], {
+                    variants: [
+                        mockCachedExercises[1].variants[0]
+                        // Tämä olisi pitänyt lähteä liikenteeseen
+                    ]
+                })]
+            ], 'Pitäisi poistaa variantti oikeasta itemistä');
+            assert.equal(result, JSON.stringify({deleteCount: 1}), 'Pitäisi palauttaa deleteResponse');
+            done();
+        });
+    });
 });

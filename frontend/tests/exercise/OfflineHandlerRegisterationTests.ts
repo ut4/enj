@@ -85,4 +85,19 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
             done();
         });
     });
+    QUnit.test('exerciseBackend.deleteVariant kutsuu rekisteröityä offline-handeria fetch:in sijaan', assert => {
+        const deleteCallSpy = sinon.spy(fetchContainer.fetch);
+        const handlerCallStub = sinon.stub(handlerRegister, 'deleteVariant').returns(Promise.resolve('{"deleteCount": 98}'));
+        const testVariant = {id: 'uid', content: 'fuy', exerciseId: 'ei', userId: 'u'};
+        //
+        const done = assert.async();
+        exerciseBackend.deleteVariant(testVariant).then(deleteCount => {
+            //
+            assert.ok(deleteCallSpy.notCalled);
+            assert.ok(handlerCallStub.calledOnce);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testVariant.id]);
+            assert.equal(deleteCount, 98, 'Pitäisi palauttaa offline-handlerin deleteCount');
+            done();
+        });
+    });
 });

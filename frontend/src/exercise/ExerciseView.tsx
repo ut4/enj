@@ -1,5 +1,7 @@
 import Component from 'inferno-component';
 import SubMenu from 'src/ui/SubMenu';
+import Modal from 'src/ui/Modal';
+import ExerciseVariantDeleteModal from 'src/exercise/ExerciseVariantDeleteModal';
 import iocFactories from 'src/ioc';
 
 /**
@@ -29,11 +31,11 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
             </SubMenu>
             { this.state.exercises && (
                 this.state.exercises.length > 0 ?
-                <table class="striped crud-table responsive"><tbody>{ this.state.exercises.map(exercise => {
+                <table class="striped crud-table responsive"><tbody>{ this.state.exercises.map((exercise, i) => {
                     const variants = exercise.variants.length ? exercise.variants.filter(v => v.userId !== null) : [];
                     return <tr>
                         <td data-th={ variants.length ? 'Variantit' : '' }>
-                            { exercise.name }{ variants.length > 0 && this.getVariantList(variants) }
+                            { exercise.name }{ variants.length > 0 && this.getVariantList(variants, i) }
                         </td>
                         { exercise.userId
                             ? <td class="minor-group">
@@ -47,16 +49,26 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
             ) }
         </div>;
     }
-    private getVariantList(variants: Array<Enj.API.ExerciseVariant>) {
+    private getVariantList(variants: Array<Enj.API.ExerciseVariant>, exerciseIndex: number) {
         return <ul>{ variants.map(variant =>
             <li>
                 <span>- {variant.content}</span>
                 <span class="minor-group">
                     <a onClick={ () => { this.context.router.exerciseVariant = variant; } } href={ '#/liikevariantti/muokkaa/' + variant.id }>Muokkaa</a>
-                    { variant.userId && <a href={ '#/liikevariantti/poista/' + variant.id }>Poista</a> }
+                    { variant.userId && <a href="" onClick={ e => this.openVariantDeleteModal(variant, exerciseIndex, e) }>Poista</a> }
                 </span>
             </li>
         ) }</ul>;
+    }
+    private openVariantDeleteModal(variant: Enj.API.ExerciseVariant, exerciseIndex: number, e: Event) {
+        e.preventDefault();
+        Modal.open(() =>
+            <ExerciseVariantDeleteModal exerciseVariant={ variant } afterDelete={ () => {
+                const exercises = this.state.exercises;
+                exercises[exerciseIndex].variants.splice(exercises[exerciseIndex].variants.indexOf(variant), 1);
+                this.setState({exercises});
+            } }/>
+        );
     }
 }
 

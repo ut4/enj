@@ -20,6 +20,9 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
         offlineHttp.addHandler('PUT', 'exercise/variant/*', exerciseVariant =>
             this.updateVariant(exerciseVariant)
         );
+        offlineHttp.addHandler('DELETE', 'exercise/variant/*', exerciseVariant =>
+            this.deleteVariant(exerciseVariant.id)
+        );
     }
     /**
      * Handlaa POST /api/exercise/variant REST-pyynnön.
@@ -44,6 +47,12 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
             Object.assign(exerciseVariantListRef.find(ev => ev.id === exerciseVariant.id), exerciseVariant);
             return {updateCount: 1};
         });
+    }
+    /**
+    * Handlaa DELETE /api/exercise/variant/:id REST-pyynnön.
+    */
+    public deleteVariant(exerciseVariantId: AAGUID) {
+        return this.deleteHasManyItem(exerciseVariantId, 'variants');
     }
 }
 

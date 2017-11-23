@@ -2,6 +2,7 @@ import QUnit from 'qunitjs';
 import sinon from 'sinon';
 import * as itu from 'inferno-test-utils';
 import utils from 'tests/utils';
+import Modal from 'src/ui/Modal';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import ExerciseView from 'src/exercise/ExerciseView';
 import iocFactories from 'src/ioc';
@@ -30,35 +31,56 @@ QUnit.module('exercise/ExerciseView', hooks => {
     hooks.afterEach(() => {
         exerciseBackendIocOverride.restore();
     });
-    QUnit.test('mount hakee liikkeet backendistä ja renderöi ne', assert => {
-        const todaysExercisesFetch = sinon.stub(shallowExerciseBackend, 'getAll')
-            .returns(Promise.resolve(someTestExercises));
+    function renderView(assert, exercises: Array<Enj.API.Exercise>, then: Function) {
+        const exercisesFetch = sinon.stub(shallowExerciseBackend, 'getAll')
+            .returns(Promise.resolve(exercises));
         //
-        const rendered = itu.renderIntoDocument(<ExerciseView/>);
+        const rendered = itu.renderIntoDocument(<div><Modal/><ExerciseView/></div>);
         //
         const done = assert.async();
-        todaysExercisesFetch.firstCall.returnValue.then(() => {
+        exercisesFetch.firstCall.returnValue.then(() => {
+            const promise = then(rendered);
+            !promise ? done() : promise.then(() => done());
+        });
+    }
+    QUnit.test('mount hakee liikkeet backendistä ja renderöi ne', assert => {
+        renderView(assert, someTestExercises, rendered => {
             const exerciseListItems = getRenderedExerciseItems(rendered);
             assert.equal(exerciseListItems.length, 3);
             assert.equal(exerciseListItems[0].textContent, getExpectedTrContent(someTestExercises[0]));
             assert.equal(exerciseListItems[1].textContent, getExpectedTrContent(someTestExercises[1]));
             assert.equal(exerciseListItems[2].textContent, getExpectedTrContent(someTestExercises[2]));
-            done();
         });
     });
     QUnit.test('mount näyttää viestin mikäli current-treenejä ei löydy', assert => {
-        const exercisesFetch = sinon.stub(shallowExerciseBackend, 'getAll')
-            .returns(Promise.resolve([]));
-        //
-        const rendered = itu.renderIntoDocument(<ExerciseView/>);
-        //
-        const done = assert.async();
-        exercisesFetch.firstCall.returnValue.then(() => {
+        renderView(assert, [], rendered => {
             const exerciseListItems = getRenderedExerciseItems(rendered);
             assert.equal(exerciseListItems.length, 0);
             const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
             assert.ok(emptyMessageRegExp.test(rootElem.innerHTML));
-            done();
+        });
+    });
+    QUnit.test('"Poista variantti"-painikkeen modalin hyväksyminen poistaa variantin ja renderöi sen näkymästä', assert => {
+        const exerciseVariantDeleteStub = sinon.stub(shallowExerciseBackend, 'deleteVariant')
+            .returns(Promise.resolve(1));
+        const variantsBefore = someTestExercises[1].variants.slice(0);
+        renderView(assert, someTestExercises, rendered => {
+            // Toisen treenin variantit
+            const renderedItems = getRenderedExerciseItems(rendered)[1].querySelector('ul').children;
+            const renderedItemCountBefore = renderedItems.length;
+            // Avaa & hyväksy variantin poistomodal
+            const variantDeleteLink = renderedItems[0].querySelector('a:last-of-type') as HTMLAnchorElement;
+            variantDeleteLink.click();
+            utils.findButtonByContent(rendered, 'Ok').click();
+            // Lähettikö variantin backendiin poistettavaksi?
+            assert.ok(exerciseVariantDeleteStub.calledOnce);
+            const expectedExerciseVariant = someTestExercises[1].variants[0];
+            assert.deepEqual(exerciseVariantDeleteStub.firstCall.args, [expectedExerciseVariant]);
+            return exerciseVariantDeleteStub.firstCall.returnValue.then(() => {
+                // Renderöikö poistetun ohjelman näkymästä?
+                assert.equal(renderedItems.length, renderedItemCountBefore - 1);
+                assert.equal(renderedItems[0].textContent, joinVariants([variantsBefore[1]]));
+            });
         });
     });
     function getRenderedExerciseItems(rendered) {
