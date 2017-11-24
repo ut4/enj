@@ -99,13 +99,13 @@ public class SyncController {
     ) {
         Set<Integer> idsOfSuccesfullySyncedItems = new HashSet<>();
         for (SyncQueueItem syncable: queue) {
-            int pos = this.getIndexById(optimizedQueue, syncable.getId());
-            if (
-                // Itemi optimoitu pois -> lisää id listaan
-                pos < 0 ||
-                // Itemin synkkaus onnistui -> lisää id listaan
-                f.apply(optimizedQueue.get(pos), idsOfSuccesfullySyncedItems)
-            ) {
+            if (this.getIndexById(optimizedQueue, syncable.getId()) < 0) {
+                idsOfSuccesfullySyncedItems.add(syncable.getId());
+            }
+        }
+        for (SyncQueueItem syncable: optimizedQueue) {
+            // Itemin synkkaus onnistui -> lisää id listaan
+            if (f.apply(syncable, idsOfSuccesfullySyncedItems)) {
                 idsOfSuccesfullySyncedItems.add(syncable.getId());
             // Itemin synkkays epäonnistui -> älä lisää id:tä listaan & abort mission
             } else {

@@ -39,13 +39,13 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
      */
     @Test
     public void selectAllSisältääLiikkeetJaSetit() {
-        Workout w1 = this.insertWorkoutWithExerciseAndSet();
-        Workout w2 = this.insertWorkoutWithExerciseButNoSets(this.newTimestamp() + 1);
-        Workout w3 = this.insertWorkoutWithoutExercisesOrSets(this.newTimestamp() + 2);
+        Workout w1 = this.insertWorkoutWithExerciseAndSet(this.newTimestamp() + 200);
+        Workout w2 = this.insertWorkoutWithExerciseButNoSets(this.newTimestamp() + 300);
+        Workout w3 = this.insertWorkoutWithoutExercisesOrSets(this.newTimestamp() + 400);
         //
         SearchFilters searchFilters = new SearchFilters();
         searchFilters.setUserId(TestData.TEST_USER_ID);
-        searchFilters.setStartFrom(w1.getStart());
+        searchFilters.setStartFrom(w1.getStart() - 1);
         List<Workout> results = this.workoutRepository.selectAll(searchFilters);
         Assert.assertEquals(3, results.size());
         Workout actualW1 = results.get(2);
@@ -73,9 +73,9 @@ public class WorkoutRepositoryTest extends RollbackingDBUnitTest {
         );
     }
 
-    private Workout insertWorkoutWithExerciseAndSet() {
+    private Workout insertWorkoutWithExerciseAndSet(long timeStamp) {
         // Treeni
-        Workout workout = this.insertWorkout(this.newTimestamp());
+        Workout workout = this.insertWorkout(timeStamp);
         // Treenille 1 liike
         Workout.Exercise we = this.insertWorkoutExercise(workout.getId(), 0);
         this.addExercisesToWorkout(workout, we);

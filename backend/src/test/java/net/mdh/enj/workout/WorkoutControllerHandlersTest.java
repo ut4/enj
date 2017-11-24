@@ -164,17 +164,17 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
     @Test
     public void GETPalauttaaTreenitAikaväliltä() {
         Workout anotherWorkout = new Workout();
-        anotherWorkout.setStart(1); // 1970-01-01T00:00:01
+        anotherWorkout.setStart(500);
         anotherWorkout.setUserId(TestData.TEST_USER_ID);
         anotherWorkout.setExercises(new ArrayList<>());
         utils.insertWorkout(anotherWorkout);
         Workout anotherWorkout2 = new Workout();
-        anotherWorkout2.setStart(3); // 1970-01-01T00:00:03
+        anotherWorkout2.setStart(600);
         anotherWorkout2.setUserId(TestData.TEST_USER_ID);
         anotherWorkout2.setExercises(new ArrayList<>());
         utils.insertWorkout(anotherWorkout2);
         Response response = this.newGetRequest("workout", t ->
-            t.queryParam("startFrom", "1").queryParam("startTo", "3")
+            t.queryParam("startFrom", "500").queryParam("startTo", "600")
         );
         Assert.assertEquals(200, response.getStatus());
         List<Workout> workouts = response.readEntity(new GenericType<List<Workout>>() {});

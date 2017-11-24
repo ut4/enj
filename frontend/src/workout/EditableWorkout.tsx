@@ -37,7 +37,7 @@ class EditableWorkout extends Component<{workout: Enj.API.Workout, onDelete: Fun
                     : <li>Ei vielä liikkeitä.</li>
                 }
             </ul>
-            <button class="nice-button" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
+            <button class="nice-button end" onClick={ () => this.openExerciseAddModal() }>Lisää liike</button>
         </div>;
     }
     private openWorkoutEditModal() {

@@ -99,7 +99,7 @@ public class MockOptimizedSyncingTest extends QueueOptimizingTestCase {
         this.spyingFunction.failAt = 1; // failaa jälkimmäisen itemin kohdalla
         Assert.assertEquals(
             "Pitäisi lisätä failaukseen asti onnistuneiden itemien id:t",
-            "[1]",
+            "[1, 3]",
             this.syncController.doSyncAll(queue, optimized, this.spyingFunction).toString()
         );
         Assert.assertEquals(2, this.spyingFunction.callCount);

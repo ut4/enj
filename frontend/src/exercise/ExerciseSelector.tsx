@@ -58,10 +58,10 @@ class ExerciseSelector extends Component<Props, State> {
     }
     public render() {
         return <div>
-            <label class="input-set">
+            <span class="input-set">
                 <span>{ this.props.label || 'Liikkeen nimi' }</span>
                 <input name="exerciseAutocomplete" ref={ el => { this.inputEl = el; } } value={ this.state.selectedExercise ? this.state.selectedExercise.name : '' } onClick={ () => this.handleAutocompleteFocus() }/>
-            </label>
+            </span>
             { (this.state.selectedExercise &&
                 this.props.noVariant !== true &&
                 this.state.selectedExercise.variants.length)

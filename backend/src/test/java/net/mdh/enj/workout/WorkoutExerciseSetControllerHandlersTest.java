@@ -174,7 +174,9 @@ public class WorkoutExerciseSetControllerHandlersTest extends WorkoutControllerT
         // Lisää treeniliikesetti
         Workout.Exercise.Set workoutExerciseSet = this.makeCoupleOfWorkoutExerciseSets(we.getId()).get(0);
         utils.insertWorkoutExerciseSet(workoutExerciseSet);
-        Assert.assertNotNull(this.selectWorkoutExerciseSet(workoutExerciseSet.getId()));
+        utils.delete("DELETE FROM bestSet WHERE workoutExerciseSetId = :wesId",
+            new MapSqlParameterSource("wesId", workoutExerciseSet.getId())
+        );
         // Suorita DELETE-pyyntö
         Response response = this.newDeleteRequest("workout/exercise/set/" + workoutExerciseSet.getId());
         Assert.assertEquals(200, response.getStatus());

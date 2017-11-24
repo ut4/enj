@@ -4,7 +4,6 @@ import net.mdh.enj.HttpClient;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;

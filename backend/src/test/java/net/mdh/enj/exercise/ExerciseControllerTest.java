@@ -104,6 +104,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Exercise actualExercise = response.readEntity(new GenericType<Exercise>() {});
         testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
         Assert.assertEquals(exerciseWithVariants.toString(), actualExercise.toString());
+        utils.delete("exerciseVariant", variants.get(0).getId());
     }
 
     /**
@@ -113,29 +114,29 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
      */
     @Test
     public void GETPalauttaaLiikelistanSisältäenVariantit() {
-        // 1. liike, jossa variantteja
+        // 1. Globaali liike, jossa variantteja
         List<Exercise.Variant> variants = new ArrayList<>();
         variants.add(insertTestVariant("var1", testExercise.getId(), null));
         variants.add(insertTestVariant("var2", testExercise.getId(), TestData.TEST_USER_ID));
         insertTestVariant("var3", testExercise.getId(), TestData.TEST_USER_ID2);
         testExercise.setVariants(variants);
-        // 2. liike ilma variantteja
+        // 2. Globaali liike ilman variantteja
         Exercise anotherWithoutVariants = insertTestExercise("bar", null);
-        // 3. liike, joka kuuluu toiselle käyttäjälle
-        insertTestExercise("baz", TestData.TEST_USER_ID2);
+        // 3. Toiselle käyttäjälle kuuluva liike
+        insertTestExercise("caz", TestData.TEST_USER_ID2);
         //
         Response response = target("exercise").request().get();
         Assert.assertEquals(200, response.getStatus());
         List<Exercise> exercises = response.readEntity(new GenericType<List<Exercise>>() {});
         exercises = exercises.stream().filter(e ->
-            e.getName().equals("foo") || e.getName().equals("bar") || e.getName().equals("baz")
+            e.getName().equals("foo") || e.getName().equals("bar") || e.getName().equals("caz")
         ).collect(Collectors.toList());
+        Assert.assertEquals(2, exercises.size()); // vain 1 & 2 pitäisi sisältyä
         exercises.sort(Comparator.comparing(Exercise::getName));
         testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
-        Assert.assertEquals(3, exercises.size());
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
-        Assert.assertEquals(2, exercises.get(1).getVariants().size());
         Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
+        Assert.assertEquals(2, exercises.get(1).getVariants().size());
     }
 
     @Test
@@ -158,6 +159,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
         Assert.assertFalse("Ei pitäisi sisältää toiselle käyttäjälle kuuluvaa liikettä",
             exercises.stream().anyMatch(e -> e.getId().equals(e3.getId()))
         );
+        utils.delete("exerciseVariant", e2v.getId());
     }
 
     @Test
