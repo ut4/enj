@@ -6,23 +6,29 @@ import Modal from 'src/ui/Modal';
 import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import ExerciseView from 'src/exercise/ExerciseView';
 import iocFactories from 'src/ioc';
+import UserState from 'src/user/UserState';
 const emptyMessageRegExp: RegExp = /Ei liikkeitä/;
 const someUserId = 'uuid34';
 
 QUnit.module('exercise/ExerciseView', hooks => {
     let someTestExercises: Array<Enj.API.Exercise>;
-    let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowExerciseBackend: ExerciseBackend;
+    let exerciseBackendIocOverride: sinon.SinonStub;
+    let shallowUserState: UserState;
+    let userStateIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
+        shallowUserState = Object.create(UserState.prototype);
+        sinon.stub(shallowUserState, 'getUserId').returns(Promise.resolve('u'));
+        userStateIocOverride = sinon.stub(iocFactories, 'userState').returns(shallowUserState);
         someTestExercises = [
-            {id:'uuid1', name: 'foo', variants: [], userId: 'u'},
-            {id:'uuid2', name: 'bar', variants: [
+            {id:'uuid1', name: 'aaa', variants: [], userId: 'u'},
+            {id:'uuid2', name: 'bbb', variants: [
                 {id: 'uuid20', content: 'naz', exerciseId: 'uuid2', userId: 'u'},
                 {id: 'uuid21', content: 'gas', exerciseId: 'uuid2', userId: 'u'}
             ], userId: 'u'},
-            {id:'uuid3', name: 'baz', variants: [
+            {id:'uuid3', name: 'ccc', variants: [
                 {id: 'uuid22', content: 'frt', exerciseId: 'uuid3', userId: 'u'},
                 {id: 'uuid23', content: 'global', exerciseId: 'uuid3', userId: null}
             ], userId: 'u'}
@@ -30,6 +36,7 @@ QUnit.module('exercise/ExerciseView', hooks => {
     });
     hooks.afterEach(() => {
         exerciseBackendIocOverride.restore();
+        userStateIocOverride.restore();
     });
     function renderView(assert, exercises: Array<Enj.API.Exercise>, then: Function) {
         const exercisesFetch = sinon.stub(shallowExerciseBackend, 'getAll')
@@ -38,7 +45,7 @@ QUnit.module('exercise/ExerciseView', hooks => {
         const rendered = itu.renderIntoDocument(<div><Modal/><ExerciseView/></div>);
         //
         const done = assert.async();
-        exercisesFetch.firstCall.returnValue.then(() => {
+        exercisesFetch.firstCall.returnValue.then(()=>{}).then(() => {
             const promise = then(rendered);
             !promise ? done() : promise.then(() => done());
         });
@@ -106,7 +113,7 @@ QUnit.module('exercise/ExerciseView', hooks => {
         });
     });
     function getRenderedExerciseItems(rendered) {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
+        return itu.scryRenderedDOMElementsWithTag(rendered, 'tr').slice(1); // thead pois
     }
     function getExpectedTrContent(exs: Enj.API.Exercise): string {
         return `${exs.name}${joinVariants(exs.variants)}MuokkaaPoista`;
@@ -115,7 +122,7 @@ QUnit.module('exercise/ExerciseView', hooks => {
         return variants.length
             ? variants
                 .filter(v => v.userId !== null) // Ei pitäisi sisältää globaaleja liikkeitä
-                .map(v => '- ' + v.content + 'MuokkaaPoista').join('')
-            : '';
+                .map(v => v.content).join('')
+            : '-';
     }
 });

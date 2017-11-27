@@ -23,6 +23,7 @@ public class ExerciseRepository extends BasicRepository<Exercise> {
     }
 
     List<Exercise> selectAll(SelectFilters filters) {
+        filters.doOrder = true;
         return super.selectAll(filters, new ExerciseMapper());
     }
 

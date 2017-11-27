@@ -274,12 +274,18 @@ ul {
 .icon-button.edit-dark {
     background-image: url("icon-sprite.svg#edit-dark");
 }
+.icon-button.edit-primary {
+    background-image: url("icon-sprite.svg#edit-primary");
+}
 .icon-button.delete, .icon-button.delete-dark {
     background-image: url("icon-sprite.svg#delete");
     background-position: 5px 5px;
 }
 .icon-button.delete-dark {
     background-image: url("icon-sprite.svg#delete-dark");
+}
+.icon-button.delete-primary {
+    background-image: url("icon-sprite.svg#delete-primary");
 }
 .icon-button.arrow, .icon-button.arrow-dark {
     transition: transform .1s ease-out;
@@ -433,6 +439,8 @@ table td {
 }
 table.crud-table tbody td {
     padding: 8px 10px 8px 0;
+}
+table.crud-table tbody td:not(.no-nowrap) {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -949,8 +957,13 @@ footer a {
 }
 
 /* -- Liike-näkymät ---------------*/
-.exercise-view ul { margin: 5px 0 5px 15px; font-size: 14px; opacity: 0.8; }
-.exercise-view ul .minor-group { margin-left: 5px }
+.exercise-view ul { margin: 0 0 0 17px; font-size: 14px; list-style-type: circle;
+    display: inline-block; }
+.exercise-view ul li { padding: 4px 0 }
+.exercise-view ul .minor-group { margin-left: 5px; float: right; }
+.exercise-view ul a { background-size: 18px auto; padding: 10px 8px; opacity: 0.8;
+    margin: -1px 3px 0; border-bottom: 1px solid; }
+.exercise-view ul .edit-primary { background-position: 1px 3px; }
 
 /* -- Statistiikkanäkymät ---------- */
 .stats-view .tab-menu .text-button { padding: 8px 20px; }

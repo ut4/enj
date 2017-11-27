@@ -10,6 +10,7 @@ class SelectFilters implements SelectQueryFilters {
     private String userId;
     private String exerciseId;
     private final List<String> baseFilters;
+    boolean doOrder = false;
 
     SelectFilters(String userId) {
         this.userId = userId;
@@ -52,6 +53,6 @@ class SelectFilters implements SelectQueryFilters {
         if (this.exerciseId != null) {
             out.add("exerciseId = :exerciseId");
         }
-        return String.join(" AND ", out);
+        return String.join(" AND ", out) + (!this.doOrder ? "" : " ORDER BY exerciseName");
     }
 }

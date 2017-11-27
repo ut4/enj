@@ -11,8 +11,8 @@ class OfflineExerciseHandlerRegister extends AbstractOfflineHandlerRegister<Enj.
      */
     public registerHandlers(offlineHttp: OfflineHttp) {
         //
-        offlineHttp.addHandler('POST', 'exercise', exercise => this.insert(exercise));
-        offlineHttp.addHandler('PUT', 'exercise/*', exercise => this.update(exercise));
+        offlineHttp.addHandler('POST', 'exercise', exercise => this.insert(exercise, null, 'name'));
+        offlineHttp.addHandler('PUT', 'exercise/*', exercise => this.update(exercise, null, 'name'));
         offlineHttp.addHandler('DELETE', 'exercise/*', exercise => this.delete(exercise.id));
         //
         offlineHttp.addHandler('POST', 'exercise/variant', exerciseVariant =>

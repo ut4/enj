@@ -52,7 +52,7 @@ class ExerciseSelector extends Component<Props, State> {
         }
     }
     public componentWillReceiveProps(props) {
-        if (this.state.selectedExercise && this.state.selectedExercise.id !== props.initialExerciseId) {
+        if (this.props.initialExerciseId !== props.initialExerciseId) {
             this.setState({selectedExercise: this.state.exercises.find(exs => exs.id === props.initialExerciseId)});
         }
     }
@@ -100,13 +100,11 @@ class ExerciseSelector extends Component<Props, State> {
         };
     }
     private makeAutocomplete(exercises: Array<Enj.API.Exercise>) {
-        const list = exercises.map(e => e.name);
-        list.sort((a, b) => a.localeCompare(b));
         this.awesomplete = new Awesomplete(this.inputEl, {
             minChars: 0,
             maxItems: 50,
             sort: false,
-            list
+            list: exercises.map(e => e.name)
         });
         Awesomplete.$.bind(this.inputEl, {
             'awesomplete-selectcomplete': e => {

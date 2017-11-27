@@ -6,8 +6,8 @@ import ExerciseVariantDeleteModal from 'src/exercise/ExerciseVariantDeleteModal'
 import iocFactories from 'src/ioc';
 
 /**
- * Komponentti urlille #/liikkeet. Listaa kaikki globaalit, ja kirjautuneelle
- * käyttäjälle kuuluvat liikkeet.
+ * Komponentti urlille #/liikkeet. Listaa kaikki liikkeet, jotka kuuluu kirjautuneelle
+ * käyttäjälle tai joissa on kirjautuneen käyttäjän lisäämä variantti.
  */
 class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> {
     public constructor(props, context) {
@@ -15,13 +15,18 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
         this.state = {exercises: null};
     }
     public componentWillMount() {
-        iocFactories.exerciseBackend().getAll().then(
-            exercises => this.setState({ exercises }),
-            () => {
+        let allExercises: Array<Enj.API.Exercise>;
+        iocFactories.exerciseBackend().getAll()
+            .then(exercises => {
+                allExercises = exercises;
+                return iocFactories.userState().getUserId();
+            })
+            .then(userId => this.setState({exercises: allExercises.filter(exs =>
+                exs.userId === userId || exs.variants.filter(v => v.userId === userId).length
+            )}), () => {
                 iocFactories.notify()('Liikkeiden haku epäonnistui', 'error');
                 this.setState({exercises: []});
-            }
-        );
+            });
     }
     public render() {
         return <div class="exercise-view">
@@ -32,12 +37,17 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
             </SubMenu>
             { this.state.exercises && (
                 this.state.exercises.length > 0 ?
-                <table class="striped crud-table responsive"><tbody>{ this.state.exercises.map((exercise, i) => {
+                <table class="striped crud-table responsive"><thead>
+                    <tr>
+                        <th>Nimi</th>
+                        <th>Variantit</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead><tbody>{ this.state.exercises.map((exercise, i) => {
                     const variants = exercise.variants.length ? exercise.variants.filter(v => v.userId !== null) : [];
                     return <tr>
-                        <td data-th={ variants.length ? 'Variantit' : '' }>
-                            { exercise.name }{ variants.length > 0 && this.getVariantList(variants, i) }
-                        </td>
+                        <td data-th="Nimi">{ exercise.name }</td>
+                        <td class="no-nowrap" data-th="Variantit">{ variants.length ? this.getVariantList(variants, i) : '-' }</td>
                         { exercise.userId
                             ? <td class="minor-group">
                                 <a href={ '#/liikkeet/muokkaa/' + exercise.id }>Muokkaa</a>
@@ -53,10 +63,10 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
     private getVariantList(variants: Array<Enj.API.ExerciseVariant>, exerciseIndex: number) {
         return <ul>{ variants.map(variant =>
             <li>
-                <span>- {variant.content}</span>
+                <span>{variant.content}</span>
                 <span class="minor-group">
-                    <a onClick={ () => { this.context.router.exerciseVariant = variant; } } href={ '#/liikevariantti/muokkaa/' + variant.id }>Muokkaa</a>
-                    { variant.userId && <a href="" onClick={ e => this.openVariantDeleteModal(variant, exerciseIndex, e) }>Poista</a> }
+                    <a onClick={ () => { this.context.router.exerciseVariant = variant; } } href={ '#/liikevariantti/muokkaa/' + variant.id } class="icon-button edit-primary"></a>
+                    { variant.userId && <a href="" onClick={ e => this.openVariantDeleteModal(variant, exerciseIndex, e) } class="icon-button delete-primary"></a> }
                 </span>
             </li>
         ) }</ul>;
@@ -76,7 +86,14 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
         Modal.open(() =>
             <ExerciseVariantDeleteModal exerciseVariant={ variant } afterDelete={ () => {
                 const exercises = this.state.exercises;
+                const userId = variant.userId;
+                // Poista variantti liikkeestä
                 exercises[exerciseIndex].variants.splice(exercises[exerciseIndex].variants.indexOf(variant), 1);
+                // Jos kyseessä oli globaali liike eikä siihen jäänyt käyttäjän variantteja -> poista kokonaan listalta
+                if (!exercises[exerciseIndex].userId &&
+                    !exercises[exerciseIndex].variants.filter(v => v.userId === userId).length) {
+                    exercises.splice(exerciseIndex, 1);
+                }
                 this.setState({exercises});
             } }/>
         );

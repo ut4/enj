@@ -20,11 +20,12 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Lisää itemin {entity} /api/${some-entity}[/{cacheUrl}]-cachen (esim.
      * /api/exercise) alkuun.
      */
-    public insert(entity: T, cacheUrl?: string): Promise<string> {
+    public insert(entity: T, cacheUrl?: string, orderProperty?: keyof T): Promise<string> {
         return this.updateCache(cachedEntities => {
             // Lisää uusi T cachetaulukon alkuun (uusin ensin)
             entity.id = this.backend.utils.uuidv4();
             cachedEntities.unshift(entity);
+            orderProperty && cachedEntities.sort((a, b) => (a[orderProperty] as string).localeCompare(b[orderProperty]));
             // Palauta feikattu backendin vastaus
             return {insertCount: 1, insertId: entity.id};
         }, cacheUrl);
@@ -33,9 +34,10 @@ abstract class AbstractOfflineHandlerRegister<T extends {id?: AAGUID}> {
      * Päivittää /api/${some-entity}[/{cacheUrl}]-cachen (esim. /api/exercise)
      * itemin {entity}.
      */
-    public update(entity: T, cacheUrl?: string): Promise<string> {
+    public update(entity: T, cacheUrl?: string, orderProperty?: keyof T): Promise<string> {
         return this.updateCache(cachedEntities => {
             Object.assign(this.findItemById(entity.id, cachedEntities), entity);
+            orderProperty && cachedEntities.sort((a, b) => (a[orderProperty] as string).localeCompare(b[orderProperty]));
             return {updateCount: 1};
         }, cacheUrl);
     }

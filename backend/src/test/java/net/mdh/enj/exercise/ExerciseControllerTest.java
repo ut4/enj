@@ -113,7 +113,7 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
      * sisältyä myös alirelaatiot (variants).
      */
     @Test
-    public void GETPalauttaaLiikelistanSisältäenVariantit() {
+    public void GETPalauttaaLiikelistanAakkosjärjestyksessäSisältäenVariantit() {
         // 1. Globaali liike, jossa variantteja
         List<Exercise.Variant> variants = new ArrayList<>();
         variants.add(insertTestVariant("var1", testExercise.getId(), null));
@@ -132,11 +132,10 @@ public class ExerciseControllerTest extends RollbackingDBJerseyTest {
             e.getName().equals("foo") || e.getName().equals("bar") || e.getName().equals("caz")
         ).collect(Collectors.toList());
         Assert.assertEquals(2, exercises.size()); // vain 1 & 2 pitäisi sisältyä
-        exercises.sort(Comparator.comparing(Exercise::getName));
-        testExercise.getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
         Assert.assertEquals(anotherWithoutVariants.toString(), exercises.get(0).toString());
-        Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
         Assert.assertEquals(2, exercises.get(1).getVariants().size());
+        exercises.get(1).getVariants().sort(Comparator.comparing(Exercise.Variant::getContent));
+        Assert.assertEquals(testExercise.toString(), exercises.get(1).toString());
     }
 
     @Test

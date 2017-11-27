@@ -36,7 +36,7 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
             //
             assert.ok(postCallSpy.notCalled);
             assert.ok(handlerCallStub.calledOnce);
-            assert.deepEqual(handlerCallStub.firstCall.args, [testExercise]);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testExercise, null, 'name']);
             assert.equal(insertCount, 10, 'Pitäisi palauttaa offline-handlerin insertCount');
             done();
         });
@@ -50,7 +50,7 @@ QUnit.module('exercise/OfflineHandlerRegisteration', hooks => {
             //
             assert.ok(putCallSpy.notCalled);
             assert.ok(handlerCallStub.calledOnce);
-            assert.deepEqual(handlerCallStub.firstCall.args, [testExercise]);
+            assert.deepEqual(handlerCallStub.firstCall.args, [testExercise, null, 'name']);
             assert.equal(updateCount, 20, 'Pitäisi palauttaa offline-handlerin updateCount');
             done();
         });
