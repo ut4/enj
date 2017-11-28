@@ -4,9 +4,15 @@ import Layout from 'src/ui/Layout';
 import * as views from 'src/views';
 import iocFactories from 'src/ioc';
 import asyncBoot from 'src/bootstrap';
+import Modal from 'src/ui/Modal';
+
+const history = iocFactories.history();
+history.listen(() => {
+    Modal.isOpen() && Modal.close();
+});
 
 asyncBoot.then(() => render(
-    <Router history={ iocFactories.history() }>
+    <Router history={ history }>
         <Route component={ Layout }>
             <Route path="/" component={ views.HomeView }/>
             <Route path="badges" component={ views.BadgesView }/>

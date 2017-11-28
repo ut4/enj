@@ -23,7 +23,7 @@ class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsV
     public componentDidMount() {
         this.pikaday = new Pikaday(this.makeSettings());
     }
-    public componentWillReceiveProps(props) {
+    public componentWillReceiveProps(props: Props) {
         this.updateBounds(props);
     }
     public open() {
@@ -75,13 +75,14 @@ class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsV
     private onSelect(date: Date) {
         this.props.onSelect(date);
     }
-    private updateBounds(props) {
+    private updateBounds(props: Props) {
         if (props.minDate) {
             this.pikaday.setMinDate(props.minDate);
         }
         if (props.maxDate) {
             this.pikaday.setMaxDate(props.maxDate);
         }
+
     }
     private toggleDateTableVisibility(e) {
         e.stopPropagation();

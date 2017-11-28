@@ -21,11 +21,17 @@ class Modal extends Component<any, {levels: Array<contentFactory>}> {
         levels.pop();
         this.setState({levels});
     }
+    public isOpen(): boolean {
+        return this.state.levels.length > 0;
+    }
     public static open(contentFn: contentFactory) {
         Modal.instance.open(contentFn);
     }
     public static close() {
         Modal.instance.close();
+    }
+    public static isOpen(): boolean {
+        return Modal.instance.isOpen();
     }
     public render() {
         return this.state.levels.length > 0 && <div id="modal">

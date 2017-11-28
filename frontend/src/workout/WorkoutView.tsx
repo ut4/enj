@@ -45,6 +45,10 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         const newState: State = this.state;
         newState.isToday = props.params.date === 'tanaan';
         newState.selectedDate = newState.isToday ? this.dateNow : new Date(props.params.date);
+        // Tultiin selaimen navigaatiosta eikä datepickeristä -> päivitä datepickerin selected-date.
+        if (this.datePicker && this.datePicker.pikaday.getDate().toDateString() !== newState.selectedDate.toDateString()) {
+            this.datePicker.pikaday.setDate(newState.selectedDate, true /* <- silent / ei onSelectiä */);
+        }
         // Hae ensin päivän treeniä...
         return this.workoutBackend.getDaysWorkouts(newState.selectedDate).then(
             workouts => {
@@ -79,7 +83,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                 { !this.state.programs.length ? 'Treeni ' : 'Ohjelmassa ' }
                 <span>{ this.state.isToday ? 'tänään' : toFinDate(this.state.selectedDate) }</span>
                 <button title="Valitse päivä" class="icon-button arrow-dark down" onClick={ () => this.datePicker.open() }></button>
-                <Datepicker onSelect={ date => this.redirectToDate(date) } defaultDate={ this.state.isToday ? undefined : this.state.selectedDate } autoClose={ true } ref={ instance => { this.datePicker = instance; } }/>
+                <Datepicker onSelect={ date => this.receiveDatepickerSelection(date) } defaultDate={ this.state.selectedDate } autoClose={ true } ref={ instance => { this.datePicker = instance; } }/>
             </h2>
             { this.state.workouts.length
                 ? this.state.workouts.map(workout =>
@@ -94,7 +98,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     /**
      * Ohjaa valittuun päivämäärään (treeni/2017-09-09 tai treeni/tänään)
      */
-    private redirectToDate(date: Date) {
+    private receiveDatepickerSelection(date: Date) {
         date.setHours(12);
         iocFactories.history().push('/treeni/' + (
             !isToday(date) ? date.toISOString().split('T')[0] : 'tanaan'
