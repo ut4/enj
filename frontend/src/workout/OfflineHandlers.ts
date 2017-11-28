@@ -5,7 +5,7 @@ import AbstractOfflineHandlerRegister from 'src/offline/AbstractOfflineHandlerRe
  * Sisältää handerit, jotka vastaa /api/workout/* -REST-pyynnöistä offline-tilan
  * aikana.
  */
-class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Workout> {
+class OfflineHandlers extends AbstractOfflineHandlerRegister<Enj.API.Workout> {
     /**
      * Rekisteröi kaikki /api/workout/* offline-handlerit.
      */
@@ -101,4 +101,4 @@ class OfflineWorkoutHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
     }
 }
 
-export default OfflineWorkoutHandlerRegister;
+export default OfflineHandlers;

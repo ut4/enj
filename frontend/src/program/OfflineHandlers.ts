@@ -5,7 +5,7 @@ import OfflineHttp from 'src/common/OfflineHttp';
  * Sisältää handerit, jotka vastaa /api/program/* -REST-pyynnöistä offline-tilan
  * aikana.
  */
-class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.API.Program> {
+class OfflineHandlers extends AbstractOfflineHandlerRegister<Enj.API.Program> {
     /**
      * Rekisteröi kaikki /api/program/* offline-handlerit.
      */
@@ -32,7 +32,7 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
             this.updateWorkoutExercise(pwe)
         );
         offlineHttp.addHandler('DELETE', 'program/workout/exercise/*', pwe =>
-            this.deleteWorkoutExercise(pwe.id)
+            this.deleteWorkoutExercise(pwe)
         );
     }
     /**
@@ -89,4 +89,4 @@ class OfflineProgramHandlerRegister extends AbstractOfflineHandlerRegister<Enj.A
    }
 }
 
-export default OfflineProgramHandlerRegister;
+export default OfflineHandlers;
