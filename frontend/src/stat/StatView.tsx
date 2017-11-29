@@ -39,14 +39,7 @@ class StatsView extends Component<any, any> {
             ? Promise.resolve(this[prop])
             : iocFactories.statBackend()[method]()).then(
                 data => data,
-                err => {
-                    if ((err.response || {}).status === 454) {
-                        iocFactories.notify()('Tämä toiminto käytettävissä vain online-tilassa', 'info');
-                    } else {
-                        iocFactories.notify()('Statistiikan haku epäonnistui', 'error');
-                    }
-                    return undefined;
-                }
+                err => undefined
             ).then(data => {
                 this[prop] = data;
                 this.props.children.props[prop] = data;

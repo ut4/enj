@@ -24,7 +24,6 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
             .then(userId => this.setState({exercises: allExercises.filter(exs =>
                 exs.userId === userId || exs.variants.filter(v => v.userId === userId).length
             )}), () => {
-                iocFactories.notify()('Liikkeiden haku epäonnistui', 'error');
                 this.setState({exercises: []});
             });
     }

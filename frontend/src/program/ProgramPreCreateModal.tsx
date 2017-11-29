@@ -19,7 +19,7 @@ class ProgramPreCreateModal extends Component<
     public componentWillMount() {
         iocFactories.programBackend().getAll('/templates').then(
             programTemplates => this.setState({programTemplates}),
-            () => iocFactories.notify()('Ohjelmatemplaattien haku epäonnistui', 'notice')
+            () => {/*pass*/}
         );
     }
     public render() {

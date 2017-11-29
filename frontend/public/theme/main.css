@@ -611,7 +611,7 @@ table .input-set .text-error {
     background-color: rgba(48, 174, 253, 0.85);
 }
 .notifier-message.notice {
-    background-color: rgba(210, 169, 73, 0.85);
+    background-color: rgba(255, 186, 59, 0.85);
 }
 .notifier-message.error {
     background-color: rgba(255, 62, 97, 0.85);

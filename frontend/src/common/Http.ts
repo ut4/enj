@@ -1,5 +1,6 @@
 import UserState from 'src/user/UserState';
 import OfflineHttp from 'src/common/OfflineHttp';
+import iocFactories from 'src/ioc';
 
 interface interceptor {
     request?: (request: Request) => void|false;
@@ -48,7 +49,19 @@ class Http {
         Http.pendingRequestCount++;
         return this.fetchContainer.fetch(this.newRequest(url))
             .then(response => this.processResponse(response))
-            .then(response => this.parseResponseData<T>(response));
+            .then(response => this.parseResponseData<T>(response))
+            .then(
+                parsed => parsed,
+                err => {
+                    const status: number = (err.response || {}).status;
+                    if (status === 454) {
+                        iocFactories.notify()('Tämä toiminto käytettävissä vain online-tilassa', 'info');
+                    } else if (status !== 401) {
+                        iocFactories.notify()('Toiminto epäonnistui', 'error');
+                    }
+                    return Promise.reject(err);
+                }
+            );
     }
     /**
      * @param {string} url

@@ -31,7 +31,7 @@ class ExerciseSelector extends Component<Props, State> {
                     this.setState(this.makeState(exercises));
                     this.makeAutocomplete(exercises);
                 },
-                err => iocFactories.notify()('Liikkeiden haku epäonnistui', 'error')
+                () => {/*pass*/}
             );
         }
     }

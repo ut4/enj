@@ -18,6 +18,7 @@ QUnit.module('stat/StatHistoryView', hooks => {
     let shallowExerciseBackend: ExerciseBackend;
     let fakeHistory;
     let historyIocOverride: sinon.SinonStub;
+    let dataFetchSpy: sinon.SinonSpy;
     hooks.beforeEach(() => {
         testProgressSets = [
             // Note. calculatedResultit hatusta vedettyjä
@@ -34,11 +35,13 @@ QUnit.module('stat/StatHistoryView', hooks => {
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
         fakeHistory = {push: () => {}};
         historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
+        dataFetchSpy = sinon.spy(StatHistoryView.prototype, 'fetchAndRenderView');
     });
     hooks.afterEach(() => {
         statBackendIocOverride.restore();
         exerciseBackendIocOverride.restore();
         historyIocOverride.restore();
+        (StatHistoryView.prototype as any).fetchAndRenderView.restore();
     });
     function renderView(progressSets, withParams?): Promise<{
         rendered: any;
@@ -55,18 +58,15 @@ QUnit.module('stat/StatHistoryView', hooks => {
         const rendered = itu.renderIntoDocument(<StatHistoryView params={ params }/>);
         const historyView = itu.findRenderedVNodeWithType(rendered, StatHistoryView).children as any;
         historyView.PAGE_SIZE = 2;
-        // Odota, että historia, ja liikelista latautuu
-        return Promise.all([
-            progressFetch.firstCall.returnValue,
-            exerciseListFetch.firstCall.returnValue
-        ]).then(
-            () => typeof progressSets === 'function' || progressSets.length
+        // Resolvaa fetchAndRenderView
+        return dataFetchSpy.firstCall.returnValue
+            .then(() => typeof progressSets === 'function' || progressSets.length
         // Odota, että chart latautuu
                 ? new Promise(resolve => {
                     historyView.getChart().on('created', () => resolve({rendered, progressFetch, historyView}));
                 })
                 : Promise.resolve({rendered, progressFetch, historyView}) as any
-        );
+            );
     }
     QUnit.test('mount hakee historian backendistä ja renderöi ne chartiin', assert => {
         const done = assert.async();
@@ -197,9 +197,8 @@ QUnit.module('stat/StatHistoryView', hooks => {
                 'Pitäisi ohjautua tänne'
             );
             // Simuloi routerin normaalisti triggeröimä componentWillReceiveProps
-            const reloadSpy = sinon.spy(historyView, 'fetchAndRenderView');
             historyView.componentWillReceiveProps({params: expectedParams});
-            return reloadSpy.firstCall.returnValue;
+            return dataFetchSpy.secondCall.returnValue;
         }).then(() => {
             // Klikkaa "< Vanhemmat" -painiketta uudestaan
             prevPaginationButton.click();

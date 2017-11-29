@@ -4,14 +4,18 @@ import LoginForm from 'src/auth/LoginForm';
 import ioc from 'src/ioc';
 
 /**
- * Näkymä #/kirjaudu[?returnTo=/foo/bar?baz].
+ * Näkymä #/kirjaudu[?returnTo=/foo/bar?baz][&from=401].
  */
 class LoginView extends Component<any, any> {
     private loginForm: LoginForm;
     private returnPath: string;
     public componentWillMount() {
         this.state = {goodToGo: false};
-        this.returnPath = this.context.router.location.search.split('?returnTo=')[1];
+        const [returnTo, from] = this.context.router.location.search.split('&').map(pair => pair.split('=')[1]);
+        this.returnPath = returnTo;
+        if (from) {
+            ioc.notify()('Tämä toiminto vaatii kirjautumisen', 'notice');
+        }
     }
     public render() {
         return <div>

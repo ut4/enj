@@ -10,7 +10,7 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
     let authInterceptor: AuthHttpInterceptors;
     hooks.beforeEach(() => {
         userState = new UserState(new Db());
-        mockHistory = {push: sinon.spy(), location: {pathname: 'fus', search: '?ro'}};
+        mockHistory = {replace: sinon.spy(), location: {pathname: 'fus', search: '?ro'}};
         authInterceptor = new AuthHttpInterceptors(userState, mockHistory);
     });
     QUnit.test('.setup asettaa tokenin UserStatelta, hurrdurr', assert => {
@@ -54,20 +54,20 @@ QUnit.module('auth/AuthHttpInterceptors', hooks => {
     QUnit.test('.responseError ohjaa käyttäjän kirjautumissivulle, jos backend palauttaa 401 && url != auth/login', assert => {
         const res = new FakeResponse('auth/login', 401);
         authInterceptor.responseError(res as any);
-        assert.ok(mockHistory.push.notCalled, 'Ei pitäisi ohjata kirjautumissivulle, koska url = auth/login');
+        assert.ok(mockHistory.replace.notCalled, 'Ei pitäisi ohjata kirjautumissivulle, koska url = auth/login');
         //
         const res2 = new FakeResponse('foo/bar', 500);
         authInterceptor.responseError(res2 as any);
-        assert.ok(mockHistory.push.notCalled, 'Ei pitäisi ohjata kirjautumissivulle, koska status != 401');
+        assert.ok(mockHistory.replace.notCalled, 'Ei pitäisi ohjata kirjautumissivulle, koska status != 401');
         //
         const tokenClearStub = sinon.stub(userState, 'setToken');
         const res3 = new FakeResponse('foo/bar', 401);
         authInterceptor.responseError(res3 as any);
         assert.ok(tokenClearStub.calledOnce, 'Pitäisi poistaa selaintietokantaan tallennettu token');
-        assert.ok(mockHistory.push.calledOnce, 'Pitäisi ohjata kirjautumissivulle');
-        assert.deepEqual(mockHistory.push.firstCall.args,
-            ['/kirjaudu?returnTo=' + mockHistory.location.pathname + mockHistory.location.search],
-            'Pitäisi passata kirjautumis-urliin returnTo-parametri'
+        assert.ok(mockHistory.replace.calledOnce, 'Pitäisi ohjata kirjautumissivulle');
+        assert.deepEqual(mockHistory.replace.firstCall.args,
+            [`/kirjaudu?returnTo=${mockHistory.location.pathname}${mockHistory.location.search}&from=401`],
+            'Pitäisi passata kirjautumis-urliin parametrit'
         );
     });
     QUnit.test('UserState-tilaaja päivittää tokenin arvon', assert => {

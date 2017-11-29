@@ -30,7 +30,7 @@ QUnit.module('auth/LoginForm', hooks => {
         assert.equal(errorMessagesAfterFillingUsername.length, 0);
         assert.equal(loginFormInstance.state.validity, false);
         //
-        utils.setInputValue('ba', passwordInputEl);
+        utils.setInputValue('bar', passwordInputEl);
         const errorMessagesAfterFillingInvalidPassword = vtu.getRenderedValidationErrors(rendered);
         assert.equal(errorMessagesAfterFillingInvalidPassword.length, 1);
         assert.equal(loginFormInstance.state.validity, false);

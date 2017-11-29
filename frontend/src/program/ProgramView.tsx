@@ -19,7 +19,6 @@ class ProgramView extends Component<any, {programs: Array<Enj.API.Program>}> {
         iocFactories.programBackend().getAll('/mine').then(
             programs => this.setState({ programs }),
             err => {
-                iocFactories.notify()('Ohjelmien haku epäonnistui', 'error');
                 (err.response || {}).status !== 401 && this.setState({programs: []});
             }
         );

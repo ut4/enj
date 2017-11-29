@@ -57,14 +57,13 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
                 return workouts.length < 1;
             },
             err => {
-                iocFactories.notify()('Treenien haku epäonnistui', 'error');
                 newState.workouts = [];
                 this.setState(newState);
                 return false;
             }
         // ...jos ei löytynyt (ja params.date on tänään), hae ohjelmaa
-        ).then((noWorkoutsFound: boolean) => {
-            if (noWorkoutsFound && newState.selectedDate >= this.dateNow) {
+        ).then((doFetchProgram: boolean) => {
+            if (doFetchProgram && newState.selectedDate >= this.dateNow) {
                 this.programBackend.getAll('/mine?when=' + Math.floor(newState.selectedDate.getTime() / 1000)).then(
                     programs => programs.length && this.setState({programs}),
                     () => iocFactories.notify()('Ohjelman haku epäonnistui', 'error')

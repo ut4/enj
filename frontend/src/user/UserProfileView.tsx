@@ -25,7 +25,7 @@ class UserProfileView extends ValidatingComponent<any, {user: Enj.API.User}> {
     public componentWillMount() {
         iocFactories.userBackend().get('/me').then(
             user => this.setState({user}),
-            () => iocFactories.notify()('Tietojen haku epäonnistui', 'error')
+            () => {/*pass*/}
         );
     }
     public render() {

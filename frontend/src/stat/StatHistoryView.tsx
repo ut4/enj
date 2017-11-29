@@ -18,7 +18,7 @@ interface ChartData {
 
 /**
  * Komponentti näkymälle #/treenihistoria. Näyttää liikkeen parhaiden sarjojen
- * tuloshistorian valitulla formula/kaavalla laskettuna.
+ * tuloshistorian valitulla kaavalla laskettuna.
  */
 class StatHistoryView extends Component<{params: Params}, {data: ChartData; dataCount: number;}> {
     public PAGE_SIZE: number = 10;
@@ -26,7 +26,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     private chartInstance: any;
     public constructor(props, context) {
         super(props, context);
-        this.state = {data: undefined, dataCount: 0};
+        this.state = {data: undefined, dataCount: -1};
     }
     public componentWillMount() {
         this.componentWillReceiveProps(this.props);
@@ -46,7 +46,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     public render() {
         return <div>
             <h2>Kehityshistoria</h2>
-            <div class="row">
+            { this.state.dataCount > -1 && <div class="row">
                 <div class="col-7">
                     <ExerciseSelector
                         onSelect={ exs => this.onExerciseSelect(exs || {}) }
@@ -65,7 +65,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
                         </select>
                     </label>
                 </div>
-            </div>
+            </div> }
             { this.state.data &&
                 <div class="line-chart" ref={ el => { this.chartContainer = el; } }></div>
             }
@@ -93,15 +93,16 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             parseInt(params.before as any, 10),
             parseInt(params.after as any, 10)
         ).then(
-            progress => { return progress; },
-            err => {
-                (err.response || {}).status === 454 && iocFactories.notify()('Tämä toiminto käytettävissä vain online-tilassa', 'info');
-                return [];
-            }
+            progress => progress,
+            err => null
         ).then(progressSets => {
-            const data = progressSets.length ? this.makeData(progressSets) : null;
-            this.setState({data, dataCount: data ? data.labels.length : 0});
-            data && this.makeChart(data);
+            if (progressSets !== null) {
+                const data = progressSets.length ? this.makeData(progressSets) : null;
+                this.setState({data, dataCount: data ? data.labels.length : 0});
+                data && this.makeChart(data);
+            } else {
+                this.setState({data: null, dataCount: -1});
+            }
         });
     }
     /**

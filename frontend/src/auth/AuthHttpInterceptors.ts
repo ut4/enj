@@ -49,7 +49,7 @@ class AuthHttpInterceptors {
             this.token = '';
             this.userState.setToken(this.token);
             const hashLocation = this.history.location;
-            this.history.push('/kirjaudu?returnTo=' + hashLocation.pathname + hashLocation.search);
+            this.history.replace('/kirjaudu?returnTo=' + hashLocation.pathname + hashLocation.search + '&from=401');
         }
     }
 }

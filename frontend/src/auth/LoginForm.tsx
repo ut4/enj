@@ -11,7 +11,7 @@ class LoginForm extends ValidatingComponent<any, State> {
         super(props, context);
         this.evaluators = {
             username: [(input: string) => input.length > 1 && input.length < 43],
-            password: [(input: string) => input.length > 2]
+            password: [(input: string) => input.length > 3]
         };
         this.state = {username: '', password: '', validity: false};
     }
@@ -28,7 +28,7 @@ class LoginForm extends ValidatingComponent<any, State> {
             <label class="input-set">
                 <span>Salasana</span>
                 <input type="password" name="password" value={ this.state.password } onInput={ e => this.receiveInputValue(e) }/>
-                { validationMessage(this.evaluators.password[0], templates => templates.minLength('Salasana', 3)) }
+                { validationMessage(this.evaluators.password[0], templates => templates.minLength('Salasana', 4)) }
             </label>
         </div>;
     }
