@@ -60,7 +60,7 @@ class ExerciseSelector extends Component<Props, State> {
         return <div>
             <span class="input-set">
                 <span>{ this.props.label || 'Liikkeen nimi' }</span>
-                <input name="exerciseAutocomplete" ref={ el => { this.inputEl = el; } } value={ this.state.selectedExercise ? this.state.selectedExercise.name : '' } onClick={ () => this.handleAutocompleteFocus() }/>
+                <input name="exerciseAutocomplete" ref={ el => { this.inputEl = el; } } value={ this.state.selectedExercise ? this.state.selectedExercise.name : '' } onFocus={ () => this.handleAutocompleteFocus() }/>
             </span>
             { (this.state.selectedExercise &&
                 this.props.noVariant !== true &&

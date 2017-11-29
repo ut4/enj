@@ -30,12 +30,16 @@ const arrayUtils = {
     }
 };
 
+const appName = document.title;
 const domUtils = {
     revealLoadingIndicator() {
         document.body.classList.add('loading');
     },
     hideLoadingIndicator() {
         document.body.classList.remove('loading');
+    },
+    setTitle(text: string) {
+        document.title = text + ' | ' + appName;
     }
 };
 

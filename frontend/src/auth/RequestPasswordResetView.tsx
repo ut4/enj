@@ -20,7 +20,7 @@ class RequestPasswordResetView extends ValidatingComponent<any, {email: string;}
     }
     public render() {
         return <div>
-            <h2>Salasanan palautus</h2>
+            <h2>Palauta salasana</h2>
             <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => this.state.validity === false } isModal={ false }>
                 <div class="info-box">Täytä sähköpostiosoitteesi alla olevaan kenttään, niin lähetämme siihen linkin jolla voit luoda uuden salasanan.</div>
                 { this.getEmailInputEl() }

@@ -4,7 +4,7 @@ import WorkoutBackend from 'src/workout/WorkoutBackend';
 import ProgramBackend from 'src/program/ProgramBackend';
 import { occurrenceFinder } from 'src/program/ProgramWorkoutOccurrencesManager';
 import Datepicker from 'src/ui/Datepicker';
-import { dateUtils } from 'src/common/utils';
+import { dateUtils, domUtils } from 'src/common/utils';
 import iocFactories from 'src/ioc';
 
 interface State {
@@ -30,6 +30,9 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         this.programBackend = iocFactories.programBackend();
         this.dateNow = new Date();
         this.dateNow.setHours(12);
+    }
+    public static setTitle(urlpath: string) {
+        domUtils.setTitle('Treeni ' + urlpath.split('/')[2]);
     }
     /**
      * Hakee urlin daten {prop.params.date} treenit backendistä ja asettaa ne stateen.
