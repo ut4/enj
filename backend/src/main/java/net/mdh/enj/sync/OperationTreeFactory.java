@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 class OperationTreeFactory {
-    private List<SyncQueueItem> expandedQueue;
-    private SyncRouteRegister syncRouteRegister;
-    private Map<String, Integer> alreadyProcessedParentIds;
+    private final List<SyncQueueItem> expandedQueue;
+    private final SyncRouteRegister syncRouteRegister;
+    private final Map<String, Integer> alreadyProcessedParentIds;
 
     OperationTreeFactory(List<SyncQueueItem> queue, SyncRouteRegister syncRouteRegister) {
         this.expandedQueue = QueueOptimizer.Batchifier.unbatchify(queue);

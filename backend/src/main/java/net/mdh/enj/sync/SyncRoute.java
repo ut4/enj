@@ -51,8 +51,8 @@ public class SyncRoute extends Route {
     }
 
     static class SubRoute {
-        String urlNamespace;
-        String foreignKey;
+        final String urlNamespace;
+        final String foreignKey;
         SubRoute(String urlNamespace, String foreignKey) {
             this.urlNamespace = urlNamespace;
             this.foreignKey = foreignKey;

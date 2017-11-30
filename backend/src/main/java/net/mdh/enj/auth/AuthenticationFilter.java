@@ -15,8 +15,8 @@ import javax.inject.Inject;
 public class AuthenticationFilter implements ContainerRequestFilter {
 
     private final AuthService authService;
-    private ResourceInfo resourceInfo;
-    private Provider<RequestContext> requestContextProvider;
+    private final ResourceInfo resourceInfo;
+    private final Provider<RequestContext> requestContextProvider;
 
     public static final String AUTH_HEADER_NAME = "Authorization";
     static final String NEW_TOKEN = "newToken";

@@ -29,7 +29,7 @@ public class AuthenticatedUserIdValidator implements ConstraintValidator<Authent
             return false;
         }
         try {
-            return this.requestContext.getUserId().toString().equals(value);
+            return this.requestContext.getUserId().equals(value);
         } catch (NullPointerException e) {
             return false;
         }

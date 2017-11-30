@@ -27,7 +27,7 @@ public class TokenService {
     private final Supplier<JwtParser> jwtParserFactory;
     private final ObjectMapper objectMapper;
     private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    private static SecureRandom random = new SecureRandom();
+    private static final SecureRandom random = new SecureRandom();
 
     final byte[] JWT_KEY;
     final static long JWT_AGE_IN_MS = AuthService.TOKEN_EXPIRATION * 1000;

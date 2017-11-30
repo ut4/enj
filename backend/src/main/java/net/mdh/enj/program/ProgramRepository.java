@@ -101,7 +101,7 @@ public class ProgramRepository extends BasicRepository<Program> {
         // [, ja ] pois
         String spaceSeparatedGroups = value.replaceAll("[\\[\\]]", "");
         for (String group: spaceSeparatedGroups.split(" ")) {
-            String[] values = group.split("\\,");
+            String[] values = group.split(",");
             out.add(new Program.Workout.Occurrence(
                 Integer.valueOf(values[0]),
                 Integer.valueOf(values[1]),

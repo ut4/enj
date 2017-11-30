@@ -387,8 +387,8 @@ public class AuthService {
     // -------------------------------------------------------------------------
 
     static class TokenData {
-        String userId;
-        String signature;
+        final String userId;
+        final String signature;
         TokenData(String userId, String signature) {
             this.userId = userId;
             this.signature = signature;
