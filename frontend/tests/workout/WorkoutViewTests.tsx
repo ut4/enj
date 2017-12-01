@@ -25,6 +25,7 @@ QUnit.module('workout/WorkoutView', hooks => {
     hooks.beforeEach(() => {
         shallowWorkoutBackend = Object.create(WorkoutBackend.prototype);
         workoutBackendIocOverride = sinon.stub(iocFactories, 'workoutBackend').returns(shallowWorkoutBackend);
+        componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
         shallowProgramBackend = Object.create(ProgramBackend.prototype);
         programBackendIocOverride = sinon.stub(iocFactories, 'programBackend').returns(shallowProgramBackend);
         someTestWorkouts = [
@@ -38,16 +39,15 @@ QUnit.module('workout/WorkoutView', hooks => {
         workoutBackendIocOverride.restore();
         programBackendIocOverride.restore();
         historyIocOverride.restore();
-        componentWillReceivePropsSpy && componentWillReceivePropsSpy.restore();
+        componentWillReceivePropsSpy.restore();
     });
     QUnit.test('mount hakee current-treenit backendistä ja renderöi ne', assert => {
-        const todaysWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve(someTestWorkouts));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve(someTestWorkouts));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
-        todaysWorkoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 2);
             done();
@@ -60,7 +60,6 @@ QUnit.module('workout/WorkoutView', hooks => {
             Promise.resolve([testProgram])
         );
         //
-        componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
@@ -90,7 +89,6 @@ QUnit.module('workout/WorkoutView', hooks => {
             Promise.resolve([testProgram])
         );
         //
-        componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
@@ -101,15 +99,13 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount näyttää viestin mikäli current-treenejä, eikä ohjelmia löydy', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve([]));
-        const currentProgramsFetch = sinon.stub(shallowProgramBackend, 'getAll')
-            .returns(Promise.resolve([]));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
+        sinon.stub(shallowProgramBackend, 'getAll').returns(Promise.resolve([]));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         //
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 0);
             const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'p')[0];
@@ -118,8 +114,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('mount ei hae ohjelmaa, jos params.date < tänään', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve([]));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
         const currentProgramsFetch = sinon.spy(shallowProgramBackend, 'getAll');
         //
         const notToday = new Date();
@@ -129,24 +124,23 @@ QUnit.module('workout/WorkoutView', hooks => {
         } }/>);
         //
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             assert.ok(currentProgramsFetch.notCalled, 'Ei pitäisi hakea ohjelmia');
             done();
         });
     });
     QUnit.test('mount handlaa epäonnistuneen current-treenien haun', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.reject({err: 'fo'}));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.reject({err: 'fo'}));
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // Assertoi että initial render on tyhjä
-        assert.equal(itu.scryRenderedDOMElementsWithTag(rendered, 'div').length, 0);
+        assert.equal(itu.scryRenderedDOMElementsWithTag(rendered, 'p').length, 0);
         // Assertoi että thenin jälkeinen render ei ole tyhjä
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(null, () => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 0);
-            const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'div')[0];
+            const rootElem = itu.scryRenderedDOMElementsWithTag(rendered, 'p')[0];
             assert.ok(rootElem.innerHTML.indexOf(noWorkoutsMessage) > -1);
             done();
         });
@@ -162,7 +156,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         );
         //
         const done = assert.async();
-        workoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             const currentWorkoutListItems = getRenderedWorkoutItems(rendered);
             assert.equal(currentWorkoutListItems.length, 1);
             // Asettiko urliin määritellyn päivän datepickerin selected-päiväksi?
@@ -177,14 +171,13 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('"Edellinen päivä"-painike ohjaa edelliseen päivään', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve([someTestWorkouts[1]]));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([someTestWorkouts[1]]));
         const redirectSpy = sinon.spy(fakeHistory, 'push');
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         // Odota, että initial-treeni latautuu
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             // Klikkaa nappia
             utils.findButtonByContent(rendered, '< Edellinen').click();
             // Ohjautuiko?
@@ -199,14 +192,13 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('"Seuraava päivä"-painike ohjaa seuraavaan päivään', assert => {
-        const currentWorkoutsFetch = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve([someTestWorkouts[1]]));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([someTestWorkouts[1]]));
         const redirectSpy = sinon.spy(fakeHistory, 'push');
         //
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: '2017-11-23'} }/>);
         // Odota, että initial-treeni latautuu
         const done = assert.async();
-        currentWorkoutsFetch.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             // Klikkaa nappia
             utils.findButtonByContent(rendered, 'Seuraava >').click();
             // Ohjautuiko?
@@ -220,10 +212,8 @@ QUnit.module('workout/WorkoutView', hooks => {
         });
     });
     QUnit.test('"Aloita extempore-treeni"-painike luo uuden tyhjän treenin, ja lisää sen näkymään', assert => {
-        const workoutFetchStub = sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts')
-            .returns(Promise.resolve([]));
-        const currentProgramsFetchStub = sinon.stub(shallowProgramBackend, 'getAll')
-            .returns(Promise.resolve([]));
+        sinon.stub(shallowWorkoutBackend, 'getDaysWorkouts').returns(Promise.resolve([]));
+        sinon.stub(shallowProgramBackend, 'getAll').returns(Promise.resolve([]));
         const workoutFromService = new Workout();
         workoutFromService.userId = someUserId;
         sinon.stub(shallowWorkoutBackend, 'newWorkout').returns(Promise.resolve(workoutFromService));
@@ -233,7 +223,7 @@ QUnit.module('workout/WorkoutView', hooks => {
         const startWorkoutHook = sinon.spy(itu.findRenderedVNodeWithType(rendered, WorkoutView).children, 'startWorkout');
         // odota, että näkymä latautuu
         const done = assert.async();
-        workoutFetchStub.firstCall.returnValue.then(() => {
+        componentWillReceivePropsSpy.firstCall.returnValue.then(() => {
             const workoutsBefore = getRenderedWorkoutItems(rendered);
             const workoutCountBefore = workoutsBefore.length;
             //
@@ -262,7 +252,6 @@ QUnit.module('workout/WorkoutView', hooks => {
         sinon.stub(shallowWorkoutBackend, 'insert').returns(Promise.resolve(1));
         const inserWorkoutExercisesStub = sinon.stub(shallowWorkoutBackend, 'addExercises').returns(Promise.resolve(1));
         //
-        const componentWillReceivePropsSpy = sinon.spy(WorkoutView.prototype, 'componentWillReceiveProps');
         const rendered = itu.renderIntoDocument(<WorkoutView params={ {date: 'tanaan'} }/>);
         const startWorkoutHook = sinon.spy(itu.findRenderedVNodeWithType(rendered, WorkoutView).children, 'startWorkout');
         // odota, että näkymä latautuu

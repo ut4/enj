@@ -44,6 +44,9 @@ const domUtils = {
 };
 
 const dateUtils = {
+    getISODate: (date: Date): string => {
+        return date.toISOString().split('T')[0];
+    },
     getLocaleDateString(date: Date, showTime?: boolean): string {
         return (
             date.getDate() + '.' + (date.getMonth() + 1) + ' ' + date.getFullYear() +

@@ -23,6 +23,7 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
     private programBackend: ProgramBackend;
     private datePicker: Datepicker;
     private dateNow: Date;
+    private ISODateNow: string;
     public constructor(props, context) {
         super(props, context);
         this.state = {workouts: null, programs: [], selectedDate: null, isToday: null};
@@ -30,9 +31,11 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         this.programBackend = iocFactories.programBackend();
         this.dateNow = new Date();
         this.dateNow.setHours(12);
+        this.ISODateNow = dateUtils.getISODate(this.dateNow);
     }
     public static setTitle(urlpath: string) {
-        domUtils.setTitle('Treeni ' + urlpath.split('/')[2]);
+        const dateString = urlpath.split('/')[2];
+        domUtils.setTitle('Treeni ' + (dateString === 'tanaan' ? 'tänään' : toFinDate(new Date(dateString))));
     }
     /**
      * Hakee urlin daten {prop.params.date} treenit backendistä ja asettaa ne stateen.
@@ -52,33 +55,31 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
         if (this.datePicker && this.datePicker.pikaday.getDate().toDateString() !== newState.selectedDate.toDateString()) {
             this.datePicker.pikaday.setDate(newState.selectedDate, true /* <- silent / ei onSelectiä */);
         }
-        // Hae ensin päivän treeniä...
-        return this.workoutBackend.getDaysWorkouts(newState.selectedDate).then(
-            workouts => {
-                newState.workouts = workouts;
-                this.setState(newState);
-                return workouts.length < 1;
-            },
-            err => {
+        const newISODate = dateUtils.getISODate(newState.selectedDate);
+        // Selataan menneisyyttä -> hae vain tehtyä treeniä
+        if (newISODate < this.ISODateNow) {
+            if (this.state.programs.length) {
+                newState.programs = [];
+                this.setState({programs: newState.programs});
+            }
+            return this.fetchWorkouts(newState).then(() => this.setState(newState));
+        }
+        // Selataan tulevaisuutta -> hae vain ohjelmaa
+        if (newISODate > this.ISODateNow) {
+            if (this.state.workouts.length) {
                 newState.workouts = [];
-                this.setState(newState);
-                return false;
+                this.setState({workouts: newState.workouts});
             }
-        // ...jos ei löytynyt (ja params.date on tänään), hae ohjelmaa
-        ).then((doFetchProgram: boolean) => {
-            if (doFetchProgram && newState.selectedDate >= this.dateNow) {
-                this.programBackend.getAll('/mine?when=' + Math.floor(newState.selectedDate.getTime() / 1000)).then(
-                    programs => programs.length && this.setState({programs}),
-                    () => iocFactories.notify()('Ohjelman haku epäonnistui', 'error')
-                );
-            } else if (this.state.programs.length) {
-                this.setState({programs: []});
-            }
-        });
+            return this.fetchPrograms(newState).then(() => this.setState(newState));
+        }
+        // Tämä päivä -> hae ensin treeniä ja sen jälkeen ohjelmaa mikäli treeniä ei löytynyt
+        return this.fetchWorkouts(newState)
+            .then((doFetchPrograms: boolean) => doFetchPrograms && this.fetchPrograms(newState))
+            .then(() => this.setState(newState));
     }
     public render() {
         if (!this.state.workouts) {
-            return;
+            return <div><h2></h2></div>;
         }
         return <div class={ 'workout-view' + (!this.state.isToday ? ' not-current' : '') }>
             <h2>
@@ -97,13 +98,35 @@ class WorkoutView extends Component<{params: {date: string}}, State> {
             <button class="nice-button" onClick={ () => this.navigate('+') } title="Seuraava päivä">Seuraava &gt;</button>
         </div>;
     }
+    private fetchWorkouts(newState): Promise<boolean> {
+        return this.workoutBackend.getDaysWorkouts(newState.selectedDate).then(
+            workouts => {
+                newState.workouts = workouts;
+                return workouts.length < 1;
+            },
+            () => {
+                newState.workouts = [];
+                return false;
+            }
+        );
+    }
+    private fetchPrograms(newState): Promise<any> {
+        return this.programBackend.getAll('/mine?when=' + Math.floor(newState.selectedDate.getTime() / 1000)).then(
+            programs => {
+                newState.programs = programs;
+            },
+            () => {
+                newState.programs = [];
+            }
+        );
+    }
     /**
      * Ohjaa valittuun päivämäärään (treeni/2017-09-09 tai treeni/tänään)
      */
     private receiveDatepickerSelection(date: Date) {
         date.setHours(12);
         iocFactories.history().push('/treeni/' + (
-            !isToday(date) ? date.toISOString().split('T')[0] : 'tanaan'
+            !isToday(date) ? dateUtils.getISODate(date) : 'tanaan'
         ));
     }
     /**
