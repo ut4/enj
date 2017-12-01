@@ -55,7 +55,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
                             : <td>&nbsp;</td>
                         }
                     </tr>;
-                }) }</tbody></table> : <p>Ei liikkeitä</p>
+                }) }</tbody></table> : <p>Ei vielä liikkeitä. <a href="#/liikkeet/luo-uusi">Luo uusi liike</a></p>
             ) }
         </div>;
     }

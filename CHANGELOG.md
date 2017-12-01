@@ -7,14 +7,14 @@
 - Muuttuneet asiat:
     - Vaihdettu liikevalitsin dropdownista comboboxiksi
 
-## Viikko 47 & 48, 20.11 - 26.11, suunnitelma
+## Viikko 47 & 48, 20.11 - 3.12
 
 - Uudet toiminnallisuudet
-    - Liikkeen kloonaus
-    - Liikkeen ja liikevariantin poisto
+    - Liikkeiden ja liikevarianttien poisto
     - Treeninäkymään edellinen|seuraava -navigaatio
-    - Tuki badgeille
-- Muutettavat asiat:
-    - Kaikki lomakkeet lähtemään onSubmitilla
-    - Ohjelmatreeniliikkeiden järjestyksen muokkaus UI:hin
-    - Liikkeet-näkymä listamaan vain käyttäjän omat liikkeet
+- Muuttuneet asiat:
+    - Kaikki lomakkeet lähtee onSubmitilla onClickin sijaan
+    - Ohjelmatreenilomakkeen liikelista muutettu järjesteltäväksi
+    - Liikkeet-näkymä listaa vain relevanttia dataa
+    - document.title päivittyy näkymää vaihtaessa
+    - Notifier-viestejä muutettu vähemmän virheellisiksi
