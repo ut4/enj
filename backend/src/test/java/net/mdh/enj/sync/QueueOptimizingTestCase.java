@@ -11,7 +11,7 @@ class QueueOptimizingTestCase {
     static SyncRouteRegister syncRouteRegister;
     private final ObjectMapper objectMapper;
     static {
-        syncRouteRegister = SyncingTestUtils.getManuallyPopulatedSyncRouteRegister();
+        syncRouteRegister = SyncTestUtils.getManuallyPopulatedSyncRouteRegister();
     }
     QueueOptimizingTestCase() {
         this.objectMapper = new ObjectMapper();

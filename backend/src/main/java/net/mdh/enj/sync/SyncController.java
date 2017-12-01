@@ -9,13 +9,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ClientErrorException;
 import net.mdh.enj.HttpClient;
 import net.mdh.enj.Application;
 import net.mdh.enj.JsonMapperProvider;
 import net.mdh.enj.api.RequestContext;
 import net.mdh.enj.auth.AuthenticationFilter;
+import static net.mdh.enj.api.Responses.GenericResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.LoggerFactory;
@@ -24,9 +25,7 @@ import javax.validation.constraints.NotNull;
 import java.util.function.BiFunction;
 import javax.validation.Valid;
 import javax.inject.Inject;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Vastaa /api/sync REST-pyynnöistä
@@ -41,11 +40,7 @@ public class SyncController {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Inject
-    public SyncController(
-        HttpClient appHttpClient,
-        RequestContext requestContext,
-        SyncRouteRegister syncRouteRegister
-    ) {
+    SyncController(HttpClient appHttpClient, RequestContext requestContext, SyncRouteRegister syncRouteRegister) {
         this.appHttpClient = appHttpClient;
         this.requestContext = requestContext;
         this.syncRouteRegister = syncRouteRegister;
@@ -57,62 +52,64 @@ public class SyncController {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Set<Integer> syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
-        //
-        logger.debug("Alkuperäinen jono: ((" + syncQueue + "))");
+    public GenericResponse syncAll(@Valid @NotNull List<SyncQueueItem> syncQueue) throws JsonProcessingException {
+        logger.debug("Alkuperäinen jono: " + syncQueue);
         List<SyncQueueItem> optimized = new QueueOptimizer(syncQueue, this.syncRouteRegister).optimize(QueueOptimizer.ALL);
-        logger.debug("Optimoitu jono: ((" + optimized + "))");
+        logger.debug("Optimoitu jono: " + optimized);
+        return this.syncAll(optimized, false);
+    }
+
+    private GenericResponse syncAll(@Valid @NotNull List<SyncQueueItem> optimizedQueue, boolean isSecondAttempt) throws JsonProcessingException {
         //
-        return this.doSyncAll(syncQueue, optimized, (syncable, idsOfSuccesfullySyncedItems) -> {
+        List<SyncQueueItem> remaining = this.doSyncAll(optimizedQueue, (syncable, i) -> {
             // Suorita synkkaus HTTP:lla
             Response syncResponse;
             try {
                 syncResponse = this.callSyncableResource(syncable);
             } catch (JsonProcessingException e) {
-                // TODOLOGGER
                 return false;
             }
-            // Jos vastaus oli ok, lisää itemin id vastaustaulukkoon
+            // Status oli ok -> kerro doSyncAll-loopille että voidaan jatkaa
             if (syncResponse.getStatus() >= 200 && syncResponse.getStatus() < 300) {
                 return true;
-                // Palauta 200 & tähän mennessä onnistuneesti synkatut itemit 500
-                // vastauksen sijaan, jos 1 tai useampi itemi oli jo synkattu ennen failausta
-            } else if (idsOfSuccesfullySyncedItems.size() > 0) {
-                logger.error("Synkkaus epäonnistui: " + syncResponse.readEntity(String.class));
+            // Status ei ollut ok -> kerro doSyncAll-loopille että pysähdy & palauta jäljelle jäänyt jono
+            } else if (i > 0) {
+                logger.error("Pyyntö failasi: " + syncResponse.readEntity(String.class));
                 syncResponse.close();
                 return false;
-                // Jos heti ensimmäinen synkkays epäonnistui, palauta 500
+            // Heti ensimmäinen synkkays epäonnistui, palauta 500
             } else {
                 throw new ClientErrorException(syncResponse);
             }
         });
+        // Saatiin kaikki synkattua -> palauta ok
+        if (remaining == null) {
+            return new GenericResponse(true);
+        }
+        // Jonosta jäi osa synkkaamatta jonkin virheen takia -> rekursoi
+        if (!isSecondAttempt) {
+            return this.syncAll(remaining, true);
+        }
+        // Yritettiin synkata kaksi kertaa onnistumatta -> failaa
+        throw new RuntimeException("Synkkaus epäonnistui");
     }
 
     /**
-     * Traversoi synkkausjonon {queue}, ja kutsuu synkattavan itemin kontrolleria,
-     * tai skippaa kutsun mikäli itemi on poistettu optimointivaiheessa.
+     * Traversoi synkkausjonon {queue} passaten jokaisen itemin callbackille
+     * {f}. Jos callback palauttaa false, breikkaa loopin ja palauttaa jonon itemit
+     * jotka jäi vielä synkkaamatta, muutoin palauttaa null.
      */
-    Set<Integer> doSyncAll(
-        List<SyncQueueItem> queue,
+    List<SyncQueueItem> doSyncAll(
         List<SyncQueueItem> optimizedQueue,
-        BiFunction<SyncQueueItem, Set<Integer>, Boolean> f
+        BiFunction<SyncQueueItem, Integer, Boolean> f
     ) {
-        Set<Integer> idsOfSuccesfullySyncedItems = new HashSet<>();
-        for (SyncQueueItem syncable: queue) {
-            if (this.getIndexById(optimizedQueue, syncable.getId()) < 0) {
-                idsOfSuccesfullySyncedItems.add(syncable.getId());
+        int l = optimizedQueue.size();
+        for (int i = 0; i < l; i++) {
+            if (!f.apply(optimizedQueue.get(i), i)) {
+                return optimizedQueue.subList(i, l);
             }
         }
-        for (SyncQueueItem syncable: optimizedQueue) {
-            // Itemin synkkaus onnistui -> lisää id listaan
-            if (f.apply(syncable, idsOfSuccesfullySyncedItems)) {
-                idsOfSuccesfullySyncedItems.add(syncable.getId());
-            // Itemin synkkays epäonnistui -> älä lisää id:tä listaan & abort mission
-            } else {
-                break;
-            }
-        }
-        return idsOfSuccesfullySyncedItems;
+        return null;
     }
 
     /**
@@ -142,14 +139,5 @@ public class SyncController {
                     ? Entity.json(JsonMapperProvider.getInstance().writeValueAsString(syncableItem.getData()))
                     : null
             );
-    }
-
-    private int getIndexById(List<SyncQueueItem> list, int id) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getId() == id) {
-                return i;
-            }
-        }
-        return -1;
     }
 }

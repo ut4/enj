@@ -18,35 +18,24 @@ class SyncBackend extends RESTBackend<any> {
      *
      * @returns {Promise} -> ({number} succefulSyncCount, {any} error)
      */
-    public syncAll(): Promise<number> {
-        let syncQueue;
-        let succesfulSyncs = [];
+    public syncAll(queue?: Array<Enj.OfflineDbSchema.SyncQueueItem>): Promise<number> {
+        let syncQueue: Array<Enj.OfflineDbSchema.SyncQueueItem>;
         return (
             // 1. Hae synkattavat itemit selaintietokannasta
             this.offlineHttp.getRequestSyncQueue()
             // 2. Lähetä ne backendiin jos niitä oli
             .then(items => {
                 syncQueue = items;
-                return syncQueue.length && this.post<Array<number>>(syncQueue);
+                return syncQueue.length && this.post<Enj.API.GenericResponse>(syncQueue);
             })
-            // 3. Siivoa onnistuneesti synkatut itemit selaintietokannasta
-            .then(idsOfSuccesfullySyncedItems => {
-                // ... tai älä tee mitään jos itemeitä ei löytynyt
+            // 3. Tyhjennä selaintietokanta jos backend sai synkattua jonon
+            .then(() => {
+                // succesfulSyncCount on aina 0 jos jono oli tyhjä
                 if (syncQueue.length === 0) {
                     return 0;
                 }
-                succesfulSyncs = idsOfSuccesfullySyncedItems;
-                return this.offlineHttp.removeRequestsFromQueue(succesfulSyncs);
-            })
-            // 4. Palauta succefulSyncCount, tai heitä poikkeus jos jokin meni pieleen
-            .then(offlineDbCleanupResult => {
-                if (syncQueue.length > 0 && !offlineDbCleanupResult) {
-                    throw new Error('Selaintietokannan tyhjennys epäonnistui. Yritä uudelleen, kiitos.');
-                }
-                if (syncQueue.length > 0 && succesfulSyncs.length !== syncQueue.length) {
-                    throw new Error(`Tallennettiin ${succesfulSyncs.length}/${syncQueue.length} toimintoa. Yritä uudelleen, kiitos.`);
-                }
-                return offlineDbCleanupResult;
+                // Backend sai synkattua onnistuneesti kaikki itemit -> tyhjennä selaintietokanta
+                return this.offlineHttp.removeRequestsFromQueue(syncQueue.map(itm => itm.id));
             })
         );
     }

@@ -14,7 +14,7 @@ class ExerciseCreateView extends Component<any, {newItem: Enj.API.Exercise | Enj
         return iocFactories.userState().getUserId().then(userId => {
             this.handleMount(userId);
         }, () => {
-            iocFactories.history().replace('/kirjaudu?returnTo=/&from=401');
+            iocFactories.history().replace('/kirjaudu?returnTo=/liikkeet/luo-uusi&from=401');
         });
     }
     public render() {

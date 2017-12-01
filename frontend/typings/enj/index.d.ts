@@ -146,6 +146,9 @@ declare module Enj {
         interface LoginResponse {
             token: string;
         }
+        interface GenericResponse {
+            ok: boolean;
+        }
     }
     /**
      * Määrittelee rajapinnat Dexie/indexedDb-selaintietokannalle.

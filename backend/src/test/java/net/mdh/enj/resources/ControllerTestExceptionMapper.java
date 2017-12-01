@@ -5,7 +5,7 @@ import net.mdh.enj.api.FrontendFacingErrorException;
 import javax.ws.rs.core.Response;
 
 /**
- * Ignorettaa kaikki, paitsi JsonProsessableExceptionit.
+ * Ignorettaa kaikki, paitsi FrontendFacingErrorExceptionit.
  */
 public class ControllerTestExceptionMapper extends AbstractExceptionMapper<FrontendFacingErrorException> {
     @Override

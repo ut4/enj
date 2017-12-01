@@ -2,6 +2,7 @@ package net.mdh.enj.auth;
 
 import net.mdh.enj.validation.UUID;
 import net.mdh.enj.api.RequestContext;
+import static net.mdh.enj.api.Responses.GenericResponse;
 import net.mdh.enj.validation.AuthenticatedUserId;
 import javax.validation.constraints.NotNull;
 import javax.annotation.security.PermitAll;
@@ -80,15 +81,15 @@ public class AuthController {
      * Poistaa kirjautuneen käyttäjän kirjautumistiedot (lastLogin, currentToken)
      * tietokannasta, tai ei tee mitään jos käyttäjä ei ole kirjautunut.
      *
-     * @return Responses.Ok
+     * @return GenericResponse
      */
     @POST
     @Path("/logout")
-    public Responses.Ok logout() {
+    public GenericResponse logout() {
         if (this.requestContext.getUserId() != null) {
             this.authService.logout(this.requestContext.getUserId());
         }
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 
     /**
@@ -96,15 +97,15 @@ public class AuthController {
      * e-mailiin mikäli toiminto onnistui.
      *
      * @param credentials {"username": "foo", "email": "email", "password": "bars"}
-     * @return Responses.Ok
+     * @return GenericResponse
      */
     @POST
     @PermitAll
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Responses.Ok register(@Valid @NotNull RegistrationCredentials credentials) {
+    public GenericResponse register(@Valid @NotNull RegistrationCredentials credentials) {
         this.authService.register(credentials, ACTIVATION_EMAIL_TEMPLATE);
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 
     /**
@@ -139,9 +140,9 @@ public class AuthController {
     @PermitAll
     @Path("/request-password-reset")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Responses.Ok requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
+    public GenericResponse requestPasswordReset(@Valid @NotNull EmailCredentials credentials) {
         this.authService.handlePasswordResetRequest(credentials, PASSWORD_RESET_EMAIL_TEMPLATE);
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 
     /**
@@ -152,21 +153,21 @@ public class AuthController {
     @PermitAll
     @Path("/password")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Responses.Ok updatePassword(@Valid @NotNull NewPasswordCredentials credentials) {
+    public GenericResponse updatePassword(@Valid @NotNull NewPasswordCredentials credentials) {
         this.authService.resetPassword(credentials);
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 
     /**
      * Päivittää kirjautuneen käyttäjän tilitiedot
      *
      * @param newCredentials {"username": "emc", "email": "e@m.c", "password": "bars", "newPassword": "furs"}
-     * @return Responses.Ok
+     * @return GenericResponse
      */
     @PUT
     @Path("/credentials")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Responses.Ok updateCredentials(@Valid @NotNull UpdateCredentials newCredentials) {
+    public GenericResponse updateCredentials(@Valid @NotNull UpdateCredentials newCredentials) {
         newCredentials.setUserId(this.requestContext.getUserId());
         // Salasana menee väärin, tai tapahtuu jotain muuta outoa
         AuthUser user = this.authService.getUser(newCredentials);
@@ -174,19 +175,19 @@ public class AuthController {
             throw new BadRequestException("Invalid credentials");
         }
         this.authService.updateCredentials(user, newCredentials);
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 
     /**
      * Poistaa käyttäjän, ja kaikki siihen liittyvän datan peruuttamattomasti.
      *
-     * @return Responses.Ok
+     * @return GenericResponse
      */
     @DELETE
     @Path("/{userId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Responses.Ok deleteAllUserData(@UUID @AuthenticatedUserId @PathParam("userId") String userId) {
+    public GenericResponse deleteAllUserData(@UUID @AuthenticatedUserId @PathParam("userId") String userId) {
         this.authService.deleteAllUserData(userId);
-        return new Responses.Ok();
+        return new GenericResponse(true);
     }
 }

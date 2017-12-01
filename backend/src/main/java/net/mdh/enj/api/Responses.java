@@ -52,4 +52,11 @@ public abstract class Responses {
             this.deleteCount = deleteCount;
         }
     }
+    public static class GenericResponse {
+        public Boolean ok;
+        public GenericResponse() {}
+        public GenericResponse(Boolean ok) {
+            this.ok = ok;
+        }
+    }
 }

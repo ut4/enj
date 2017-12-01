@@ -17,7 +17,7 @@ QUnit.module('offline/OfflineEndView', hooks => {
     let authServiceStubIocFactoryOverride: sinon.SinonStub;
     let shallowSyncBackend: SyncBackend;
     let syncBackendIocFactoryOverride: sinon.SinonStub;
-    let fakeHistory: {goBack: sinon.SinonSpy};
+    let fakeHistory: {push: sinon.SinonSpy};
     let historyIocOverride: sinon.SinonStub;
     hooks.beforeEach(() => {
         userStateStub = Object.create(UserState.prototype);
@@ -28,7 +28,7 @@ QUnit.module('offline/OfflineEndView', hooks => {
         authServiceStubIocFactoryOverride = sinon.stub(iocFactories, 'authService').returns(shallowAuthService);
         shallowSyncBackend = Object.create(SyncBackend.prototype);
         syncBackendIocFactoryOverride = sinon.stub(iocFactories, 'syncBackend').returns(shallowSyncBackend);
-        fakeHistory = {goBack: sinon.spy()};
+        fakeHistory = {push: sinon.spy()};
         historyIocOverride = sinon.stub(iocFactories, 'history').returns(fakeHistory);
     });
     hooks.afterEach(() => {
@@ -57,7 +57,7 @@ QUnit.module('offline/OfflineEndView', hooks => {
             assert.ok(loginCallStub.calledOnce, 'Pitäisi kirjata käyttäjä sisään');
             assert.ok(resumeOnlineCallStub.calledAfter(loginCallStub), 'Sen jälkeen pitäisi asettaa käyttäjän tila takaisin online');
             assert.ok(backendSyncCallStub.calledAfter(loginCallStub), 'Sen jälkeen pitäisi synkata syncQueue backendiin');
-            assert.ok(fakeHistory.goBack.calledAfter(backendSyncCallStub), 'Pitäisi lopuksi sulkea näkymä');
+            assert.ok(fakeHistory.push.calledAfter(backendSyncCallStub), 'Pitäisi lopuksi sulkea näkymä');
             confirmSpy.restore();
             done();
         });

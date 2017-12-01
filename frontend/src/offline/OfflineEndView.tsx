@@ -1,6 +1,6 @@
 import Component from 'inferno-component';
 import LoginForm from 'src/auth/LoginForm';
-import Form, { CloseBehaviour } from 'src/ui/Form';
+import Form from 'src/ui/Form';
 import iocFactories from 'src/ioc';
 
 /**
@@ -16,7 +16,7 @@ class OfflineEndView extends Component<any, any> {
             <h2>Palauta online-tila</h2>
             <div>Palaa online-tilaan, ja synkronisoi offline-tilan aikana tehdyt muutokset?</div>
             <div class="info-box">Muodostathan internet-yhteyden ennen lomakkeen lähettämistä.</div>
-            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" closeBehaviour={ CloseBehaviour.WHEN_RESOLVED } isModal={ false }>
+            <Form onConfirm={ () => this.confirm() } confirmButtonShouldBeDisabled={ () => !this.state.goodToGo } confirmButtonText="Palaa online-tilaan" isModal={ false }>
                 <LoginForm onValidityChange={ newValidity => this.setState({goodToGo: newValidity}) } ref={ cmp => { this.loginForm = cmp; } }/>
             </Form>
         </div>;
@@ -43,11 +43,12 @@ class OfflineEndView extends Component<any, any> {
                     iocFactories.syncBackend().syncAll()
                     // offline.disable epäonnistui, siirtyy kohdan 4. rejectiin
                 )
-        // 4. Ok, ohjaa käyttäjä eteenpäin tai näytä virheviesti
+        // 4. Done, ohjaa käyttäjä eteenpäin tai näytä virheviesti
                 .then(() => {
                     iocFactories.notify()('Online-tila palautettu', 'success');
-                }, error => {
-                    iocFactories.notify()(error.message || 'Toiminto epäonnistui', 'error');
+                    iocFactories.history().push('/');
+                }, err => {
+                    iocFactories.notify()(err.message || 'Toiminto epäonnistui, yritä uudelleen kiitos.', 'error');
                 })
         );
     }

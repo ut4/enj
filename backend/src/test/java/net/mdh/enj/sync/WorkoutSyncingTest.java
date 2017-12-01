@@ -27,7 +27,7 @@ public class WorkoutSyncingTest extends RollbackingDBJerseyTest {
 
     @Override
     public ResourceConfig configure() {
-        return SyncTestUtils.configure(rollbackingDSFactory, WorkoutSyncingTest.this);
+        return SyncTestUtils.getResourceConfig(rollbackingDSFactory, WorkoutSyncingTest.this);
     }
 
     @Test

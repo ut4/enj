@@ -1,15 +1,16 @@
 package net.mdh.enj.sync;
 
 import net.mdh.enj.HttpClient;
+import net.mdh.enj.api.Responses;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.RollbackingDBJerseyTest;
 import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
 import org.junit.Assert;
 import org.junit.Test;
-import java.util.Arrays;
 import java.util.UUID;
 
 public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
@@ -21,14 +22,14 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
     public static void beforeClass() {
         // Täytä SyncRouteRegister manuaalisesti, jonka net.mdh.enj.SyncRouteCollector
         // normaalisti suorittaa
-        syncRouteRegister = SyncingTestUtils.getManuallyPopulatedSyncRouteRegister();
+        syncRouteRegister = SyncTestUtils.getManuallyPopulatedSyncRouteRegister();
     }
 
     @Override
     public ResourceConfig configure() {
         // Lisää kuuntelija HTTP-clientille, jossa synkkauspyyntö suoritetaan
         this.syncExecutionSpy = Mockito.mock(HttpClient.class);
-        return SyncingTestUtils.getResourceConfig(rollbackingDSFactory, syncRouteRegister, this.syncExecutionSpy);
+        return SyncTestUtils.getResourceConfig(rollbackingDSFactory, syncRouteRegister, this.syncExecutionSpy);
     }
 
     @Test
@@ -44,11 +45,7 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(200, response.getStatus());
         // Ei pitäisi synkata ensimmäistäkään itemiä
         Mockito.verify(this.syncExecutionSpy, Mockito.times(0)).target(Mockito.any(String.class));
-        Assert.assertEquals(
-            "Pitäisi palauttaa synkattavien itemeiden id:t, vaikkei kirjoittaisikaan niistä mitään tietokantaan",
-            Arrays.toString(new int[]{1, 2, 3, 4}),
-            Arrays.toString(response.readEntity(int[].class))
-        );
+        Assert.assertEquals(true, response.readEntity(new GenericType<Responses.GenericResponse>() {}).ok);
     }
 
     @Test
@@ -69,11 +66,7 @@ public class OptimizedSyncingTest extends RollbackingDBJerseyTest {
         Assert.assertEquals(200, response.getStatus());
         // Pitäisi synkata keskimmäinen itemi
         Mockito.verify(this.syncExecutionSpy, Mockito.times(1)).target(Mockito.any(String.class));
-        Assert.assertEquals(
-            "Pitäisi palauttaa synkattujen itemeiden id:t",
-            Arrays.toString(new int[]{1, 2, 3}),
-            Arrays.toString(response.readEntity(int[].class))
-        );
+        Assert.assertEquals(true, response.readEntity(new GenericType<Responses.GenericResponse>() {}).ok);
     }
 
     @Test

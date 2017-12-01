@@ -1,5 +1,6 @@
 package net.mdh.enj.sync;
 
+import net.mdh.enj.api.Responses;
 import net.mdh.enj.workout.Workout;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.TestData;
@@ -34,37 +35,21 @@ public class SyncingTest extends RollbackingDBJerseyTest {
 
     @Override
     public ResourceConfig configure() {
-        return SyncTestUtils.configure(rollbackingDSFactory, SyncingTest.this);
+        return SyncTestUtils.getResourceConfig(rollbackingDSFactory, SyncingTest.this);
     }
 
     @Test
-    public void syncAllHylkääPyynnönJosHetiEnsimmäinenSynkkaysEpäonnistuu() {
+    public void syncAllHylkääPyynnönJosIteminSynkkaysEpäonnistuu() {
         //
         Response response = this.newPostRequest("sync", this.makeSyncQueueWithBogusData());
-        // Assertoi että yritti synkata ensimmäisen itemin, ja repi sen jälkeen pelihousunsa
-        Assert.assertNotEquals(200, response.getStatus());
+        // Hylkäsikö pyynnön (Bad Request)?
+        Assert.assertEquals(400, response.getStatus());
         List<ValidationError> errors = this.getValidationErrors(response);
         Assert.assertEquals("WorkoutController.insert.arg0.start", errors.get(0).getPath());
     }
 
     @Test
-    public void syncAllPalauttaaOnnistuneestiSynkattujenItemeidenIdtFailauksestaHuolimatta() {
-        // Simuloi tilanne, jossa synkkaujonon toinen itemi failaa
-        List<SyncQueueItem> queue = this.makeSyncQueueWithCoupleOfItems();
-        queue.get(0).setData(TestData.getSomeWorkoutData(true));
-        Response response = this.newPostRequest("sync", queue);
-        // Assertoi että ei repinyt pelihousujansa, vaan palautti onnistuneesti synkattujen itemeiden id:t
-        Assert.assertEquals("Ei pitäisi heittää erroria, koska 1. itemin synkkaus onnistui", 200, response.getStatus());
-        List<Integer> responseBody = response.readEntity(new GenericType<List<Integer>>() {});
-        Assert.assertArrayEquals(
-            "Pitäisi palauttaa onnistuneesti synkattujen itemeiden id:t",
-            new Integer[]{queue.get(0).getId()},
-            responseBody.toArray(new Integer[1])
-        );
-    }
-
-    @Test
-    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaOnnistuneestiSynkattujenItemienIdt() {
+    public void syncAllSynkkaaJokaisenQueueIteminJaPalauttaaGenericResponsen() {
         // Luo testidata
         List<SyncQueueItem> testSyncQueue = this.makeTestSyncQueue();
         Map testWorkoutSyncData = (Map) testSyncQueue.get(0).getData();
@@ -73,12 +58,8 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         Response response = this.newPostRequest("sync", testSyncQueue);
         // Testaa että synkkasi jokaisen itemin
         Assert.assertEquals(200, response.getStatus());
-        List<Integer> responseBody = response.readEntity(new GenericType<List<Integer>>() {});
-        Assert.assertArrayEquals(
-            "Pitäisi palauttaa onnistuneesti synkattujen itemeiden id:t",
-            new Integer[]{testSyncQueue.get(0).getId(), testSyncQueue.get(1).getId()},
-            responseBody.toArray(new Integer[2])
-        );
+        Responses.GenericResponse responseBody = response.readEntity(new GenericType<Responses.GenericResponse>() {});
+        Assert.assertEquals(true, responseBody.ok);
         //
         Workout syncedWorkout = (Workout) utils.selectOneWhere(
             "SELECT id as i, `start` as s FROM workout WHERE id = :id",
@@ -142,21 +123,6 @@ public class SyncingTest extends RollbackingDBJerseyTest {
         testSyncQueue.add(testWorkoutSyncItem);
         testSyncQueue.add(testWorkoutExerciseSyncItem);
         return testSyncQueue;
-    }
-
-    private List<SyncQueueItem> makeSyncQueueWithCoupleOfItems() {
-        SyncQueueItem testWorkoutSyncItem1 = new SyncQueueItem();
-        testWorkoutSyncItem1.setId(1);
-        testWorkoutSyncItem1.setRoute(TestData.workoutInsertRoute);
-        //
-        SyncQueueItem testWorkoutSyncItem2 = new SyncQueueItem();
-        testWorkoutSyncItem2.setId(2);
-        testWorkoutSyncItem2.setRoute(new Route("workout/foo", "DELETE"));
-        //
-        List<SyncQueueItem> queue = new ArrayList<>();
-        queue.add(testWorkoutSyncItem1);
-        queue.add(testWorkoutSyncItem2);
-        return queue;
     }
 
     private List<SyncQueueItem> makeSyncQueueWithBogusData() {
