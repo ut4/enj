@@ -5,7 +5,6 @@ import net.mdh.enj.program.Program;
 import net.mdh.enj.exercise.Exercise;
 import net.mdh.enj.resources.TestData;
 import net.mdh.enj.resources.SimpleMappers;
-import net.mdh.enj.resources.MockHashingProvider;
 import static net.mdh.enj.exercise.ExerciseControllerTest.makeNewExerciseEntity;
 import static net.mdh.enj.exercise.ExerciseControllerTest.makeNewExerciseVariantEntity;
 import static net.mdh.enj.program.ProgramControllerTestCase.makeNewProgramEntity;
@@ -16,95 +15,15 @@ import static net.mdh.enj.workout.WorkoutExerciseControllerHandlersTest.makeNewW
 import static net.mdh.enj.workout.WorkoutExerciseSetControllerHandlersTest.makeNewWorkoutExerciseSetEntity;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import io.jsonwebtoken.impl.TextCodec;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.junit.Assert;
 import org.junit.Test;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 
 /**
- * Testaa AuthControllerin reitit /register, ja /activate.
+ * Testaa AuthControllerin reitit /activate ja DELETE /{userId}.
  */
 public class TestUserIndependentAuthControllerTest extends AuthControllerTestCase {
-
-    @Test
-    public void POSTRegisterLisääKäyttäjänTietokantaanJaLähettääAktivointiEmailin() {
-        RegistrationCredentials credentials = this.getValidRegistrationCredentials();
-        AuthUser expectedNewUser = new AuthUser();
-        expectedNewUser.setUsername(credentials.getUsername());
-        expectedNewUser.setEmail(credentials.getEmail());
-        expectedNewUser.setCreatedAt(System.currentTimeMillis() / 1000L);
-        expectedNewUser.setPasswordHash(MockHashingProvider.genMockHash(credentials.getPassword()));
-        //
-        Mockito.when(mockMailer.sendMail(
-            Mockito.eq(expectedNewUser.getEmail()),
-            Mockito.eq(expectedNewUser.getUsername()),
-            Mockito.anyString(),
-            Mockito.anyString()
-        )).thenReturn(true);
-        String mockActivationKey = "fake-random-chars";
-        Mockito.when(mockTokenService.generateRandomString(AuthService.ACTIVATION_KEY_LENGTH))
-            .thenReturn(mockActivationKey);
-        // Lähetä register-pyyntö
-        Response response = this.newPostRequest("auth/register", credentials);
-        Assert.assertEquals(200, response.getStatus());
-        // Lisäsikö käyttäjän?
-        AuthUser actualUser = this.getUserFromDb(expectedNewUser, true);
-        Assert.assertEquals(expectedNewUser.getUsername(), actualUser.getUsername());
-        Assert.assertTrue(actualUser.getCreatedAt() >= expectedNewUser.getCreatedAt());
-        Assert.assertEquals(expectedNewUser.getEmail(), actualUser.getEmail());
-        Assert.assertEquals(expectedNewUser.getPasswordHash(), actualUser.getPasswordHash());
-        Assert.assertNull(actualUser.getLastLogin());
-        Assert.assertNull(actualUser.getCurrentToken());
-        Assert.assertEquals(0, actualUser.getIsActivated());
-        Assert.assertEquals(mockActivationKey, actualUser.getActivationKey());
-        // Lähettikö mailin?
-        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(mockMailer, Mockito.times(1)).sendMail(
-            Mockito.eq(credentials.getEmail()),
-            Mockito.eq(credentials.getUsername()),
-            Mockito.anyString(), // subject
-            captor.capture()     // content
-        );
-        Assert.assertTrue("Email pitäis alkaa näin",
-            captor.getValue().startsWith("Moi " + credentials.getUsername() +
-                ",<br><br>kiitos rekisteröitymisestä"
-            )
-        );
-        Assert.assertTrue(
-            "Email pitäisi sisältää tilin aktivointilinkki",
-            captor.getValue().contains(String.format(
-                "%s/auth/activate?key=%s&email=%s",
-                appConfig.appPublicBackendUrl,
-                mockActivationKey,
-                (TextCodec.BASE64URL.encode(credentials.getEmail()))
-            ))
-        );
-    }
-
-    @Test
-    public void POSTRegisterEiKirjoitaTietokantaanMitäänJosEmailinLähetysEpäonnistuu() {
-        String username = "bos";
-        // Tilanne, jossa mailer epäonnistuu
-        Mockito.when(mockMailer.sendMail(
-            Mockito.anyString(), // toAddress
-            Mockito.anyString(), // toPersonal
-            Mockito.anyString(), // subject
-            Mockito.anyString()  // content
-        )).thenReturn(false);
-        // Lähetä register-pyyntö
-        Response response = this.newPostRequest("auth/register", this.getValidRegistrationCredentials(username));
-        // Failasiko?
-        Assert.assertEquals(500, response.getStatus());
-        Assert.assertTrue(response.readEntity(String.class).contains(AuthService.ERRORNAME_MAIL_FAILURE));
-        // Peruuttiko käyttäjän lisäyksen?
-        AuthUser notExpectedUser = new AuthUser();
-        notExpectedUser.setUsername(username);
-        Assert.assertNull("Ei pitäisi kirjoittaa tietokantaan mitään",
-            this.getUserFromDb(notExpectedUser, true)
-        );
-    }
 
     @Test
     public void GETActivatePäivittääKäyttäjänAktiiviseksiJaTulostaaViestin() {

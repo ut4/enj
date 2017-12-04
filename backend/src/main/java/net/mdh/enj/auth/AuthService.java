@@ -114,7 +114,9 @@ public class AuthService {
      * @throws FrontendFacingErrorException Jos emailin lähetys, tai tietojen kirjoitus tietokantaan epäonnistuu.
      */
     void register(RegistrationCredentials credentials, String successEmailTemplate) throws FrontendFacingErrorException {
-        // 1. Lisää käyttäjä
+        // 1. Tsekkaa onko email & käyttäjänimi vapaana
+        this.throwIfCredentialAlreadyTaken(credentials, new AuthUser());
+        // 2. Luo käyttäjä
         AuthUser user = new AuthUser();
         user.setUsername(credentials.getUsername());
         user.setEmail(credentials.getEmail());
@@ -122,6 +124,7 @@ public class AuthService {
         user.setPasswordHash(this.hashingProvider.hash(credentials.getPassword()));
         user.setIsActivated(0);
         user.setActivationKey(this.tokenService.generateRandomString(ACTIVATION_KEY_LENGTH));
+        // 3. Insertoi
         this.authUserRepository.runInTransaction(() -> {
             if (this.authUserRepository.insert(user) < 1) {
                 throw new IneffectualOperationException("Uuden käyttäjän kirjoittaminen tietokantaan epäonnistui");
@@ -269,18 +272,8 @@ public class AuthService {
      * vaihtui.
      */
     void updateCredentials(AuthUser user, UpdateCredentials newCredentials) {
-        // Tsekkaa onko vaihtunut käyttäjänimi jo käytössä
-        AuthUser reserved = this.getReservedCredentials(newCredentials, user);
-        if (reserved != null) {
-            List<String> errors = new ArrayList<>();
-            if (reserved.getUsername().equals(newCredentials.getUsername())) {
-                errors.add(ERRORNAME_RESERVED_USERNAME);
-            }
-            if (reserved.getEmail().equals(newCredentials.getEmail())) {
-                errors.add(ERRORNAME_RESERVED_EMAIL);
-            }
-            throw new FrontendFacingErrorException(String.join("\",\"", errors), 400);
-        }
+        // Tsekkaa onko vaihtunut käyttäjänimi tai email jo käytössä
+        this.throwIfCredentialAlreadyTaken(newCredentials, user);
         // Aseta käyttäjänimi & email aina
         List<AuthUser.UpdateColumn> cols = new ArrayList<>();
         user.setUsername(newCredentials.getUsername());
@@ -362,7 +355,7 @@ public class AuthService {
      * newCredentials-arvo, ja se eroaa currentCredentials-arvosta.
      */
     private AuthUser getReservedCredentials(
-        UpdateCredentials newCredentials,
+        RegistrationCredentials newCredentials,
         AuthUser currentCredentials
     ) {
         SelectFilters filters = new SelectFilters() {
@@ -382,6 +375,20 @@ public class AuthService {
         }
         filters.setIsActivated(null);
         return this.authUserRepository.selectOne(filters);
+    }
+
+    private void throwIfCredentialAlreadyTaken(RegistrationCredentials newCredentials, AuthUser existingUser) {
+        AuthUser reserved = this.getReservedCredentials(newCredentials, existingUser);
+        if (reserved != null) {
+            List<String> errors = new ArrayList<>();
+            if (reserved.getUsername().equals(newCredentials.getUsername())) {
+                errors.add(ERRORNAME_RESERVED_USERNAME);
+            }
+            if (reserved.getEmail().equals(newCredentials.getEmail())) {
+                errors.add(ERRORNAME_RESERVED_EMAIL);
+            }
+            throw new FrontendFacingErrorException(String.join("\",\"", errors), 400);
+        }
     }
 
     // -------------------------------------------------------------------------
