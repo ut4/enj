@@ -20,6 +20,7 @@ asyncBoot.then(() => render(
         <Route component={ Layout }>
             <Route path="/" component={ views.HomeView } onEnter={ () => domUtils.setTitle('Dashboard') }/>
             <Route path="badges" component={ views.BadgesView } onEnter={ () => domUtils.setTitle('Saavutukset') }/>
+            <Route path="help" component={ views.HelpView } onEnter={ () => domUtils.setTitle('Huoli-, ja murhesivu') }/>
 
             <Route path="treeni/:date" component={ views.WorkoutView } onEnter={ () => views.WorkoutView.setTitle(history.location.pathname) }/>
             <Route path="ohjelmat" component={ views.ProgramView } onEnter={ () => domUtils.setTitle('Ohjelmat') }/>

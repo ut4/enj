@@ -40,6 +40,7 @@ class UserMenu extends Component<any, any> {
                     <li><a href="#/aloita-offline">Go offline</a></li>
                 ] }
             </ul>
+            <a href="#/help"></a>
         </nav>;
     }
     private logout(e) {

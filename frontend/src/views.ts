@@ -1,5 +1,6 @@
 import HomeView                  from 'src/home/HomeView';
 import BadgesView                from 'src/home/BadgesView';
+import HelpView                  from 'src/home/HelpView';
 import WorkoutView               from 'src/workout/WorkoutView';
 import ProgramView               from 'src/program/ProgramView';
 import ProgramCreateView         from 'src/program/ProgramCreateView';
@@ -26,6 +27,7 @@ import OfflineEndView            from 'src/offline/OfflineEndView';
 export {
     HomeView,
     BadgesView,
+    HelpView,
 
     WorkoutView,
     ProgramView,

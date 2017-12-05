@@ -839,6 +839,7 @@ header nav a {
     padding: 4px 4px 0;
     max-width: 420px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
     display: none;
 }
 .open #user-menu {
@@ -852,6 +853,12 @@ header nav a {
 }
 #user-menu a {
     padding: 6px 0 8px;
+}
+#user-menu > a {
+    background: no-repeat center center/12px url(icon-sprite.svg#question);
+    position: absolute;
+    right: 0;
+    top: 2px;
 }
 .tab-menu {
     margin-bottom: 30px;
