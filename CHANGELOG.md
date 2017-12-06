@@ -18,3 +18,10 @@
     - Liikkeet-näkymä listaa vain relevanttia dataa
     - document.title päivittyy näkymää vaihtaessa
     - Notifier-viestejä muutettu vähemmän virheellisiksi
+
+## Viikko 49 ... 52, 4.12 - 31.12
+
+- Uudet toiminnallisuudet
+    - Help-näkymä
+- Muuttuneet asiat
+    - Rekisteröintisivu ilmoittaa, jos nimim. tai email on jo käytössä
