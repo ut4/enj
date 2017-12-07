@@ -159,14 +159,7 @@ const formulae = {
      * Palauttaa voimatason tekstimuodossa (Novice, Advanced jne.).
      */
     strengthLevel(lift: keyof Enj.powerLift, oneRepMax: number, bodyWeight: number, isMale: boolean): string {
-        const levels = [
-            'Subpar',
-            'Untrained',
-            'Novice',
-            'Intermediate',
-            'Advanced',
-            'Elite'
-        ];
+        const levels = this.getLevelNames();
         const table = this.getStrengthLevelTable(lift, isMale);
         if (bodyWeight < table[0][0]) {
             return levels[0];
@@ -178,6 +171,19 @@ const formulae = {
         let col = 0;
         while (table[row][col + 1] && oneRepMax >= table[row][col + 1]) col++;
         return levels[col];
+    },
+    getStrengthStandards(lift: keyof Enj.powerLift, bodyWeight: number, isMale: boolean): Array<number> {
+        const table = this.getStrengthLevelTable(lift, isMale);
+        if (bodyWeight < table[0][0]) {
+            return table[0];
+        }
+        // rivin etsintä painon mukaan
+        let row = 0;
+        while (table[row + 1] && bodyWeight >= table[row + 1][0]) row++;
+        return table[row];
+    },
+    getLevelNames(): Array<string> {
+        return ['Subpar', 'Untrained', 'Novice', 'Intermed.', 'Advanced', 'Elite'];
     }
 };
 

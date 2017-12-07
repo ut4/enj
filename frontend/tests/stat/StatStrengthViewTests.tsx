@@ -45,13 +45,14 @@ QUnit.module('stat/StatStrengthView', hooks => {
             const [total, wilks] = totalScores;
             const expectedTotal = getExpectedTotal();
             assert.equal(total.textContent, expectedTotal, 'Yhteistulos pitäisi olla tämä');
-            assert.equal(wilks.textContent, getExpectedWilks(testUser.bodyWeight, true), 'Wilks pitäisi olla tämä');
-            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser));
-            //
             const powerLiftDetails = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(powerLiftDetails[0].textContent, getExpectedPowerLiftDetails(testBestSets[1]));
             assert.equal(powerLiftDetails[1].textContent, getExpectedPowerLiftDetails(testBestSets[0]));
             assert.equal(powerLiftDetails[2].textContent, getExpectedPowerLiftDetails(testBestSets[3]));
+            //
+            assert.equal(wilks.textContent, getExpectedWilks(testUser.bodyWeight, true), 'Wilks pitäisi olla tämä');
+            //
+            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser));
             done();
         });
     });
@@ -68,16 +69,17 @@ QUnit.module('stat/StatStrengthView', hooks => {
             const totalScores = itu.scryRenderedDOMElementsWithClass(rendered, 'score');
             const [total, wilks] = totalScores;
             assert.equal(total.textContent, getExpectedTotal([0]), 'Yhteistulos pitäisi olla tämä');
-            assert.equal(wilks.textContent, getExpectedWilks(0, true, [0]), 'Wilks pitäisi olla tämä');
-            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser, {
-                squat: '-',
-                deadlift: '-'
-            }));
-            //
             const [squatDetails, benchDetails, deadliftDetails] = itu.scryRenderedDOMElementsWithTag(rendered, 'tr');
             assert.equal(squatDetails.textContent, testBestSets[1].exerciseName+'--');
             assert.equal(benchDetails.textContent, getExpectedPowerLiftDetails(testBestSets[0]));
             assert.equal(deadliftDetails.textContent, testBestSets[3].exerciseName+'--');
+            //
+            assert.equal(wilks.textContent, getExpectedWilks(0, true, [0]), 'Wilks pitäisi olla tämä');
+            //
+            assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser, {
+                squat: '',
+                deadlift: ''
+            }));
             done();
         });
     });
@@ -160,9 +162,9 @@ QUnit.module('stat/StatStrengthView', hooks => {
     });
     function getExpectedStrengthLevelsContent(testUser: Enj.API.User, expected = {} as any): string {
         return (
-            'Jalkakyykky ' + (expected.squat || getExpectedStrengthLevel('squat', testBestSets[1], testUser)) +
-            'Penkkipunnerrus ' + (expected.bench || getExpectedStrengthLevel('bench',testBestSets[0], testUser)) +
-            'Maastaveto ' + (expected.deadlift || getExpectedStrengthLevel('deadlift', testBestSets[3], testUser))
+            'Jalkakyykky ' + (typeof expected.squat === 'string' ? expected.squat : getExpectedStrengthLevel('squat', testBestSets[1], testUser)) +
+            'Penkkipunnerrus ' + (typeof expected.bench === 'string' ? expected.bench : getExpectedStrengthLevel('bench',testBestSets[0], testUser)) +
+            'Maastaveto ' + (typeof expected.deadlift === 'string' ? expected.deadlift : getExpectedStrengthLevel('deadlift', testBestSets[3], testUser))
         );
     }
     function assertNewScores(assert, rendered, testUser: Enj.API.User, and?: Function) {

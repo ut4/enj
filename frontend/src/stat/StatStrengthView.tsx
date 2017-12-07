@@ -95,9 +95,9 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             { this.state.userData && [
                 <h2>Tasosi on</h2>,
                 <ul>
-                    <li><span>Jalkakyykky</span> <div class="score">{ this.state.scores.levels.squat }</div></li>
-                    <li><span>Penkkipunnerrus</span> <div class="score">{ this.state.scores.levels.bench }</div></li>
-                    <li><span>Maastaveto</span> <div class="score">{ this.state.scores.levels.deadlift }</div></li>
+                    <li><h3>Jalkakyykky</h3> { this.getLevelScale('squat', this.state.scores.levels.squat) }</li>
+                    <li><h3>Penkkipunnerrus</h3> { this.getLevelScale('bench', this.state.scores.levels.bench) }</li>
+                    <li><h3>Maastaveto</h3> { this.getLevelScale('deadlift', this.state.scores.levels.deadlift) }</li>
                 </ul>
             ].concat(
                 this.state.scores.total
@@ -105,6 +105,36 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
                     : []
             ) }
         </div>;
+    }
+    private getLevelScale(lift: keyof Enj.powerLift, userLevelName: string) {
+        const standards = formulae.getStrengthStandards(lift, this.state.userData.bodyWeight, this.state.userData.isMale !== 0);
+        const levelNames = formulae.getLevelNames();
+        const oneRepMax = this.state.scores.oneRepMaxes[lift];
+        const isBelowChart = userLevelName === levelNames[0];
+        const levelIndex = levelNames.indexOf(userLevelName);
+        const halfWay = levelNames.length / 2;
+        let progress;
+        // Alle Untrained
+        if (isBelowChart) {
+            progress = -(100 - oneRepMax / standards[1] * 100);
+            progress = progress > -30 ? progress : -30;
+        // Elite tai enemmän
+        } else if (userLevelName === levelNames[levelNames.length - 1]) {
+            const eliteWeight = standards[standards.length - 1];
+            progress = (oneRepMax - eliteWeight) / eliteWeight * 100;
+            progress = progress <= 100 ? progress : 100;
+        // Siltä väliltä
+        } else {
+            progress = (oneRepMax - standards[levelIndex]) / (standards[levelIndex + 1] - standards[levelIndex]) * 100;
+        }
+        return <div class="level-scale">{ levelNames.slice(1).map((levelName, i) =>
+            <div data-text={ levelName + ' ' + standards[i + 1] + 'kg' }>{
+                ((isBelowChart && !i) || levelName === userLevelName) && [
+                    <span class="triangle" style={ `left: ${progress}%` }></span>,
+                    <span class={ 'score small' + (levelIndex <= halfWay ? (levelIndex > 0 ? '' : ' below-0') : ' over-half') }>{ userLevelName }</span>
+                ]
+            }</div>
+        ) }</div>;
     }
     private makeBestLiftDetailEls(lift: keyof Enj.powerLift) {
         return this.state.scores.oneRepMaxes[lift] ? [
@@ -224,6 +254,7 @@ class StrengthLevelTable extends Component<
         const table = this.state.tableIsVisible
             ? formulae.getStrengthLevelTable(this.state.lift, this.state.settingsIsMale)
             : null;
+        const levelNames = formulae.getLevelNames();
         return <div>
             <button title="Näytä taulukko" class={ 'icon-button arrow-dark end ' + (this.state.tableIsVisible ? 'up' : 'down') } onClick={ () => this.setState({tableIsVisible: !this.state.tableIsVisible}) }></button>
             { this.state.tableIsVisible && <div>
@@ -238,22 +269,19 @@ class StrengthLevelTable extends Component<
                 <table id="score-lookup-table" class="striped responsive tight end"><thead>
                     <tr>
                         <th>Paino <span class="text-small">(kg)</span></th>
-                        <th>Subpar</th>
-                        <th>Untrained</th>
-                        <th>Novice</th>
-                        <th>Intermed.</th>
-                        <th>Advanced</th>
-                        <th>Elite</th>
+                        { levelNames.map(levelName =>
+                            <th>{ levelName }</th>
+                        ) }
                     </tr>
                 </thead><tbody>{ table.map((row, i) =>
                     <tr>
                         <td data-th="Paino (kg)">{ table[i+1] ? (Math.round(row[0]) + '-' + Math.round(table[i+1][0])) : row[0] + '+' }</td>
-                        <td data-th="Subpar">&lt;{ row[1] }</td>
-                        <td data-th="Untrained">{ row[1] }</td>
-                        <td data-th="Novice">{ row[2] }</td>
-                        <td data-th="Intermed.">{ row[3] }</td>
-                        <td data-th="Advanced">{ row[4] }</td>
-                        <td data-th="Elite">{ row[5] }</td>
+                        <td data-th={ levelNames[0] }>&lt;{ row[1] }</td>
+                        <td data-th={ levelNames[1] }>{ row[1] }</td>
+                        <td data-th={ levelNames[2] }>{ row[2] }</td>
+                        <td data-th={ levelNames[3] }>{ row[3] }</td>
+                        <td data-th={ levelNames[4] }>{ row[4] }</td>
+                        <td data-th={ levelNames[5] }>{ row[5] }</td>
                     </tr>
                 ) }</tbody></table>
                 { this.state.lift === 'squat' &&

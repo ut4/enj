@@ -20,7 +20,7 @@ QUnit.module('stat/StatBackend', hooks => {
         assert.equal(formulae.strengthLevel('squat',68.03,145.15,true), 'Subpar');
         assert.equal(formulae.strengthLevel('squat',68.03,14515,true), 'Subpar');
         assert.equal(formulae.strengthLevel('squat',68.04,145.15,true), 'Untrained');
-        assert.equal(formulae.strengthLevel('squat',149.69,145.15,true), 'Intermediate');
+        assert.equal(formulae.strengthLevel('squat',149.69,145.15,true), 'Intermed.');
         assert.equal(formulae.strengthLevel('squat',269.89,145.15,true), 'Elite');
         assert.equal(formulae.strengthLevel('squat',269.89,200,true), 'Elite');
     });
