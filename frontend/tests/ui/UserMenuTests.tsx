@@ -41,8 +41,9 @@ QUnit.module('ui/UserMenu', hooks => {
         });
         function assertOnlyLogInItemIsVisible() {
             const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
-            assert.equal(visibleUserMenuListItems.length, 1);
+            assert.equal(visibleUserMenuListItems.length, 2);
             assert.equal(visibleUserMenuListItems[0].innerHTML, 'Kirjaudu sisään');
+            assert.equal(visibleUserMenuListItems[1].getAttribute('href'), '#/help');
         }
     });
     QUnit.test('mount näyttää vain "go-online"-linkin, jos käyttäjä offline', assert => {
@@ -57,8 +58,9 @@ QUnit.module('ui/UserMenu', hooks => {
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
-            assert.equal(visibleUserMenuListItems.length, 1);
+            assert.equal(visibleUserMenuListItems.length, 2);
             assert.equal(visibleUserMenuListItems[0].innerHTML, 'Go online');
+            assert.equal(visibleUserMenuListItems[1].getAttribute('href'), '#/help');
             done();
         });
     });
@@ -73,10 +75,11 @@ QUnit.module('ui/UserMenu', hooks => {
         const done = assert.async();
         onMountUserStateRead.firstCall.returnValue.then(() => {
             const visibleUserMenuListItems = getVisibleUserMenuLinks(rendered);
-            assert.equal(visibleUserMenuListItems.length, 3);
-            assert.ok(visibleUserMenuListItems.some(el => /Profiili/.test(el.innerHTML)));
-            assert.ok(visibleUserMenuListItems.some(el => /Kirjaudu ulos/.test(el.innerHTML)));
-            assert.ok(visibleUserMenuListItems.some(el => /Go offline/.test(el.innerHTML)));
+            assert.equal(visibleUserMenuListItems.length, 4);
+            assert.equal(visibleUserMenuListItems[0].innerHTML, 'Profiili');
+            assert.equal(visibleUserMenuListItems[1].innerHTML, 'Kirjaudu ulos');
+            assert.equal(visibleUserMenuListItems[2].innerHTML, 'Go offline');
+            assert.equal(visibleUserMenuListItems[3].getAttribute('href'), '#/help');
             done();
         });
     });

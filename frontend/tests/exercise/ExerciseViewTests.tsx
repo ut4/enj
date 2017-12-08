@@ -7,7 +7,7 @@ import ExerciseBackend from 'src/exercise/ExerciseBackend';
 import ExerciseView from 'src/exercise/ExerciseView';
 import iocFactories from 'src/ioc';
 import UserState from 'src/user/UserState';
-const emptyMessageRegExp: RegExp = /Ei liikkeitä/;
+const emptyMessageRegExp: RegExp = /Ei vielä liikkeitä/;
 const someUserId = 'uuid34';
 
 QUnit.module('exercise/ExerciseView', hooks => {
@@ -16,12 +16,14 @@ QUnit.module('exercise/ExerciseView', hooks => {
     let exerciseBackendIocOverride: sinon.SinonStub;
     let shallowUserState: UserState;
     let userStateIocOverride: sinon.SinonStub;
+    let loadSpy: sinon.SinonSpy;
     hooks.beforeEach(() => {
         shallowExerciseBackend = Object.create(ExerciseBackend.prototype);
         exerciseBackendIocOverride = sinon.stub(iocFactories, 'exerciseBackend').returns(shallowExerciseBackend);
         shallowUserState = Object.create(UserState.prototype);
         sinon.stub(shallowUserState, 'getUserId').returns(Promise.resolve('u'));
         userStateIocOverride = sinon.stub(iocFactories, 'userState').returns(shallowUserState);
+        loadSpy = sinon.spy(ExerciseView.prototype, 'componentWillMount');
         someTestExercises = [
             {id:'uuid1', name: 'aaa', variants: [], userId: 'u'},
             {id:'uuid2', name: 'bbb', variants: [
@@ -37,15 +39,15 @@ QUnit.module('exercise/ExerciseView', hooks => {
     hooks.afterEach(() => {
         exerciseBackendIocOverride.restore();
         userStateIocOverride.restore();
+        loadSpy.restore();
     });
     function renderView(assert, exercises: Array<Enj.API.Exercise>, then: Function) {
-        const exercisesFetch = sinon.stub(shallowExerciseBackend, 'getAll')
-            .returns(Promise.resolve(exercises));
+        sinon.stub(shallowExerciseBackend, 'getAll').returns(Promise.resolve(exercises));
         //
         const rendered = itu.renderIntoDocument(<div><Modal/><ExerciseView/></div>);
         //
         const done = assert.async();
-        exercisesFetch.firstCall.returnValue.then(()=>{}).then(() => {
+        loadSpy.firstCall.returnValue.then(() => {
             const promise = then(rendered);
             !promise ? done() : promise.then(() => done());
         });

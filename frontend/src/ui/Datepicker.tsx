@@ -48,7 +48,14 @@ class Datepicker extends Component<Props, {showTimeToggle: boolean; dateTableIsV
             showWeekNumber: true,
             showTime: this.props.showTime === true,
             autoClose: this.props.autoClose === true,
-            firstDay: 1
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Edellinen kuukausi',
+                nextMonth    : 'Seuraava kuukausi',
+                months       : ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu','Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'],
+                weekdays     : ['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'],
+                weekdaysShort: ['Su','Ma','Ti','Ke','To','Pe','La']
+            }
         } as any;
         if (settings.showTime) {
             this.setState({dateTableIsVisible: false});

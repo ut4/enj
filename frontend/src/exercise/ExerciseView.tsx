@@ -16,7 +16,7 @@ class ExerciseView extends Component<any, {exercises: Array<Enj.API.Exercise>}> 
     }
     public componentWillMount() {
         let allExercises: Array<Enj.API.Exercise>;
-        iocFactories.exerciseBackend().getAll()
+        return iocFactories.exerciseBackend().getAll()
             .then(exercises => {
                 allExercises = exercises;
                 return iocFactories.userState().getUserId();

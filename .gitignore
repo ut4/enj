@@ -4,6 +4,7 @@
 *lint.json
 nbproject
 *.iml
+npm-debug.log
 
 frontend/node_modules
 frontend/src/settings.ts

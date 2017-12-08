@@ -1001,16 +1001,19 @@ footer a {
 .line-chart:not(.icon-button) { height: 300px; margin-left: -12px; }
 
 
+.stats-view li:not(:first-of-type) h3 {
+    margin: 60px 0 0;
+}
 .level-scale {
     display: table;
     width: 95%;
-    border-bottom: 4px solid #676269;
+    border-bottom: 2px solid #a8a1ab;
     margin: 55px 0 50px 0;
     table-layout: fixed;
     padding-left: 5%;
 }
 .level-scale > div {
-    border-left: 2px solid #676269;
+    border-left: 2px solid #a8a1ab;
     height: 7px;
     display: table-cell;
     position: relative;
