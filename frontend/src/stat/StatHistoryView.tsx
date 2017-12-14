@@ -128,7 +128,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             chartPadding: {top: 20, right: 0, bottom: 0, left: 0},
             plugins: [Chartist.plugins.ctPointLabels({
                 textAnchor: 'middle',
-                labelInterpolationFnc: weight => weight + 'kg'
+                labelInterpolationFnc: weight => (weight || 0) + 'kg'
             })],
             axisX: {
                 labelInterpolationFnc: unixTime => {

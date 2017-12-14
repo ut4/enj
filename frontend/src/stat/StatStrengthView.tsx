@@ -95,9 +95,9 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             { this.state.userData && [
                 <h2>Tasosi on</h2>,
                 <ul>
-                    <li><h3>Jalkakyykky</h3> { this.getLevelScale('squat', this.state.scores.levels.squat) }</li>
-                    <li><h3>Penkkipunnerrus</h3> { this.getLevelScale('bench', this.state.scores.levels.bench) }</li>
-                    <li><h3>Maastaveto</h3> { this.getLevelScale('deadlift', this.state.scores.levels.deadlift) }</li>
+                    <li><h3>Jalkakyykky</h3> { this.makeLevelScaleEl('squat', this.state.scores.levels.squat) }</li>
+                    <li><h3>Penkkipunnerrus</h3> { this.makeLevelScaleEl('bench', this.state.scores.levels.bench) }</li>
+                    <li><h3>Maastaveto</h3> { this.makeLevelScaleEl('deadlift', this.state.scores.levels.deadlift) }</li>
                 </ul>
             ].concat(
                 this.state.scores.total
@@ -106,16 +106,20 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             ) }
         </div>;
     }
-    private getLevelScale(lift: keyof Enj.powerLift, userLevelName: string) {
+    private makeLevelScaleEl(lift: keyof Enj.powerLift, userLevelName: string) {
         const standards = formulae.getStrengthStandards(lift, this.state.userData.bodyWeight, this.state.userData.isMale !== 0);
         const levelNames = formulae.getLevelNames();
         const oneRepMax = this.state.scores.oneRepMaxes[lift];
         const isBelowChart = userLevelName === levelNames[0];
+        const hasPerformedThisLift = userLevelName !== '-';
         const levelIndex = levelNames.indexOf(userLevelName);
         const halfWay = levelNames.length / 2;
         let progress;
+        // Ei suorittanut liikettä
+        if (!hasPerformedThisLift) {
+            progress = -30;
         // Alle Untrained
-        if (isBelowChart) {
+        } else if (isBelowChart) {
             progress = -(100 - oneRepMax / standards[1] * 100);
             progress = progress > -30 ? progress : -30;
         // Elite tai enemmän
@@ -124,13 +128,13 @@ class StatsStrengthView extends Component<{bestSets: Array<Enj.API.BestSet>}, St
             progress = (oneRepMax - eliteWeight) / eliteWeight * 100;
             progress = progress <= 100 ? progress : 100;
         // Siltä väliltä
-        } else {
+        } else if (userLevelName !== '-') {
             progress = (oneRepMax - standards[levelIndex]) / (standards[levelIndex + 1] - standards[levelIndex]) * 100;
         }
         return <div class="level-scale">{ levelNames.slice(1).map((levelName, i) =>
             <div data-text={ levelName + ' ' + standards[i + 1] + 'kg' }>{
-                ((isBelowChart && !i) || levelName === userLevelName) && [
-                    <span class="triangle" style={ `left: ${progress}%` }></span>,
+                ((isBelowChart && !i) || (!hasPerformedThisLift && !i) || levelName === userLevelName) && [
+                    hasPerformedThisLift && <span class="triangle" style={ `left: ${progress}%` }>{ oneRepMax }kg</span>,
                     <span class={ 'score small' + (levelIndex <= halfWay ? (levelIndex > 0 ? '' : ' below-0') : ' over-half') }>{ userLevelName }</span>
                 ]
             }</div>

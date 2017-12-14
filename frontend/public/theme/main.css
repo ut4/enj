@@ -1043,13 +1043,18 @@ footer a {
 .level-scale .triangle {
     position: absolute;
     left: 100%;
-    margin: 0 0 0 -5px;
+    margin: -15px 0 0 -5px;
+    font-size: 11px;
+    padding-left: 13px;
 }
 .level-scale .triangle:after {
     content: "";
     border-right: 6px solid transparent;
     border-top: 12px solid #53b5f1;
     border-left: 6px solid transparent;
+    position: absolute;
+    left: 0;
+    top: 2px;
 }
 
 /* -- Ohjelmanäkymät ----------- */

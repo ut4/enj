@@ -46,7 +46,10 @@ class UserMenu extends Component<any, any> {
     private logout(e) {
         e && e.preventDefault();
         iocFactories.authService().logout().then(
-            () => iocFactories.history().push('/'),
+            () => {
+                iocFactories.notify()('Olet nyt kirjautunut ulos', 'success');
+                iocFactories.history().push('/');
+            },
             () => iocFactories.notify()('Uloskirjautuminen epäonnistui', 'error')
         );
     }

@@ -77,8 +77,8 @@ QUnit.module('stat/StatStrengthView', hooks => {
             assert.equal(wilks.textContent, getExpectedWilks(0, true, [0]), 'Wilks pitäisi olla tämä');
             //
             assert.equal(itu.findRenderedDOMElementWithTag(rendered, 'ul').textContent, getExpectedStrengthLevelsContent(testUser, {
-                squat: '',
-                deadlift: ''
+                squat: '-',
+                deadlift: '-'
             }));
             done();
         });
@@ -187,7 +187,8 @@ QUnit.module('stat/StatStrengthView', hooks => {
         return Math.round(formulae.wilksCoefficient(bodyWeight, isMale) * getExpectedTotal(includedTestSets));
     }
     function getExpectedStrengthLevel(lift: keyof Enj.powerLift, set: Enj.API.BestSet, user: Enj.API.User): string {
-        return formulae.strengthLevel(lift, formulae.oneRepMax(set.bestWeight, set.bestWeightReps), user.bodyWeight, user.isMale !== 0);
+        const oneRepMax = formulae.oneRepMax(set.bestWeight, set.bestWeightReps);
+        return parseInt(oneRepMax.toString(), 10) + 'kg' + formulae.strengthLevel(lift, oneRepMax, user.bodyWeight, user.isMale !== 0);
     }
     function getExpectedPowerLiftDetails(set: Enj.API.BestSet): string {
         // esim Penkkipunnerrus 12 (10 x 6)
