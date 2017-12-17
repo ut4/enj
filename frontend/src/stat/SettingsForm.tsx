@@ -18,13 +18,14 @@ class SettingsForm extends Component<Props, any> {
     public constructor(props, context) {
         super(props, context);
         this.state = {
+            validity: true,
             saveValues: false
         };
     }
     public render() {
         return <div class="inline-form">
-            <BasicUserInputs user={ this.props.user || {} } ref={ cmp => { this.userInputs = cmp; } }/>
-            { this.props.user && <Form onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } confirmButtonShouldBeDisabled={ () => this.userInputs.state.validity === false }>
+            { this.props.user && <Form onConfirm={ () => this.confirm() } onCancel={ this.props.onCancel } confirmButtonShouldBeDisabled={ () => this.state.validity === false }>
+                <BasicUserInputs user={ this.props.user } ref={ cmp => { this.userInputs = cmp; } } onValidityChange={ validity => { this.setState({validity}); } }/>
                 <div class="input-set">
                     <input type="checkbox" name="saveValues" id="saveValuesCb" onChange={ e => this.receiveCheckboxValue(e) }/>
                     <label for="saveValuesCb">Tallenna asetukset</label>
