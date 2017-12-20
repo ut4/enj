@@ -6,6 +6,7 @@ import net.mdh.enj.resources.TestData;
 import net.mdh.enj.workout.Workout;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.text.DecimalFormat;
 import java.util.function.Predicate;
 import java.util.Comparator;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         BestSetMapper.BestSet result2 = this.findBestSetByExerciseName(
             this.fetchBestSets(),
             testExercise.getName()
-        );;
+        );
         Assert.assertNotNull("Pitäsi sisältää ennätyksiä testiliikkeelle", result2);
         Assert.assertNotEquals("Pitäsi korvata edellinen ennätys uudella", result1.toString(), result2.toString());
         Assert.assertEquals(String.valueOf(set1.getWeight()), String.valueOf(result2.getStartWeight()));
@@ -84,7 +85,7 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         BestSetMapper.BestSet result3 = this.findBestSetByExerciseName(
             this.fetchBestSets(),
             testExercise.getName()
-        );;
+        );
         Assert.assertNotNull("Pitäsi sisältää ennätyksiä testiliikkeelle", result3);
         Assert.assertEquals("Ei pitäsi korvata edellistä ennätystä", result2.toString(), result3.toString());
     }
@@ -139,7 +140,25 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         Assert.assertEquals(set2.getReps(), progressSets.get(0).getReps());
         Assert.assertNotNull(progressSets.get(0).getLiftedAt());
         Assert.assertEquals(testExercise.getName(), progressSets.get(0).getExerciseName());
-        // Parametriin määritelty kaava (total-lifted)
+        // Parametriin määritelty kaava, epley
+        this.assertContainsProgressSets(
+            newGetRequest("stat/progress", t ->
+                t.queryParam("exerciseId", testExercise.getId())
+                    .queryParam("formula", StatRepository.FORMULA_EPLEY)
+            ),
+            set2.getWeight() * (set2.getReps() / 30.0 + 1),
+            set1.getWeight() * (set1.getReps() / 30.0 + 1)
+        );
+        // wathan
+        this.assertContainsProgressSets(
+            newGetRequest("stat/progress", t ->
+                t.queryParam("exerciseId", testExercise.getId())
+                    .queryParam("formula", StatRepository.FORMULA_WATHAN)
+            ),
+            100.0 * set2.getWeight() / (48.8 + 53.8 * Math.exp(-0.075 * set2.getReps())),
+            100.0 * set1.getWeight() / (48.8 + 53.8 * Math.exp(-0.075 * set1.getReps()))
+        );
+        // total-lifted
         this.assertContainsProgressSets(
             newGetRequest("stat/progress", t ->
                 t.queryParam("exerciseId", testExercise.getId())
@@ -147,6 +166,15 @@ public class StatControllerTest extends WorkoutControllerTestCase {
             ),
             set2.getWeight() * set2.getReps(),
             set1.getWeight() * set1.getReps()
+        );
+        // none
+        this.assertContainsProgressSets(
+            newGetRequest("stat/progress", t ->
+                t.queryParam("exerciseId", testExercise.getId())
+                    .queryParam("formula", StatRepository.FORMULA_NONE)
+            ),
+            set2.getWeight(),
+            set1.getWeight()
         );
     }
 
@@ -300,13 +328,14 @@ public class StatControllerTest extends WorkoutControllerTestCase {
         );
         progressSets.sort(Comparator.comparingDouble(ProgressSetMapper.ProgressSet::getWeight).reversed());
         Assert.assertEquals(2, progressSets.size());
+        DecimalFormat rounder = new DecimalFormat("#.##");
         Assert.assertEquals(
-            String.valueOf(expectedCalculatedValue1),
-            String.valueOf(progressSets.get(0).getCalculatedResult())
+            rounder.format(expectedCalculatedValue1),
+            rounder.format(progressSets.get(0).getCalculatedResult())
         );
         Assert.assertEquals(
-            String.valueOf(expectedCalculatedValue2),
-            String.valueOf(progressSets.get(1).getCalculatedResult())
+            rounder.format(expectedCalculatedValue2),
+            rounder.format(progressSets.get(1).getCalculatedResult())
         );
         return progressSets;
     }

@@ -20,10 +20,10 @@ class StatsProgressView extends Component<any, {bestSets: Array<Enj.API.BestSet>
             return <div>Ei vielä ennätyksiä.</div>;
         }
         return <div>{ this.state.bestSets.map(set => {
-            const percentual = this.getPercentualImprovent(set.startWeight, set.bestWeight);
+            const diff = set.bestWeight - set.startWeight;
             return [
                 <h2>{ set.exerciseName }</h2>,
-                <div class="score">{ percentual }%</div>,
+                <div class="score">{ diff }kg</div>,
                 <table>
                     <tbody>
                         <tr>
@@ -36,7 +36,7 @@ class StatsProgressView extends Component<any, {bestSets: Array<Enj.API.BestSet>
                         </tr>
                         <tr>
                             <td>Kehitys:</td>
-                            <td><b>{ set.bestWeight - set.startWeight }</b>kg/<b>{ percentual }</b>%</td>
+                            <td><b>{ diff }</b>kg/<b>{ this.getPercentualImprovent(set.startWeight, diff) }</b>%</td>
                         </tr>
                         <tr>
                             <td>Tulos parantunut:</td>
@@ -47,11 +47,12 @@ class StatsProgressView extends Component<any, {bestSets: Array<Enj.API.BestSet>
             ];
         }) }</div>;
     }
-    private getPercentualImprovent(startWeight: number, bestWeight: number): string {
-        const percent = (bestWeight - startWeight) / startWeight * 100;
-        return (percent - Math.floor(percent)).toString().length < 5 // onko vähemmän kuin 2 desimaalia
+    private getPercentualImprovent(startWeight: number, diff: number): string {
+        const percent = diff / startWeight * 100;
+        const rounded = (percent - Math.floor(percent)).toString().length < 5 // onko vähemmän kuin 2 desimaalia
             ? percent.toString()
             : parseFloat(percent as any).toFixed(1);
+        return rounded !== 'Infinity' ? rounded : '∞';
     }
 }
 

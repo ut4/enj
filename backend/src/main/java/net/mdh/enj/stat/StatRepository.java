@@ -21,6 +21,7 @@ public class StatRepository {
     static final String FORMULA_EPLEY = "epley";
     static final String FORMULA_WATHAN = "wathan";
     static final String FORMULA_TOTAL_LIFTED = "total-lifted";
+    static final String FORMULA_NONE = "none";
     private static final String generalStatSelectQ = (
         "SELECT" +
             " COUNT(DISTINCT w.id)          AS totalWorkoutCount," +
@@ -45,6 +46,7 @@ public class StatRepository {
         progressFormulae.put(FORMULA_EPLEY,        "weight * (reps / 30 + 1)");
         progressFormulae.put(FORMULA_WATHAN,       "100 * weight / (48.8 + 53.8 * EXP(-0.075 * reps))");
         progressFormulae.put(FORMULA_TOTAL_LIFTED, "weight * reps");
+        progressFormulae.put(FORMULA_NONE,         "weight");
     }
 
     List<BestSetMapper.BestSet> selectBestSets(String userId) {

@@ -13,7 +13,7 @@ class HelpView extends Component<any, any> {
             <h3>Olen lukkiutunut offline-tilaan</h3>
             <div>Paina <a href="" onClick={ e => this.resetIndexedDb(e) }>tästä</a> resetoidaksesi selaintietokannan.</div>
             <h3>Tämän on ihan paska sivusto</h3>
-            <div>Laita valitus osoitteeseen tuki[at]treenikirja[piste]com, niin katsotaan voimmeko tehdä asialle jotain.</div>
+            <div>Laita valitus osoitteeseen tuki@treenikirja.com, niin katsotaan voimmeko tehdä asialle jotain.</div>
         </div>;
     }
     private resetIndexedDb(e) {

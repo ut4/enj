@@ -24,6 +24,8 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     public PAGE_SIZE: number = 10;
     private chartContainer: HTMLDivElement;
     private chartInstance: any;
+    private labelPointer: number;
+    private progressSets: Array<Enj.API.ProgressSet>;
     public constructor(props, context) {
         super(props, context);
         this.state = {data: undefined, dataCount: -1};
@@ -62,6 +64,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
                             <option value="epley">1RM, Epley</option>
                             <option value="wathan">1RM, Wathan</option>
                             <option value="total-lifted">Nostettu yhteensä</option>
+                            <option value="none">-</option>
                         </select>
                     </label>
                 </div>
@@ -87,6 +90,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
      * Hakee kehityshistorian liikkeelle {exerciseId}, ja renderöi ne chartiin.
      */
     private fetchAndRenderView(params: Params) {
+        this.labelPointer = 0;
         return iocFactories.statBackend().getProgress(
             params.exerciseId,
             params.formula,
@@ -98,6 +102,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
         ).then(progressSets => {
             if (progressSets !== null) {
                 const data = progressSets.length ? this.makeData(progressSets) : null;
+                this.progressSets = progressSets;
                 this.setState({data, dataCount: data ? data.labels.length : 0});
                 data && this.makeChart(data);
             } else {
@@ -128,7 +133,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             chartPadding: {top: 20, right: 0, bottom: 0, left: 0},
             plugins: [Chartist.plugins.ctPointLabels({
                 textAnchor: 'middle',
-                labelInterpolationFnc: weight => (weight || 0) + 'kg'
+                labelInterpolationFnc: weight => this.makeLabel(weight)
             })],
             axisX: {
                 labelInterpolationFnc: unixTime => {
@@ -169,7 +174,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
         this.applyUrlParams();
     }
     /**
-     * Vastaanottaa formula/Laskukaava-dropdownin valinnan, ja triggeröi urlin päivityksen.
+     * Vastaanottaa formula/laskukaava-dropdownin valinnan, ja triggeröi urlin päivityksen.
      */
     private onFormulaSelect(formula: string) {
         this.props.params.formula = formula;
@@ -177,7 +182,7 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     }
     /**
      * Päivittää näkymän urlin uusimmilla valinnoilla, joka taas triggeröi
-     * ComponentDidReceiveProps:n ja datan uudelleenhaun.
+     * componentDidReceiveProps:n ja datan uudelleenhaun.
      */
     private applyUrlParams() {
         const urlSegments = [
@@ -191,6 +196,9 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
             urlSegments.push((this.props.params.after || 0).toString());
         }
         iocFactories.history().push(urlSegments.join('/'));
+    }
+    private makeLabel(weight: number): string {
+        return (weight || 0) + 'kg' + (this.props.params.formula !== 'none' ? '' : '*' + this.progressSets[this.labelPointer++].reps);
     }
 }
 
