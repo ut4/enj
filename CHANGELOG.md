@@ -26,3 +26,4 @@
 - Muuttuneet asiat
     - Rekisteröintisivu ilmoittaa, jos nimim. tai email on jo käytössä
     - #/statistiikka/voima esittää 1RM-voimatasot visuaalisella asteikolla
+    - #/treenihistorian graafiin lisätty laskukaava "none"

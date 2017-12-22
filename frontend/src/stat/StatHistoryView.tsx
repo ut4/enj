@@ -24,8 +24,6 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     public PAGE_SIZE: number = 10;
     private chartContainer: HTMLDivElement;
     private chartInstance: any;
-    private labelPointer: number;
-    private progressSets: Array<Enj.API.ProgressSet>;
     public constructor(props, context) {
         super(props, context);
         this.state = {data: undefined, dataCount: -1};
@@ -42,6 +40,10 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
         }
         if (!props.params.page) {
             props.params.page = 0;
+        }
+        if (this.chartInstance) {
+            this.chartInstance.detach();
+            this.chartInstance = null;
         }
         this.fetchAndRenderView(props.params);
     }
@@ -90,7 +92,6 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
      * Hakee kehityshistorian liikkeelle {exerciseId}, ja renderöi ne chartiin.
      */
     private fetchAndRenderView(params: Params) {
-        this.labelPointer = 0;
         return iocFactories.statBackend().getProgress(
             params.exerciseId,
             params.formula,
@@ -102,9 +103,8 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
         ).then(progressSets => {
             if (progressSets !== null) {
                 const data = progressSets.length ? this.makeData(progressSets) : null;
-                this.progressSets = progressSets;
                 this.setState({data, dataCount: data ? data.labels.length : 0});
-                data && this.makeChart(data);
+                data !== null && this.makeChart(data, progressSets);
             } else {
                 this.setState({data: null, dataCount: -1});
             }
@@ -127,13 +127,19 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
     /**
      * Renderöi Chartist-chartin elementtiin {this.chartContainer} datalla {data}.
      */
-    private makeChart(data: ChartData) {
+    private makeChart(data: ChartData, progressSets: Array<Enj.API.ProgressSet>) {
+        let i = 0;
+        let lastDataIndex = data.labels.length - 1;
         this.chartInstance = new Chartist.Line(this.chartContainer, data, {
             lineSmooth: Chartist.Interpolation.none({fillHoles: true}),
             chartPadding: {top: 20, right: 0, bottom: 0, left: 0},
             plugins: [Chartist.plugins.ctPointLabels({
                 textAnchor: 'middle',
-                labelInterpolationFnc: weight => this.makeLabel(weight)
+                labelInterpolationFnc: weight => {
+                    const label = this.makeLabel(weight, progressSets[i]);
+                    i += i < lastDataIndex ? 1 : -lastDataIndex;
+                    return label;
+                }
             })],
             axisX: {
                 labelInterpolationFnc: unixTime => {
@@ -197,8 +203,8 @@ class StatHistoryView extends Component<{params: Params}, {data: ChartData; data
         }
         iocFactories.history().push(urlSegments.join('/'));
     }
-    private makeLabel(weight: number): string {
-        return (weight || 0) + 'kg' + (this.props.params.formula !== 'none' ? '' : '*' + this.progressSets[this.labelPointer++].reps);
+    private makeLabel(weight: number, progressSet: Enj.API.ProgressSet): string {
+        return (weight || 0) + 'kg' + (this.props.params.formula !== 'none' ? '' : '*' + progressSet.reps);
     }
 }
 

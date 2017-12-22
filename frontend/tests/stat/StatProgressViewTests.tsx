@@ -28,11 +28,11 @@ QUnit.module('stat/StatProgressView', hooks => {
         assert.equal(detailTables.length, testBestSets.length, 'Pitäisi renderöidä nth taulukkoa');
         // 1.
         assert.equal(titles[0].textContent, testBestSets[0].exerciseName);
-        assert.equal(improvements[0].textContent, getExpectedPercentualImprovement(testBestSets[0]));
+        assert.equal(improvements[0].textContent, getExpectedImprovementDiff(testBestSets[0]));
         assert.equal(detailTables[0].textContent, getExpectedDetails(testBestSets[0]));
         // 2.
         assert.equal(titles[1].textContent, testBestSets[1].exerciseName);
-        assert.equal(improvements[1].textContent, getExpectedPercentualImprovement(testBestSets[1]));
+        assert.equal(improvements[1].textContent, getExpectedImprovementDiff(testBestSets[1]));
         assert.equal(detailTables[1].textContent, getExpectedDetails(testBestSets[1]));
     });
     QUnit.test('Näyttää viestin, jos parhaita sarjoja ei vielä ole', assert => {
@@ -45,13 +45,16 @@ QUnit.module('stat/StatProgressView', hooks => {
         return (
             'Aloitustulos:' + set.startWeight +
             'kgParas tulos:' + set.bestWeight +
-            'kgKehitys:' + (set.bestWeight - set.startWeight) +
-            'kg/' + getExpectedPercentualImprovement(set) +
+            'kgKehitys:' + getExpectedImprovementDiff(set) + '/' +
+                getExpectedPercentualImprovement(set) +
             'Tulos parantunut:' + set.timesImproved + ' kertaa'
         );
     }
     function getExpectedPercentualImprovement(set: Enj.API.BestSet): string {
         const perc = ((set.bestWeight - set.startWeight) / set.startWeight * 100).toString();
         return (perc.indexOf('.') < 0 ? perc : parseFloat(perc).toFixed(1)) + '%';
+    }
+    function getExpectedImprovementDiff(set: Enj.API.BestSet): string {
+        return set.bestWeight - set.startWeight + 'kg';
     }
 });
