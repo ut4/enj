@@ -13,6 +13,7 @@ import java.util.List;
 public class WorkoutRepository extends BasicRepository<Workout> {
 
     private final static String TABLE_NAME = "workout";
+    private final int DEFAULT_RESULT_LIMIT = 50;
 
     @Inject
     WorkoutRepository(DataSourceFactory dSFactory) {
@@ -26,8 +27,16 @@ public class WorkoutRepository extends BasicRepository<Workout> {
      * @return treenit
      */
     List<Workout> selectAll(SearchFilters filters) {
-        final int DEFAULT_RESULT_LIMIT = 50;
-        return this.selectAll(filters, DEFAULT_RESULT_LIMIT);
+        filters.setLimit(DEFAULT_RESULT_LIMIT);
+        return this.selectAll(filters, "");
+    }
+
+    /**
+     * Palauttaa yhden treenin, jonka start < startTo, tai start > startFrom.
+     */
+    List<Workout> selectNext(SearchFilters filters) {
+        filters.setLimit(1);
+        return this.selectAll(filters, " ORDER BY workoutStart " + (filters.getStartFrom() != null ? "ASC" : "DESC"));
     }
 
     /**
@@ -36,15 +45,15 @@ public class WorkoutRepository extends BasicRepository<Workout> {
      *
      * @return treenit
      */
-    List<Workout> selectAll(SearchFilters filters, int limit) {
+    List<Workout> selectAll(SearchFilters filters, String order) {
         return super.selectAll(
             String.format(
                 "SELECT wv.*, wev.* " +
-                "FROM (SELECT * FROM workoutView%s LIMIT %d) wv " +
+                "FROM (SELECT * FROM workoutView%s%s LIMIT :limit) wv " +
                 "LEFT JOIN workoutExerciseView wev ON (wev.workoutExerciseWorkoutId = wv.workoutId) " +
                 "ORDER BY wv.workoutStart DESC",
                 filters.hasRules() ? " WHERE " + filters.toSql() : "",
-                limit
+                filters.hasRules() ? order : ""
             ),
             filters.hasRules() ? new BeanPropertySqlParameterSource(filters) : null,
             new WorkoutMapper()

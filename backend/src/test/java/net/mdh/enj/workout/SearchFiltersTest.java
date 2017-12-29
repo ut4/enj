@@ -27,5 +27,11 @@ public class SearchFiltersTest {
         Assert.assertEquals(userIdPart + startFromPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
         this.searchFilters.setStartFrom(null);
         Assert.assertEquals(userIdPart + " AND workoutStart <= :startTo", this.searchFilters.toSql());
+        //
+        this.searchFilters.setLimit(1);
+        Assert.assertEquals(userIdPart + " AND workoutStart < :startTo", this.searchFilters.toSql());
+        this.searchFilters.setStartTo(null);
+        this.searchFilters.setStartFrom((long) 2);
+        Assert.assertEquals(userIdPart + " AND workoutStart > :startFrom", this.searchFilters.toSql());
     }
 }

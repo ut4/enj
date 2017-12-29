@@ -184,6 +184,35 @@ public class WorkoutControllerHandlersTest extends WorkoutControllerTestCase {
     }
 
     @Test
+    public void GETNextPalauttaaEdellisenTaiSeuraavanTreenin() {
+        Workout previousWorkout = new Workout();
+        previousWorkout.setStart(testWorkout.getStart() - 100);
+        previousWorkout.setUserId(TestData.TEST_USER_ID);
+        previousWorkout.setExercises(new ArrayList<>());
+        utils.insertWorkout(previousWorkout);
+        Workout nextWorkout = new Workout();
+        nextWorkout.setStart(testWorkout.getStart() + 100);
+        nextWorkout.setUserId(TestData.TEST_USER_ID);
+        nextWorkout.setExercises(new ArrayList<>());
+        utils.insertWorkout(nextWorkout);
+        //
+        String currentStart = String.valueOf(testWorkout.getStart());
+        Response previousResponse = this.newGetRequest("workout/next", t -> t.queryParam("startTo", currentStart));
+        Assert.assertEquals(200, previousResponse.getStatus());
+        List<Workout> previousWorkouts = previousResponse.readEntity(new GenericType<List<Workout>>() {});
+        Assert.assertEquals(1, previousWorkouts.size());
+        Assert.assertEquals(previousWorkout.toString(), previousWorkouts.get(0).toString());
+        //
+        Response nextResponse = this.newGetRequest("workout/next", t -> t.queryParam("startFrom", currentStart));
+        Assert.assertEquals(200, nextResponse.getStatus());
+        List<Workout> nextWorkouts = nextResponse.readEntity(new GenericType<List<Workout>>() {});
+        Assert.assertEquals(1, nextWorkouts.size());
+        Assert.assertEquals(nextWorkout.toString(), nextWorkouts.get(0).toString());
+        //
+        utils.delete("workout", previousWorkout.getId(), nextWorkout.getId());
+    }
+
+    @Test
     public void PUTValidoiInputTaulukon() {
         // Simuloi PUT, jonka input-taulukon toinen itemi on cag
         List<Workout> workouts = this.makeCoupleOfWorkouts();

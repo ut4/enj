@@ -14,6 +14,8 @@ public class SearchFilters implements SelectQueryFilters {
     private Long startFrom;
     @QueryParam("startTo")
     private Long startTo;
+    @QueryParam("limit")
+    private Integer limit;
 
     public String getUserId() {
         return this.userId;
@@ -36,6 +38,13 @@ public class SearchFilters implements SelectQueryFilters {
         this.startTo = startTo;
     }
 
+    public Integer getLimit() {
+        return this.limit;
+    }
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
+
     /**
      * Palauttaa aina true, koska userId on pakollinen arvo kaikissa treenien
      * SELECT-kyselyissä.
@@ -54,10 +63,10 @@ public class SearchFilters implements SelectQueryFilters {
         ArrayList<String> out = new ArrayList<>();
         out.add("workoutUserId = :userId");
         if (this.startFrom != null) {
-            out.add("workoutStart >= :startFrom");
+            out.add(String.format("workoutStart %s :startFrom", this.limit == null ? ">=" : ">"));
         }
         if (this.startTo != null) {
-            out.add("workoutStart <= :startTo");
+            out.add(String.format("workoutStart %s :startTo", this.limit == null ? "<=" : "<"));
         }
         return String.join(" AND ", out);
     }

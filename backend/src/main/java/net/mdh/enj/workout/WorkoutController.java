@@ -80,6 +80,17 @@ public class WorkoutController {
     }
 
     /**
+     * Palauttaa kirjautuneen käyttäjän edellisen (start < startTo), tai seuraavan
+     * (start > startFrom) treenin tietokannasta.
+     */
+    @GET
+    @Path("/next")
+    public List<Workout> getNext(@BeanParam SearchFilters filters) {
+        filters.setUserId(this.requestContext.getUserId());
+        return this.workoutRepository.selectNext(filters);
+    }
+
+    /**
      * Päivittää kaikki treenit {workouts}:n tiedoilla.
      */
     @PUT
