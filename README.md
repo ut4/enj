@@ -2,10 +2,6 @@
 
 Inferno + TSX, serviceWorker, Jersey
 
-## Status
-
-Ylläpitovaiheessa: kaikki bugit ja epäkohdat korjataan, mutta uusia toiminnallisuuksia ei ole _toistaiseksi_ tiedossa.
-
 ## Riippuvuudet
 
 * Backend: Java 8, maven, MariaDb
